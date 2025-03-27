@@ -695,7 +695,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
     private void asyncSaveTextToFavorite(CharSequence text) {
         this.task.removeMessages(TaskHandler.MSG_FAVORITE_TEXT);
 
-        Message msg = new Message();
+        Message msg = Message.obtain();
         msg.what = TaskHandler.MSG_FAVORITE_TEXT;
         msg.obj = text;
 

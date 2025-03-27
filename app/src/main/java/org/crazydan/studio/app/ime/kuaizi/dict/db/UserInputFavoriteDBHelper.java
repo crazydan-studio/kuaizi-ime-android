@@ -28,20 +28,18 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputTextType;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteQueryParams;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteRawQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.createSQLiteArgHolders;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
-import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.rawQuerySQLite;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2025-03-26
  */
-public class InputFavoriteDBHelper {
+public class UserInputFavoriteDBHelper {
 
     /** 新增 {@link InputFavorite} */
-    public static void saveInputFavorite(SQLiteDatabase db, InputFavorite favorite) {
+    public static InputFavorite saveInputFavorite(SQLiteDatabase db, InputFavorite favorite) {
         String clause = "insert into user_favorite ("
                         + "   type_, text_, html_, shortcut_, created_at_,"
                         + "   used_count_, used_at_"
@@ -50,24 +48,25 @@ public class InputFavoriteDBHelper {
         execSQLite(db, clause, new Object[] {
                 favorite.type, favorite.text, favorite.html, favorite.shortcut, favorite.createdAt.getTime()
         });
+
+        List<InputFavorite> result = queryInputFavorites(db, favorite.text);
+        return result.get(0);
     }
 
     /** 更新 {@link InputFavorite} 的使用情况 */
-    public static void updateInputFavoriteUsage(SQLiteDatabase db, InputFavorite favorite) {
+    public static InputFavorite updateInputFavoriteUsage(SQLiteDatabase db, InputFavorite favorite) {
         String clause = "update user_favorite set used_count_ = ?, used_at_ = ? where id_ = ?";
 
-        execSQLite(db, clause, new Object[] { favorite.usedCount + 1, new Date().getTime(), favorite.id });
+        InputFavorite newFavorite = favorite.copy((b) -> b.usedCount(favorite.usedCount + 1).usedAt(new Date()));
+
+        execSQLite(db, clause, new Object[] { newFavorite.usedCount, newFavorite.usedAt.getTime(), newFavorite.id });
+
+        return newFavorite;
     }
 
     /** 获取全部的 {@link InputFavorite}，并按创建时间、最近使用、使用次数降序排序 */
     public static List<InputFavorite> getAllInputFavorites(SQLiteDatabase db) {
-        return querySQLite(db, new SQLiteQueryParams<InputFavorite>() {{
-            this.table = "user_favorite";
-            this.columns = new String[] { "id_", "type_", "text_", "used_count_", "created_at_", "used_at_" };
-            this.orderBy = "created_at_ desc, used_at_ desc, used_count_ desc";
-
-            this.reader = InputFavoriteDBHelper::createInputFavorite;
-        }});
+        return queryInputFavorites(db, null);
     }
 
     /** 删除指定的 {@link InputFavorite} */
@@ -85,14 +84,22 @@ public class InputFavoriteDBHelper {
 
     /** 是否存在相同文本的 {@link InputFavorite} */
     public static boolean existSameTextInputFavorite(SQLiteDatabase db, String text) {
-        List<Integer> result = rawQuerySQLite(db, new SQLiteRawQueryParams<Integer>() {{
-            this.clause = "select count(id_) as total_ from user_favorite where text_ = ?";
-            this.params = new String[] { text };
+        List<InputFavorite> result = queryInputFavorites(db, text);
 
-            this.reader = (raw) -> raw.getInt("total_");
+        return !result.isEmpty();
+    }
+
+    private static List<InputFavorite> queryInputFavorites(SQLiteDatabase db, String text) {
+        return querySQLite(db, new SQLiteQueryParams<InputFavorite>() {{
+            this.table = "user_favorite";
+            this.columns = new String[] { "id_", "type_", "text_", "used_count_", "created_at_", "used_at_" };
+
+            this.where = text != null ? "text_ = ?" : null;
+            this.params = text != null ? new String[] { text } : null;
+            this.orderBy = text != null ? null : "created_at_ desc, used_at_ desc, used_count_ desc";
+
+            this.reader = UserInputFavoriteDBHelper::createInputFavorite;
         }});
-
-        return !result.isEmpty() && result.get(0) > 0;
     }
 
     private static InputFavorite createInputFavorite(DBUtils.SQLiteRow row) {
@@ -100,8 +107,8 @@ public class InputFavoriteDBHelper {
         InputTextType type = InputTextType.valueByName(row.getString("type_"));
         String text = row.getString("text_");
         int usedCount = row.getInt("used_count_");
-        int createdAt = row.getInt("created_at_");
-        int usedAt = row.getInt("used_at_");
+        long createdAt = row.getLong("created_at_");
+        long usedAt = row.getLong("used_at_");
 
         return type == null
                ? null

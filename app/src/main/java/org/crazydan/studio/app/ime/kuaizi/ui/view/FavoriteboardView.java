@@ -34,10 +34,11 @@ import org.crazydan.studio.app.ime.kuaizi.common.widget.DialogConfirm;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.ViewClosable;
 import org.crazydan.studio.app.ime.kuaizi.core.Favoriteboard;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
-import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteDeleteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputDeleteMsgData;
+import org.crazydan.studio.app.ime.kuaizi.ui.view.input.InputFavoriteListViewAdapter;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Clear_All_InputFavorite;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Close_Favoriteboard;
@@ -87,7 +88,7 @@ public class FavoriteboardView extends BaseMsgListenerView implements ViewClosab
 
     @Override
     public void close() {
-        this.favoriteListView.clear();
+        this.favoriteListView.getAdapter().clearItems();
 
         ObjectUtils.invokeWhenNonNull(this.deleteSelectedConfirm, DialogConfirm::dismiss);
         ObjectUtils.invokeWhenNonNull(this.clearAllConfirm, DialogConfirm::dismiss);
@@ -118,31 +119,45 @@ public class FavoriteboardView extends BaseMsgListenerView implements ViewClosab
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(InputMsg msg) {
+        this.log.beginTreeLog("Handle %s", () -> new Object[] { msg.getClass() }) //
+                .debug("Message Type: %s", () -> new Object[] { msg.type }) //
+                .debug("Message Data: %s", () -> new Object[] { msg.data() });
+
+        InputFavoriteListViewAdapter adapter = this.favoriteListView.getAdapter();
         switch (msg.type) {
-            case InputFavorite_Paste_Done:
-            case InputFavorite_Delete_Done:
-            case InputFavorite_Save_Done:
-            case InputFavorite_Be_Ready: {
+            case InputFavorite_Paste_Done: {
                 InputFavoriteMsgData data = msg.data();
-                // Note: 粘贴操作不重置列表，以确保其列表项的已选中状态不变
-                on_InputFavorite_Update_Done_Msg(data, msg.type != InputMsgType.InputFavorite_Paste_Done);
+                adapter.updateItem(data.favorite);
                 break;
             }
+            case InputFavorite_Save_Done: {
+                InputFavoriteMsgData data = msg.data();
+                adapter.addItem(0, data.favorite);
+                break;
+            }
+            case InputFavorite_Delete_Done: {
+                InputFavoriteDeleteMsgData data = msg.data();
+                adapter.removeItems(data.ids);
+                break;
+            }
+            case InputFavorite_Clear_All_Done: {
+                adapter.clearItems();
+                break;
+            }
+            case InputFavorite_Query_Done: {
+                InputFavoriteMsgData data = msg.data();
+                adapter.updateItems(data.favorites);
+                break;
+            }
+            default: {
+                this.log.warn("Ignore message %s", () -> new Object[] { msg.type });
+            }
         }
-    }
 
-    private void on_InputFavorite_Update_Done_Msg(InputFavoriteMsgData data, boolean reset) {
-        int total = data.favorites.size();
-        CharSequence title = textWithNumber(R.string.title_favorites, total);
+        int amount = this.favoriteListView.count();
+        updateViewsByFavoriteAmount(amount);
 
-        this.titleView.setText(title);
-        this.favoriteListView.update(data.favorites, reset);
-
-        boolean showWarning = total == 0;
-        ViewUtils.visible(this.warningView, showWarning);
-        ViewUtils.visible(this.dataPaneView, !showWarning);
-
-        updateBtnStatus();
+        this.log.endTreeLog();
     }
 
     private void on_SingleTap_Select_InputFavorite_Msg() {
@@ -193,8 +208,19 @@ public class FavoriteboardView extends BaseMsgListenerView implements ViewClosab
 
     // ==================== End: 按键事件处理 ==================
 
+    private void updateViewsByFavoriteAmount(int amount) {
+        CharSequence title = textWithNumber(R.string.title_favorites, amount);
+        this.titleView.setText(title);
+
+        boolean showWarning = amount == 0;
+        ViewUtils.visible(this.warningView, showWarning);
+        ViewUtils.visible(this.dataPaneView, !showWarning);
+
+        updateBtnStatus();
+    }
+
     private void updateBtnStatus() {
-        List<Integer> selected = this.favoriteListView.getSelected();
+        List<Integer> selected = this.favoriteListView.getAdapter().getSelectedItems();
         int total = selected.size();
         boolean disabled = total == 0;
 

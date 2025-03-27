@@ -52,7 +52,7 @@ public abstract class RecyclerViewAdapter<I, H extends RecyclerView.ViewHolder> 
      */
     public List<I> updateItems(List<I> newItems) {
         List<I> oldItems = this.items;
-        this.items = newItems;
+        this.items = newItems != null ? newItems : new ArrayList<>();
 
         switch (this.itemUpdatePolicy) {
             case full: {
@@ -86,6 +86,32 @@ public abstract class RecyclerViewAdapter<I, H extends RecyclerView.ViewHolder> 
     /** 获取指定位置的数据项 */
     public I getItem(int position) {
         return position < 0 || position >= this.items.size() ? null : this.items.get(position);
+    }
+
+    /** 在指定位置新增数据项 */
+    public void addItem(int position, I item) {
+        this.items.add(position, item);
+        notifyItemInserted(position);
+    }
+
+    /** 在指定位置更新数据项 */
+    public void updateItem(int position, I item) {
+        this.items.set(position, item);
+        notifyItemChanged(position);
+    }
+
+    /** 删除指定位置的数据项 */
+    public void removeItems(List<Integer> positions) {
+        // 从尾部向头部做删除，以确保待删除数据的位置不变
+        positions.stream().sorted(Integer::compareTo).forEach((position) -> {
+            this.items.remove((int) position);
+            notifyItemRemoved(position);
+        });
+    }
+
+    /** 清空数据项 */
+    public void clearItems() {
+        updateItems(null);
     }
 
     /** 根据新旧列表更新差异数据项 */

@@ -115,7 +115,11 @@ public class Logger {
     }
 
     public Logger error(String msg) {
-        return error(msg, null);
+        return error(msg, (Supplier<Object[]>) null);
+    }
+
+    public Logger error(String msg, Exception e) {
+        return error(msg + ": %s", () -> new Object[] { e.getMessage() });
     }
 
     /** 通过 Lamdba 函数 延迟 获取格式化消息的参数，以避免发布版本中不必要代码的运行开销 */

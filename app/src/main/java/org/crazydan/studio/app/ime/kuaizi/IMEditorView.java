@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Animation;
@@ -61,6 +64,7 @@ public class IMEditorView extends BaseThemedView {
         ;
     }
 
+    private final Handler inputMsgHandler;
     private final AudioPlayer audioPlayer;
 
     /** Note: 在子类中，可能不存在输入候选视图 */
@@ -80,6 +84,13 @@ public class IMEditorView extends BaseThemedView {
                               R.raw.page_flip,
                               R.raw.tick_clock,
                               R.raw.tick_ping);
+
+        this.inputMsgHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                handleMsgInMainLooper((InputMsg) msg.obj);
+            }
+        };
     }
 
     public XPadView getXPadView() {
@@ -165,6 +176,17 @@ public class IMEditorView extends BaseThemedView {
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(InputMsg msg) {
+        Message m = Message.obtain();
+        m.obj = msg;
+
+        this.inputMsgHandler.sendMessage(m);
+    }
+
+    /**
+     * 从线程中也会发送涉及视图更新的消息，而视图更新只能在主线程中进行，
+     * 故而，在最上层的视图中通过 {@link Handler} 处理所有的 {@link InputMsg} 消息
+     */
+    private void handleMsgInMainLooper(InputMsg msg) {
         super.onMsg(msg);
 
         // Note: 涉及重建视图和视图显隐切换等情况，因此，需在最后转发消息到子视图
@@ -187,7 +209,7 @@ public class IMEditorView extends BaseThemedView {
                 activeBoard(BoardType.main);
                 break;
             }
-            case InputFavorite_Be_Ready: {
+            case InputFavorite_Query_Doing: {
                 activeBoard(BoardType.favorite);
                 break;
             }

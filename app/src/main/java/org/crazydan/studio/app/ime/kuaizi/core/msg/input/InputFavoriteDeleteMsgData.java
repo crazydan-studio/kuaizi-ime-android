@@ -21,35 +21,20 @@ package org.crazydan.studio.app.ime.kuaizi.core.msg.input;
 
 import java.util.List;
 
-import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 
 /**
- * {@link InputMsgType#InputFavorite_Query_Done}、
- * {@link InputMsgType#InputFavorite_Save_Done}、
- * {@link InputMsgType#InputFavorite_Paste_Done}
- * 的消息数据
+ * {@link InputMsgType#InputFavorite_Delete_Done} 的消息数据
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2025-03-13
+ * @date 2025-03-27
  */
-public class InputFavoriteMsgData extends InputMsgData {
-    /** 与消息相关的目标数据 */
-    public final InputFavorite favorite;
+public class InputFavoriteDeleteMsgData extends InputMsgData {
     /** 与消息相关的数据列表 */
-    public final List<InputFavorite> favorites;
+    public final List<Integer> ids;
 
-    public InputFavoriteMsgData(InputFavorite favorite) {
-        this(favorite, null);
-    }
-
-    public InputFavoriteMsgData(List<InputFavorite> favorites) {
-        this(null, favorites);
-    }
-
-    public InputFavoriteMsgData(InputFavorite favorite, List<InputFavorite> favorites) {
-        this.favorite = favorite;
-        this.favorites = favorites;
+    public InputFavoriteDeleteMsgData(List<Integer> ids) {
+        this.ids = ids;
     }
 }

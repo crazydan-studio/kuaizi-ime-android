@@ -21,11 +21,9 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,20 +41,24 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteDeleteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputFavoriteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTextCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputDeleteMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputFavoriteMsgData;
+import org.crazydan.studio.app.ime.kuaizi.dict.UserInputFavoriteDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Apply_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_CanBe_Favorite;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Create_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputClip_Text_Commit_Doing;
-import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Be_Ready;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Clear_All_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Delete_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Paste_Done;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Query_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Query_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Save_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputFavorite_Text_Commit_Doing;
 
@@ -124,7 +126,6 @@ public class Favoriteboard {
     protected final Logger log = Logger.getLogger(getClass());
 
     private final ClipboardManager clipboard;
-    private final List<InputFavorite> favorites = new ArrayList<>();
 
     private ClipboardManager.OnPrimaryClipChangedListener clipChangedListener;
     private String latestUsedClipCode;
@@ -242,27 +243,21 @@ public class Favoriteboard {
         InputMsgData msgData = new InputTextCommitMsgData(data.favorite.text, false);
         context.fireInputMsg(InputFavorite_Text_Commit_Doing, msgData);
 
-        // TODO 更新使用次数及时间
-
-        for (int i = 0; i < this.favorites.size(); i++) {
-            InputFavorite f = this.favorites.get(i);
-
-            if (Objects.equals(f.id, data.favorite.id)) {
-                this.favorites.set(i, f.copy((b) -> b.usedCount(f.usedCount + 1).usedAt(new Date())));
-                break;
-            }
-        }
-
-        msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
-        context.fireInputMsg(InputFavorite_Paste_Done, msgData);
+        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        dict.updateUsage(data.favorite) //
+            .thenAccept((favorite) -> {
+                context.fireInputMsg(InputFavorite_Paste_Done, new InputFavoriteMsgData(favorite));
+            });
     }
 
     private void on_SingleTap_Btn_Open_Favoriteboard_Msg(FavoriteboardContext context) {
-        // TODO 从数据库中查询已收藏，按创建时间、最近使用、使用次数降序排序
-        // TODO 采用异步读取，需发送数据查询中、数据已查询完毕消息
+        context.fireInputMsg(InputFavorite_Query_Doing);
 
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
-        context.fireInputMsg(InputFavorite_Be_Ready, msgData);
+        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        dict.getAll() //
+            .thenAccept((favorites) -> {
+                context.fireInputMsg(InputFavorite_Query_Done, new InputFavoriteMsgData(favorites));
+            });
     }
 
     private void on_SingleTap_Btn_Save_As_Favorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
@@ -271,37 +266,30 @@ public class Favoriteboard {
         InputClip clip = data.clip;
         InputFavorite favorite = InputFavorite.from(clip);
 
-        // TODO 保存已收藏到数据库
-
-        this.favorites.add(0, favorite.copy((b) -> b.id((int) new Date().getTime())));
-
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
-        context.fireInputMsg(InputFavorite_Save_Done, msgData);
+        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        dict.save(favorite) //
+            .thenAccept((f) -> {
+                context.fireInputMsg(InputFavorite_Save_Done, new InputFavoriteMsgData(f));
+            });
     }
 
     private void on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
         UserInputDeleteMsgData data = msg.data();
-        // TODO 从数据库中删除已收藏
 
-        for (Integer id : data.selected) {
-            InputFavorite favorite = this.favorites.stream()
-                                                   .filter((f) -> Objects.equals(f.id, id))
-                                                   .findFirst()
-                                                   .orElse(null);
-            this.favorites.remove(favorite);
-        }
-
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
-        context.fireInputMsg(InputFavorite_Delete_Done, msgData);
+        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        dict.remove(data.selected) //
+            .thenAccept((favorites) -> {
+                context.fireInputMsg(InputFavorite_Delete_Done, new InputFavoriteDeleteMsgData(data.selected));
+            });
     }
 
     private void on_SingleTap_Btn_Clear_All_InputFavorite_Msg(FavoriteboardContext context) {
-        // TODO 从数据库中清空全部已收藏
+        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
 
-        this.favorites.clear();
-
-        InputFavoriteMsgData msgData = new InputFavoriteMsgData(new ArrayList<>(this.favorites));
-        context.fireInputMsg(InputFavorite_Delete_Done, msgData);
+        dict.clearAll() //
+            .thenRun(() -> {
+                context.fireInputMsg(InputFavorite_Clear_All_Done);
+            });
     }
 
     private void commitClipText(FavoriteboardContext context, InputClip clip, boolean oneByOne) {
@@ -311,17 +299,31 @@ public class Favoriteboard {
     }
 
     private void trySave(FavoriteboardContext context, InputClip clip, InputClipMsgData.ClipSourceType source) {
-        if (!canBeSave(context, clip)) {
+        if (clip == null || CharUtils.isBlank(clip.text) || clip.text.length() < 3) {
             return;
         }
 
-        // Note: 对于未确定类型或来自复制/剪切的数据，需要做类型检测
-        if (clip.type == null || source == InputClipMsgData.ClipSourceType.copy_cut) {
-            clip = deeplyCollectClips(clip).get(0);
-        }
+        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        dict.exist(clip.text) //
+            .thenApply((exist) -> {
+                // 若已存在，则不可收藏
+                if (exist) {
+                    return null;
+                }
 
-        InputClipMsgData msgData = new InputClipMsgData(source, clip);
-        context.fireInputMsg(InputClip_CanBe_Favorite, msgData);
+                // Note: 对于未确定类型或来自复制/剪切的数据，需要做类型检测
+                if (clip.type == null || source == InputClipMsgData.ClipSourceType.copy_cut) {
+                    return deeplyCollectClips(clip).get(0);
+                }
+                return clip;
+            }).thenAccept((c) -> {
+                if (c == null) {
+                    return;
+                }
+
+                InputClipMsgData msgData = new InputClipMsgData(source, c);
+                context.fireInputMsg(InputClip_CanBe_Favorite, msgData);
+            });
     }
 
     // =============================== End: 消息处理 ===================================
@@ -331,23 +333,6 @@ public class Favoriteboard {
         InputClip clip = InputClip.build((b) -> b.text(text));
 
         trySave(context, clip, InputClipMsgData.ClipSourceType.user_input);
-    }
-
-    /**
-     * 检查指定的 {@link InputClip} 是否可被收藏
-     * <p/>
-     * 已收藏的 {@link InputClip} 将返回 <code>false</code>
-     * <p/>
-     * 只有可收藏的 {@link InputClip} 才弹出收藏提示
-     */
-    private boolean canBeSave(FavoriteboardContext context, InputClip clip) {
-        if (clip == null || CharUtils.isBlank(clip.text) || clip.text.length() < 3) {
-            return false;
-        }
-
-        // TODO 查询数据，检查是否有相同内容的收藏
-
-        return true;
     }
 
     /**

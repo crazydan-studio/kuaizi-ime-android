@@ -387,7 +387,7 @@ public class PinyinDict {
 
     // =================== End: 保存用户输入数据 ==================
 
-    // =================== Start: 衍生字典 ==================
+    // =================== Start: 派生字典 ==================
 
     public UserInputFavoriteDict createUserInputFavoriteDict() {
         SQLiteDatabase db = getDB();
@@ -395,7 +395,7 @@ public class PinyinDict {
         return new UserInputFavoriteDict(db, this.executor);
     }
 
-    // =================== End: 衍生字典 ==================
+    // =================== End: 派生字典 ==================
 
     // =================== Start: 数据库管理 ==================
 

@@ -19,9 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
@@ -61,20 +58,12 @@ public class InputFavoriteListView extends RecyclerView<InputFavoriteListViewAda
         return new RecyclerViewLinearLayoutManager(context, true);
     }
 
+    public int count() {
+        return getAdapter().getItemCount();
+    }
+
     public boolean isEmpty() {
-        return getAdapter().getItemCount() == 0;
-    }
-
-    public List<Integer> getSelected() {
-        return getAdapter().getSelectedItems();
-    }
-
-    public void clear() {
-        getAdapter().updateItems(new ArrayList<>(), true);
-    }
-
-    public void update(List<InputFavorite> dataList, boolean reset) {
-        getAdapter().updateItems(dataList, reset);
+        return count() == 0;
     }
 
     // =============================== Start: 消息处理 ===================================

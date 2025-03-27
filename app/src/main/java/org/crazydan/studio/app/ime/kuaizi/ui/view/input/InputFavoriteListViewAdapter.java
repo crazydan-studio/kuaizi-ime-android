@@ -21,6 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.view.input;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,17 +49,47 @@ public class InputFavoriteListViewAdapter extends RecyclerViewAdapter<InputFavor
         this.listener = listener;
     }
 
-    public void updateItems(List<InputFavorite> newItems, boolean reset) {
-        if (reset) {
-            this.selected.clear();
-        }
+    public void updateItem(InputFavorite newItem) {
+        for (int i = 0; i < this.items.size(); i++) {
+            InputFavorite item = this.items.get(i);
 
-        super.updateItems(newItems);
+            if (Objects.equals(item.id, newItem.id)) {
+                updateItem(i, newItem);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public List<InputFavorite> updateItems(List<InputFavorite> newItems) {
+        this.selected.clear();
+        return super.updateItems(newItems);
+    }
+
+    @Override
+    public void clearItems() {
+        this.selected.clear();
+        super.clearItems();
     }
 
     /** @return 已选中项的 {@link InputFavorite#id} */
     public List<Integer> getSelectedItems() {
         return new ArrayList<>(this.selected);
+    }
+
+    @Override
+    public void removeItems(List<Integer> ids) {
+        List<Integer> positions = new ArrayList<>(ids.size());
+        for (int i = 0; i < this.items.size(); i++) {
+            InputFavorite item = this.items.get(i);
+
+            if (ids.contains(item.id)) {
+                positions.add(i);
+            }
+        }
+
+        this.selected.removeAll(ids);
+        super.removeItems(positions);
     }
 
     @Override

@@ -120,12 +120,16 @@ public enum InputMsgType {
     /** 剪贴文本提交中：将文本写入到 目标编辑器 中 */
     InputClip_Text_Commit_Doing,
 
-    /** 已收藏输入已就绪 */
-    InputFavorite_Be_Ready,
+    /** 已收藏输入查询中 */
+    InputFavorite_Query_Doing,
+    /** 已收藏输入已查询 */
+    InputFavorite_Query_Done,
     /** 已收藏输入已粘贴 */
     InputFavorite_Paste_Done,
     /** 已收藏输入已删除 */
     InputFavorite_Delete_Done,
+    /** 已收藏输入已清空 */
+    InputFavorite_Clear_All_Done,
     /** 已收藏输入已保存 */
     InputFavorite_Save_Done,
     /** 已收藏输入文本提交中：将文本写入到 目标编辑器 中 */

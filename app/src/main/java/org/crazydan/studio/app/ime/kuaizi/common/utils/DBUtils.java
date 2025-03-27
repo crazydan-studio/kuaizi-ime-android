@@ -33,12 +33,14 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
+import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-10-20
  */
 public class DBUtils {
+    private static final Logger log = Logger.getLogger(DBUtils.class);
 
     public static SQLiteDatabase openSQLite(File file, boolean readonly) {
         if (!file.exists() && !readonly) {
@@ -72,6 +74,8 @@ public class DBUtils {
         try {
             FileUtils.copy(context, dbRawResId, targetDBFile);
         } catch (IOException e) {
+            log.error("Error while calling #copySQLite", e);
+
             throw new RuntimeException(e);
         }
     }
@@ -108,8 +112,13 @@ public class DBUtils {
 
     /** 执行多条无参 SQL */
     public static void execSQLite(SQLiteDatabase db, String... clauses) {
-        for (String clause : clauses) {
-            db.execSQL(clause);
+        try {
+            for (String clause : clauses) {
+                db.execSQL(clause);
+            }
+        } catch (RuntimeException e) {
+            log.error("Error while calling #execSQLite", e);
+            throw e;
         }
     }
 
@@ -132,6 +141,9 @@ public class DBUtils {
                     bindArgs(sm, args);
                     sm.execute();
                 }
+            } catch (RuntimeException e) {
+                log.error("Error while calling #execSQLite", e);
+                throw e;
             }
         });
     }
@@ -152,6 +164,9 @@ public class DBUtils {
         try (SQLiteStatement sm = db.compileStatement(clause);) {
             bindArgs(sm, args);
             sm.execute();
+        } catch (RuntimeException e) {
+            log.error("Error while calling #execSQLite", e);
+            throw e;
         }
     }
 
@@ -181,6 +196,9 @@ public class DBUtils {
                     bindArgs(insert, params.insertParamsList.get(i));
                     insert.executeInsert();
                 }
+            } catch (RuntimeException e) {
+                log.error("Error while calling #upsertSQLite", e);
+                throw e;
             }
         });
     }
@@ -197,6 +215,9 @@ public class DBUtils {
                                          params.limit)
         ) {
             return doQuerySQLite(cursor, params.reader, params.voidReader);
+        } catch (RuntimeException e) {
+            log.error("Error while calling #querySQLite", e);
+            throw e;
         }
     }
 
@@ -205,6 +226,9 @@ public class DBUtils {
                 Cursor cursor = db.rawQuery(params.clause, params.params)
         ) {
             return doQuerySQLite(cursor, params.reader, params.voidReader);
+        } catch (RuntimeException e) {
+            log.error("Error while calling #rawQuerySQLite", e);
+            throw e;
         }
     }
 
@@ -243,13 +267,14 @@ public class DBUtils {
     private static void bindArgs(SQLiteStatement statement, Object[] args) {
         for (int i = 0; i < args.length; i++) {
             Object arg = args[i];
+            int index = i + 1;
 
             if (arg == null) {
-                statement.bindNull(i);
+                statement.bindNull(index);
             } else if (arg instanceof byte[]) {
-                statement.bindBlob(i, (byte[]) arg);
+                statement.bindBlob(index, (byte[]) arg);
             } else {
-                statement.bindString(i, arg.toString());
+                statement.bindString(index, arg.toString());
             }
         }
     }
@@ -305,6 +330,10 @@ public class DBUtils {
 
         public int getInt(String columnName) {
             return get(columnName, this.cursor::getInt);
+        }
+
+        public long getLong(String columnName) {
+            return get(columnName, this.cursor::getLong);
         }
 
         private <T> T get(String columnName, Function<Integer, T> getter) {

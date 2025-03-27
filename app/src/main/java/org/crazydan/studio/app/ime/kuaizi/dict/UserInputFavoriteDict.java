@@ -20,10 +20,18 @@
 package org.crazydan.studio.app.ime.kuaizi.dict;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
+
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputFavoriteDBHelper.clearAllInputFavorites;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputFavoriteDBHelper.existSameTextInputFavorite;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputFavoriteDBHelper.getAllInputFavorites;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputFavoriteDBHelper.removeInputFavorites;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputFavoriteDBHelper.saveInputFavorite;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputFavoriteDBHelper.updateInputFavoriteUsage;
 
 /**
  * {@link InputFavorite} 字典
@@ -40,25 +48,30 @@ public class UserInputFavoriteDict {
         this.executor = executor;
     }
 
-    public void save(InputFavorite favorite) {
+    /** 新增 {@link InputFavorite} */
+    public CompletableFuture<InputFavorite> save(InputFavorite favorite) {
+        return CompletableFuture.supplyAsync(() -> saveInputFavorite(this.db, favorite), this.executor);
     }
 
-    public void updateUsage(InputFavorite favorite) {
+    /** 更新 {@link InputFavorite} 的使用情况 */
+    public CompletableFuture<InputFavorite> updateUsage(InputFavorite favorite) {
+        return CompletableFuture.supplyAsync(() -> updateInputFavoriteUsage(this.db, favorite), this.executor);
     }
 
-    public List<InputFavorite> getAll() {
-
+    public CompletableFuture<List<InputFavorite>> getAll() {
+        return CompletableFuture.supplyAsync(() -> getAllInputFavorites(this.db), this.executor);
     }
 
-    public void remove(List<Integer> ids) {
-
+    public CompletableFuture<Void> remove(List<Integer> ids) {
+        return CompletableFuture.runAsync(() -> removeInputFavorites(this.db, ids), this.executor);
     }
 
-    public void clearAll() {
-
+    public CompletableFuture<Void> clearAll() {
+        return CompletableFuture.runAsync(() -> clearAllInputFavorites(this.db), this.executor);
     }
 
-    public boolean exists(String text) {
-
+    /** 是否存在相同文本的 {@link InputFavorite} */
+    public CompletableFuture<Boolean> exist(String text) {
+        return CompletableFuture.supplyAsync(() -> existSameTextInputFavorite(this.db, text), this.executor);
     }
 }
