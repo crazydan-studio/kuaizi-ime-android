@@ -278,7 +278,7 @@ public class Favoriteboard {
 
         UserInputFavoriteDict dict = context.dict.useUserInputFavoriteDict();
         dict.remove(data.selected) //
-            .thenAccept((favorites) -> {
+            .thenRun(() -> {
                 context.fireInputMsg(InputFavorite_Delete_Done, new InputFavoriteDeleteMsgData(data.selected));
             });
     }

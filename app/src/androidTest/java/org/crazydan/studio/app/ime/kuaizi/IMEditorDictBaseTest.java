@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi;
 
+import java.util.concurrent.CompletableFuture;
+
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;
 import org.junit.AfterClass;
@@ -31,10 +33,12 @@ import org.junit.BeforeClass;
 public abstract class IMEditorDictBaseTest {
 
     @BeforeClass
-    public static void before() {
+    public static void before() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        IMEditorDict.instance().open(context, new IMEditorDict.Listener.Noop());
+        CompletableFuture<Void> promise = IMEditorDict.instance().open(context);
+        // 确保数据库初始完毕
+        promise.get();
     }
 
     @AfterClass

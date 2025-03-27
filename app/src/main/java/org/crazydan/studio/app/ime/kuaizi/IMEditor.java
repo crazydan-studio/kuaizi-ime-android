@@ -94,7 +94,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-03
  */
-public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChangeListener, IMEditorDict.Listener {
+public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChangeListener {
     protected final Logger log = Logger.getLogger(getClass());
 
     /** 是否正在开启 {@link IMEditorDict} */
@@ -146,8 +146,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
      */
     public void start(Context context, Keyboard.Type keyboardType, boolean resetInputting) {
         this.dictOpening = true;
-        // Note: 字典库是异步开启的，不会阻塞键盘视图的渲染
-        this.dict.open(context, this);
+        // Note: 字典库是异步开启的，不会阻塞键盘视图的渲染，故而，无需显示提示信息
+        this.dict.open(context).thenRun(() -> this.dictOpening = false);
 
         if (this.favoriteboard == null) {
             ClipboardManager clipboard = SystemUtils.getClipboard(context);
@@ -232,21 +232,6 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     public void setListener(InputMsgListener listener) {
         this.listener = listener;
-    }
-
-    // --------------------------------------
-
-    /** {@link IMEditorDict} 开启前 */
-    @Override
-    public void beforeOpen(IMEditorDict dict) {
-        // Note: 字典库异步开启，不会阻塞视图渲染，故而，无需显示提示信息
-        //fire_InputMsg(Keyboard_Start_Doing);
-    }
-
-    /** {@link IMEditorDict} 开启后 */
-    @Override
-    public void afterOpen(IMEditorDict dict) {
-        this.dictOpening = false;
     }
 
     // --------------------------------------

@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
 
@@ -103,30 +104,22 @@ public class IMEditorDict {
     /**
      * 在使用前开启字典：由开启方负责 {@link #close 关闭}
      * <p/>
-     * 开启为异步操作，并且，仅在首次开启时才调用监听器的 {@link Listener#beforeOpen}，
-     * 但会始终调用 {@link Listener#afterOpen}
-     *
-     * @param listener
-     *         仅用于监听实际的开启过程，若字典已开启，则不会调用该监听
+     * 开启为异步操作，需通过 {@link CompletableFuture#thenRun} 确定真实的开启完毕时机
      */
-    public synchronized void open(Context context, Listener listener) {
+    public synchronized CompletableFuture<Void> open(Context context) {
         this.openedRefs += 1;
         if (isOpened()) {
-            listener.afterOpen(this);
-            return;
+            return CompletableFuture.completedFuture(null);
         }
 
-        listener.beforeOpen(this);
-
         this.executor = Async.createExecutor(1, 4);
-        this.executor.execute(() -> {
+
+        return CompletableFuture.runAsync(() -> {
             doUpgrade(context);
             doOpen(context);
 
             this.opened = true;
-
-            listener.afterOpen(this);
-        });
+        }, this.executor);
     }
 
     /** 在资源回收前关闭字典：由 {@link #open 开启} 方负责关闭 */
@@ -305,13 +298,4 @@ public class IMEditorDict {
     }
 
     // =================== End: 数据版本升级 ==================
-
-    public interface Listener {
-
-        default void beforeOpen(IMEditorDict dict) {}
-
-        default void afterOpen(IMEditorDict dict) {}
-
-        class Noop implements Listener {}
-    }
 }
