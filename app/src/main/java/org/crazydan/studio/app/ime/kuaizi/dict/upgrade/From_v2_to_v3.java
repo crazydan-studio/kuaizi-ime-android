@@ -25,8 +25,8 @@ import java.util.Map;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.dict.hmm.Hmm;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteRawQueryParams;
@@ -45,7 +45,7 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveHmm;
 public class From_v2_to_v3 extends Upgrader {
 
     @Override
-    public void upgrade(Context context, PinyinDict dict) {
+    public void upgrade(Context context, IMEditorDict dict) {
         doWithTransferDB(context, dict, (dbFiles) -> {
             try (SQLiteDatabase targetDB = openSQLite(dbFiles.dataTransfer, false)) {
                 // 初始化 v0 版本

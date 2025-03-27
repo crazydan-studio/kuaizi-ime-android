@@ -21,12 +21,12 @@ package org.crazydan.studio.app.ime.kuaizi.core;
 
 import java.util.Objects;
 
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
 import org.crazydan.studio.app.ime.kuaizi.common.Immutable;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 /**
  * {@link Inputboard} 与 {@link Keyboard} 的上下文基类
@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
  * @date 2024-12-15
  */
 public abstract class BaseInputContext extends Immutable {
-    public final PinyinDict dict;
+    public final IMEditorDict dict;
 
     /** 当前正在处理的 {@link InputList}，可在 {@link Inputboard} 或 {@link Keyboard} 内直接修改其输入 */
     public final InputList inputList;
@@ -80,7 +80,7 @@ public abstract class BaseInputContext extends Immutable {
             B extends Builder<B, I>, //
             I extends BaseInputContext //
             > extends CachableBuilder<I> {
-        private PinyinDict dict;
+        private IMEditorDict dict;
         private InputList inputList;
         private InputMsgListener listener;
 
@@ -118,7 +118,7 @@ public abstract class BaseInputContext extends Immutable {
         // ===================== Start: 构建配置 ===================
 
         /** @see BaseInputContext#dict */
-        public B dict(PinyinDict dict) {
+        public B dict(IMEditorDict dict) {
             this.dict = dict;
             return (B) this;
         }

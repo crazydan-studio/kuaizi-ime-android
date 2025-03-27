@@ -74,7 +74,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchM
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardThemeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserEditorActionSingleTapMsgData;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Config_Update_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
@@ -95,14 +94,14 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Keyboard_
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-12-03
  */
-public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChangeListener, PinyinDict.Listener {
+public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChangeListener, IMEditorDict.Listener {
     protected final Logger log = Logger.getLogger(getClass());
 
-    /** 是否正在开启 {@link PinyinDict} */
+    /** 是否正在开启 {@link IMEditorDict} */
     private boolean dictOpening;
 
+    private IMEditorDict dict;
     private Config.Mutable config;
-    private PinyinDict dict;
     private TaskHandler task;
 
     private InputList inputList;
@@ -115,9 +114,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     private InputMsgListener listener;
 
-    IMEditor(Config.Mutable config, PinyinDict dict) {
-        this.config = config;
+    IMEditor(Config.Mutable config, IMEditorDict dict) {
         this.dict = dict;
+        this.config = config;
 
         this.task = new TaskHandler(this);
 
@@ -134,7 +133,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     /** 创建 {@link IMEditor} */
     public static IMEditor create(Config.Mutable config) {
-        PinyinDict dict = PinyinDict.instance();
+        IMEditorDict dict = IMEditorDict.instance();
 
         return new IMEditor(config, dict);
     }
@@ -146,11 +145,9 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
      *         待使用的键盘类型
      */
     public void start(Context context, Keyboard.Type keyboardType, boolean resetInputting) {
-        if (!this.config.bool(ConfigKey.disable_dict_db)) {
-            this.dictOpening = true;
-            // Note: 字典库是异步开启的，不会阻塞键盘视图的渲染
-            this.dict.open(context, this);
-        }
+        this.dictOpening = true;
+        // Note: 字典库是异步开启的，不会阻塞键盘视图的渲染
+        this.dict.open(context, this);
 
         if (this.favoriteboard == null) {
             ClipboardManager clipboard = SystemUtils.getClipboard(context);
@@ -203,9 +200,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         this.task = null;
 
         // 确保拼音字典库能够被开启方及时关闭
-        if (!this.config.bool(ConfigKey.disable_dict_db) //
-            && this.keyboard != null // 已调用 #start 方法
-        ) {
+        if (this.keyboard != null) { // 已调用 #start 方法
             this.dict.close();
         }
 
@@ -214,8 +209,8 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             this.favoriteboard = null;
         }
 
-        this.config = null;
         this.dict = null;
+        this.config = null;
 
         this.inputList = null;
 
@@ -241,16 +236,16 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
 
     // --------------------------------------
 
-    /** {@link PinyinDict} 开启前 */
+    /** {@link IMEditorDict} 开启前 */
     @Override
-    public void beforeOpen(PinyinDict dict) {
+    public void beforeOpen(IMEditorDict dict) {
         // Note: 字典库异步开启，不会阻塞视图渲染，故而，无需显示提示信息
         //fire_InputMsg(Keyboard_Start_Doing);
     }
 
-    /** {@link PinyinDict} 开启后 */
+    /** {@link IMEditorDict} 开启后 */
     @Override
-    public void afterOpen(PinyinDict dict) {
+    public void afterOpen(IMEditorDict dict) {
         this.dictOpening = false;
     }
 

@@ -243,7 +243,7 @@ public class Favoriteboard {
         InputMsgData msgData = new InputTextCommitMsgData(data.favorite.text, false);
         context.fireInputMsg(InputFavorite_Text_Commit_Doing, msgData);
 
-        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        UserInputFavoriteDict dict = context.dict.useUserInputFavoriteDict();
         dict.updateUsage(data.favorite) //
             .thenAccept((favorite) -> {
                 context.fireInputMsg(InputFavorite_Paste_Done, new InputFavoriteMsgData(favorite));
@@ -253,7 +253,7 @@ public class Favoriteboard {
     private void on_SingleTap_Btn_Open_Favoriteboard_Msg(FavoriteboardContext context) {
         context.fireInputMsg(InputFavorite_Query_Doing);
 
-        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        UserInputFavoriteDict dict = context.dict.useUserInputFavoriteDict();
         dict.getAll() //
             .thenAccept((favorites) -> {
                 context.fireInputMsg(InputFavorite_Query_Done, new InputFavoriteMsgData(favorites));
@@ -266,7 +266,7 @@ public class Favoriteboard {
         InputClip clip = data.clip;
         InputFavorite favorite = InputFavorite.from(clip);
 
-        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        UserInputFavoriteDict dict = context.dict.useUserInputFavoriteDict();
         dict.save(favorite) //
             .thenAccept((f) -> {
                 context.fireInputMsg(InputFavorite_Save_Done, new InputFavoriteMsgData(f));
@@ -276,7 +276,7 @@ public class Favoriteboard {
     private void on_SingleTap_Btn_Delete_Selected_InputFavorite_Msg(FavoriteboardContext context, UserInputMsg msg) {
         UserInputDeleteMsgData data = msg.data();
 
-        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        UserInputFavoriteDict dict = context.dict.useUserInputFavoriteDict();
         dict.remove(data.selected) //
             .thenAccept((favorites) -> {
                 context.fireInputMsg(InputFavorite_Delete_Done, new InputFavoriteDeleteMsgData(data.selected));
@@ -284,7 +284,7 @@ public class Favoriteboard {
     }
 
     private void on_SingleTap_Btn_Clear_All_InputFavorite_Msg(FavoriteboardContext context) {
-        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        UserInputFavoriteDict dict = context.dict.useUserInputFavoriteDict();
 
         dict.clearAll() //
             .thenRun(() -> {
@@ -303,7 +303,7 @@ public class Favoriteboard {
             return;
         }
 
-        UserInputFavoriteDict dict = context.dict.createUserInputFavoriteDict();
+        UserInputFavoriteDict dict = context.dict.useUserInputFavoriteDict();
         dict.exist(clip.text) //
             .thenApply((exist) -> {
                 // 若已存在，则不可收藏

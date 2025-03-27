@@ -32,7 +32,8 @@ import java.util.stream.Stream;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDictBaseTest;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CharUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
@@ -44,7 +45,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
-import static org.crazydan.studio.app.ime.kuaizi.dict.PinyinDictHelper.getPinyinCharsIdList;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.predictPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.enableAllPrintableEmojis;
@@ -66,15 +66,15 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.save
  * @date 2024-10-28
  */
 @RunWith(AndroidJUnit4.class)
-public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
+public class PinyinDictDBHelperTest extends IMEditorDictBaseTest {
     private static final String LOG_TAG = PinyinDictDBHelperTest.class.getSimpleName();
 
     private static final int userPhraseBaseWeight = 500;
 
     @Test
     public void test_hmm_predict_phrase() {
-        PinyinDict dict = PinyinDict.instance();
-        SQLiteDatabase db = dict.getDB();
+        PinyinDict dict = IMEditorDict.instance().usePinyinDict();
+        SQLiteDatabase db = IMEditorDict.instance().getDB();
 
         Map<String, String> sampleMap = new HashMap<String, String>() {{
             put("zhong,hua,ren,min,gong,he,guo,wan,sui",
@@ -112,8 +112,8 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_predict_new_phrase_after_used() {
-        PinyinDict dict = PinyinDict.instance();
-        SQLiteDatabase db = dict.getDB();
+        PinyinDict dict = IMEditorDict.instance().usePinyinDict();
+        SQLiteDatabase db = IMEditorDict.instance().getDB();
 
         String pinyinCharsStr = "wo,ai,kuai,zi,shu,ru,fa";
         String usedPhrase = "筷:kuài,字:zì,输:shū,入:rù,法:fǎ";
@@ -137,8 +137,8 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_predict_phrase_with_confirmed_word() {
-        PinyinDict dict = PinyinDict.instance();
-        SQLiteDatabase db = dict.getDB();
+        PinyinDict dict = IMEditorDict.instance().usePinyinDict();
+        SQLiteDatabase db = IMEditorDict.instance().getDB();
 
         String pinyinCharsStr = "shi,jie,da,yu,zhou";
         String expectedPhrase = "世:shì,界:jiè,大:dà,宇:yǔ,宙:zhòu";
@@ -164,8 +164,8 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_predict_phrase_with_not_record_pinyin() {
-        PinyinDict dict = PinyinDict.instance();
-        SQLiteDatabase db = dict.getDB();
+        PinyinDict dict = IMEditorDict.instance().usePinyinDict();
+        SQLiteDatabase db = IMEditorDict.instance().getDB();
 
         // 在词典表中未收录的拼音不影响词组预测，相应位置置空
         String pinyinCharsStr = "zi,m,zhong,guo";
@@ -179,8 +179,8 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_top_candidate_words() {
-        PinyinDict dict = PinyinDict.instance();
-        SQLiteDatabase db = dict.getDB();
+        PinyinDict dict = IMEditorDict.instance().usePinyinDict();
+        SQLiteDatabase db = IMEditorDict.instance().getDB();
 
         String[] samples = new String[] { "zhong", "guo" };
         for (String pinyinChars : samples) {
@@ -215,8 +215,8 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_word_variant() {
-        PinyinDict dict = PinyinDict.instance();
-        SQLiteDatabase db = dict.getDB();
+        PinyinDict dict = IMEditorDict.instance().usePinyinDict();
+        SQLiteDatabase db = IMEditorDict.instance().getDB();
 
         String pinyinChars = "guo";
         Integer pinyinCharsId = dict.getPinyinCharsTree().getCharsId(pinyinChars);
@@ -233,7 +233,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_query_grouped_emojis() {
-        PinyinDict dict = PinyinDict.instance();
+        IMEditorDict dict = IMEditorDict.instance();
         SQLiteDatabase db = dict.getDB();
 
         int top = 10;
@@ -286,7 +286,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_query_emojis_by_keyword() {
-        PinyinDict dict = PinyinDict.instance();
+        IMEditorDict dict = IMEditorDict.instance();
         SQLiteDatabase db = dict.getDB();
 
         List<Integer[]> keywordIdsList = Stream.of("地球", "笑脸")
@@ -303,7 +303,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_enable_all_printable_emojis() {
-        PinyinDict dict = PinyinDict.instance();
+        IMEditorDict dict = IMEditorDict.instance();
         SQLiteDatabase db = dict.getDB();
 
         List<String> notPrintableEmojis = querySQLite(db, new DBUtils.SQLiteQueryParams<String>() {{
@@ -336,7 +336,7 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
 
     @Test
     public void test_query_latins() {
-        PinyinDict dict = PinyinDict.instance();
+        IMEditorDict dict = IMEditorDict.instance();
         SQLiteDatabase db = dict.getDB();
 
         List<String> samples = List.of("I love China", "I love earth", "I love you");
@@ -390,5 +390,17 @@ public class PinyinDictDBHelperTest extends PinyinDictBaseTest {
         });
 
         return phraseList;
+    }
+
+    /** 获取拼音字母组合的 id 列表 */
+    public static List<Integer> getPinyinCharsIdList(PinyinDict dict, String... pinyinCharsArray) {
+        return getPinyinCharsIdList(dict, List.of(pinyinCharsArray));
+    }
+
+    /** 获取拼音字母组合的 id 列表 */
+    public static List<Integer> getPinyinCharsIdList(PinyinDict dict, List<String> pinyinCharsList) {
+        return pinyinCharsList.stream()
+                              .map(chars -> dict.getPinyinCharsTree().getCharsId(chars))
+                              .collect(Collectors.toList());
     }
 }

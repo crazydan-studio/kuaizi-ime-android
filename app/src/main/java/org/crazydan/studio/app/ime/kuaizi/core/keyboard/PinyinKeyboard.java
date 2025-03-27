@@ -36,6 +36,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
+import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
+import org.crazydan.studio.app.ime.kuaizi.dict.UserInputDataDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKeyboard.determine_NotConfirmed_InputWord;
 import static org.crazydan.studio.app.ime.kuaizi.core.keyboard.PinyinCandidateKeyboard.predict_NotConfirmed_Phrase_InputWords_with_Completions;
@@ -59,9 +61,9 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         PinyinKeyTable keyTable = PinyinKeyTable.create(keyTableConf);
 
-        PinyinCharsTree charsTree = context.dict.getPinyinCharsTree();
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
+                PinyinCharsTree charsTree = getPinyinCharsTree(context);
                 InputCharsSlipStateData stateData = this.state.data();
 
                 String level0Char = stateData.getLevel0Key() != null ? stateData.getLevel0Key().value : null;
@@ -79,11 +81,13 @@ public class PinyinKeyboard extends EditorEditKeyboard {
                                                                                   stateData.getLevel2NextChars());
             }
             case InputChars_Flip_Doing: {
+                PinyinCharsTree charsTree = getPinyinCharsTree(context);
                 InputCharsFlipStateData stateData = this.state.data();
 
                 return (KeyFactory.NoAnimation) () -> keyTable.createFullCharKeys(charsTree, stateData.startChar);
             }
             case InputChars_XPad_Input_Doing: {
+                PinyinCharsTree charsTree = getPinyinCharsTree(context);
                 InputCharsSlipStateData stateData = this.state.data();
 
                 String level0Char = stateData.getLevel0Key() != null ? stateData.getLevel0Key().value : null;
@@ -115,6 +119,13 @@ public class PinyinKeyboard extends EditorEditKeyboard {
                 return keyTable::createKeys;
             }
         }
+    }
+
+    /** 注意，延迟到实际使用时再调用，以避免字典还未初始化完毕 */
+    private PinyinCharsTree getPinyinCharsTree(KeyboardContext context) {
+        PinyinDict dict = context.dict.usePinyinDict();
+
+        return dict.getPinyinCharsTree();
     }
 
     // ====================== Start: 消息处理 ======================
@@ -277,6 +288,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
 
         InputCharsSlipStateData stateData = this.state.data();
 
+        PinyinDict dict = context.dict.usePinyinDict();
         // 添加输入拼音的后继字母
         CharKey.Level currentKeyLevel = key.level;
         switch (currentKeyLevel) {
@@ -296,7 +308,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
                 String level0Char = stateData.getLevel0Key().value;
                 String level1Char = key.value;
 
-                PinyinCharsTree charsTree = context.dict.getPinyinCharsTree();
+                PinyinCharsTree charsTree = dict.getPinyinCharsTree();
                 PinyinCharsTree level1CharsTree = charsTree.getChild(level0Char).getChild(level1Char);
 
                 List<String> level2NextChars = level1CharsTree != null
@@ -319,7 +331,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         }
 
         // 确定拼音的候选字
-        determine_NotConfirmed_InputWord(context.dict, pending);
+        determine_NotConfirmed_InputWord(dict, pending);
 
         fire_InputChars_Input_Doing(context, pending, InputCharsInputMsgData.InputMode.slip);
     }
@@ -340,8 +352,9 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         InputList inputList = context.inputList;
 
         String startChar = key.value;
+        PinyinDict dict = context.dict.usePinyinDict();
         // 若无以输入按键开头的拼音，则不进入该状态
-        if (context.dict.getPinyinCharsTree().getChild(startChar) == null) {
+        if (dict.getPinyinCharsTree().getChild(startChar) == null) {
             return;
         }
 
@@ -378,7 +391,8 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         } else {
             pending.appendKey(key);
 
-            determine_NotConfirmed_InputWord(context.dict, pending);
+            PinyinDict dict = context.dict.usePinyinDict();
+            determine_NotConfirmed_InputWord(dict, pending);
         }
 
         // 再结束输入
@@ -448,7 +462,8 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         InputCharsSlipStateData stateData = this.state.data();
         CharKey.Level currentKeyLevel = key.level;
 
-        PinyinCharsTree charsTree = context.dict.getPinyinCharsTree();
+        PinyinDict dict = context.dict.usePinyinDict();
+        PinyinCharsTree charsTree = dict.getPinyinCharsTree();
         boolean needToEndInputting = false;
         boolean needToContinueInputting = false;
 
@@ -456,7 +471,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         switch (currentKeyLevel) {
             case level_0: {
                 // 若当前 pending 为有效拼音，则结束当前输入，并创建新输入
-                if (context.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
+                if (dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
                     needToEndInputting = true;
                     needToContinueInputting = true;
                     break;
@@ -516,7 +531,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         }
 
         // 确定候选字
-        determine_NotConfirmed_InputWord(context.dict, pending);
+        determine_NotConfirmed_InputWord(dict, pending);
 
         InputList inputList = context.inputList;
         if (needToEndInputting) {
@@ -538,7 +553,9 @@ public class PinyinKeyboard extends EditorEditKeyboard {
 
     @Override
     protected List<String> getTopBestMatchedLatins(KeyboardContext context, String text) {
-        return context.dict.findTopBestMatchedLatins(text, 5);
+        UserInputDataDict dict = context.dict.useUserInputDataDict();
+
+        return dict.findTopBestMatchedLatins(text, 5);
     }
 
     // ======================== End: 输入补全 ========================
@@ -552,9 +569,10 @@ public class PinyinKeyboard extends EditorEditKeyboard {
     private void stop_InputChars_Inputting(KeyboardContext context, boolean resetState) {
         InputList inputList = context.inputList;
         CharInput pending = inputList.getCharPending();
+        PinyinDict dict = context.dict.usePinyinDict();
 
         // 若为无效的拼音输入，则直接丢弃
-        if (!context.dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
+        if (!dict.getPinyinCharsTree().isPinyinCharsInput(pending)) {
             drop_InputList_Pending(context);
         } else {
             predict_NotConfirmed_Phrase_InputWords_with_Completions(context,

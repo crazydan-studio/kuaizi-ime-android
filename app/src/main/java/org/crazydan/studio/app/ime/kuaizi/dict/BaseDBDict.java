@@ -19,24 +19,30 @@
 
 package org.crazydan.studio.app.ime.kuaizi.dict;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.function.Supplier;
+
+import android.database.sqlite.SQLiteDatabase;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2024-10-31
+ * @date 2025-03-27
  */
-public class PinyinDictHelper {
+public abstract class BaseDBDict {
+    protected final SQLiteDatabase db;
+    private final ThreadPoolExecutor executor;
 
-    /** 获取拼音字母组合的 id 列表 */
-    public static List<Integer> getPinyinCharsIdList(PinyinDict dict, String... pinyinCharsArray) {
-        return getPinyinCharsIdList(dict, List.of(pinyinCharsArray));
+    BaseDBDict(SQLiteDatabase db, ThreadPoolExecutor executor) {
+        this.db = db;
+        this.executor = executor;
     }
 
-    /** 获取拼音字母组合的 id 列表 */
-    public static List<Integer> getPinyinCharsIdList(PinyinDict dict, List<String> pinyinCharsList) {
-        return pinyinCharsList.stream()
-                              .map(chars -> dict.getPinyinCharsTree().getCharsId(chars))
-                              .collect(Collectors.toList());
+    protected CompletableFuture<Void> promise(Runnable runnable) {
+        return CompletableFuture.runAsync(runnable, this.executor);
+    }
+
+    protected <T> CompletableFuture<T> promise(Supplier<T> supplier) {
+        return CompletableFuture.supplyAsync(supplier, this.executor);
     }
 }

@@ -23,8 +23,7 @@ import java.io.File;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDictDBType;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.openSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.vacuumSQLite;
@@ -39,8 +38,8 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.upgrade.From_v0.initFavori
 public class From_v3_to_v4 extends Upgrader {
 
     @Override
-    public void upgrade(Context context, PinyinDict dict) {
-        File userDBFile = dict.getDBFile(context, PinyinDictDBType.user);
+    public void upgrade(Context context, IMEditorDict dict) {
+        File userDBFile = dict.getUserDBFile(context);
 
         try (SQLiteDatabase targetDB = openSQLite(userDBFile, false)) {
             initFavoriteTables(targetDB);

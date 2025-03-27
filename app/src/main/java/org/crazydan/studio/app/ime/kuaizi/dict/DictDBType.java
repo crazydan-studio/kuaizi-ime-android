@@ -23,18 +23,18 @@ package org.crazydan.studio.app.ime.kuaizi.dict;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-10-27
  */
-public enum PinyinDictDBType {
+public enum DictDBType {
     /** 用户库，即存放用户数据的库，应用运行期的数据均存放在该库中 */
-    user("pinyin_user_dict.db"),
+    user("ime_user_dict.db"),
 
     /** 应用安装包内的字典库 */
     app_word("pinyin_word_dict.app.db"),
     /** 应用安装包内的词典库 */
     app_phrase("pinyin_phrase_dict.app.db");
 
-    public final String fileName;
+    public final String filename;
 
-    PinyinDictDBType(String fileName) {
-        this.fileName = fileName;
+    DictDBType(String filename) {
+        this.filename = filename;
     }
 }

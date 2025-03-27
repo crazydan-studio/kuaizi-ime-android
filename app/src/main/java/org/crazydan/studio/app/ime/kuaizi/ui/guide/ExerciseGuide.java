@@ -44,6 +44,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
@@ -1372,8 +1373,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
     private void changePinyinWord(PinyinWord word) {
         // Note: 仅在输入过程中调用，故而，字典已完成初始化
-        PinyinDict dict = PinyinDict.instance();
-        word = dict.getPinyinWord(word.value, word.spell.value);
+        PinyinDict dict = IMEditorDict.instance().usePinyinDict();
+        word = dict.getWord(word.value, word.spell.value);
 
         this.ime.changeLastInputWord(word);
     }

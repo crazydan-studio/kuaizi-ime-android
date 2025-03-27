@@ -59,6 +59,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserLongPressTickMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserSingleTapMsgData;
 import org.crazydan.studio.app.ime.kuaizi.dict.UserInputData;
+import org.crazydan.studio.app.ime.kuaizi.dict.UserInputDataDict;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Cursor_Move_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Editor_Edit_Doing;
@@ -800,12 +801,18 @@ public abstract class BaseKeyboard implements Keyboard {
 
     /** 在 {@link #commit_InputList} 之前需要做的事情 */
     protected void before_Commit_InputList(KeyboardContext context) {
-        handle_UserInput_Data(context, context.dict::saveUserInputData);
+        handle_UserInput_Data(context, (data) -> {
+            UserInputDataDict dict = context.dict.useUserInputDataDict();
+            dict.save(data);
+        });
     }
 
     /** 在 {@link #revoke_Committed_InputList} 之后需要做的事情 */
     protected void after_Revoke_Committed_InputList(KeyboardContext context) {
-        handle_UserInput_Data(context, context.dict::revokeSavedUserInputData);
+        handle_UserInput_Data(context, (data) -> {
+            UserInputDataDict dict = context.dict.useUserInputDataDict();
+            dict.revokeSave(data);
+        });
     }
 
     /** 回删输入列表中的输入内容 */

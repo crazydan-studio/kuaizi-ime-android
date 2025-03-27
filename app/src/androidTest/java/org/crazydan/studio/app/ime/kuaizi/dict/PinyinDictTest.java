@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDictBaseTest;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
@@ -43,13 +44,13 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getP
  * @date 2024-11-14
  */
 @RunWith(AndroidJUnit4.class)
-public class PinyinDictTest extends PinyinDictBaseTest {
+public class PinyinDictTest extends IMEditorDictBaseTest {
     private static final String LOG_TAG = PinyinDictTest.class.getSimpleName();
 
     @Test
     public void test_findTopBestMatchedPhrase() {
-        PinyinDict dict = PinyinDict.instance();
-        SQLiteDatabase db = dict.getDB();
+        PinyinDict dict = IMEditorDict.instance().usePinyinDict();
+        SQLiteDatabase db = IMEditorDict.instance().getDB();
 
         // 预备词库
         String usedPhrase = "这:zhè,是:shì,输:shū,入:rù,法:fǎ";

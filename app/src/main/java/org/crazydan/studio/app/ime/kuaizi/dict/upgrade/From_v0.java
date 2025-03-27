@@ -23,8 +23,8 @@ import java.io.File;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDictDBType;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
+import org.crazydan.studio.app.ime.kuaizi.dict.DictDBType;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.openSQLite;
@@ -39,7 +39,7 @@ import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.vacuumSQLi
 public class From_v0 extends Upgrader {
 
     @Override
-    public void upgrade(Context context, PinyinDict dict) {
+    public void upgrade(Context context, IMEditorDict dict) {
         doWithTransferDB(context, dict, (dbFiles) -> {
             try (SQLiteDatabase targetDB = openSQLite(dbFiles.dataTransfer, false)) {
                 doUpgrade(targetDB, dbFiles.appPhrase);
@@ -178,7 +178,7 @@ public class From_v0 extends Upgrader {
         execSQLite(targetDB, clauses);
     }
 
-    /** 将 {@link PinyinDictDBType#app_phrase} 内的数据合并到目标库中 */
+    /** 将 {@link DictDBType#app_phrase} 内的数据合并到目标库中 */
     protected static void mergePhraseDictData(SQLiteDatabase targetDB, File appPhraseDBFile) {
         String[] clauses = new String[] {
                 // 连接应用库

@@ -24,7 +24,8 @@ import java.util.List;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import org.crazydan.studio.app.ime.kuaizi.PinyinDictBaseTest;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDictBaseTest;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils;
 import org.junit.Before;
@@ -39,12 +40,12 @@ import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.rawQuerySQ
  * @date 2024-11-05
  */
 @RunWith(AndroidJUnit4.class)
-public class PinyinDictDBUpgradeTest extends PinyinDictBaseTest {
-    private static final String LOG_TAG = PinyinDictDBUpgradeTest.class.getSimpleName();
+public class DictDBUpgradeTest extends IMEditorDictBaseTest {
+    private static final String LOG_TAG = DictDBUpgradeTest.class.getSimpleName();
 
     @Before
     public void get_db_version() {
-        PinyinDict dict = PinyinDict.instance();
+        IMEditorDict dict = IMEditorDict.instance();
         SQLiteDatabase db = dict.getDB();
 
         List<String> dbVersion = rawQuerySQLite(db, new DBUtils.SQLiteRawQueryParams<String>() {{
@@ -56,7 +57,7 @@ public class PinyinDictDBUpgradeTest extends PinyinDictBaseTest {
 
     @Test
     public void test_upgrade_sql_syntax() {
-        PinyinDict dict = PinyinDict.instance();
+        IMEditorDict dict = IMEditorDict.instance();
         SQLiteDatabase db = dict.getDB();
 
         String[] clauses = new String[] {

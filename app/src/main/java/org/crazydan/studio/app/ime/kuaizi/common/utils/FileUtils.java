@@ -155,6 +155,7 @@ public class FileUtils {
         }
     }
 
+    /** 若 <code>source</code> 不存在，则不做任何操作 */
     public static void moveFile(File source, File target) {
         if (!source.exists()) {
             return;

@@ -37,12 +37,12 @@ import androidx.preference.PreferenceGroup;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceScreen;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
+import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
 import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.PreferencesUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.SystemUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.widget.DialogAlert;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 
 /**
@@ -57,9 +57,9 @@ import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 public class Preferences extends FollowSystemThemeActivity {
 
     public static void backupUserData(Activity context) {
-        String fileName = "kuaizi_user_data_backup.db";
+        String fileName = "Kuaizi_IME_User_Dict.db.bak";
 
-        FileUtils.saveToDownload(context, fileName, (output) -> PinyinDict.instance().saveUserDB(context, output));
+        FileUtils.saveToDownload(context, fileName, (output) -> IMEditorDict.instance().saveUserDB(context, output));
     }
 
     public static void openFeedbackUrl(Activity context) {

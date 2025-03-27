@@ -21,7 +21,6 @@ package org.crazydan.studio.app.ime.kuaizi;
 
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;
-import org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -29,17 +28,17 @@ import org.junit.BeforeClass;
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2024-11-05
  */
-public abstract class PinyinDictBaseTest {
+public abstract class IMEditorDictBaseTest {
 
     @BeforeClass
     public static void before() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
-        PinyinDict.instance().open(context, new PinyinDict.Listener.Noop());
+        IMEditorDict.instance().open(context, new IMEditorDict.Listener.Noop());
     }
 
     @AfterClass
     public static void after() {
-        PinyinDict.instance().close();
+        IMEditorDict.instance().close();
     }
 }

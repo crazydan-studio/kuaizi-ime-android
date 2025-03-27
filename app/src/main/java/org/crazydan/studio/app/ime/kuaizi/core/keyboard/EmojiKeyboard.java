@@ -31,6 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.EmojiChooseStateDa
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsgType;
 import org.crazydan.studio.app.ime.kuaizi.dict.Emojis;
+import org.crazydan.studio.app.ime.kuaizi.dict.UserInputDataDict;
 
 /**
  * {@link Type#Emoji 表情键盘}
@@ -109,7 +110,8 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
         SymbolEmojiKeyTable keyTable = createKeyTable(context);
         int pageSize = keyTable.getEmojiKeysPageSize();
 
-        Emojis emojis = context.dict.getAllEmojis(pageSize / 2);
+        UserInputDataDict dict = context.dict.useUserInputDataDict();
+        Emojis emojis = dict.getAllEmojis(pageSize / 2);
 
         EmojiChooseStateData stateData = new EmojiChooseStateData(pending, emojis, pageSize);
         this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);

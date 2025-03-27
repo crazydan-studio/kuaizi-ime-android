@@ -77,7 +77,9 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         switch (this.state.type) {
             case InputCandidate_Choose_Doing: {
                 PinyinCandidateChooseStateData stateData = this.state.data();
-                PinyinCharsTree charsTree = context.dict.getPinyinCharsTree();
+
+                PinyinDict dict = context.dict.usePinyinDict();
+                PinyinCharsTree charsTree = dict.getPinyinCharsTree();
 
                 return () -> keyTable.createKeys(charsTree,
                                                  stateData.input,
@@ -229,17 +231,18 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         int bestCandidatesTop = keyTable.getBestCandidatesCount();
         int bestEmojisTop = pageSize - bestCandidatesTop;
 
-        Map<Integer, InputWord> candidateMap = context.dict.getCandidatePinyinWords(pending);
+        PinyinDict dict = context.dict.usePinyinDict();
+        Map<Integer, InputWord> candidateMap = dict.getCandidates(pending);
         List<InputWord> allCandidates = new ArrayList<>(candidateMap.values());
 
-        List<Integer> topBestCandidateIds = context.dict.getTopBestCandidatePinyinWordIds(pending, bestCandidatesTop);
+        List<Integer> topBestCandidateIds = dict.getTopBestCandidateIds(pending, bestCandidatesTop);
         List<InputWord> topBestCandidates = topBestCandidateIds.stream()
                                                                .map(candidateMap::get)
                                                                .collect(Collectors.toList());
 
         // 拼音修正后，需更新其自动确定的候选字
         if (pinyinChanged) {
-            determine_NotConfirmed_InputWord(context.dict, pending);
+            determine_NotConfirmed_InputWord(dict, pending);
         }
 
         // 当前输入确定的拼音字放在最前面
@@ -251,7 +254,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
         // Note：以最新确定的输入候选字做为表情的关键字查询条件
         List<PinyinWord> emojiKeywords = inputList.getPinyinPhraseWordsFrom(pending);
-        List<InputWord> topBestEmojis = context.dict.findTopBestEmojisMatchedPhrase(emojiKeywords, bestEmojisTop);
+        List<InputWord> topBestEmojis = dict.findTopBestEmojisMatchedPhrase(emojiKeywords, bestEmojisTop);
         topBestCandidates.addAll(topBestEmojis);
 
         if (!topBestCandidates.isEmpty()) {
@@ -295,7 +298,8 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
         boolean hasNextPinyin = selected != null;
 
         if (hasNextPinyin) {
-            predict_NotConfirmed_Phrase_InputWords(context.dict, inputList, (CharInput) selected, 1, false);
+            PinyinDict dict = context.dict.usePinyinDict();
+            predict_NotConfirmed_Phrase_InputWords(dict, inputList, (CharInput) selected, 1, false);
         } else {
             selected = inputList.getSelected();
         }
@@ -435,11 +439,8 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
 
         // TODO 需要更好的输入预测机制，当前的方案对预测输入并无很大帮助，仅用于做输入补全的功能测试
         // Note: top 参数大于 1 时，可启用输入补全
-        List<List<InputWord>> bestPhrases = predict_NotConfirmed_Phrase_InputWords(context.dict,
-                                                                                   inputList,
-                                                                                   pending,
-                                                                                   1,
-                                                                                   true);
+        PinyinDict dict = context.dict.usePinyinDict();
+        List<List<InputWord>> bestPhrases = predict_NotConfirmed_Phrase_InputWords(dict, inputList, pending, 1, true);
 
         if (beforeCompletions != null) {
             beforeCompletions.accept(context);
@@ -502,7 +503,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                     && !Objects.equals(((PinyinWord) input.getWord()).spell.charsId, pinyinCharsId)) //
             ) //
         ) {
-            word = dict.getFirstBestCandidatePinyinWord(pinyinCharsId);
+            word = dict.getFirstBestCandidate(pinyinCharsId);
         }
 
         input.setWord(word);
