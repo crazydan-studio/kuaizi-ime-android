@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getPinyinWord;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDBHelper.getPinyinWord;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>

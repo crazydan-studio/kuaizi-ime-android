@@ -47,7 +47,7 @@ import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.closeSQLit
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.execSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.openSQLite;
 import static org.crazydan.studio.app.ime.kuaizi.dict.PinyinDict.createPinyinCharsTree;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.enableAllPrintableEmojis;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputDataDBHelper.enableAllPrintableEmojis;
 
 /**
  * {@link IMEditor} 的字典

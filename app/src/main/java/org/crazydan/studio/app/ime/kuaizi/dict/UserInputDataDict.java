@@ -29,10 +29,10 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.saveUsedPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getAllGroupedEmojis;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getLatinsByStarts;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.saveUsedEmojis;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.saveUsedLatins;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputDataDBHelper.getAllGroupedEmojis;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputDataDBHelper.getLatinsByStarts;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputDataDBHelper.saveUsedEmojis;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputDataDBHelper.saveUsedLatins;
 
 /**
  * {@link UserInputData 用户输入数据}字典

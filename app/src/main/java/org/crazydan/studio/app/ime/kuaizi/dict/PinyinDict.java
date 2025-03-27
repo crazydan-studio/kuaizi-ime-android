@@ -35,16 +35,16 @@ import android.database.sqlite.SQLiteDatabase;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
-import org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper;
+import org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDBHelper;
 
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.SQLiteQueryParams;
 import static org.crazydan.studio.app.ime.kuaizi.common.utils.DBUtils.querySQLite;
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.HmmDBHelper.predictPinyinPhrase;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getAllPinyinWordsByCharsId;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getEmojisByKeyword;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getFirstBestPinyinWord;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getPinyinWordsByWordId;
-import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDictDBHelper.getTopBestPinyinWordIds;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDBHelper.getAllPinyinWordsByCharsId;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDBHelper.getFirstBestPinyinWord;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDBHelper.getPinyinWordsByWordId;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.PinyinDBHelper.getTopBestPinyinWordIds;
+import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputDataDBHelper.getEmojisByKeyword;
 
 /**
  * 拼音字典
@@ -72,7 +72,7 @@ public class PinyinDict extends BaseDBDict {
 
     /** 通过字及其读音获取 {@link PinyinWord} 对象 */
     public PinyinWord getWord(String word, String pinyin) {
-        return PinyinDictDBHelper.getPinyinWord(this.db, word, pinyin);
+        return PinyinDBHelper.getPinyinWord(this.db, word, pinyin);
     }
 
     /** 获取指定拼音的候选拼音字列表：已按权重等排序 */
