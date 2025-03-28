@@ -57,9 +57,9 @@ import org.crazydan.studio.app.ime.kuaizi.ui.common.FollowSystemThemeActivity;
 public class Preferences extends FollowSystemThemeActivity {
 
     public static void backupUserData(Activity context) {
-        String fileName = "Kuaizi_IME_User_Dict.db.bak";
+        String filename = "Kuaizi_IME_User_Dict.db.bak";
 
-        FileUtils.saveToDownload(context, fileName, (output) -> IMEditorDict.instance().saveUserDB(context, output));
+        FileUtils.saveToDownload(context, filename, (output) -> IMEditorDict.instance().saveUserDB(context, output));
     }
 
     public static void openFeedbackUrl(Activity context) {

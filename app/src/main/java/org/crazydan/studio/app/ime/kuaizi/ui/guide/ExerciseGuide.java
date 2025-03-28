@@ -1411,12 +1411,12 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
             return;
         }
 
-        String fileName = "Kuaizi_IME_Debug.log.zip";
+        String filename = "Kuaizi_IME_Debug.log.zip";
         String date = DateFormat.format("yyyyMMddHHmmss", new Date()).toString();
 
         Context context = getApplicationContext();
         executor.submit(() -> {
-            FileUtils.saveZipToDownload(context, fileName, (zip) -> {
+            FileUtils.saveZipToDownload(context, filename, (zip) -> {
                 ZipEntry zipEntry = new ZipEntry("log-" + date + ".txt");
                 zip.putNextEntry(zipEntry);
 
@@ -1429,7 +1429,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
             runOnUiThread(() -> alert("已在【<span style=\"color:#ed4c67;\">下载</span>】目录"
                                       + "生成名为【<span style=\"color:#ed4c67;\">%s</span>】"
-                                      + "的本地调试日志文件", fileName));
+                                      + "的本地调试日志文件", filename));
         });
     }
 

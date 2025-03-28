@@ -46,8 +46,8 @@ import android.provider.MediaStore;
 public class FileUtils {
 
     /** 将压缩文件存放到 Download 目录 */
-    public static void saveZipToDownload(Context context, String fileName, ZipFileSaver fileSaver) {
-        saveToDownload(context, fileName, (output) -> {
+    public static void saveZipToDownload(Context context, String filename, ZipFileSaver fileSaver) {
+        saveToDownload(context, filename, (output) -> {
             try (ZipOutputStream zip = new ZipOutputStream(output)) {
                 fileSaver.saveTo(zip);
             }
@@ -55,11 +55,11 @@ public class FileUtils {
     }
 
     /** 将文件存放到 Download 目录 */
-    public static void saveToDownload(Context context, String fileName, FileSaver fileSaver) {
+    public static void saveToDownload(Context context, String filename, FileSaver fileSaver) {
         // https://stackoverflow.com/questions/59103133/how-to-directly-download-a-file-to-download-directory-on-android-q-android-10#answer-64357198
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues contentValues = new ContentValues();
-            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
+            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
             contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "application/octet-stream");
             contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
 
@@ -72,7 +72,7 @@ public class FileUtils {
                 throw new IllegalStateException(e);
             }
         } else {
-            File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/" + fileName);
+            File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/" + filename);
 
             try (OutputStream output = FileUtils.newOutput(dir)) {
                 fileSaver.saveTo(output);
