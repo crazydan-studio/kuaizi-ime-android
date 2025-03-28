@@ -72,7 +72,7 @@ class "InputMethodService" as sys_ime_svc
 class "IMEService" as ime_svc #pink
 class "IMEConfig" as ime_conf
 
-class "PinyinDict" as dict
+class "IMEditorDict" as dict
 
 class "IMEditor" as ime_editor #pink
 class "Keyboard" as keyboard
