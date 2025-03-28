@@ -324,7 +324,10 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
                 break;
             }
             case Keyboard_Close_Doing: {
+                // Note: 在高版本 Android 中，其可能无法隐藏窗口，原因未知
                 hideWindow();
+                // Note: 发送退出按键消息，其行为由编辑器决定，可能会导致已输入内容丢失
+                //sendKey(KeyEvent.KEYCODE_BACK);
                 break;
             }
             default: {
