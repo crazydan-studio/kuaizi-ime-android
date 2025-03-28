@@ -1,12 +1,12 @@
 {
   "3.1.0": {
-    "date": "2025-03-11",
+    "date": "2025-03-29",
     "logs": [
       {
-        "t": "提供输入法切换、隐藏键盘、收藏管理、复制/粘贴/剪切/全选等功能按钮，以方便快速操作&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/19\">#19</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/28\">#28</a>。感谢&nbsp;<a href=\"https://github.com/whiskeyhighball\">@whiskeyhighball</a>&nbsp;与&nbsp;<a href=\"https://github.com/J4gQBqqR\">@J4gQBqqR</a>&nbsp;的热心建议"
+        "t": "提供输入法切换、隐藏键盘、收藏管理、复制/粘贴/剪切/全选等功能按钮，以方便快速操作（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/19\">#19</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/28\">#28</a>）。感谢&nbsp;<a href=\"https://github.com/whiskeyhighball\">@whiskeyhighball</a>&nbsp;与&nbsp;<a href=\"https://github.com/J4gQBqqR\">@J4gQBqqR</a>&nbsp;的热心建议"
       },
       {
-        "t": "实现收藏管理，支持将已复制、已剪切文本添加到收藏，或者对已收藏进行粘贴或删除，与传统的剪贴板功能相同。在激活输入法时，若检查到剪贴板有新内容时，也将自动识别内容并提示可粘贴，在点击提示气泡后可直接粘贴内容&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/5\">#5</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/14\">#14</a>。感谢&nbsp;<a href=\"https://github.com/Xuijia\">@Xuijia</a>与&nbsp;<a href=\"https://github.com/oldsento\">@oldsento</a>&nbsp;的热心建议"
+        "t": "实现收藏管理，支持将已复制、已剪切文本添加到收藏，或者对已收藏进行粘贴或删除，与传统的剪贴板功能相同。在激活输入法时，若检查到剪贴板有新内容时，也将自动识别内容并提示可粘贴，在点击提示气泡后可直接粘贴内容（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/5\">#5</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/14\">#14</a>）。感谢&nbsp;<a href=\"https://github.com/Xuijia\">@Xuijia</a>&nbsp;与&nbsp;<a href=\"https://github.com/oldsento\">@oldsento</a>&nbsp;的热心建议"
       },
       {
         "t": "气泡提示、工具栏功能按钮、收藏列表操作按钮等均按左右手模式动态调整布局方向，使其离左右手最近，以便于快速选中目标和按钮"
@@ -15,10 +15,10 @@
         "t": "取消拼音键盘中对字符按键的长按手势，以避免与滑行输入发生冲突"
       },
       {
-        "t": "键盘退出时，不重置输入列表，以避免误操作导致输入被清空&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/30\">#30</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/hyjump\">@hyjump</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
+        "t": "键盘退出时，不重置输入列表，以避免误操作导致输入被清空（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/30\">#30</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>）。感谢&nbsp;<a href=\"https://github.com/hyjump\">@hyjump</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
       },
       {
-        "t": "对拼音候选字进行过滤后，其结果中的高频字不再单独占用一页，而是与其他字一起进行分页，以避免被误以为字库缺失&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/23\">#23</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/34\">#34</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/39\">#39</a>。感谢&nbsp;<a href=\"https://github.com/0blivionis\">@0blivionis</a>、<a href=\"https://github.com/biliis\">@biliis</a>、<a href=\"https://github.com/JinYanchao\">@JinYanchao</a>&nbsp;与&nbsp;<a href=\"https://github.com/zhangyuyard\">@zhangyuyard</a>&nbsp;的热心反馈与建议"
+        "t": "对拼音候选字进行过滤后，其结果中的高频字不再单独占用一页，而是与其他字一起进行分页，以避免被误以为字库缺失（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/23\">#23</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/34\">#34</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/39\">#39</a>）。感谢&nbsp;<a href=\"https://github.com/0blivionis\">@0blivionis</a>、<a href=\"https://github.com/biliis\">@biliis</a>、<a href=\"https://github.com/JinYanchao\">@JinYanchao</a>&nbsp;与&nbsp;<a href=\"https://github.com/zhangyuyard\">@zhangyuyard</a>&nbsp;的热心反馈与建议"
       },
       {
         "t": "在主界面点击版本号可查看当前版本的变更日志，以方便查看版本变更情况"
@@ -27,13 +27,13 @@
         "t": "将&nbsp;<a href=\"https://coolsymbol.com/\">Cool Symbols & Fonts</a>&nbsp;所整理的符号补充到符号键盘中，以丰富可选符号"
       },
       {
-        "t": "改进应用国际化中的英文文本，并提供德语版本&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime-android/pull/1\">#1</a>。感谢&nbsp;<a href=\"https://github.com/hubortje\">@hubortje</a>&nbsp;的热心贡献"
+        "t": "改进应用国际化中的英文文本，并提供德语版本（<a href=\"https://github.com/crazydan-studio/kuaizi-ime-android/pull/1\">#1</a>）。感谢&nbsp;<a href=\"https://github.com/hubortje\">@hubortje</a>&nbsp;的热心贡献"
       },
       {
-        "t": "修复在 Galaxy Tab S9 等机型中，点击操作无响应或被识别为滑动的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/35\">#35</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/adonycationeral\">@adonycationeral</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
+        "t": "修复在 Galaxy Tab S9 等机型中，点击操作无响应或被识别为滑动的问题（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/35\">#35</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>）。感谢&nbsp;<a href=\"https://github.com/adonycationeral\">@adonycationeral</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
       },
       {
-        "t": "修复在 Android API 30 及以上版本的系统中不能指定 Toast 消息的位置的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/26\">#26</a>。感谢&nbsp;<a href=\"https://github.com/ZreXoc\">@ZreXoc</a>&nbsp;的热心反馈"
+        "t": "修复在 Android API 30 及以上版本的系统中不能指定 Toast 消息的位置的问题（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/26\">#26</a>）。感谢&nbsp;<a href=\"https://github.com/ZreXoc\">@ZreXoc</a>&nbsp;的热心反馈"
       },
       {
         "t": "修复拼音候选字的高级过滤页面中，在部首页翻页后，再选中部首会自动回到部首第一页，并未停留在当前页的问题"
@@ -42,7 +42,7 @@
         "t": "修复拼音滑屏输入时，容易激活滑过的按键并以滑过的按键作为拼音声母，使得拼音输入与预期不符的问题"
       },
       {
-        "t": "修复光标移动发生越界而跳出当前编辑区域并聚焦到其他界面元素的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/30\">#30</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>。感谢&nbsp;<a href=\"https://github.com/hyjump\">@hyjump</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
+        "t": "修复光标移动发生越界而跳出当前编辑区域并聚焦到其他界面元素的问题（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/30\">#30</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/41\">#41</a>）。感谢&nbsp;<a href=\"https://github.com/hyjump\">@hyjump</a>&nbsp;与&nbsp;<a href=\"https://github.com/Mingzi-49\">@Mingzi-49</a>&nbsp;的热心反馈"
       }
     ]
   },
@@ -50,7 +50,7 @@
     "date": "2025-02-06",
     "logs": [
       {
-        "t": "修复因代码逻辑不完整而导致按键点击失效的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/16\">#16</a>。感谢&nbsp;<a href=\"https://github.com/qianyexiaomu\">@qianyexiaomu</a>&nbsp;的热心反馈"
+        "t": "修复因代码逻辑不完整而导致按键点击失效的问题（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/16\">#16</a>）。感谢&nbsp;<a href=\"https://github.com/qianyexiaomu\">@qianyexiaomu</a>&nbsp;的热心反馈"
       }
     ]
   },
@@ -58,10 +58,10 @@
     "date": "2025-02-05",
     "logs": [
       {
-        "t": "修复在光标定位过程中会误触发按键输入的问题，并去掉长按切换编辑键盘的手势，仅保留双击切换手势。同时，从光标定位按键和内容选择按键上触发滑动手势，将使得编辑器中的光标跟随手指的移动而移动，直到滑动暂停或中止，在操作上将会更加顺畅&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/12\">#12</a>。感谢&nbsp;<a href=\"https://github.com/mzltest\">@mzltest</a>&nbsp;的热心建议"
+        "t": "修复在光标定位过程中会误触发按键输入的问题，并去掉长按切换编辑键盘的手势，仅保留双击切换手势。同时，从光标定位按键和内容选择按键上触发滑动手势，将使得编辑器中的光标跟随手指的移动而移动，直到滑动暂停或中止，在操作上将会更加顺畅（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/12\">#12</a>）。感谢&nbsp;<a href=\"https://github.com/mzltest\">@mzltest</a>&nbsp;的热心建议"
       },
       {
-        "t": "修复&nbsp;X&nbsp;型输入面板的辐射轴被遮挡的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/12\">#12</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/15\">#15</a>。感谢&nbsp;<a href=\"https://github.com/mzltest\">@mzltest</a>、<a href=\"https://github.com/DSY-xiaoluo\">@DSY-xiaoluo</a>&nbsp;与&nbsp;<a href=\"https://github.com/MikeEmu\">@MikeEmu</a>&nbsp;的热心反馈"
+        "t": "修复&nbsp;X&nbsp;型输入面板的辐射轴被遮挡的问题（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/12\">#12</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/15\">#15</a>）。感谢&nbsp;<a href=\"https://github.com/mzltest\">@mzltest</a>、<a href=\"https://github.com/XiaoluoFoxington\">@XiaoluoFoxington</a>&nbsp;与&nbsp;<a href=\"https://github.com/MikeEmu\">@MikeEmu</a>&nbsp;的热心反馈"
       }
     ]
   },
@@ -69,7 +69,7 @@
     "date": "2025-02-01",
     "logs": [
       {
-        "t": "修复在某些机型下按键点击和长按手势不响应的问题&nbsp;<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/4\">#4</a>。感谢&nbsp;<a href=\"https://github.com/oblivion2023\">@oblivion2023</a>、<a href=\"https://github.com/rsyqvthv\">@rsyqvthv</a>&nbsp;与&nbsp;<a href=\"https://github.com/mzltest\">@mzltest</a>&nbsp;的热心反馈"
+        "t": "修复在某些机型下按键点击和长按手势不响应的问题（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/4\">#4</a>）。感谢&nbsp;<a href=\"https://github.com/0blivionis\">@0blivionis</a>、<a href=\"https://github.com/rsyqvthv\">@rsyqvthv</a>&nbsp;与&nbsp;<a href=\"https://github.com/mzltest\">@mzltest</a>&nbsp;的热心反馈"
       },
       {
         "t": "修复主题配置未以「跟随系统」为默认值的问题"
