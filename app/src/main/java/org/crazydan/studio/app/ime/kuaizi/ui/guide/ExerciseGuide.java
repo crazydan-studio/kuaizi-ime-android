@@ -326,7 +326,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         List<Exercise> exerciseList = new ArrayList<>();
 
         Exercise freeMode = Exercise.free("自由练习");
-        freeMode.setSampleText(getResources().getString(R.string.text_exercise_free_mode_sample)
+        freeMode.setSampleText(getResources().getString(R.string.text_guide_free_mode_sample)
                                              .replaceAll("(?m)^\\s+", ""));
 
         exerciseList.add(freeMode);
@@ -888,8 +888,8 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
         exercise.newStep("本次练习输入 <span style=\"color:#ed4c67;\">%s</span>；", sample);
 
-        String config_label = getResources().getString(R.string.label_config_theme);
-        String enable_label = getResources().getString(R.string.label_enable_x_input_pad);
+        String config_label = getResources().getString(R.string.label_preference_config_theme);
+        String enable_label = getResources().getString(R.string.label_preference_enable_x_input_pad);
         exercise.newStep("<b>提示</b>：X 型输入面板默认未启用，请自行在配置项「%s」中「%s」；", config_label, enable_label);
 
         // =======================================================

@@ -23,8 +23,30 @@
     <string name="app_name_with_version">Kuaizi IME v%1$s</string>
     <string name="app_slogan">Kuaizi IME: Efficient writing requires a good and fast input method editor</string>
 
+    <string name="value_theme_light">Light</string>
+    <string name="value_theme_night">Dark</string>
+    <string name="value_theme_follow_system">System</string>
+    <string name="value_hand_mode_left">Left-hand Mode</string>
+    <string name="value_hand_mode_right">Right-hand Mode</string>
+    <!-- text type -->
+    <string name="value_text_type_normal">Normal Text</string>
+    <string name="value_text_type_html">Rich Text</string>
+    <string name="value_text_type_url">URL</string>
+    <string name="value_text_type_captcha">Captcha</string>
+    <string name="value_text_type_phone">Phone Number</string>
+    <string name="value_text_type_email">Email</string>
+    <string name="value_text_type_id_card">ID Card</string>
+    <string name="value_text_type_credit_card">Credit Card</string>
+    <string name="value_text_type_address">Address</string>
+
+    <!-- common -->
+    <string name="title_user_data_backup">Data Backup</string>
+    <string name="title_tips">Tips</string>
+    <string name="title_favorites">Favorites (%1$s Items)</string>
+    <!-- app -->
     <string name="title_app_preferences">Kuaizi IME Preferences</string>
     <string name="title_app_guide_exercise">Kuaizi IME Exercises</string>
+    <!-- about -->
     <string name="title_about_app">Kuaizi IME</string>
     <string name="title_about_team">Development Team</string>
     <string name="title_about_feedback">Feedback</string>
@@ -37,20 +59,52 @@
     <string name="title_about_copyright">Copyright</string>
     <string name="title_about_alpha_user_agreement">Alpha User Agreement</string>
     <string name="title_about_new_features">New Features</string>
-    <string name="title_user_data_backup">Data Backup</string>
-    <string name="title_tips">Tips</string>
-    <string name="title_favorites">Favorites (%1$s Items)</string>
+    <!-- preference -->
+    <string name="title_preference_basic">Basic Settings</string>
+    <string name="title_preference_x_input_pad">X-shaped Input Pad Settings</string>
+    <string name="title_preference_privacy">Privacy First</string>
+    <string name="title_preference_performance">Animation &amp; Audio</string>
+    <string name="title_preference_user_data">User Data</string>
+    <string name="title_preference_about">About</string>
+    <!-- clip -->
+    <string name="title_clip_paste_content">Paste Copied Content</string>
+    <!-- 占位符填充值来自 value_text_type_ 开头的文本 -->
+    <string name="title_clip_paste_placeholder">Paste Copied %1$s</string>
 
+    <!-- common -->
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinese (China)</string>
+    <string name="label_text_type">Text Type: %1$s</string>
+    <string name="label_created_at">Created At: %1$s</string>
+    <string name="label_used_count">Used Times: %1$s</string>
+    <!-- preference -->
+    <string name="label_preference_config_theme">Configure the keyboard style</string>
+    <string name="label_preference_choose_theme">Keyboard theme</string>
+    <string name="label_preference_enable_x_input_pad">Enable the X-shaped keyboard</string>
+    <string name="label_preference_enable_latin_use_pinyin_keys_in_x_input_pad">Use same keys between Pinyin and Latin keyboard</string>
+    <string name="label_preference_switch_hand_mode">Switch the keyboard hand-orientation</string>
+    <string name="label_preference_adapt_desktop_swipe_up_gesture">Adapt to systemwide swipe-up gesture</string>
+    <string name="label_preference_enable_candidate_variant_first">Enable Traditional Chinese characters first</string>
+    <string name="label_preference_disable_user_input_data">Do not save user input data</string>
+    <string name="label_preference_disable_key_clicked_audio">Disable typing sounds</string>
+    <string name="label_preference_disable_key_animation">Disable keypress animation</string>
+    <string name="label_preference_disable_paging_audio">Disable the paging sound</string>
+    <string name="label_preference_disable_input_key_popup_tips">Disable key popups</string>
+    <string name="label_preference_disable_gesture_slipping_trail">Disable swipe trail</string>
 
+    <!-- common -->
     <string name="btn_enable_right_now">Yes</string>
     <string name="btn_enable_later">Later</string>
     <string name="btn_confirm">OK</string>
     <string name="btn_cancel">Cancel</string>
     <string name="btn_paste">Paste</string>
+    <string name="btn_save_as_favorite">Save</string>
+    <string name="btn_delete_selected">Delete Selected (%1$s Items)</string>
+    <string name="btn_clear_all">Clear All</string>
+    <!-- feedback -->
     <string name="btn_feedback_open_link_without_extra_info">Continue without extra information</string>
     <string name="btn_feedback_open_link_with_extra_info">Continue with extra information</string>
+    <!-- guide -->
     <string name="btn_guide_confirm_alpha_user_agreement">OK, I agree to the agreement</string>
     <string name="btn_guide_reject_alpha_user_agreement">NO, I reject the agreement</string>
     <string name="btn_guide_new_features_confirm">OK, I understand</string>
@@ -60,58 +114,59 @@
     <string name="btn_guide_show_software_service_agreement">Read the Software Service Agreement</string>
     <string name="btn_guide_exercise_try_again">Try Again</string>
     <string name="btn_guide_exercise_try_new_one">Go to next exercise</string>
-    <string name="btn_save_as_favorite">Save</string>
-    <string name="btn_delete_selected">Delete Selected (%1$s Items)</string>
-    <string name="btn_clear_all">Clear All</string>
 
-    <!-- Preference Titles -->
-    <string name="title_preference_basic">Basic Settings</string>
-    <string name="title_preference_x_input_pad">X-shaped Input Pad Settings</string>
-    <string name="title_preference_privacy">Privacy First</string>
-    <string name="title_preference_performance">Animation &amp; Audio</string>
-    <string name="title_preference_user_data">User Data</string>
-    <string name="title_preference_about">About</string>
-
-    <!-- Settings Preferences -->
-    <string name="label_config_theme">Configure the keyboard style</string>
-    <string name="label_choose_theme">Keyboard theme</string>
-    <string name="label_enable_x_input_pad">Enable the X-shaped keyboard</string>
-    <string name="label_enable_latin_use_pinyin_keys_in_x_input_pad">Use same keys between Pinyin and Latin keyboard</string>
-    <string name="label_switch_hand_mode">Switch the keyboard hand-orientation</string>
-    <string name="label_adapt_desktop_swipe_up_gesture">Adapt to systemwide swipe-up gesture</string>
-    <string name="label_enable_candidate_variant_first">Enable Traditional Chinese characters first</string>
-    <string name="label_disable_user_input_data">Do not save user input data</string>
-    <string name="label_disable_key_clicked_audio">Disable typing sounds</string>
-    <string name="label_disable_key_animation">Disable keypress animation</string>
-    <string name="label_disable_paging_audio">Disable the paging sound</string>
-    <string name="label_disable_input_key_popup_tips">Disable key popups</string>
-    <string name="label_disable_gesture_slipping_trail">Disable swipe trail</string>
-
-    <string name="desc_enable_candidate_variant_first">
+    <!-- preference -->
+    <string name="desc_preference_enable_candidate_variant_first">
         Prefers Traditional Chinese characters first
         over the default of showing Simplified Chinese characters first.
     </string>
-    <string name="desc_disable_user_input_data">
+    <string name="desc_preference_disable_user_input_data">
         Prevents analyzing the input to prevent privacy leaks.
         However, it will reduce the word matching accuracy of the input method editor.
     </string>
-    <string name="desc_enable_x_input_pad">
+    <string name="desc_preference_enable_x_input_pad">
         If the X-shaped keyboard is enabled,
         an input mode similar to the 8VIM/8pen IME will be used
         to support continuous input of Pinyin and Latin characters.
     </string>
-    <string name="desc_enable_latin_use_pinyin_keys_in_x_input_pad">
+    <string name="desc_preference_enable_latin_use_pinyin_keys_in_x_input_pad">
         Enabling this option aligns the Latin keyboard layout with the Pinyin keyboard,
         minimizing discomfort when switching between the two.
         However, it may slightly reduce efficiency for English input.
     </string>
-    <string name="desc_adapt_desktop_swipe_up_gesture">
+    <string name="desc_preference_adapt_desktop_swipe_up_gesture">
         This setting adds a blank space beneath the input keyboard
         to prevent conflicts between swipe input and the system swipe-up gesture.
         Useful if the system uses a swipe-up gesture to return to the home screen.
     </string>
 
-    <string name="msg_ime_should_be_enabled_first">
+    <!-- warning -->
+    <string name="text_warning_not_release_using">@null</string>
+    <string name="text_warning_dict_db_init">
+        Loading Dict DB, please wait a moment …
+    </string>
+    <string name="text_warning_empty_favorite_board">
+        No content has been saved yet.
+        After copying text or submitting input,
+        click the [Save] button in the floating prompt
+        to add it to your favorites.
+    </string>
+    <!-- tip -->
+    <string name="text_tip_editor_action_backspace">Backspace</string>
+    <string name="text_tip_editor_action_select_all">All Selected</string>
+    <string name="text_tip_editor_action_copy">Copied</string>
+    <string name="text_tip_editor_action_cut">Cut</string>
+    <string name="text_tip_editor_action_undo">Undo</string>
+    <string name="text_tip_editor_action_redo">Redo</string>
+    <string name="text_tip_editor_action_paste">Pasted</string>
+    <string name="text_tip_editor_action_favorite">Saved</string>
+    <string name="text_confirm_save_pasted_content">Save the pasted content?</string>
+    <string name="text_confirm_save_copied_content">Save the copied content?</string>
+    <string name="text_confirm_save_input_content">Save the committed content?</string>
+    <string name="text_confirm_delete_selected">Delete the selected items?</string>
+    <string name="text_confirm_clear_all">Clear all items?</string>
+    <!-- confirm -->
+    <string name="text_confirm_ime_enable_first">
         &lt;p>&lt;b>%1$s&lt;/b> has not been enabled in the system,
         &amp;#160;so it cannot be activated.&lt;/p>
         &lt;br/>
@@ -121,62 +176,11 @@
         &lt;br/>
         &lt;p>Do you want to enable it right now?&lt;/p>
     </string>
-
-    <string name="text_alpha_using_warning">@null</string>
-    <string name="text_dict_db_init_warning">
-        Loading Dict DB, please wait a moment …
-    </string>
-    <string name="text_empty_favoriteboard_warning">
-        No content has been saved yet.
-        After copying text or submitting input,
-        click the [Save] button in the floating prompt
-        to add it to your favorites.
-    </string>
-
-    <string name="value_theme_light">Light</string>
-    <string name="value_theme_night">Dark</string>
-    <string name="value_theme_follow_system">System</string>
-    <string name="value_hand_mode_left">Left-hand Mode</string>
-    <string name="value_hand_mode_right">Right-hand Mode</string>
-
-    <!-- 输入法面板文本 -->
-    <string name="value_text_type_normal">Normal Text</string>
-    <string name="value_text_type_html">Rich Text</string>
-    <string name="value_text_type_url">URL</string>
-    <string name="value_text_type_captcha">Captcha</string>
-    <string name="value_text_type_phone">Phone Number</string>
-    <string name="value_text_type_email">Email</string>
-    <string name="value_text_type_id_card">ID Card</string>
-    <string name="value_text_type_credit_card">Credit Card</string>
-    <string name="value_text_type_address">Address</string>
-
-    <string name="title_clip_paste_content">Paste Copied Content</string>
-    <!-- 占位符填充值来自 value_text_type_ 开头的文本 -->
-    <string name="title_clip_paste_placeholder">Paste Copied %1$s</string>
-
-    <string name="tip_editor_action_backspace">Backspace</string>
-    <string name="tip_editor_action_select_all">All Selected</string>
-    <string name="tip_editor_action_copy">Copied</string>
-    <string name="tip_editor_action_cut">Cut</string>
-    <string name="tip_editor_action_undo">Undo</string>
-    <string name="tip_editor_action_redo">Redo</string>
-    <string name="tip_editor_action_paste">Pasted</string>
-    <string name="tip_editor_action_favorite">Saved</string>
-    <string name="confirm_whether_save_pasted_content">Save the pasted content?</string>
-    <string name="confirm_whether_save_copied_content">Save the copied content?</string>
-    <string name="confirm_whether_save_input_content">Save the committed content?</string>
-    <string name="confirm_whether_delete_selected">Delete the selected items?</string>
-    <string name="confirm_whether_clear_all">Clear all items?</string>
-
-    <string name="label_text_type">Text Type: %1$s</string>
-    <string name="label_created_at">Created At: %1$s</string>
-    <string name="label_used_count">Used Times: %1$s</string>
-
-    <!-- 输入法练习相关的文本 -->
-    <string name="text_exercise_edit_text_placeholder">
+    <!-- guide -->
+    <string name="text_guide_edit_text_placeholder">
         Please follow the instructions to use the keyboard.
     </string>
-    <string name="text_exercise_free_mode_edit_text_placeholder">
+    <string name="text_guide_free_mode_edit_text_placeholder">
         Input any text to test the keyboard.
     </string>
 </resources>

@@ -181,7 +181,7 @@ public class FavoriteboardView extends BaseMsgListenerView implements ViewClosab
 
         this.deleteSelectedConfirm = //
                 DialogConfirm.with(this)
-                             .setMessage(R.string.confirm_whether_delete_selected)
+                             .setMessage(R.string.text_confirm_delete_selected)
                              .setPositiveButton(R.string.btn_confirm, (vv) -> {
                                  UserInputDeleteMsgData data = new UserInputDeleteMsgData(selected);
                                  UserInputMsg msg = UserInputMsg.build((b) -> b.type(
@@ -196,7 +196,7 @@ public class FavoriteboardView extends BaseMsgListenerView implements ViewClosab
     private void onClearAll(View v) {
         this.clearAllConfirm = //
                 DialogConfirm.with(this)
-                             .setMessage(R.string.confirm_whether_clear_all)
+                             .setMessage(R.string.text_confirm_clear_all)
                              .setPositiveButton(R.string.btn_confirm, (vv) -> {
                                  UserInputMsg msg = UserInputMsg.build((b) -> b.type(
                                          SingleTap_Btn_Clear_All_InputFavorite));

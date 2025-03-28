@@ -71,7 +71,7 @@
         <activity
                 android:name=".ui.PreferencesTheme"
                 android:exported="true"
-                android:label="@string/label_config_theme">
+                android:label="@string/label_preference_config_theme">
             <intent-filter>
                 <action android:name="${applicationId}.ui.PreferencesTheme" />
                 <category android:name="android.intent.category.DEFAULT" />

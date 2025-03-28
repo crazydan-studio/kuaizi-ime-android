@@ -144,7 +144,7 @@ public class Guide extends FollowSystemThemeActivity {
             DialogAlert.with(this)
                        .setView(R.layout.guide_alert_view)
                        .setTitle(R.string.title_tips)
-                       .setMessage(R.string.msg_ime_should_be_enabled_first, appName, appNameShown)
+                       .setMessage(R.string.text_confirm_ime_enable_first, appName, appNameShown)
                        .setNegativeButton(R.string.btn_enable_later, (dialog, which) -> {})
                        .setPositiveButton(R.string.btn_enable_right_now, (dialog, which) -> showImeSettings())
                        .show();
@@ -241,8 +241,8 @@ public class Guide extends FollowSystemThemeActivity {
                                   appName,
                                   getResources().getString(R.string.btn_guide_try_exercises),
                                   getResources().getString(R.string.btn_guide_show_preferences),
-                                  getResources().getString(R.string.label_config_theme),
-                                  getResources().getString(R.string.label_enable_x_input_pad))
+                                  getResources().getString(R.string.label_preference_config_theme),
+                                  getResources().getString(R.string.label_preference_enable_x_input_pad))
                    .setPositiveButton(R.string.btn_guide_new_features_confirm, (dialog, which) -> {
                        confirmNewFeatures();
                    })

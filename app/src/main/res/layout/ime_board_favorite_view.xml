@@ -114,7 +114,7 @@
                 android:layout_gravity="center"
                 android:gravity="center"
                 android:padding="16dp"
-                android:text="@string/text_empty_favoriteboard_warning"
+                android:text="@string/text_warning_empty_favorite_board"
                 android:textColor="?android:attr/textColor"
                 android:visibility="gone" />
 

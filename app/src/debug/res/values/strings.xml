@@ -19,9 +19,9 @@
 
 <resources>
     <string name="app_name_shown">筷字输入法 (调试版)</string>
-    <string name="text_alpha_using_warning">感谢使用筷字输入法调试版</string>
 
-    <string name="text_exercise_free_mode_sample" translatable="false">
+    <string name="text_warning_not_release_using">感谢使用筷字输入法调试版</string>
+    <string name="text_guide_free_mode_sample" translatable="false">
         链接：http://example.com\n
         链接：https://www.example.com/path?query=string#fragment\n
         链接：ftp://ftp.example.com:21/files\n

@@ -22,16 +22,34 @@
     <string name="app_name_shown">@string/app_name</string>
     <string name="app_name_with_version">筷字输入法 v%1$s</string>
     <string name="app_slogan">筷字输入法：高效编辑需要又好又快的输入法</string>
-
-    <!-- Start: 不做国际化 -->
     <string name="app_copyright" translatable="false">
         &lt;a href="https://studio.crazydan.org">© Crazydan Studio&lt;/a>
     </string>
-    <string name="label_input_word_key_trad_mark" translatable="false">繁</string>
-    <!-- End: 不做国际化 -->
 
+    <string name="value_theme_light">明亮</string>
+    <string name="value_theme_night">暗黑</string>
+    <string name="value_theme_follow_system">跟随系统</string>
+    <string name="value_hand_mode_left">左手模式</string>
+    <string name="value_hand_mode_right">右手模式</string>
+    <!-- text type -->
+    <string name="value_text_type_normal">普通文本</string>
+    <string name="value_text_type_html">富文本</string>
+    <string name="value_text_type_url">链接</string>
+    <string name="value_text_type_captcha">验证码</string>
+    <string name="value_text_type_phone">电话号码</string>
+    <string name="value_text_type_email">邮箱</string>
+    <string name="value_text_type_id_card">身份证号</string>
+    <string name="value_text_type_credit_card">银行卡号</string>
+    <string name="value_text_type_address">地址</string>
+
+    <!-- common -->
+    <string name="title_user_data_backup">数据备份</string>
+    <string name="title_tips">友情提示</string>
+    <string name="title_favorites">已收藏 (%1$s 条)</string>
+    <!-- app -->
     <string name="title_app_preferences">筷字输入法设置</string>
     <string name="title_app_guide_exercise">筷字输入法使用练习</string>
+    <!-- about -->
     <string name="title_about_app">筷字输入法</string>
     <string name="title_about_team">开发团队</string>
     <string name="title_about_feedback">使用反馈</string>
@@ -44,20 +62,53 @@
     <string name="title_about_copyright">版权声明</string>
     <string name="title_about_alpha_user_agreement">内测用户协议</string>
     <string name="title_about_new_features">新功能介绍</string>
-    <string name="title_user_data_backup">数据备份</string>
-    <string name="title_tips">友情提示</string>
-    <string name="title_favorites">已收藏 (%1$s 条)</string>
+    <!-- preference -->
+    <string name="title_preference_basic">基础配置</string>
+    <string name="title_preference_x_input_pad">X 型输入面板配置</string>
+    <string name="title_preference_privacy">隐私优先</string>
+    <string name="title_preference_performance">动画与音效</string>
+    <string name="title_preference_user_data">用户数据</string>
+    <string name="title_preference_about">关于</string>
+    <!-- clip -->
+    <string name="title_clip_paste_content">粘贴已复制的内容</string>
+    <!-- 占位符填充值来自 value_text_type_ 开头的文本 -->
+    <string name="title_clip_paste_placeholder">粘贴已复制的%1$s</string>
 
+    <!-- common -->
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">中文（中国）</string>
+    <string name="label_input_word_key_trad_mark" translatable="false">繁</string>
+    <string name="label_text_type">文本类型：%1$s</string>
+    <string name="label_created_at">创建日期：%1$s</string>
+    <string name="label_used_count">使用次数：%1$s</string>
+    <!-- preference -->
+    <string name="label_preference_config_theme">配置键盘样式</string>
+    <string name="label_preference_choose_theme">选择键盘主题</string>
+    <string name="label_preference_enable_x_input_pad">启用 X 型输入面板</string>
+    <string name="label_preference_enable_latin_use_pinyin_keys_in_x_input_pad">拉丁文与拼音键盘按键保持一致</string>
+    <string name="label_preference_switch_hand_mode">切换键盘左右手模式</string>
+    <string name="label_preference_adapt_desktop_swipe_up_gesture">适配系统上滑手势</string>
+    <string name="label_preference_enable_candidate_variant_first">启用繁体候选字优先</string>
+    <string name="label_preference_disable_user_input_data">禁止记录用户输入</string>
+    <string name="label_preference_disable_key_clicked_audio">禁用按键音效</string>
+    <string name="label_preference_disable_key_animation">禁用按键动画</string>
+    <string name="label_preference_disable_paging_audio">禁用翻页音效</string>
+    <string name="label_preference_disable_input_key_popup_tips">禁用按键提示气泡</string>
+    <string name="label_preference_disable_gesture_slipping_trail">禁用滑屏轨迹</string>
 
+    <!-- common -->
     <string name="btn_enable_right_now">立即启用</string>
     <string name="btn_enable_later">稍后再说</string>
     <string name="btn_confirm">确认</string>
     <string name="btn_cancel">取消</string>
     <string name="btn_paste">粘贴</string>
+    <string name="btn_save_as_favorite">收藏</string>
+    <string name="btn_delete_selected">删除选中项 (%1$s 条)</string>
+    <string name="btn_clear_all">全部清空</string>
+    <!-- feedback -->
     <string name="btn_feedback_open_link_without_extra_info">继续反馈，但不附带系统和应用信息</string>
     <string name="btn_feedback_open_link_with_extra_info">继续反馈，并附带系统和应用信息</string>
+    <!-- guide -->
     <string name="btn_guide_confirm_alpha_user_agreement">好的，我同意该协议</string>
     <string name="btn_guide_reject_alpha_user_agreement">放弃，我拒绝该协议</string>
     <string name="btn_guide_new_features_confirm">好的，我已知晓</string>
@@ -67,50 +118,48 @@
     <string name="btn_guide_show_software_service_agreement">软件服务协议</string>
     <string name="btn_guide_exercise_try_again">重做当前练习</string>
     <string name="btn_guide_exercise_try_new_one">开始新的练习</string>
-    <string name="btn_save_as_favorite">收藏</string>
-    <string name="btn_delete_selected">删除选中项 (%1$s 条)</string>
-    <string name="btn_clear_all">全部清空</string>
 
-    <!-- Preference Titles -->
-    <string name="title_preference_basic">基础配置</string>
-    <string name="title_preference_x_input_pad">X 型输入面板配置</string>
-    <string name="title_preference_privacy">隐私优先</string>
-    <string name="title_preference_performance">动画与音效</string>
-    <string name="title_preference_user_data">用户数据</string>
-    <string name="title_preference_about">关于</string>
-
-    <!-- Settings Preferences -->
-    <string name="label_config_theme">配置键盘样式</string>
-    <string name="label_choose_theme">选择键盘主题</string>
-    <string name="label_enable_x_input_pad">启用 X 型输入面板</string>
-    <string name="label_enable_latin_use_pinyin_keys_in_x_input_pad">拉丁文与拼音键盘按键保持一致</string>
-    <string name="label_switch_hand_mode">切换键盘左右手模式</string>
-    <string name="label_adapt_desktop_swipe_up_gesture">适配系统上滑手势</string>
-    <string name="label_enable_candidate_variant_first">启用繁体候选字优先</string>
-    <string name="label_disable_user_input_data">禁止记录用户输入</string>
-    <string name="label_disable_key_clicked_audio">禁用按键音效</string>
-    <string name="label_disable_key_animation">禁用按键动画</string>
-    <string name="label_disable_paging_audio">禁用翻页音效</string>
-    <string name="label_disable_input_key_popup_tips">禁用按键提示气泡</string>
-    <string name="label_disable_gesture_slipping_trail">禁用滑屏轨迹</string>
-
-    <string name="desc_enable_candidate_variant_first">
+    <!-- preference -->
+    <string name="desc_preference_enable_candidate_variant_first">
         启用繁体候选字优先，可以自动将选择的简体候选字转换为其繁体形式，无需每次长按输入提交按钮进行显式转换
     </string>
-    <string name="desc_disable_user_input_data">
+    <string name="desc_preference_disable_user_input_data">
         禁止记录用户输入，可以避免通过分析输入法记录的用户常用字词而造成隐私泄漏，但会降低输入法匹配字词的准确性，对输入效率会有一定影响
     </string>
-    <string name="desc_enable_x_input_pad">
+    <string name="desc_preference_enable_x_input_pad">
         若是启用 X 型输入面板，则将采用类似于 8VIM/8pen 输入法的输入模式，支持连续不间断地输入拼音和英文字符，可确保输入的连续性
     </string>
-    <string name="desc_enable_latin_use_pinyin_keys_in_x_input_pad">
+    <string name="desc_preference_enable_latin_use_pinyin_keys_in_x_input_pad">
         若启用该项，则拉丁文键盘的按键及其布局将与拼音键盘相同，从而降低二者切换所造成的不适应感。但可能会在某种程度上降低英文单词的输入效率
     </string>
-    <string name="desc_adapt_desktop_swipe_up_gesture">
+    <string name="desc_preference_adapt_desktop_swipe_up_gesture">
         若是系统采用上滑手势返回桌面，则需要确保输入键盘底部留有足够的空白空间，以避免键盘的滑行输入与系统的上滑手势产生冲突
     </string>
 
-    <string name="msg_ime_should_be_enabled_first">
+    <!-- warning -->
+    <string name="text_warning_not_release_using">@null</string>
+    <string name="text_warning_dict_db_init">
+        正在加载字典，请稍等一会儿 。。。
+    </string>
+    <string name="text_warning_empty_favorite_board">
+        还未收藏任何内容，请在复制文本或提交输入后，点击浮动提示中的「收藏」按钮以添加收藏
+    </string>
+    <!-- tip -->
+    <string name="text_tip_editor_action_backspace">已回删</string>
+    <string name="text_tip_editor_action_select_all">已全选</string>
+    <string name="text_tip_editor_action_copy">已复制</string>
+    <string name="text_tip_editor_action_cut">已剪切</string>
+    <string name="text_tip_editor_action_undo">已撤销</string>
+    <string name="text_tip_editor_action_redo">已重做</string>
+    <string name="text_tip_editor_action_paste">已粘贴</string>
+    <string name="text_tip_editor_action_favorite">已收藏</string>
+    <!-- confirm -->
+    <string name="text_confirm_save_pasted_content">是否收藏已粘贴内容？</string>
+    <string name="text_confirm_save_copied_content">是否收藏已复制内容？</string>
+    <string name="text_confirm_save_input_content">是否收藏已输入内容？</string>
+    <string name="text_confirm_delete_selected">是否删除选中项？</string>
+    <string name="text_confirm_clear_all">是否清空全部数据？</string>
+    <string name="text_confirm_ime_enable_first">
         &lt;p>&lt;b>%1$s&lt;/b> 在系统中还未被启用，因此，无法激活其使用。&lt;/p>
         &lt;br/>
         &lt;p>请在系统输入法可选列表中选中
@@ -119,62 +168,14 @@
         &lt;br/>
         &lt;p>是否现在就去启用？&lt;/p>
     </string>
-
-    <string name="text_alpha_using_warning">@null</string>
-    <string name="text_dict_db_init_warning">
-        正在加载字典，请稍等一会儿 。。。
-    </string>
-    <string name="text_empty_favoriteboard_warning">
-        还未收藏任何内容，请在复制文本或提交输入后，点击浮动提示中的「收藏」按钮以添加收藏
-    </string>
-
-    <string name="value_theme_light">明亮</string>
-    <string name="value_theme_night">暗黑</string>
-    <string name="value_theme_follow_system">跟随系统</string>
-    <string name="value_hand_mode_left">左手模式</string>
-    <string name="value_hand_mode_right">右手模式</string>
-
-    <!-- 输入法面板文本 -->
-    <string name="value_text_type_normal">普通文本</string>
-    <string name="value_text_type_html">富文本</string>
-    <string name="value_text_type_url">链接</string>
-    <string name="value_text_type_captcha">验证码</string>
-    <string name="value_text_type_phone">电话号码</string>
-    <string name="value_text_type_email">邮箱</string>
-    <string name="value_text_type_id_card">身份证号</string>
-    <string name="value_text_type_credit_card">银行卡号</string>
-    <string name="value_text_type_address">地址</string>
-
-    <string name="title_clip_paste_content">粘贴已复制的内容</string>
-    <!-- 占位符填充值来自 value_text_type_ 开头的文本 -->
-    <string name="title_clip_paste_placeholder">粘贴已复制的%1$s</string>
-
-    <string name="tip_editor_action_backspace">已回删</string>
-    <string name="tip_editor_action_select_all">已全选</string>
-    <string name="tip_editor_action_copy">已复制</string>
-    <string name="tip_editor_action_cut">已剪切</string>
-    <string name="tip_editor_action_undo">已撤销</string>
-    <string name="tip_editor_action_redo">已重做</string>
-    <string name="tip_editor_action_paste">已粘贴</string>
-    <string name="tip_editor_action_favorite">已收藏</string>
-    <string name="confirm_whether_save_pasted_content">是否收藏已粘贴内容？</string>
-    <string name="confirm_whether_save_copied_content">是否收藏已复制内容？</string>
-    <string name="confirm_whether_save_input_content">是否收藏已输入内容？</string>
-    <string name="confirm_whether_delete_selected">是否删除选中项？</string>
-    <string name="confirm_whether_clear_all">是否清空全部数据？</string>
-
-    <string name="label_text_type">文本类型：%1$s</string>
-    <string name="label_created_at">创建日期：%1$s</string>
-    <string name="label_used_count">使用次数：%1$s</string>
-
-    <!-- 输入法练习相关的文本 -->
-    <string name="text_exercise_edit_text_placeholder">
+    <!-- guide -->
+    <string name="text_guide_edit_text_placeholder">
         请跟随上述指导步骤操作键盘以输入练习内容
     </string>
-    <string name="text_exercise_free_mode_edit_text_placeholder">
+    <string name="text_guide_free_mode_edit_text_placeholder">
         请输入任意内容进行自由练习
     </string>
-    <string name="text_exercise_free_mode_sample" translatable="false">
+    <string name="text_guide_free_mode_sample" translatable="false">
         <!-- 仅用于调试，正式版本保持为空 -->
     </string>
 </resources>

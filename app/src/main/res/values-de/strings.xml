@@ -23,8 +23,30 @@
     <string name="app_name_with_version">Kuaizi IME v%1$s</string>
     <string name="app_slogan">Kuaizi IME: Effizientes Schreiben setzt eine schnelle Eingabemöglichkeit voraus</string>
 
+    <string name="value_theme_light">Hell</string>
+    <string name="value_theme_night">Dunkel</string>
+    <string name="value_theme_follow_system">System</string>
+    <string name="value_hand_mode_left">Linkshänder-Modus</string>
+    <string name="value_hand_mode_right">Rechtshänder-Modus</string>
+    <!-- text type -->
+    <string name="value_text_type_normal">Normaler Text</string>
+    <string name="value_text_type_html">Rich Text</string>
+    <string name="value_text_type_url">URL</string>
+    <string name="value_text_type_captcha">Captcha</string>
+    <string name="value_text_type_phone">Telefonnummer</string>
+    <string name="value_text_type_email">E-Mail</string>
+    <string name="value_text_type_id_card">ID-Karte</string>
+    <string name="value_text_type_credit_card">Kreditkarte</string>
+    <string name="value_text_type_address">Adresse</string>
+
+    <!-- common -->
+    <string name="title_user_data_backup">Benutzerdatensicherung</string>
+    <string name="title_tips">Tipps</string>
+    <string name="title_favorites">Favoriten (%1$s Elemente)</string>
+    <!-- app -->
     <string name="title_app_preferences">Kuaizi IME-Einstellungen</string>
     <string name="title_app_guide_exercise">Kuaizi IME-Übungen</string>
+    <!-- about -->
     <string name="title_about_app">Kuaizi IME</string>
     <string name="title_about_team">Entwickler:innen</string>
     <string name="title_about_feedback">Feedback</string>
@@ -37,20 +59,52 @@
     <string name="title_about_copyright">Copyright</string>
     <string name="title_about_alpha_user_agreement">Alphabenutzer-Vereinbarung</string>
     <string name="title_about_new_features">Neue Features</string>
-    <string name="title_user_data_backup">Benutzerdatensicherung</string>
-    <string name="title_tips">Tipps</string>
+    <!-- preference -->
+    <string name="title_preference_basic">Grundeinstellungen</string>
+    <string name="title_preference_x_input_pad">Kreuzförmige Tastatur-Einstellungen</string>
+    <string name="title_preference_privacy">Privatsphäreneinstellungen</string>
+    <string name="title_preference_performance">Animationen- &amp; Audio-Einstellungen</string>
+    <string name="title_preference_user_data">Benutzerdaten</string>
+    <string name="title_preference_about">Über</string>
+    <!-- clip -->
+    <string name="title_clip_paste_content">Kopierte Inhalt einfügen</string>
+    <!-- 占位符填充值来自 value_text_type_ 开头的文本 -->
+    <string name="title_clip_paste_placeholder">Kopierte %1$s einfügen</string>
 
-    <string name="title_favorites">Favoriten (%1$s Elemente)</string>
+    <!-- common -->
     <string name="label_method_subtype_generic">%s</string>
     <string name="label_method_subtype_zh_CN">Chinesisch (China)</string>
+    <string name="label_text_type">Texttyp: %1$s</string>
+    <string name="label_created_at">Erstellt am: %1$s</string>
+    <string name="label_used_count">Verwendete Male: %1$s</string>
+    <!-- preference -->
+    <string name="label_preference_config_theme">Tastatureinstellungen</string>
+    <string name="label_preference_choose_theme">Tastaturaussehen</string>
+    <string name="label_preference_enable_x_input_pad">Aktiviere die kreuzförmige Tastatur</string>
+    <string name="label_preference_enable_latin_use_pinyin_keys_in_x_input_pad">Nutze die gleichen Tasten bei lateinischer und Pinyin-Tastatur</string>
+    <string name="label_preference_switch_hand_mode">Ändere den Tastaturmodus</string>
+    <string name="label_preference_adapt_desktop_swipe_up_gesture">An System-Wischgesten anpassen</string>
+    <string name="label_preference_enable_candidate_variant_first">Zeige tradionelle Schriftzeichen zuerst</string>
+    <string name="label_preference_disable_user_input_data">Keine User-Daten speichern</string>
+    <string name="label_preference_disable_key_clicked_audio">Deaktiviere Tippgeräusche</string>
+    <string name="label_preference_disable_key_animation">Deaktiviere die Tastendruck-Animation</string>
+    <string name="label_preference_disable_paging_audio">Deaktiviere Blättern-Geräusche</string>
+    <string name="label_preference_disable_input_key_popup_tips">Deaktiviere Tasten-Popups</string>
+    <string name="label_preference_disable_gesture_slipping_trail">Deaktiviere Wisch-Schweif</string>
 
+    <!-- common -->
     <string name="btn_enable_right_now">Ja</string>
     <string name="btn_enable_later">Später</string>
     <string name="btn_confirm">OK</string>
     <string name="btn_cancel">Stornieren</string>
     <string name="btn_paste">Paste</string>
+    <string name="btn_save_as_favorite">Speichern</string>
+    <string name="btn_delete_selected">Ausgewählte löschen (%1$s Elemente)</string>
+    <string name="btn_clear_all">Alles löschen</string>
+    <!-- feedback -->
     <string name="btn_feedback_open_link_without_extra_info">Fortfahren ohne zusätzliche Informationen</string>
     <string name="btn_feedback_open_link_with_extra_info">Fortfahren mit zusätzlichen Informationen</string>
+    <!-- guide -->
     <string name="btn_guide_confirm_alpha_user_agreement">JA, ich stimme der Vereinbarung zu</string>
     <string name="btn_guide_reject_alpha_user_agreement">NEIN, ich lehne die Vereinbarung ab</string>
     <string name="btn_guide_new_features_confirm">OK, ich verstehe</string>
@@ -61,56 +115,57 @@
     <string name="btn_guide_exercise_try_again">Versuche es erneut</string>
     <string name="btn_guide_exercise_try_new_one">Gehe zur nächsten Übung</string>
 
-    <!-- Preference Titles -->
-    <string name="btn_save_as_favorite">Speichern</string>
-    <string name="btn_delete_selected">Ausgewählte löschen (%1$s Elemente)</string>
-    <string name="btn_clear_all">Alles löschen</string>
-    <string name="title_preference_basic">Grundeinstellungen</string>
-    <string name="title_preference_x_input_pad">Kreuzförmige Tastatur-Einstellungen</string>
-    <string name="title_preference_privacy">Privatsphäreneinstellungen</string>
-    <string name="title_preference_performance">Animationen- &amp; Audio-Einstellungen</string>
-    <string name="title_preference_user_data">Benutzerdaten</string>
-    <string name="title_preference_about">Über</string>
-
-    <!-- Settings Preferences -->
-    <string name="label_config_theme">Tastatureinstellungen</string>
-    <string name="label_choose_theme">Tastaturaussehen</string>
-    <string name="label_enable_x_input_pad">Aktiviere die kreuzförmige Tastatur</string>
-    <string name="label_enable_latin_use_pinyin_keys_in_x_input_pad">Nutze die gleichen Tasten bei lateinischer und Pinyin-Tastatur</string>
-    <string name="label_switch_hand_mode">Ändere den Tastaturmodus</string>
-    <string name="label_adapt_desktop_swipe_up_gesture">An System-Wischgesten anpassen</string>
-    <string name="label_enable_candidate_variant_first">Zeige tradionelle Schriftzeichen zuerst</string>
-    <string name="label_disable_user_input_data">Keine User-Daten speichern</string>
-    <string name="label_disable_key_clicked_audio">Deaktiviere Tippgeräusche</string>
-    <string name="label_disable_key_animation">Deaktiviere die Tastendruck-Animation</string>
-    <string name="label_disable_paging_audio">Deaktiviere Blättern-Geräusche</string>
-    <string name="label_disable_input_key_popup_tips">Deaktiviere Tasten-Popups</string>
-    <string name="label_disable_gesture_slipping_trail">Deaktiviere Wisch-Schweif</string>
-
-    <string name="desc_enable_candidate_variant_first">
+    <!-- preference -->
+    <string name="desc_preference_enable_candidate_variant_first">
         Bevorzugt die traditionellen Schriftzeichen
         und zeigt diese vor den Kurzzeichen (Standardeinstellungen) an.
     </string>
-    <string name="desc_disable_user_input_data">
+    <string name="desc_preference_disable_user_input_data">
         Verhindert eine Analyse der Eingabe, um Datenschutzvorfällen vorzubeugen.
         Allerdings beeinflusst dies die Genauigkeit der Wortabgleich-Funktion der Eingabe.
     </string>
-    <string name="desc_enable_x_input_pad">
+    <string name="desc_preference_enable_x_input_pad">
         Falls die kreuzförmige Tastatur aktiviert ist,
         wird eine am 8VIM/8pen-System orientierte Eingabemethode verwendet,
         um eine kontinuierliche Eingabe von lateinischen und Pinyin-Zeichen zu gewährleisten.
     </string>
-    <string name="desc_enable_latin_use_pinyin_keys_in_x_input_pad">
+    <string name="desc_preference_enable_latin_use_pinyin_keys_in_x_input_pad">
         Diese Option richtet das lateinische Tastaturlayout an dem der Pinyin-Tastatur aus,
         um die Umstellung zwischen den beiden Layouts zu vereinfachen.
         Allerdings kann dies die Effiziens der englischen Eingabe reduzieren.
     </string>
-    <string name="desc_adapt_desktop_swipe_up_gesture">
+    <string name="desc_preference_adapt_desktop_swipe_up_gesture">
         Diese Funktion fügt einen Leerraum unter der Tastatur ein,
         um Konflikte zwischen der Wisch-Eingabe und den System-Wischgesten zu vermeiden.
     </string>
 
-    <string name="msg_ime_should_be_enabled_first">
+    <!-- warning -->
+    <string name="text_warning_not_release_using">@null</string>
+    <string name="text_warning_dict_db_init">
+        Lade die Wörterbuch-Datenbank, einen Moment bitte …
+    </string>
+    <string name="text_warning_empty_favorite_board">
+        Es wurde noch kein Inhalt gespeichert.
+        Nachdem Sie Text kopiert oder Eingaben getätigt haben,
+        klicken Sie in der schwebenden Eingabeaufforderung auf die Schaltfläche [Speichern],
+        um den Inhalt zu Ihren Favoriten hinzuzufügen.
+    </string>
+    <!-- tip -->
+    <string name="text_tip_editor_action_backspace">Rücktaste</string>
+    <string name="text_tip_editor_action_select_all">Alle ausgewählt</string>
+    <string name="text_tip_editor_action_copy">Kopiert</string>
+    <string name="text_tip_editor_action_cut">Schneiden</string>
+    <string name="text_tip_editor_action_undo">Rückgängig machen</string>
+    <string name="text_tip_editor_action_redo">Wiederholen</string>
+    <string name="text_tip_editor_action_paste">Eingefügt</string>
+    <string name="text_tip_editor_action_favorite">Gespeichert</string>
+    <!-- confirm -->
+    <string name="text_confirm_save_pasted_content">Eingefügten Inhalt speichern?</string>
+    <string name="text_confirm_save_copied_content">Den kopierten Inhalt speichern?</string>
+    <string name="text_confirm_save_input_content">Den übermittelten Inhalt speichern?</string>
+    <string name="text_confirm_delete_selected">Die ausgewählten Elemente löschen?</string>
+    <string name="text_confirm_clear_all">Alle Elemente löschen?</string>
+    <string name="text_confirm_ime_enable_first">
         &lt;p>&lt;b>%1$s&lt;/b> wurde nicht im System aktiviert,
         &amp;#160;deswegen kann es nicht aktiviert werden.&lt;/p>
         &lt;br/>
@@ -120,62 +175,11 @@
         &lt;br/>
         &lt;p>Möchtest du es jetzt aktivieren?&lt;/p>
     </string>
-
-    <string name="text_alpha_using_warning">@null</string>
-    <string name="text_dict_db_init_warning">
-        Lade die Wörterbuch-Datenbank, einen Moment bitte …
-    </string>
-    <string name="text_empty_favoriteboard_warning">
-        Es wurde noch kein Inhalt gespeichert.
-        Nachdem Sie Text kopiert oder Eingaben getätigt haben,
-        klicken Sie in der schwebenden Eingabeaufforderung auf die Schaltfläche [Speichern],
-        um den Inhalt zu Ihren Favoriten hinzuzufügen.
-    </string>
-
-    <string name="value_theme_light">Hell</string>
-    <string name="value_theme_night">Dunkel</string>
-    <string name="value_theme_follow_system">System</string>
-    <string name="value_hand_mode_left">Linkshänder-Modus</string>
-    <string name="value_hand_mode_right">Rechtshänder-Modus</string>
-
-    <string name="value_text_type_normal">Normaler Text</string>
-    <string name="value_text_type_html">Rich Text</string>
-    <string name="value_text_type_url">URL</string>
-    <string name="value_text_type_captcha">Captcha</string>
-    <string name="value_text_type_phone">Telefonnummer</string>
-    <string name="value_text_type_email">E-Mail</string>
-    <string name="value_text_type_id_card">ID-Karte</string>
-    <string name="value_text_type_credit_card">Kreditkarte</string>
-    <string name="value_text_type_address">Adresse</string>
-
-    <string name="title_clip_paste_content">Kopierte Inhalt einfügen</string>
-    <!-- 占位符填充值来自 value_text_type_ 开头的文本 -->
-    <string name="title_clip_paste_placeholder">Kopierte %1$s einfügen</string>
-
-    <string name="tip_editor_action_backspace">Rücktaste</string>
-    <string name="tip_editor_action_select_all">Alle ausgewählt</string>
-    <string name="tip_editor_action_copy">Kopiert</string>
-    <string name="tip_editor_action_cut">Schneiden</string>
-    <string name="tip_editor_action_undo">Rückgängig machen</string>
-    <string name="tip_editor_action_redo">Wiederholen</string>
-    <string name="tip_editor_action_paste">Eingefügt</string>
-    <string name="tip_editor_action_favorite">Gespeichert</string>
-
-    <string name="confirm_whether_save_pasted_content">Eingefügten Inhalt speichern?</string>
-    <string name="confirm_whether_save_copied_content">Den kopierten Inhalt speichern?</string>
-    <string name="confirm_whether_save_input_content">Den übermittelten Inhalt speichern?</string>
-    <string name="confirm_whether_delete_selected">Die ausgewählten Elemente löschen?</string>
-    <string name="confirm_whether_clear_all">Alle Elemente löschen?</string>
-
-    <string name="label_text_type">Texttyp: %1$s</string>
-    <string name="label_created_at">Erstellt am: %1$s</string>
-    <string name="label_used_count">Verwendete Male: %1$s</string>
-
-    <!-- 输入法练习相关的文本 -->
-    <string name="text_exercise_edit_text_placeholder">
+    <!-- guide -->
+    <string name="text_guide_edit_text_placeholder">
         Bitte folge den Anweisungen, um die Tastatur auszuwählen.
     </string>
-    <string name="text_exercise_free_mode_edit_text_placeholder">
+    <string name="text_guide_free_mode_edit_text_placeholder">
         Gib Text ein, um die Tastatur auszuprobieren.
     </string>
 </resources>

@@ -23,7 +23,7 @@
     -->
     <ListPreference
             app:key="theme"
-            app:title="@string/label_choose_theme"
+            app:title="@string/label_preference_choose_theme"
             app:entries="@array/theme_entries"
             app:entryValues="@array/theme_values"
             app:defaultValue="follow_system"
@@ -32,7 +32,7 @@
 
     <ListPreference
             app:key="hand_mode"
-            app:title="@string/label_switch_hand_mode"
+            app:title="@string/label_preference_switch_hand_mode"
             app:entries="@array/hand_mode_entries"
             app:entryValues="@array/hand_mode_values"
             app:defaultValue="right"
@@ -41,15 +41,15 @@
 
     <SwitchPreferenceCompat
             app:key="enable_x_input_pad"
-            app:title="@string/label_enable_x_input_pad"
+            app:title="@string/label_preference_enable_x_input_pad"
             app:iconSpaceReserved="false"
-            app:summary="@string/desc_enable_x_input_pad" />
+            app:summary="@string/desc_preference_enable_x_input_pad" />
 
     <SwitchPreferenceCompat
             app:key="adapt_desktop_swipe_up_gesture"
-            app:title="@string/label_adapt_desktop_swipe_up_gesture"
+            app:title="@string/label_preference_adapt_desktop_swipe_up_gesture"
             app:iconSpaceReserved="false"
-            app:summary="@string/desc_adapt_desktop_swipe_up_gesture" />
+            app:summary="@string/desc_preference_adapt_desktop_swipe_up_gesture" />
 
     <PreferenceCategory
             app:key="preference_x_input_pad"
@@ -57,8 +57,8 @@
             app:iconSpaceReserved="false">
         <SwitchPreferenceCompat
                 app:key="enable_latin_use_pinyin_keys_in_x_input_pad"
-                app:title="@string/label_enable_latin_use_pinyin_keys_in_x_input_pad"
+                app:title="@string/label_preference_enable_latin_use_pinyin_keys_in_x_input_pad"
                 app:iconSpaceReserved="false"
-                app:summary="@string/desc_enable_latin_use_pinyin_keys_in_x_input_pad" />
+                app:summary="@string/desc_preference_enable_latin_use_pinyin_keys_in_x_input_pad" />
     </PreferenceCategory>
 </PreferenceScreen>

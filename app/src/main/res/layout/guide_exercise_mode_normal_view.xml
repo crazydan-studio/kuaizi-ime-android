@@ -53,7 +53,7 @@
             android:inputType="textMultiLine"
             android:gravity="top|start"
             android:autofillHints=""
-            android:hint="@string/text_exercise_edit_text_placeholder"
+            android:hint="@string/text_guide_edit_text_placeholder"
             android:background="@drawable/bg_round_corner_box"
             android:backgroundTint="@android:color/holo_blue_dark" />
 </LinearLayout>

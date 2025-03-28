@@ -29,26 +29,26 @@ import org.crazydan.studio.app.ime.kuaizi.R;
  */
 public enum EditorAction {
     /** 回删 */
-    backspace("回删", R.string.tip_editor_action_backspace),
+    backspace("回删", R.string.text_tip_editor_action_backspace),
     /** 全选 */
-    select_all("全选", R.string.tip_editor_action_select_all),
+    select_all("全选", R.string.text_tip_editor_action_select_all),
     /** 复制 */
-    copy("复制", R.string.tip_editor_action_copy),
+    copy("复制", R.string.text_tip_editor_action_copy),
     /** 粘贴 */
-    paste("粘贴", R.string.tip_editor_action_paste),
+    paste("粘贴", R.string.text_tip_editor_action_paste),
     /** 剪切 */
-    cut("剪切", R.string.tip_editor_action_cut),
+    cut("剪切", R.string.text_tip_editor_action_cut),
     /** 撤销 */
-    undo("撤销", R.string.tip_editor_action_undo),
+    undo("撤销", R.string.text_tip_editor_action_undo),
     /** 重做 */
-    redo("重做", R.string.tip_editor_action_redo),
+    redo("重做", R.string.text_tip_editor_action_redo),
     /**
      * 收藏
      * <p/>
      * 注意，对选中内容做收藏，需要先复制再监听剪贴板，最后还原剪贴板，过程比较复杂，
      * 不过，可以通过复制操作触发收藏的方式添加收藏
      */
-    favorite("收藏", R.string.tip_editor_action_favorite),
+    favorite("收藏", R.string.text_tip_editor_action_favorite),
     ;
 
     public final String label;

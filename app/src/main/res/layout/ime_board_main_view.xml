@@ -52,7 +52,7 @@
                     android:layout_height="match_parent"
                     android:layout_gravity="center"
                     android:gravity="center"
-                    android:text="@string/text_dict_db_init_warning"
+                    android:text="@string/text_warning_dict_db_init"
                     android:textSize="@dimen/char_input_word_text_size"
                     android:visibility="gone" />
 

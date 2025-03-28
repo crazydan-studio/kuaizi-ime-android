@@ -19,5 +19,6 @@
 
 <resources>
     <string name="app_name_shown">Kuaizi IME (Alpha)</string>
-    <string name="text_alpha_using_warning">Thanks for using Kuaizi IME alpha version</string>
+
+    <string name="text_warning_not_release_using">Thanks for using Kuaizi IME alpha version</string>
 </resources>
