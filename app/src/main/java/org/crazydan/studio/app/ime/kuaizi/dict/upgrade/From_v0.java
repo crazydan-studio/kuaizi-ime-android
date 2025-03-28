@@ -161,7 +161,7 @@ public class From_v0 extends Upgrader {
         String[] clauses = new String[] {
                 "create table"
                 //
-                + " if not exists user_favorite ("
+                + " if not exists meta_favorite ("
                 + "   id_ integer not null,"
                 + "   type_ text not null,"
                 + "   text_ text not null,"

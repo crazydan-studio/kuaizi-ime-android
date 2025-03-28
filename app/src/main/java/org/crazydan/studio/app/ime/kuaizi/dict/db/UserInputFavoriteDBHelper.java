@@ -40,7 +40,7 @@ public class UserInputFavoriteDBHelper {
 
     /** 新增 {@link InputFavorite} */
     public static InputFavorite saveInputFavorite(SQLiteDatabase db, InputFavorite favorite) {
-        String clause = "insert into user_favorite ("
+        String clause = "insert into meta_favorite ("
                         + "   type_, text_, html_, shortcut_, created_at_,"
                         + "   used_count_, used_at_"
                         + " ) values (?, ?, ?, ?, ?, 0, 0)";
@@ -55,7 +55,7 @@ public class UserInputFavoriteDBHelper {
 
     /** 更新 {@link InputFavorite} 的使用情况 */
     public static InputFavorite updateInputFavoriteUsage(SQLiteDatabase db, InputFavorite favorite) {
-        String clause = "update user_favorite set used_count_ = ?, used_at_ = ? where id_ = ?";
+        String clause = "update meta_favorite set used_count_ = ?, used_at_ = ? where id_ = ?";
 
         InputFavorite newFavorite = favorite.copy((b) -> b.usedCount(favorite.usedCount + 1).usedAt(new Date()));
 
@@ -72,14 +72,14 @@ public class UserInputFavoriteDBHelper {
     /** 删除指定的 {@link InputFavorite} */
     public static void removeInputFavorites(SQLiteDatabase db, List<Integer> ids) {
         String argHolders = createSQLiteArgHolders(ids);
-        String clause = "delete from user_favorite where id_ in (" + argHolders + ")";
+        String clause = "delete from meta_favorite where id_ in (" + argHolders + ")";
 
         execSQLite(db, clause, ids.toArray());
     }
 
     /** 清空 {@link InputFavorite} 数据 */
     public static void clearAllInputFavorites(SQLiteDatabase db) {
-        execSQLite(db, "delete from user_favorite");
+        execSQLite(db, "delete from meta_favorite");
     }
 
     /** 是否存在相同文本的 {@link InputFavorite} */
@@ -91,7 +91,7 @@ public class UserInputFavoriteDBHelper {
 
     private static List<InputFavorite> queryInputFavorites(SQLiteDatabase db, String text) {
         return querySQLite(db, new SQLiteQueryParams<InputFavorite>() {{
-            this.table = "user_favorite";
+            this.table = "meta_favorite";
             this.columns = new String[] { "id_", "type_", "text_", "used_count_", "created_at_", "used_at_" };
 
             this.where = text != null ? "text_ = ?" : null;
