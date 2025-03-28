@@ -265,7 +265,21 @@ public class KeyboardView extends KeyboardViewBase implements UserKeyMsgListener
                 //
             case Input_Choose_Doing:
             case InputChars_Input_Popup_Hide_Doing:
-            case InputChars_Input_Popup_Show_Doing: {
+            case InputChars_Input_Popup_Show_Doing:
+                //
+            case InputFavorite_Query_Doing:
+            case InputFavorite_Query_Done:
+            case InputFavorite_Paste_Done:
+            case InputFavorite_Delete_Done:
+            case InputFavorite_Clear_All_Done:
+            case InputFavorite_Save_Done:
+            case InputFavorite_Text_Commit_Doing:
+                //
+            case InputClip_Text_Commit_Doing:
+            case InputClip_Discard_Done:
+            case InputClip_Apply_Done:
+            case InputClip_Create_Done:
+            case InputClip_CanBe_Favorite: {
                 this.log.warn("Ignore message %s", () -> new Object[] { msg.type }) //
                         .endTreeLog();
                 return;

@@ -473,6 +473,12 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         }
 
         switch (msg.type) {
+            case InputClip_Apply_Done: {
+                InputClipMsgData data = msg.data();
+                // Note: 在该消息发送前，剪贴数据已被废弃，故而，这里无需再做处理
+                disableClips(data.clip.code);
+                break;
+            }
             case InputList_Commit_Doing: {
                 InputListCommitMsgData data = msg.data();
                 // 仅换行和空格的输入不影响剪贴数据的处理
@@ -488,14 +494,16 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             }
             case InputList_PairSymbol_Commit_Doing:
             case InputChars_Input_Doing: {
-                // 若正在输入，则废弃剪贴数据，且重新激活输入法也不再提示
+                // 若正在输入，则废弃 #start 时读取的剪贴数据
                 discardClips();
                 break;
             }
-            case InputClip_Apply_Done: {
-                InputClipMsgData data = msg.data();
-                // Note: 在该消息发送前，剪贴数据已被废弃，故而，这里无需再做处理
-                disableClips(data.clip.code);
+            case Editor_Edit_Doing: {
+                EditorEditMsgData data = msg.data();
+                // 剪贴板内容发生变化时，需废弃 #start 时读取的剪贴数据
+                if (EditorAction.hasClipEffect(data.action)) {
+                    discardClips();
+                }
                 break;
             }
         }
@@ -659,6 +667,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
         this.config.set(ConfigKey.used_input_clip_code, clipCode);
     }
 
+    /** 废弃剪贴数据，且重新激活输入法也不再提示 */
     private void discardClips() {
         if (this.config.bool(ConfigKey.disable_input_clip_popup_tips) //
             || !this.favoriteboard.verifyClips() //
