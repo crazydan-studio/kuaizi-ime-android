@@ -17,46 +17,43 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.common.utils;
+package org.crazydan.studio.app.ime.kuaizi.common;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-12-09
  */
 public class Async {
+    private final ThreadPoolExecutor executor;
 
-    public static ThreadPoolExecutor createExecutor(int corePoolSize, int maximumPoolSize) {
-        return new ThreadPoolExecutor(corePoolSize,
-                                      maximumPoolSize,
-                                      0L,
-                                      TimeUnit.MILLISECONDS,
-                                      new LinkedBlockingQueue<>());
+    public Async(int corePoolSize, int maximumPoolSize) {
+        this.executor = new ThreadPoolExecutor(corePoolSize,
+                                               maximumPoolSize,
+                                               0L,
+                                               TimeUnit.MILLISECONDS,
+                                               new LinkedBlockingQueue<>());
     }
 
-    public static void waitAndShutdown(ExecutorService executor, long ms) {
+    public void shutdown(long ms) {
         try {
-            executor.awaitTermination(ms, TimeUnit.MILLISECONDS);
+            this.executor.awaitTermination(ms, TimeUnit.MILLISECONDS);
         } catch (Exception ignore) {
         }
 
-        executor.shutdown();
+        this.executor.shutdown();
     }
 
-    public static <T> T value(Future<T> f) {
-        return value(f, null);
+    public CompletableFuture<Void> future(Runnable runnable) {
+        return CompletableFuture.runAsync(runnable, this.executor);
     }
 
-    public static <T> T value(Future<T> f, T defaultVale) {
-        try {
-            return f != null ? f.get() : defaultVale;
-        } catch (Exception e) {
-            return defaultVale;
-        }
+    public <T> CompletableFuture<T> future(Supplier<T> supplier) {
+        return CompletableFuture.supplyAsync(supplier, this.executor);
     }
 }

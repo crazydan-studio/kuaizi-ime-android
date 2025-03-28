@@ -26,12 +26,11 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
+import org.crazydan.studio.app.ime.kuaizi.common.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ResourceUtils;
 import org.crazydan.studio.app.ime.kuaizi.dict.DictDBType;
@@ -77,8 +76,8 @@ public class IMEditorDict {
     /** 字典 {@link #open} 的引用计数 */
     private int openedRefs;
     private boolean opened;
-    /** 异步线程池 */
-    private ThreadPoolExecutor executor;
+    /** 异步 */
+    private Async async;
 
     private String version;
     private SQLiteDatabase db;
@@ -112,14 +111,14 @@ public class IMEditorDict {
             return CompletableFuture.completedFuture(null);
         }
 
-        this.executor = Async.createExecutor(1, 4);
+        this.async = new Async(1, 4);
 
-        return CompletableFuture.runAsync(() -> {
+        return this.async.future(() -> {
             doUpgrade(context);
             doOpen(context);
 
             this.opened = true;
-        }, this.executor);
+        });
     }
 
     /** 在资源回收前关闭字典：由 {@link #open 开启} 方负责关闭 */
@@ -140,15 +139,15 @@ public class IMEditorDict {
     // =================== Start: 派生字典 ==================
 
     public PinyinDict usePinyinDict() {
-        return deriveDict(PinyinDict.class, () -> new PinyinDict(getDB(), this.executor, this.pinyinCharsTree));
+        return deriveDict(PinyinDict.class, () -> new PinyinDict(getDB(), this.async, this.pinyinCharsTree));
     }
 
     public UserInputDataDict useUserInputDataDict() {
-        return deriveDict(UserInputDataDict.class, () -> new UserInputDataDict(getDB(), this.executor));
+        return deriveDict(UserInputDataDict.class, () -> new UserInputDataDict(getDB(), this.async));
     }
 
     public UserInputFavoriteDict useUserInputFavoriteDict() {
-        return deriveDict(UserInputFavoriteDict.class, () -> new UserInputFavoriteDict(getDB(), this.executor));
+        return deriveDict(UserInputFavoriteDict.class, () -> new UserInputFavoriteDict(getDB(), this.async));
     }
 
     private <T> T deriveDict(Class<T> cls, Supplier<T> supplier) {
@@ -179,12 +178,12 @@ public class IMEditorDict {
     }
 
     private void doClose() {
-        Async.waitAndShutdown(this.executor, 1500);
+        this.async.shutdown(1500);
 
         closeSQLite(this.db);
 
         this.db = null;
-        this.executor = null;
+        this.async = null;
         this.pinyinCharsTree = null;
         this.deriveDicts = null;
     }

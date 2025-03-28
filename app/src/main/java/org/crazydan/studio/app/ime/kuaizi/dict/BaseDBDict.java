@@ -19,11 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.dict;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.function.Supplier;
-
 import android.database.sqlite.SQLiteDatabase;
+import org.crazydan.studio.app.ime.kuaizi.common.Async;
 
 /**
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -31,18 +28,10 @@ import android.database.sqlite.SQLiteDatabase;
  */
 public abstract class BaseDBDict {
     protected final SQLiteDatabase db;
-    private final ThreadPoolExecutor executor;
+    protected final Async async;
 
-    BaseDBDict(SQLiteDatabase db, ThreadPoolExecutor executor) {
+    BaseDBDict(SQLiteDatabase db, Async async) {
         this.db = db;
-        this.executor = executor;
-    }
-
-    protected CompletableFuture<Void> promise(Runnable runnable) {
-        return CompletableFuture.runAsync(runnable, this.executor);
-    }
-
-    protected <T> CompletableFuture<T> promise(Supplier<T> supplier) {
-        return CompletableFuture.supplyAsync(supplier, this.executor);
+        this.async = async;
     }
 }

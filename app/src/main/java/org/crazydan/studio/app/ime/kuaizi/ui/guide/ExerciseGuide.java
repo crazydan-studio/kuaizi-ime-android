@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -46,8 +45,8 @@ import com.google.android.material.navigation.NavigationView;
 import org.crazydan.studio.app.ime.kuaizi.BuildConfig;
 import org.crazydan.studio.app.ime.kuaizi.IMEditorDict;
 import org.crazydan.studio.app.ime.kuaizi.R;
+import org.crazydan.studio.app.ime.kuaizi.common.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.log.Logger;
-import org.crazydan.studio.app.ime.kuaizi.common.utils.Async;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.FileUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ThemeUtils;
 import org.crazydan.studio.app.ime.kuaizi.common.utils.ViewUtils;
@@ -94,7 +93,7 @@ import org.hexworks.mixite.core.api.HexagonOrientation;
  */
 public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgListener, ExerciseViewMsgListener {
     private static final int DRAWER_NAV_MENU_ITEM_BASE_ID = 10;
-    private static final ThreadPoolExecutor executor = Async.createExecutor(1, 1);
+    private static final Async async = new Async(1, 1);
 
     private DrawerLayout drawerLayout;
     private NavigationView drawerNavView;
@@ -1386,7 +1385,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     /** 启动异步执行，以确保当前的消息已被处理完毕，避免消息嵌套导致的 IME 状态与预期不一致的问题 */
     private void asyncRun(Runnable run) {
         // Note: 在涉及视图更新操作时，必须最终回在 UI 线程上执行
-        executor.execute(() -> runOnUiThread(run));
+        async.future(() -> runOnUiThread(run));
     }
 
     private void startDebugLogs() {
@@ -1415,7 +1414,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         String date = DateFormat.format("yyyyMMddHHmmss", new Date()).toString();
 
         Context context = getApplicationContext();
-        executor.submit(() -> {
+        async.future(() -> {
             FileUtils.saveZipToDownload(context, filename, (zip) -> {
                 ZipEntry zipEntry = new ZipEntry("log-" + date + ".txt");
                 zip.putNextEntry(zipEntry);

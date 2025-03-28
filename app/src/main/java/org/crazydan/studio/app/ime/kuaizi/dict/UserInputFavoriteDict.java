@@ -21,9 +21,9 @@ package org.crazydan.studio.app.ime.kuaizi.dict;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import android.database.sqlite.SQLiteDatabase;
+import org.crazydan.studio.app.ime.kuaizi.common.Async;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputFavorite;
 
 import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputFavoriteDBHelper.clearAllInputFavorites;
@@ -41,34 +41,34 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputFavoriteDBHelp
  */
 public class UserInputFavoriteDict extends BaseDBDict {
 
-    public UserInputFavoriteDict(SQLiteDatabase db, ThreadPoolExecutor executor) {
-        super(db, executor);
+    public UserInputFavoriteDict(SQLiteDatabase db, Async async) {
+        super(db, async);
     }
 
     /** 新增 {@link InputFavorite} */
     public CompletableFuture<InputFavorite> save(InputFavorite favorite) {
-        return promise(() -> saveInputFavorite(this.db, favorite));
+        return this.async.future(() -> saveInputFavorite(this.db, favorite));
     }
 
     /** 更新 {@link InputFavorite} 的使用情况 */
     public CompletableFuture<InputFavorite> updateUsage(InputFavorite favorite) {
-        return promise(() -> updateInputFavoriteUsage(this.db, favorite));
+        return this.async.future(() -> updateInputFavoriteUsage(this.db, favorite));
     }
 
     public CompletableFuture<List<InputFavorite>> getAll() {
-        return promise(() -> getAllInputFavorites(this.db));
+        return this.async.future(() -> getAllInputFavorites(this.db));
     }
 
     public CompletableFuture<Void> remove(List<Integer> ids) {
-        return promise(() -> removeInputFavorites(this.db, ids));
+        return this.async.future(() -> removeInputFavorites(this.db, ids));
     }
 
     public CompletableFuture<Void> clearAll() {
-        return promise(() -> clearAllInputFavorites(this.db));
+        return this.async.future(() -> clearAllInputFavorites(this.db));
     }
 
     /** 是否存在相同文本的 {@link InputFavorite} */
     public CompletableFuture<Boolean> exist(String text) {
-        return promise(() -> existSameTextInputFavorite(this.db, text));
+        return this.async.future(() -> existSameTextInputFavorite(this.db, text));
     }
 }

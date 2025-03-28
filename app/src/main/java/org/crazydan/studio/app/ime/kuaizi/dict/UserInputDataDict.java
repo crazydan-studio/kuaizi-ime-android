@@ -21,10 +21,10 @@ package org.crazydan.studio.app.ime.kuaizi.dict;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
 import android.database.sqlite.SQLiteDatabase;
+import org.crazydan.studio.app.ime.kuaizi.common.Async;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
 
@@ -42,8 +42,8 @@ import static org.crazydan.studio.app.ime.kuaizi.dict.db.UserInputDataDBHelper.s
  */
 public class UserInputDataDict extends BaseDBDict {
 
-    public UserInputDataDict(SQLiteDatabase db, ThreadPoolExecutor executor) {
-        super(db, executor);
+    public UserInputDataDict(SQLiteDatabase db, Async async) {
+        super(db, async);
     }
 
     /** 保存使用数据信息，含短语、单字、表情符号等：异步处理 */
@@ -81,7 +81,7 @@ public class UserInputDataDict extends BaseDBDict {
             return CompletableFuture.completedFuture(null);
         }
 
-        return promise(() -> {
+        return this.async.future(() -> {
             data.phrases.forEach((phrase) -> doSaveUsedPhrase(phrase, reverse));
 
             doSaveUsedEmojis(data.emojis, reverse);

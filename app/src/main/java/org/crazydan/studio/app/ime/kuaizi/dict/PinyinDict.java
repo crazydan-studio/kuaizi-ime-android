@@ -26,12 +26,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import android.database.sqlite.SQLiteDatabase;
+import org.crazydan.studio.app.ime.kuaizi.common.Async;
 import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.input.InputWord;
 import org.crazydan.studio.app.ime.kuaizi.core.input.word.PinyinWord;
@@ -61,8 +61,8 @@ public class PinyinDict extends BaseDBDict {
 
     private final PinyinCharsTree pinyinCharsTree;
 
-    public PinyinDict(SQLiteDatabase db, ThreadPoolExecutor executor, PinyinCharsTree pinyinCharsTree) {
-        super(db, executor);
+    public PinyinDict(SQLiteDatabase db, Async async, PinyinCharsTree pinyinCharsTree) {
+        super(db, async);
         this.pinyinCharsTree = pinyinCharsTree;
     }
 
