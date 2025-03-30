@@ -64,6 +64,17 @@ public class PinyinKeyTable extends KeyTable {
             return createXPadGrid();
         }
 
+        return createFullKeyGrid();
+    }
+
+    @Override
+    protected XPadKey createXPadKey() {
+        Key[][][] zone_2_keys = createXPadZone2Keys();
+        return xPadKey(Keyboard.Type.Pinyin, zone_2_keys);
+    }
+
+    /** 创建全按键布局 */
+    public Key[][] createFullKeyGrid() {
         return new Key[][] {
                 new Key[] {
                         ctrlKey(CtrlKey.Type.Switch_HandMode),
@@ -131,12 +142,6 @@ public class PinyinKeyTable extends KeyTable {
                 };
     }
 
-    @Override
-    protected XPadKey createXPadKey() {
-        Key[][][] zone_2_keys = createXPadZone2Keys();
-        return xPadKey(Keyboard.Type.Pinyin, zone_2_keys);
-    }
-
     /** 创建拼音后继字母第 1/2 级按键 */
     public Key[][] createNextCharKeys(
             PinyinCharsTree charsTree, //
@@ -151,6 +156,17 @@ public class PinyinKeyTable extends KeyTable {
         // 在初始键盘上显隐按键
         Key[][] gridKeys = createGrid();
 
+        fillLevel1NextCharKeys(gridKeys, level0CharsTree, level0Char, level1Char);
+        fillLevel2NextCharKeys(gridKeys, level0Char, level1Char, level2Char, level2NextChars);
+
+        return gridKeys;
+    }
+
+    /** 向 <code>gridKeys</code> 填充拼音{@link CharKey.Level#level_1 第一级}后继按键 */
+    protected void fillLevel1NextCharKeys(
+            Key[][] gridKeys, PinyinCharsTree level0CharsTree,//
+            String level0Char, String level1Char
+    ) {
         // Note: 第 1 级后继按键与键盘初始按键位置保持一致
         for (int i = 0; i < gridKeys.length; i++) {
             for (int j = 0; j < gridKeys[i].length; j++) {
@@ -175,7 +191,14 @@ public class PinyinKeyTable extends KeyTable {
                 gridKeys[i][j] = level1CharKey(nextChar, (b) -> b.disabled(disabled));
             }
         }
+    }
 
+    /** 向 <code>gridKeys</code> 填充拼音{@link CharKey.Level#level_2 第二级}后继按键 */
+    protected void fillLevel2NextCharKeys(
+            Key[][] gridKeys, //
+            String level0Char, String level1Char, String level2Char, //
+            Map<Integer, List<String>> level2NextChars
+    ) {
         // 统计按键总数，小于一定数量的，单独布局
         if (level2NextChars.size() <= 2) {
             List<String> keys = new ArrayList<>();
@@ -188,7 +211,7 @@ public class PinyinKeyTable extends KeyTable {
 
             if (keyAmountCoords != null) {
                 fillNextCharGridKeys(gridKeys, keyAmountCoords, keys, level0Char, level2Char);
-                return gridKeys;
+                return;
             }
         }
 
@@ -197,11 +220,10 @@ public class PinyinKeyTable extends KeyTable {
             GridCoord[] keyCoords = getLevel2KeyCoords(keyLength);
             fillNextCharGridKeys(gridKeys, keyCoords, keys, level0Char, level2Char);
         });
-
-        return gridKeys;
     }
 
-    private void fillNextCharGridKeys(
+    /** 按指定坐标 <code>keyCoords</code> 向 <code>gridKeys</code> 填充按键 <code>keys</code> */
+    protected void fillNextCharGridKeys(
             Key[][] gridKeys, GridCoord[] keyCoords, List<String> keys, String level0Char, String level2Char
     ) {
         int diff = keyCoords.length - keys.size();
@@ -218,7 +240,7 @@ public class PinyinKeyTable extends KeyTable {
         }
     }
 
-    /** 按韵母起始字母以此按行创建按键 */
+    /** 以韵母作为起始字母，按行创建指定声母（<code>level0Char</code>）的全部拼音组合按键 */
     public Key[][] createFullCharKeys(PinyinCharsTree charsTree, String level0Char) {
         Key[][] gridKeys = createEmptyGrid();
 

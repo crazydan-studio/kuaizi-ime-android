@@ -34,6 +34,7 @@ import org.crazydan.studio.app.ime.kuaizi.conf.ConfigKey;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTableV2;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgListener;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType;
@@ -174,7 +175,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     }
 
     protected PinyinKeyTable createPinyinKeyTable() {
-        return PinyinKeyTable.create(createKeyTableConfig());
+        return PinyinKeyTableV2.create(createKeyTableConfig());
     }
 
     protected Keyboard.HandMode getKeyboardHandMode() {
