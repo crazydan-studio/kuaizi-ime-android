@@ -44,7 +44,7 @@ public class EditorKeyboard extends EditorEditKeyboard {
         KeyTableConfig keyTableConfig = createKeyTableConfig(context);
         EditorKeyTable keyTable = EditorKeyTable.create(keyTableConfig);
 
-        return keyTable::createKeys;
+        return keyTable::createGrid;
     }
 
     @Override

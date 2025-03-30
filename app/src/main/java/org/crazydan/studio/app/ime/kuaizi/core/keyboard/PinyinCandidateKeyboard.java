@@ -81,7 +81,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
                 PinyinDict dict = context.dict.usePinyinDict();
                 PinyinCharsTree charsTree = dict.getPinyinCharsTree();
 
-                return () -> keyTable.createKeys(charsTree,
+                return () -> keyTable.createGrid(charsTree,
                                                  stateData.input,
                                                  stateData.getSpells(),
                                                  stateData.getPagingData(),
@@ -91,7 +91,7 @@ public class PinyinCandidateKeyboard extends InputCandidateKeyboard {
             case InputCandidate_Advance_Filter_Doing: {
                 PinyinCandidateAdvanceFilterStateData stateData = this.state.data();
 
-                return () -> keyTable.createAdvanceFilterKeys(stateData.getSpells(),
+                return () -> keyTable.createAdvanceFilterGrid(stateData.getSpells(),
                                                               stateData.getPagingData(),
                                                               stateData.getPageStart(),
                                                               stateData.getFilter());

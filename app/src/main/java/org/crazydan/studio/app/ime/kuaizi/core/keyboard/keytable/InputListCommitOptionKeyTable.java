@@ -51,7 +51,7 @@ public class InputListCommitOptionKeyTable extends KeyTable {
     }
 
     /** 创建定位按键 */
-    public Key[][] createKeys(Input.Option currentOption, boolean hasSpell, boolean hasVariant) {
+    public Key[][] createGrid(Input.Option currentOption, boolean hasSpell, boolean hasVariant) {
         Key[][] gridKeys = createEmptyGrid();
 
         boolean isOnlyPinyin = currentOption.wordSpellUsedMode == PinyinWord.SpellUsedMode.replacing;

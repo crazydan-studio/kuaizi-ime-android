@@ -53,18 +53,18 @@ public class SymbolEmojiKeyTable extends KeyTable {
     }
 
     /** 表情符号按键的分页大小 */
-    public int getEmojiKeysPageSize() {
+    public int getEmojiGridPageSize() {
         return countGridSize(getLevelKeyCoords());
     }
 
     /** 创建表情符号按键 */
-    public Key[][] createEmojiKeys(
+    public Key[][] createEmojiGrid(
             List<String> groups, List<InputWord> words, String selectedGroup, int startIndex
     ) {
         Key[][] gridKeys = createEmptyGrid();
 
         int dataSize = words.size();
-        int pageSize = getEmojiKeysPageSize();
+        int pageSize = getEmojiGridPageSize();
         int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
 
@@ -102,12 +102,12 @@ public class SymbolEmojiKeyTable extends KeyTable {
     }
 
     /** 标点符号按键的分页大小 */
-    public int getSymbolKeysPageSize() {
+    public int getSymbolGridPageSize() {
         return countGridSize(getLevelKeyCoords());
     }
 
     /** 创建标点符号按键 */
-    public Key[][] createSymbolKeys(SymbolGroup symbolGroup, boolean onlyPair, int startIndex) {
+    public Key[][] createSymbolGrid(SymbolGroup symbolGroup, boolean onlyPair, int startIndex) {
         Key[][] gridKeys = createEmptyGrid();
 
         Symbol[] symbols = onlyPair ? Arrays.stream(symbolGroup.symbols)
@@ -115,7 +115,7 @@ public class SymbolEmojiKeyTable extends KeyTable {
                                             .toArray(Symbol[]::new) : symbolGroup.symbols;
 
         int dataSize = symbols.length;
-        int pageSize = getEmojiKeysPageSize();
+        int pageSize = getEmojiGridPageSize();
         int currentPage = dataSize == 0 ? 0 : startIndex / pageSize + 1;
         int totalPage = (int) Math.ceil(dataSize / (pageSize * 1.0));
 

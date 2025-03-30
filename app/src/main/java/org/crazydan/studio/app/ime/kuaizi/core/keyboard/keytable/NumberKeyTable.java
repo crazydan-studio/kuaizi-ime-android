@@ -52,7 +52,7 @@ public class NumberKeyTable extends KeyTable {
     }
 
     /** 创建{@link NumberKeyboard 数字键盘}按键 */
-    public Key[][] createKeys(boolean showExitKey) {
+    public Key[][] createGrid(boolean showExitKey) {
         if (this.config.xInputPadEnabled) {
             return createXPadGrid();
         }

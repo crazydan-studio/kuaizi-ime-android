@@ -113,10 +113,10 @@ public class PinyinKeyboard extends EditorEditKeyboard {
                             // Note：将前序状态置空，以确保按键动画仅在前后状态变化时被禁用一次
                             this.state = new State(this.state.type, (State.Data) this.state.data());
 
-                            return (KeyFactory.NoAnimation) keyTable::createKeys;
+                            return (KeyFactory.NoAnimation) keyTable::createGrid;
                     }
                 }
-                return keyTable::createKeys;
+                return keyTable::createGrid;
             }
         }
     }

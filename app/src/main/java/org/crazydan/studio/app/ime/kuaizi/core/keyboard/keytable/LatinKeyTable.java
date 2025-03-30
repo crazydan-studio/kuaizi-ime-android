@@ -52,7 +52,7 @@ public class LatinKeyTable extends KeyTable {
     }
 
     /** 创建 {@link LatinKeyboard} 按键 */
-    public Key[][] createKeys() {
+    public Key[][] createGrid() {
         if (this.config.xInputPadEnabled) {
             return createXPadGrid();
         }

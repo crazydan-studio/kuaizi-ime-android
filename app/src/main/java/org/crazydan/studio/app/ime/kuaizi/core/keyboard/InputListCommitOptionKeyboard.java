@@ -54,7 +54,7 @@ public class InputListCommitOptionKeyboard extends BaseKeyboard {
 
         InputListCommitOptionChooseStateData stateData = this.state.data();
 
-        return () -> keyTable.createKeys(stateData.getOption(), stateData.hasSpell(), stateData.hasVariant());
+        return () -> keyTable.createGrid(stateData.getOption(), stateData.hasSpell(), stateData.hasVariant());
     }
 
     @Override

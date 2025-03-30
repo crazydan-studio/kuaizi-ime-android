@@ -47,7 +47,7 @@ public class LatinKeyboard extends DirectInputKeyboard {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         LatinKeyTable keyTable = LatinKeyTable.create(keyTableConf);
 
-        return keyTable::createKeys;
+        return keyTable::createGrid;
     }
 
     @Override

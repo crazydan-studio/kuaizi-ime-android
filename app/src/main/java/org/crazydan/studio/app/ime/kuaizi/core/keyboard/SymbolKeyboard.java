@@ -73,7 +73,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
 
         SymbolChooseStateData stateData = this.state.data();
 
-        return () -> keyTable.createSymbolKeys(stateData.getGroup(), stateData.isOnlyPair(), stateData.getPageStart());
+        return () -> keyTable.createSymbolGrid(stateData.getGroup(), stateData.isOnlyPair(), stateData.getPageStart());
     }
 
     @Override
@@ -115,7 +115,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
         CharInput pending = inputList.getCharPending();
 
         SymbolEmojiKeyTable keyTable = createKeyTable(context);
-        int pageSize = keyTable.getSymbolKeysPageSize();
+        int pageSize = keyTable.getSymbolGridPageSize();
 
         SymbolChooseStateData stateData = new SymbolChooseStateData(pending, pageSize, onlyPair);
         this.state = new State(State.Type.InputCandidate_Choose_Doing, stateData);

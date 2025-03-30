@@ -53,7 +53,7 @@ public class NumberKeyboard extends DirectInputKeyboard {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         NumberKeyTable keyTable = NumberKeyTable.create(keyTableConf);
 
-        return () -> keyTable.createKeys(this.needToShowExit);
+        return () -> keyTable.createGrid(this.needToShowExit);
     }
 
     @Override

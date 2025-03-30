@@ -65,7 +65,7 @@ public class PinyinCandidateKeyTable extends KeyTable {
     }
 
     /** 创建输入候选字按键 */
-    public Key[][] createKeys(
+    public Key[][] createGrid(
             PinyinCharsTree charsTree, CharInput input,//
             List<PinyinWord.Spell> spells, List<InputWord> words, //
             int startIndex, PinyinWord.Filter wordFilter
@@ -181,7 +181,7 @@ public class PinyinCandidateKeyTable extends KeyTable {
     }
 
     /** 创建输入候选字高级过滤按键 */
-    public Key[][] createAdvanceFilterKeys(
+    public Key[][] createAdvanceFilterGrid(
             List<PinyinWord.Spell> spells, List<PinyinWord.Radical> radicals, //
             int startIndex, PinyinWord.Filter wordFilter
     ) {

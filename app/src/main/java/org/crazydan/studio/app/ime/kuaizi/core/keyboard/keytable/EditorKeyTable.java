@@ -48,7 +48,7 @@ public class EditorKeyTable extends KeyTable {
     }
 
     /** 创建定位按键 */
-    public Key[][] createKeys() {
+    public Key[][] createGrid() {
         Key[][] gridKeys = createEmptyGrid();
 
         int index_end = getGridLastColumnIndex();

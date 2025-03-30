@@ -65,7 +65,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
 
         EmojiChooseStateData stateData = this.state.data();
 
-        return () -> keyTable.createEmojiKeys(stateData.getGroups(),
+        return () -> keyTable.createEmojiGrid(stateData.getGroups(),
                                               stateData.getPagingData(),
                                               stateData.getGroup(),
                                               stateData.getPageStart());
@@ -108,7 +108,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
         CharInput pending = inputList.getCharPending();
 
         SymbolEmojiKeyTable keyTable = createKeyTable(context);
-        int pageSize = keyTable.getEmojiKeysPageSize();
+        int pageSize = keyTable.getEmojiGridPageSize();
 
         UserInputDataDict dict = context.dict.useUserInputDataDict();
         Emojis emojis = dict.getAllEmojis(pageSize / 2);

@@ -56,7 +56,7 @@ public class MathKeyboard extends EditorEditKeyboard {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         MathKeyTable keyTable = MathKeyTable.create(keyTableConf);
 
-        return keyTable::createKeys;
+        return keyTable::createGrid;
     }
 
     @Override

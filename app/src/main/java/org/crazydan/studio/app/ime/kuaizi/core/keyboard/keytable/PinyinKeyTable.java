@@ -59,7 +59,7 @@ public class PinyinKeyTable extends KeyTable {
     }
 
     /** 创建 {@link PinyinKeyboard} 按键 */
-    public Key[][] createKeys() {
+    public Key[][] createGrid() {
         if (this.config.xInputPadEnabled) {
             return createXPadGrid();
         }
@@ -149,7 +149,7 @@ public class PinyinKeyTable extends KeyTable {
         }
 
         // 在初始键盘上显隐按键
-        Key[][] gridKeys = createKeys();
+        Key[][] gridKeys = createGrid();
 
         // Note: 第 1 级后继按键与键盘初始按键位置保持一致
         for (int i = 0; i < gridKeys.length; i++) {
@@ -226,7 +226,7 @@ public class PinyinKeyTable extends KeyTable {
 
         PinyinCharsTree level0CharsTree = charsTree.getChild(level0Char);
         if (level0CharsTree == null) {
-            return createKeys();
+            return createGrid();
         }
 
         List<String> restCharList = new ArrayList<>();
