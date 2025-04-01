@@ -96,7 +96,7 @@ public class MathKeyTable extends KeyTable {
         gridKeys[4][index_end] = ctrlKey(CtrlKey.Type.Space);
 
         GridCoord[][] keyCoords = getKeyCoords();
-        fillGridKeysByCoord(gridKeys, keyCoords, keys);
+        fillGridLevelKeysByCoord(gridKeys, keyCoords, keys);
 
         return gridKeys;
     }

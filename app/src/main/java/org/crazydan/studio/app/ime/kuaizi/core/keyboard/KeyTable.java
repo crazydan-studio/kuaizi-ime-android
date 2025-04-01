@@ -193,6 +193,7 @@ public abstract class KeyTable {
         return length / 2 + 1;
     }
 
+    /** 根据网格坐标向网格填充按键 */
     protected void fillGridKeyByCoord(Key[][] gridKeys, GridCoord coord, Key key) {
         int row = coord.row;
         int column = coord.column;
@@ -201,9 +202,19 @@ public abstract class KeyTable {
     }
 
     /** 根据网格坐标向网格填充按键 */
-    protected void fillGridKeysByCoord(Key[][] gridKeys, GridCoord[][] keyCoords, Key[] keys) {
+    protected void fillGridKeysByCoord(Key[][] gridKeys, GridCoord[] keyCoords, Key[] keys) {
+        for (int i = 0; i < keyCoords.length; i++) {
+            GridCoord coord = keyCoords[i];
+            Key key = keys[i];
+
+            fillGridKeyByCoord(gridKeys, coord, key);
+        }
+    }
+
+    /** 根据网格坐标向网格填充等级按键 */
+    protected void fillGridLevelKeysByCoord(Key[][] gridKeys, GridCoord[][] levelKeyCoords, Key[] keys) {
         int dataIndex = 0;
-        for (GridCoord[] coords : keyCoords) {
+        for (GridCoord[] coords : levelKeyCoords) {
             for (GridCoord coord : coords) {
                 if (dataIndex >= keys.length) {
                     break;

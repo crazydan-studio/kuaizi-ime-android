@@ -100,7 +100,7 @@ public class NumberKeyTable extends KeyTable {
         }
 
         GridCoord[][] keyCoords = getKeyCoords();
-        fillGridKeysByCoord(gridKeys, keyCoords, keys);
+        fillGridLevelKeysByCoord(gridKeys, keyCoords, keys);
 
         return gridKeys;
     }

@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.crazydan.studio.app.ime.kuaizi.common.utils.CollectionUtils;
 import org.crazydan.studio.app.ime.kuaizi.core.Key;
 import org.crazydan.studio.app.ime.kuaizi.core.Keyboard;
-import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.KeyTableConfig;
 import org.crazydan.studio.app.ime.kuaizi.dict.PinyinCharsTree;
@@ -56,20 +56,20 @@ public class PinyinKeyTableV2 extends PinyinKeyTable {
                         // 😂
                         emojiKey("\uD83D\uDE02"),
                         symbolKey("！", "!"),
+                        level0CharKey("ü", "v", "V"),
+                        level0CharKey("i", "I"),
                         level0CharKey("s", "S"),
                         level0CharKey("c", "C"),
-                        level0CharKey("q", "Q"),
-                        level0CharKey("zh", "Zh", "ZH"),
-                        level0CharKey("ch", "Ch", "CH"),
+                        level0CharKey("r", "R"),
                         } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Math),
                 symbolKey("？", "?"),
-                level0CharKey("p", "P"),
+                level0CharKey("u", "U"),
+                level0CharKey("a", "A"),
+                level0CharKey("k", "K"),
+                level0CharKey("ch", "Ch", "CH"),
                 level0CharKey("z", "Z"),
-                level0CharKey("x", "X"),
-                level0CharKey("b", "B"),
-                level0CharKey("sh", "Sh", "SH"),
                 ctrlKey(CtrlKey.Type.Backspace),
                 } //
                 , new Key[] {
@@ -77,20 +77,20 @@ public class PinyinKeyTableV2 extends PinyinKeyTable {
                 // 😄
                 emojiKey("\uD83D\uDE04"),
                 symbolKey("；", ";"),
-                level0CharKey("w", "W"),
-                level0CharKey("ü", "v", "V"),
-                level0CharKey("u", "U"),
-                level0CharKey("d", "D"),
-                level0CharKey("y", "Y"),
+                level0CharKey("o", "O"),
+                level0CharKey("e", "E"),
+                level0CharKey("g", "G"),
+                level0CharKey("zh", "Zh", "ZH"),
+                level0CharKey("sh", "Sh", "SH"),
                 } //
                 , new Key[] {
                 switcherCtrlKey(Keyboard.Type.Emoji),
                 symbolKey("：", ":"),
                 level0CharKey("f", "F"),
-                level0CharKey("o", "O"),
-                ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
-                level0CharKey("i", "I"),
                 level0CharKey("m", "M"),
+                ctrlKey(CtrlKey.Type.Editor_Cursor_Locator),
+                level0CharKey("h", "H"),
+                level0CharKey("t", "T"),
                 this.config.hasInputs ? ctrlKey(CtrlKey.Type.Commit_InputList) : enterCtrlKey(),
                 } //
                 , new Key[] {
@@ -98,130 +98,298 @@ public class PinyinKeyTableV2 extends PinyinKeyTable {
                 // 😉
                 emojiKey("\uD83D\uDE09"),
                 symbolKey("。", "."),
-                level0CharKey("k", "K"),
-                level0CharKey("e", "E"),
-                level0CharKey("a", "A"),
+                level0CharKey("w", "W"),
+                level0CharKey("b", "B"),
+                level0CharKey("j", "J"),
                 level0CharKey("l", "L"),
-                level0CharKey("n", "N"),
+                level0CharKey("d", "D"),
                 } //
                 , new Key[] {
                 ctrlKey(CtrlKey.Type.RevokeInput, (b) -> b.disabled(!this.config.hasRevokableInputsCommit)),
                 symbolKey("，", ","),
-                level0CharKey("r", "R"),
-                level0CharKey("j", "J"),
-                level0CharKey("t", "T"),
-                level0CharKey("g", "G"),
-                level0CharKey("h", "H"),
+                level0CharKey("p", "P"),
+                level0CharKey("q", "Q"),
+                level0CharKey("x", "X"),
+                level0CharKey("n", "N"),
+                level0CharKey("y", "Y"),
                 ctrlKey(CtrlKey.Type.Space),
                 },
                 };
     }
 
     @Override
-    protected void fillLevel1NextCharKeys(
-            Key[][] gridKeys, PinyinCharsTree level0CharsTree,//
-            String level0Char, String level1Char
-    ) {
-        super.fillLevel1NextCharKeys(gridKeys, level0CharsTree, level0Char, level1Char);
-
-        switch (level0Char) {
-            case "h": {
-                gridKeys[3][5] = gridKeys[3][6];
-                gridKeys[3][4] = gridKeys[4][7];
-                gridKeys[3][6] = gridKeys[4][7] = noopCtrlKey();
-                break;
-            }
-            case "n": {
-                gridKeys[3][4] = gridKeys[5][5];
-                gridKeys[5][5] = noopCtrlKey();
-                break;
-            }
-        }
-    }
-
-    @Override
-    protected void fillLevel2NextCharKeys(
-            Key[][] gridKeys, //
+    public Key[][] createNextCharKeys(
+            PinyinCharsTree charsTree, //
             String level0Char, String level1Char, String level2Char, //
             Map<Integer, List<String>> level2NextChars
     ) {
-        List<String> keyChars = new ArrayList<>();
-        level2NextChars.forEach((len, chars) -> {
-            keyChars.addAll(chars);
+        PinyinCharsTree level0CharsTree = charsTree.getChild(level0Char);
+        if (level0CharsTree == null) {
+            return createEmptyGrid();
+        }
+
+        Key[][] gridKeys = createEmptyGrid();
+
+        if (level1Char == null) {
+            level1Char = "";
+        }
+
+        Map<String, GridCoord> level1KeyCoords = new HashMap<>();
+        Map<String, GridCoord> level2KeyCoords = new HashMap<>();
+        if (CollectionUtils.contains(new String[] {
+                "sh", "zh", "ch", "z", "r", "c", "s",
+                }, level0Char)) {
+
+            level1KeyCoords.put("i", coord(4, 5));
+            level1KeyCoords.put("a", coord(4, 4));
+            level1KeyCoords.put("e", coord(3, 4));
+            level1KeyCoords.put("u", coord(2, 4));
+            level1KeyCoords.put("o", coord(5, 4));
+
+            switch (level1Char) {
+                case "a": {
+                    level2KeyCoords.put("ai", coord(3,3));
+                    level2KeyCoords.put("ao", coord(4,3));
+                    level2KeyCoords.put("an", coord(3,2));
+                    level2KeyCoords.put("ang", coord(5,2));
+                    break;
+                }
+                case "e": {
+                    level2KeyCoords.put("ei", coord(1,4));
+                    level2KeyCoords.put("en", coord(2, 5));
+                    level2KeyCoords.put("eng", coord(1,5));
+                    break;
+                }
+                case "u": {
+                    level2KeyCoords.put("ui", coord(1,2));
+                    level2KeyCoords.put("uo", coord(2,3));
+                    level2KeyCoords.put("un", coord(1,3));
+                    level2KeyCoords.put("ua", coord(0,3));
+                    level2KeyCoords.put("uai", coord(0, 4));
+                    level2KeyCoords.put("uan", coord(1,4));
+                    level2KeyCoords.put("uang", coord(0,5));
+                    break;
+                }
+                case "o": {
+                    level2KeyCoords.put("ou", coord(5, 3));
+                    level2KeyCoords.put("ong", coord(5, 2));
+                    break;
+                }
+            }
+        } else if (CollectionUtils.contains(new String[] {
+                "t", "l", "n", "d", "y",
+                }, level0Char)) {
+
+            level1KeyCoords.put("e", coord(2,6));
+            level1KeyCoords.put("a", coord(3,4));
+            level1KeyCoords.put("i", coord(2,5));
+            level1KeyCoords.put("o", coord(2,7));
+            level1KeyCoords.put("u", coord(4,4));
+
+            if (CollectionUtils.contains(new Object[]{"n","l"},level0Char)) {
+                level1KeyCoords.put("ü", coord(5, 4));
+            }
+            if ("n".equals(level0Char)) {
+                level1KeyCoords.put("g", coord(3,6));
+            }
+
+            switch (level1Char) {
+                case "e": {
+                    level2KeyCoords.put("ei", coord(1,5));
+                    level2KeyCoords.put("en", coord(0,6));
+                    level2KeyCoords.put("eng", coord(1, 6));
+                    break;
+                }
+                case "a": {
+                    level2KeyCoords.put("ai", coord(2,3));
+                    level2KeyCoords.put("ao", coord(2, 4));
+                    level2KeyCoords.put("an", coord(3,3));
+                    level2KeyCoords.put("ang", coord(3,2));
+                    break;
+                }
+                case "i": {
+                    level2KeyCoords.put("ie", coord(1,4));
+                    level2KeyCoords.put("iu", coord(1,2));
+                    level2KeyCoords.put("in", coord(0,5));
+                    level2KeyCoords.put("ing", coord(1,5));
+                    level2KeyCoords.put("ia", coord(2,3));
+                    level2KeyCoords.put("iao", coord(2,4));
+                    level2KeyCoords.put("ian", coord(0,4));
+                    level2KeyCoords.put("iang", coord(1,3));
+                    break;
+                }
+                case "o": {
+                    level2KeyCoords.put("ou", coord(1,7));
+                    level2KeyCoords.put("ong", coord(1, 6));
+                    break;
+                }
+                case "u": {
+                    level2KeyCoords.put("uo", coord(2,3));
+                    level2KeyCoords.put("ue", coord(4,3));
+                    level2KeyCoords.put("ui", coord(4,3));
+                    level2KeyCoords.put("un", coord(3,3));
+                    level2KeyCoords.put("uan", coord(3,2));
+                    break;
+                }
+                case "ü": {
+                    level2KeyCoords.put("üe", coord(5,3));
+                    break;
+                }
+            }
+        } else if (CollectionUtils.contains(new String[] {
+                "k", "g", "h",
+                }, level0Char)) {
+
+            level1KeyCoords.put("a", coord(2, 4));
+            level1KeyCoords.put("o", coord(3, 3));
+            level1KeyCoords.put("u", coord(3, 4));
+            level1KeyCoords.put("e", coord(4, 5));
+            level1KeyCoords.put("ng", coord(4, 6));
+            level1KeyCoords.put("m", coord(3, 7));
+
+            switch (level1Char) {
+                case "a": {
+                    level2KeyCoords.put("ai", coord(1, 3));
+                    level2KeyCoords.put("ao", coord(1, 4));
+                    level2KeyCoords.put("an", coord(2, 5));
+                    level2KeyCoords.put("ang", coord(1, 5));
+                    break;
+                }
+                case "o": {
+                    level2KeyCoords.put("ou", coord(4, 4));
+                    level2KeyCoords.put("ong", coord(4, 3));
+                    break;
+                }
+                case "u": {
+                    level2KeyCoords.put("un", coord(1, 4));
+                    level2KeyCoords.put("ui", coord(2, 5));
+                    level2KeyCoords.put("uo", coord(1, 5));
+                    level2KeyCoords.put("ua", coord(3, 5));
+                    level2KeyCoords.put("uai", coord(2, 6));
+                    level2KeyCoords.put("uan", coord(3, 6));
+                    level2KeyCoords.put("uang", coord(2, 7));
+                    break;
+                }
+                case "e": {
+                    level2KeyCoords.put("en", coord(5, 5));
+                    level2KeyCoords.put("eng", coord(5, 4));
+                    break;
+                }
+            }
+        } else if (CollectionUtils.contains(new String[] {
+                "f", "m", "w", "b", "p",
+                }, level0Char)) {
+
+            level1KeyCoords.put("i", coord(2, 4));
+            level1KeyCoords.put("e", coord(3, 4));
+            level1KeyCoords.put("a", coord(3, 5));
+            level1KeyCoords.put("u", coord(4, 5));
+            level1KeyCoords.put("o", coord(4, 6));
+
+            switch (level1Char) {
+                case "i": {
+                    level2KeyCoords.put("iu", coord(2, 3));
+                    level2KeyCoords.put("ie", coord(1, 3));
+                    level2KeyCoords.put("ian", coord(1, 4));
+                    level2KeyCoords.put("iao", coord(1, 5));
+                    level2KeyCoords.put("in", coord(2, 5));
+                    level2KeyCoords.put("ing", coord(2, 6));
+                    break;
+                }
+                case "e": {
+                    level2KeyCoords.put("ei", coord(3, 3));
+                    level2KeyCoords.put("en", coord(4, 4));
+                    level2KeyCoords.put("eng", coord(5, 3));
+                    break;
+                }
+                case "a": {
+                    level2KeyCoords.put("ai", coord(2, 5));
+                    level2KeyCoords.put("ao", coord(2, 6));
+                    level2KeyCoords.put("an", coord(3, 6));
+                    level2KeyCoords.put("ang", coord(2, 7));
+                    break;
+                }
+                case "o": {
+                    level2KeyCoords.put("ou", coord(5, 5));
+                    break;
+                }
+            }
+        } else if (CollectionUtils.contains(new String[] {
+                "j", "x", "q",
+                }, level0Char)) {
+
+            level1KeyCoords.put("i", coord(3, 4));
+            level1KeyCoords.put("u", coord(4, 6));
+
+            switch (level1Char) {
+                case "i": {
+                    level2KeyCoords.put("iu", coord(3, 3));
+                    level2KeyCoords.put("ie", coord(2, 4));
+                    level2KeyCoords.put("iong", coord(1, 4));
+                    level2KeyCoords.put("in", coord(2, 5));
+                    level2KeyCoords.put("ing", coord(1, 5));
+                    level2KeyCoords.put("ia", coord(3, 5));
+                    level2KeyCoords.put("iao", coord(2, 6));
+                    level2KeyCoords.put("ian", coord(3, 6));
+                    level2KeyCoords.put("iang", coord(2, 7));
+                    break;
+                }
+                case "u": {
+                    level2KeyCoords.put("ue", coord(3, 5));
+                    level2KeyCoords.put("un", coord(4, 5));
+                    level2KeyCoords.put("uan", coord(5, 5));
+                    break;
+                }
+            }
+        } else if (CollectionUtils.contains(new String[] {
+                "a", "o", "e",
+                }, level0Char)) {
+
+            switch (level0Char) {
+                case "e": {
+                    level1KeyCoords.put("i", coord(0, 4));
+                    level1KeyCoords.put("r", coord(1, 4));
+                    level1KeyCoords.put("n", coord(3, 3));
+                    level1KeyCoords.put("ng", coord(4, 3));
+                    break;
+                }
+                case "a": {
+                    level1KeyCoords.put("i", coord(0, 4));
+                    level1KeyCoords.put("o", coord(2, 3));
+                    level1KeyCoords.put("n", coord(3, 3));
+                    level1KeyCoords.put("ng", coord(4, 3));
+                    break;
+                }
+                case "o": {
+                    level1KeyCoords.put("u", coord(1, 2));
+                    break;
+                }
+            }
+        }
+
+        String finalLevel1Char = level1Char;
+        level1KeyCoords.forEach((ch, coord) -> {
+            boolean disabled = Objects.equals(finalLevel1Char, ch);
+            Key key = level1CharKey(ch, (b) -> b.disabled(disabled));
+
+            fillGridKeyByCoord(gridKeys, coord, key);
         });
 
-        Map<String, GridCoord> coords = getLevel2KeyCoords(level1Char);
-        coords.forEach((ch, coord) -> {
-            if (!keyChars.contains(ch)) {
+        List<String> level2KeyChars = new ArrayList<>();
+        level2NextChars.forEach((len, chars) -> {
+            level2KeyChars.addAll(chars);
+        });
+        level2KeyCoords.forEach((ch, coord) -> {
+            if (!level2KeyChars.contains(ch)) {
                 return;
             }
 
             boolean disabled = Objects.equals(level2Char, ch);
             Key key = level2CharKey("", ch, (b) -> b.disabled(disabled));
+
             fillGridKeyByCoord(gridKeys, coord, key);
         });
-    }
 
-    /** 根据拼音{@link CharKey.Level#level_1 第一级}按键，获取第二级按键坐标 */
-    private Map<String, GridCoord> getLevel2KeyCoords(String level1Char) {
-        if (level1Char == null) {
-            return new HashMap<>();
-        }
-
-        switch (level1Char) {
-            case "i": {
-                return new HashMap<String, GridCoord>() {{
-                    put("iao", coord(1, 6));
-                    put("iang", coord(1, 7));
-                    put("ia", coord(2, 6));
-                    put("ian", coord(2, 7));
-                    put("in", coord(3, 6));
-                    put("ing", coord(3, 7));
-                    put("ie", coord(4, 6));
-                    put("iu", coord(4, 7));
-                    put("iong", coord(5, 6));
-                }};
-            }
-            case "u": {
-                return new HashMap<String, GridCoord>() {{
-                    put("un", coord(0, 5));
-                    put("uo", coord(0, 6));
-                    put("ui", coord(1, 4));
-                    put("ue", coord(1, 5));
-                    put("uai", coord(1, 6));
-                    put("uang", coord(1, 7));
-                    put("ua", coord(2, 6));
-                    put("uan", coord(2, 7));
-                }};
-            }
-            case "a": {
-                return new HashMap<String, GridCoord>() {{
-                    put("ao", coord(4, 6));
-                    put("ang", coord(5, 4));
-                    put("an", coord(5, 5));
-                    put("ai", coord(5, 6));
-                }};
-            }
-            case "e": {
-                return new HashMap<String, GridCoord>() {{
-                    put("ei", coord(4, 3));
-                    put("er", coord(5, 2));
-                    put("en", coord(5, 3));
-                    put("eng", coord(5, 4));
-                }};
-            }
-            case "o": {
-                return new HashMap<String, GridCoord>() {{
-                    put("ou", coord(3, 2));
-                    put("ong", coord(2, 3));
-                }};
-            }
-            case "ü": {
-                return new HashMap<String, GridCoord>() {{
-                    put("üe", coord(1, 3));
-                }};
-            }
-        }
-        return new HashMap<>();
+        return gridKeys;
     }
 }
