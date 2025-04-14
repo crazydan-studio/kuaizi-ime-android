@@ -64,7 +64,7 @@ public class IMEditorView extends BaseThemedView {
         ;
     }
 
-    private final Handler inputMsgHandler;
+    private final Handler asyncInputMsgHandler;
     private final AudioPlayer audioPlayer;
 
     /** Note: 在子类中，可能不存在输入候选视图 */
@@ -85,7 +85,7 @@ public class IMEditorView extends BaseThemedView {
                               R.raw.tick_clock,
                               R.raw.tick_ping);
 
-        this.inputMsgHandler = new Handler(Looper.getMainLooper()) {
+        this.asyncInputMsgHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(@NonNull Message msg) {
                 handleMsgInMainLooper((InputMsg) msg.obj);
@@ -176,15 +176,29 @@ public class IMEditorView extends BaseThemedView {
     /** 响应 {@link InputMsg} 消息：向下传递消息给内部视图 */
     @Override
     public void onMsg(InputMsg msg) {
-        Message m = Message.obtain();
-        m.obj = msg;
+        switch (msg.type) {
+            // 处理来自线程的消息
+            case InputFavorite_Paste_Done:
+            case InputFavorite_Query_Done:
+            case InputFavorite_Save_Done:
+            case InputFavorite_Delete_Done:
+            case InputFavorite_Clear_All_Done:
+            case InputClip_CanBe_Favorite: {
+                Message m = Message.obtain();
+                m.obj = msg;
 
-        this.inputMsgHandler.sendMessage(m);
+                this.asyncInputMsgHandler.sendMessage(m);
+                break;
+            }
+            default: {
+                handleMsgInMainLooper(msg);
+            }
+        }
     }
 
     /**
      * 从线程中也会发送涉及视图更新的消息，而视图更新只能在主线程中进行，
-     * 故而，在最上层的视图中通过 {@link Handler} 处理所有的 {@link InputMsg} 消息
+     * 故而，在最上层的视图中通过 {@link Handler} 处理来自线程中的 {@link InputMsg} 消息
      */
     private void handleMsgInMainLooper(InputMsg msg) {
         super.onMsg(msg);
