@@ -30,7 +30,6 @@ import org.crazydan.studio.app.ime.kuaizi.core.input.CharInput;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CharKey;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTable;
-import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.PinyinKeyTableV2;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.InputCharsFlipStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.InputCharsSlipStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
@@ -60,7 +59,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
     @Override
     public KeyFactory buildKeyFactory(KeyboardContext context) {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
-        PinyinKeyTable keyTable = PinyinKeyTableV2.create(keyTableConf);
+        PinyinKeyTable keyTable = PinyinKeyTable.create(keyTableConf);
 
         switch (this.state.type) {
             case InputChars_Slip_Doing: {
