@@ -88,6 +88,8 @@ public class InputboardView extends BaseMsgListenerView {
         this.tools.editorPaste = new Btn(this, R.id.btn_editor_paste, this::onEditorPaste);
         this.tools.editorCut = new Btn(this, R.id.btn_editor_cut, this::onEditorCut);
         this.tools.editorSelectAll = new Btn(this, R.id.btn_editor_select_all, this::onEditorSelectAll);
+        this.tools.editorUndo = new Btn(this, R.id.btn_editor_undo, this::onEditorUndo);
+        this.tools.editorRedo = new Btn(this, R.id.btn_editor_redo, this::onEditorRedo);
 
         this.tools.cleanInputList = new Btn(this, R.id.btn_clean_input_list, this::onCleanInputList);
         this.tools.cancelCleanInputList = new Btn(this, R.id.btn_cancel_clean_input_list, this::onCancelCleanInputList);
@@ -266,6 +268,14 @@ public class InputboardView extends BaseMsgListenerView {
         fire_Editor_Action_Msg(EditorAction.select_all);
     }
 
+    private void onEditorUndo(View v) {
+        fire_Editor_Action_Msg(EditorAction.undo);
+    }
+
+    private void onEditorRedo(View v) {
+        fire_Editor_Action_Msg(EditorAction.redo);
+    }
+
     private void fire_Editor_Action_Msg(EditorAction action) {
         UserEditorActionSingleTapMsgData data = new UserEditorActionSingleTapMsgData(action);
         UserInputMsg msg = UserInputMsg.build((b) -> b.type(SingleTap_Btn_Editor_Action).data(data));
@@ -325,6 +335,9 @@ public class InputboardView extends BaseMsgListenerView {
         public Btn editorPaste;
         public Btn editorCut;
         public Btn editorSelectAll;
+        public Btn editorUndo;
+        public Btn editorRedo;
+
         public Btn settings;
         // >>>>>>>>>>>>>>
 
@@ -348,6 +361,8 @@ public class InputboardView extends BaseMsgListenerView {
                     this.editorPaste,
                     this.editorCut,
                     this.editorSelectAll,
+                    this.editorUndo,
+                    this.editorRedo,
                     this.settings,
                     };
         }
