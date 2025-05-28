@@ -250,10 +250,16 @@ public class ViewGestureDetector {
         SingleTapGestureData latestTapData = this.latestSingleTap;
         boolean isContinuousTap = latestTapData != null //
                                   && data.timestamp - latestTapData.timestamp < DOUBLE_TAP_TIMEOUT_MILLS;
-
         if (isContinuousTap) {
-            tapData = new SingleTapGestureData(data, latestTapData.tick + 1);
+            GestureData start = this.latestSingleTap;
+            Motion motion = createMotion(data, start);
+
+            // 仅在相同位置的点击才做次数累加
+            if (motion.distance < this.movingDistanceThreshold * 1.5) {
+                tapData = new SingleTapGestureData(data, latestTapData.tick + 1);
+            }
         }
+
         this.latestSingleTap = tapData;
 
         // Note：双击也会触发两次单击事件，且均先于双击事件触发

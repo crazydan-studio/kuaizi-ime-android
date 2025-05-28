@@ -154,7 +154,7 @@ public class KeyboardViewGestureListener implements ViewGestureDetector.Listener
 
     @Override
     public void onGesture(ViewGestureDetector.GestureType type, ViewGestureDetector.GestureData data) {
-        KeyViewHolder<?> keyViewHolder = this.keyboardView.findVisibleKeyViewHolderUnderLoose(data.at.x, data.at.y);
+        KeyViewHolder<?> keyViewHolder = getKeyViewHolder(data);
 
         KeyViewHolder<?> oldKeyViewHolder = this.prevKeyViewHolder;
         this.prevKeyViewHolder = keyViewHolder;
@@ -245,6 +245,10 @@ public class KeyboardViewGestureListener implements ViewGestureDetector.Listener
 
     private boolean isAvailableKey(Key key) {
         return key != null && !CtrlKey.Type.NoOp.match(key) && !key.disabled;
+    }
+
+    private KeyViewHolder<?> getKeyViewHolder(ViewGestureDetector.GestureData data) {
+        return data == null ? null : this.keyboardView.findVisibleKeyViewHolderUnderLoose(data.at.x, data.at.y);
     }
 
     private Key getKey(KeyViewHolder<?> holder) {
