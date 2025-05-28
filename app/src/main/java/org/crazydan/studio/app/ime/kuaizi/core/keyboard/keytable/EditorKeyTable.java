@@ -75,6 +75,16 @@ public class EditorKeyTable extends KeyTable {
         return gridKeys;
     }
 
+    public Key[][] createGrid(CtrlKey.Type type) {
+        Key[][] gridKeys = createEmptyGrid();
+
+        int index_mid = getGridMiddleColumnIndex();
+
+        gridKeys[3][index_mid] = ctrlKey(type);
+
+        return gridKeys;
+    }
+
     public CtrlKey editCtrlKey(EditorAction action) {
         String label = action.label;
         CtrlKey.Option<EditorAction> option = new CtrlKey.Option<>(action);

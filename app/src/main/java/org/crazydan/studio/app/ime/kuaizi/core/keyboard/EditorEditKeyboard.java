@@ -21,8 +21,10 @@ package org.crazydan.studio.app.ime.kuaizi.core.keyboard;
 
 import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.common.Point;
+import org.crazydan.studio.app.ime.kuaizi.core.KeyFactory;
 import org.crazydan.studio.app.ime.kuaizi.core.KeyboardContext;
 import org.crazydan.studio.app.ime.kuaizi.core.key.CtrlKey;
+import org.crazydan.studio.app.ime.kuaizi.core.keyboard.keytable.EditorKeyTable;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.state.EditorEditStateData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
 
@@ -35,6 +37,31 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserKeyMsg;
  * @date 2025-02-01
  */
 public abstract class EditorEditKeyboard extends BaseKeyboard {
+
+    @Override
+    public KeyFactory buildKeyFactory(KeyboardContext context) {
+        if (this.state.type != State.Type.Editor_Edit_Doing) {
+            return doBuildKeyFactory(context);
+        }
+
+        KeyTableConfig keyTableConfig = createKeyTableConfig(context);
+        EditorKeyTable keyTable = EditorKeyTable.create(keyTableConfig);
+
+        EditorEditStateData stateData = this.state.data();
+
+        return (KeyFactory.NoAnimation) () -> {
+            CtrlKey.Type type = CtrlKey.Type.Editor_Cursor_Locator;
+
+            if (stateData.target == EditorEditStateData.Target.selection) {
+                type = CtrlKey.Type.Editor_Range_Selector;
+            }
+            return keyTable.createGrid(type);
+        };
+    }
+
+    protected KeyFactory doBuildKeyFactory(KeyboardContext context) {
+        return null;
+    }
 
     @Override
     protected boolean try_On_Common_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
@@ -68,6 +95,11 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
                 switch_Keyboard_To(context, Type.Editor);
                 return true;
             }
+            case LongPress_Key_Tick: {
+                // 长按定位按键进入内容选择模式
+                do_Start_Editor_Editing(context, EditorEditStateData.Target.selection, msg.data().at);
+                return true;
+            }
             case FingerMoving_Start: {
                 start_Editor_Editing(context, msg.data().at);
                 return true;
@@ -97,6 +129,10 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
             }
         }
 
+        do_Start_Editor_Editing(context, target, from);
+    }
+
+    protected void do_Start_Editor_Editing(KeyboardContext context, EditorEditStateData.Target target, Point from) {
         this.log.debug("Start editor editing: key=%s, at=%s", () -> new Object[] { context.key, from });
 
         EditorEditStateData stateData = new EditorEditStateData(target, from);
@@ -114,6 +150,7 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
     protected void on_Editor_Editing_Msg(KeyboardContext context, UserKeyMsg msg) {
         switch (msg.type) {
             case Press_Key_Start:
+            case LongPress_Key_Stop:
             case FingerMoving_Stop: {
                 stop_Editor_Editing(context);
                 return;

@@ -57,7 +57,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
     public boolean isMaster() {return true;}
 
     @Override
-    public KeyFactory buildKeyFactory(KeyboardContext context) {
+    public KeyFactory doBuildKeyFactory(KeyboardContext context) {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         PinyinKeyTable keyTable = PinyinKeyTable.create(keyTableConf);
 
@@ -139,6 +139,13 @@ public class PinyinKeyboard extends EditorEditKeyboard {
         }
 
         switch (this.state.type) {
+            case Editor_Edit_Doing: {
+                // 单独处理 key 为 null 的编辑消息：仅在手指滑出键盘后触发，用于结束编辑模式
+                if (key == null) {
+                    on_Editor_Editing_Msg(context, msg);
+                }
+                break;
+            }
             case InputChars_Slip_Doing: {
                 on_InputChars_Slip_Doing_UserKey_Msg(context, msg);
                 break;
