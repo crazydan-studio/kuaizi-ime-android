@@ -114,7 +114,18 @@ public abstract class KeyboardViewBase extends RecyclerView<KeyboardViewAdapter,
 
     public float getBottomSpacing() {
         KeyboardViewLayoutManager layoutManager = (KeyboardViewLayoutManager) getLayoutManager();
-        return layoutManager.getGridPaddingBottom();
+        return layoutManager.getGridBottomPadding();
+    }
+
+    public void updateGridBottomReservedHeight(float height) {
+        KeyboardViewLayoutManager layoutManager = (KeyboardViewLayoutManager) getLayoutManager();
+
+        float oldHeight = layoutManager.getGridBottomReservedHeight();
+        if (oldHeight != height) {
+            layoutManager.setGridBottomReservedHeight(height);
+            // 更新布局以显示实时效果
+            requestLayout();
+        }
     }
 
     /** Note: 若只是 {@link XPadKey} 内部的按键布局变化，则 {@link XPadKeyViewHolder} 将不会被重建 */

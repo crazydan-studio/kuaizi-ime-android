@@ -74,9 +74,11 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
     /** 按键行数 */
     private int gridRows;
     /** 网格右部最大空白：配置数据，用于确保按键最靠近右手 */
-    private float gridMaxPaddingRight;
+    private float gridMaxRightPadding;
     /** 网格底部空白：实际剩余空间 */
-    private float gridPaddingBottom;
+    private float gridBottomPadding;
+    /** 网格底部保留空间：在该保留空间内不绘制按键 */
+    private float gridBottomReservedHeight;
 
     private boolean reversed;
     private boolean xPadEnabled;
@@ -95,14 +97,18 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
         this.xPadEnabled = enabled;
     }
 
+    public void setGridBottomReservedHeight(float gridBottomReservedHeight) {
+        this.gridBottomReservedHeight = gridBottomReservedHeight;
+    }
+
     public void configGrid(
-            int columns, int rows, float gridItemMinRadius, float gridItemSpacing, float gridMaxPaddingRight
+            int columns, int rows, float gridItemMinRadius, float gridItemSpacing, float gridMaxRightPadding
     ) {
         this.gridColumns = columns;
         this.gridRows = rows;
         this.gridItemMinRadius = gridItemMinRadius;
         this.gridItemSpacing = gridItemSpacing;
-        this.gridMaxPaddingRight = gridMaxPaddingRight;
+        this.gridMaxRightPadding = gridMaxRightPadding;
     }
 
     @Override
@@ -130,8 +136,8 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
         // - 纵向半径（r2）与高度（h）的关系: h = 2 * r2 + (m - 1) * cos30 * (2 * r2 * cos30)
         // - 最终正六边形的半径: radius = Math.min(r1, r2)
         // - 按键实际绘制半径（减去一半间距）: R = radius - spacing / (2 * cos30)
-        int w = orientation == HexagonOrientation.POINTY_TOP ? getWidth() : getHeight();
-        int h = orientation == HexagonOrientation.POINTY_TOP ? getHeight() : getWidth();
+        int w = orientation == HexagonOrientation.POINTY_TOP ? getWidth() : getGridHeight();
+        int h = orientation == HexagonOrientation.POINTY_TOP ? getGridHeight() : getWidth();
         int n = orientation == HexagonOrientation.POINTY_TOP ? this.gridColumns : this.gridRows;
         int m = orientation == HexagonOrientation.POINTY_TOP ? this.gridRows : this.gridColumns;
         float r1 = w / ((2 * n + 1) * cos_30);
@@ -140,7 +146,7 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
         // 计算左上角的空白偏移量
         float gridPaddingTop = 0;
         float gridPaddingLeft = 0;
-        this.gridPaddingBottom = 0;
+        this.gridBottomPadding = 0;
 
         float radius;
         int compare = Double.compare(r1, r2);
@@ -152,9 +158,9 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
             float paddingY = h_left / 2;
             if (orientation == HexagonOrientation.POINTY_TOP) {
                 gridPaddingTop = paddingY;
-                this.gridPaddingBottom = paddingY;
+                this.gridBottomPadding = paddingY;
             } else {
-                gridPaddingLeft = Math.max(0, h_left - this.gridMaxPaddingRight);
+                gridPaddingLeft = Math.max(0, h_left - this.gridMaxRightPadding);
             }
         } else if (compare > 0) {
             radius = r2;
@@ -163,10 +169,10 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
             float w_left = w - w_used;
             float paddingX = w_left / 2;
             if (orientation == HexagonOrientation.POINTY_TOP) {
-                gridPaddingLeft = Math.max(0, w_left - this.gridMaxPaddingRight);
+                gridPaddingLeft = Math.max(0, w_left - this.gridMaxRightPadding);
             } else {
                 gridPaddingTop = paddingX;
-                this.gridPaddingBottom = paddingX;
+                this.gridBottomPadding = paddingX;
             }
         } else {
             radius = r1;
@@ -182,8 +188,8 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
         float rectTop = gridPaddingTop;
         float rectLeft = this.xPadEnabled //
                          ? 0 //
-                         : Math.min(gridPaddingLeft, this.gridMaxPaddingRight);
-        float rectHeight = getHeight() - this.gridPaddingBottom;
+                         : Math.min(gridPaddingLeft, this.gridMaxRightPadding);
+        float rectHeight = getGridHeight() - this.gridBottomPadding;
         float leftRectRight = rectLeft + hexagonRectWidth;
         float rightRectRight = getWidth() - rectLeft;
         float rightRectLeft = rightRectRight //
@@ -243,8 +249,16 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
         return rectHexagonList;
     }
 
-    public float getGridPaddingBottom() {
-        return this.gridPaddingBottom;
+    public float getGridBottomPadding() {
+        return this.gridBottomPadding;
+    }
+
+    public float getGridBottomReservedHeight() {
+        return this.gridBottomReservedHeight;
+    }
+
+    private int getGridHeight() {
+        return (int) (getHeight() - this.gridBottomReservedHeight);
     }
 
     /**

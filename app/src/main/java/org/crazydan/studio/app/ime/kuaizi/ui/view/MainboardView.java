@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.view;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TextView;
@@ -65,6 +66,16 @@ public class MainboardView extends BaseMsgListenerView implements ViewClosable {
 
         this.inputboardView = findViewById(R.id.inputboard);
         this.inputboardView.setListener(this);
+
+        // 监听系统导航高度的变化以添加底部空白，避免系统导航遮挡键盘
+        setOnApplyWindowInsetsListener((v, insets) -> {
+            int navBarHeight = insets.getStableInsetBottom();
+            if (!needBottomSpacing()) {
+                setBottomSpacing(navBarHeight);
+            }
+
+            return insets;
+        });
     }
 
     @Override
@@ -134,30 +145,50 @@ public class MainboardView extends BaseMsgListenerView implements ViewClosable {
 
     private void updateBottomSpacing(boolean force) {
         // Note: 仅竖屏模式下需要添加底部空白
-        boolean needSpacing = this.config.bool(ConfigKey.adapt_desktop_swipe_up_gesture)
-                              && !this.config.bool(ConfigKey.enable_x_input_pad)
-                              && this.config.get(ConfigKey.orientation) == Keyboard.Orientation.portrait;
-
+        boolean needSpacing = needBottomSpacing();
         if (!force && this.needToAddBottomSpacing == needSpacing) {
             return;
         }
         this.needToAddBottomSpacing = needSpacing;
 
-        float height = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_bottom_spacing);
-        height -= this.keyboardView.getBottomSpacing();
-
-        View bottomSpacingView = this.findViewById(R.id.bottom_spacing);
-        if (needSpacing && height > 0) {
-            ViewUtils.show(bottomSpacingView);
-            ViewUtils.setHeight(bottomSpacingView, (int) height);
-        } else {
-            ViewUtils.hide(bottomSpacingView);
-        }
+        float height = getBottomSpacingHeight();
+        setBottomSpacing(needSpacing ? height : -1);
     }
 
     private void toggleShowKeyboardWarning(boolean shown) {
         ViewUtils.visible(this.keyboardView, !shown);
         ViewUtils.visible(this.warningView, shown);
+    }
+
+    private boolean needBottomSpacing() {
+        return this.config.bool(ConfigKey.adapt_desktop_swipe_up_gesture)
+               && !this.config.bool(ConfigKey.enable_x_input_pad)
+               && this.config.get(ConfigKey.orientation) == Keyboard.Orientation.portrait;
+    }
+
+    private void setBottomSpacing(float height) {
+        height -= this.keyboardView.getBottomSpacing();
+        height = Math.max(0, height);
+
+        float origHeight = ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_view_height);
+        View parent = (View) this.keyboardView.getParent();
+
+        ViewUtils.setHeight(parent, (int) (origHeight + height));
+
+        this.keyboardView.updateGridBottomReservedHeight(height);
+    }
+
+    private float getBottomSpacingHeight() {
+        Resources resources = getResources();
+
+        // 优先选取系统导航的高度
+        try {
+            int resId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+
+            return resources.getDimensionPixelSize(resId);
+        } catch (Exception ignore) {
+            return ScreenUtils.pxFromDimension(getContext(), R.dimen.keyboard_bottom_spacing);
+        }
     }
 
     // =============================== End: 视图更新 ===================================
