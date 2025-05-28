@@ -51,6 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsg;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.EditorEditMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputClipMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTooltipShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.user.UserInputClipMsgData;
 
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.UserInputMsgType.SingleTap_Btn_Save_As_Favorite;
@@ -173,6 +174,11 @@ public class CandidatesView extends BaseThemedView {
             }
             case InputChars_Input_Popup_Hide_Doing: {
                 showInputKeyTip(null, false);
+                break;
+            }
+            case InputTooltip_Show_Doing: {
+                InputTooltipShowMsgData data = msg.data();
+                showTooltip(data.tipResId);
                 break;
             }
             case InputFavorite_Save_Done: {

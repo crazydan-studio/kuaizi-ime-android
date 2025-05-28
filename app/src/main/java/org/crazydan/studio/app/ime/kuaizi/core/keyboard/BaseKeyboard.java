@@ -53,6 +53,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputCharsInputPopupShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListCommitMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolCommitMsgData;
+import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTooltipShowMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardHandModeSwitchMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardStateChangeMsgData;
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.KeyboardSwitchMsgData;
@@ -73,6 +74,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputComp
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Commit_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_Committed_Revoke_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputList_PairSymbol_Commit_Doing;
+import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputTooltip_Show_Doing;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Choose_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Pending_Drop_Done;
 import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.Input_Selected_Delete_Done;
@@ -1059,6 +1061,13 @@ public abstract class BaseKeyboard implements Keyboard {
         InputMsgData data = new InputMsgData();
 
         fire_InputMsg(context, InputChars_Input_Popup_Hide_Doing, data);
+    }
+
+    /** 显示提示气泡 */
+    protected void show_InputTooltip(KeyboardContext context, int tipResId) {
+        InputMsgData data = new InputTooltipShowMsgData(tipResId);
+
+        fire_InputMsg(context, InputTooltip_Show_Doing, data);
     }
 
     /** 播放输入单击音效 */

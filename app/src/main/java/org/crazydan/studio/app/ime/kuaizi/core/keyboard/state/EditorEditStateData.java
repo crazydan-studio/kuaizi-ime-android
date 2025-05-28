@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.core.keyboard.state;
 
+import org.crazydan.studio.app.ime.kuaizi.R;
 import org.crazydan.studio.app.ime.kuaizi.common.Motion;
 import org.crazydan.studio.app.ime.kuaizi.common.Point;
 import org.crazydan.studio.app.ime.kuaizi.core.keyboard.State;
@@ -56,7 +57,14 @@ public class EditorEditStateData implements State.Data {
     }
 
     public enum Target {
-        cursor,
-        selection,
+        cursor(R.string.text_tip_editor_operation_move_cursor),
+        selection(R.string.text_tip_editor_operation_select_range),
+        ;
+
+        public final int tipResId;
+
+        Target(int tipResId) {
+            this.tipResId = tipResId;
+        }
     }
 }

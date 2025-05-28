@@ -43,7 +43,7 @@ public class LatinKeyboard extends DirectInputKeyboard {
     public boolean isMaster() {return true;}
 
     @Override
-    public KeyFactory doBuildKeyFactory(KeyboardContext context) {
+    public KeyFactory do_buildKeyFactory(KeyboardContext context) {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         LatinKeyTable keyTable = LatinKeyTable.create(keyTableConf);
 

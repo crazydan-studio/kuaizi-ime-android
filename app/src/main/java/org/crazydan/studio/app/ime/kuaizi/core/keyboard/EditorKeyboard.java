@@ -67,7 +67,7 @@ public class EditorKeyboard extends EditorEditKeyboard {
     }
 
     @Override
-    public void onMsg(KeyboardContext context, UserKeyMsg msg) {
+    protected void on_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         if (try_On_Common_UserKey_Msg(context, msg)) {
             return;
         }

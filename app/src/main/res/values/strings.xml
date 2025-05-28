@@ -153,6 +153,8 @@
     <string name="text_tip_editor_action_redo">已重做</string>
     <string name="text_tip_editor_action_paste">已粘贴</string>
     <string name="text_tip_editor_action_favorite">已收藏</string>
+    <string name="text_tip_editor_operation_move_cursor">滑动手指可移动光标</string>
+    <string name="text_tip_editor_operation_select_range">滑动手指可选择文本</string>
     <!-- confirm -->
     <string name="text_confirm_save_pasted_content">是否收藏已粘贴内容？</string>
     <string name="text_confirm_save_copied_content">是否收藏已复制内容？</string>

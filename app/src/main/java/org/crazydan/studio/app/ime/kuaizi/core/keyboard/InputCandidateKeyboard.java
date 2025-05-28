@@ -43,7 +43,7 @@ import static org.crazydan.studio.app.ime.kuaizi.core.msg.InputMsgType.InputCand
 public abstract class InputCandidateKeyboard extends EditorEditKeyboard {
 
     @Override
-    public void onMsg(KeyboardContext context, UserKeyMsg msg) {
+    protected void on_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
         show_InputCandidate_Popup_when_LongPress_Msg(context, msg);
 
         if (try_On_Common_UserKey_Msg(context, msg)) {

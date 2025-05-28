@@ -25,6 +25,8 @@ import org.crazydan.studio.app.ime.kuaizi.core.InputList;
 public enum InputMsgType {
     /** 输入音效播放中 */
     InputAudio_Play_Doing,
+    /** 输入提示显示中 */
+    InputTooltip_Show_Doing,
 
     /** 字符输入中 */
     InputChars_Input_Doing,

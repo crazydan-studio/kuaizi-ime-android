@@ -41,7 +41,7 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
     @Override
     public KeyFactory buildKeyFactory(KeyboardContext context) {
         if (this.state.type != State.Type.Editor_Edit_Doing) {
-            return doBuildKeyFactory(context);
+            return do_buildKeyFactory(context);
         }
 
         KeyTableConfig keyTableConfig = createKeyTableConfig(context);
@@ -59,19 +59,20 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
         };
     }
 
-    protected KeyFactory doBuildKeyFactory(KeyboardContext context) {
+    protected KeyFactory do_buildKeyFactory(KeyboardContext context) {
         return null;
     }
 
     @Override
-    protected boolean try_On_Common_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {
+    public void onMsg(KeyboardContext context, UserKeyMsg msg) {
         if (this.state.type == State.Type.Editor_Edit_Doing) {
             on_Editor_Editing_Msg(context, msg);
-            return true;
+        } else {
+            on_UserKey_Msg(context, msg);
         }
-
-        return super.try_On_Common_UserKey_Msg(context, msg);
     }
+
+    protected void on_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {}
 
     @Override
     protected boolean try_On_Common_CtrlKey_Msg(KeyboardContext context, UserKeyMsg msg) {
@@ -86,6 +87,10 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
 
     protected boolean try_On_CtrlKey_Editor_Cursor_Locator_Msg(KeyboardContext context, UserKeyMsg msg) {
         switch (msg.type) {
+            case Press_Key_Start: {
+                show_InputTooltip(context, EditorEditStateData.Target.cursor.tipResId);
+                return true;
+            }
             case SingleTap_Key: {
                 // 为双击提前播放音效
                 play_SingleTick_InputAudio(context);
@@ -96,8 +101,9 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
                 return true;
             }
             case LongPress_Key_Tick: {
-                // 长按定位按键进入内容选择模式
                 do_Start_Editor_Editing(context, EditorEditStateData.Target.selection, msg.data().at);
+
+                show_InputTooltip(context, EditorEditStateData.Target.selection.tipResId);
                 return true;
             }
             case FingerMoving_Start: {

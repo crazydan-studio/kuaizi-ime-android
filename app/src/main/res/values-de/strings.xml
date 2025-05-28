@@ -159,6 +159,8 @@
     <string name="text_tip_editor_action_redo">Wiederholen</string>
     <string name="text_tip_editor_action_paste">Eingefügt</string>
     <string name="text_tip_editor_action_favorite">Gespeichert</string>
+    <string name="text_tip_editor_operation_move_cursor">Zeigerfinger bewegen, um den Cursor zu verschieben</string>
+    <string name="text_tip_editor_operation_select_range">Zeigerfinger bewegen, um Text auszuwählen</string>
     <!-- confirm -->
     <string name="text_confirm_save_pasted_content">Eingefügten Inhalt speichern?</string>
     <string name="text_confirm_save_copied_content">Den kopierten Inhalt speichern?</string>

@@ -160,12 +160,14 @@
     <string name="text_tip_editor_action_redo">Redo</string>
     <string name="text_tip_editor_action_paste">Pasted</string>
     <string name="text_tip_editor_action_favorite">Saved</string>
+    <string name="text_tip_editor_operation_move_cursor">Slide finger to move cursor</string>
+    <string name="text_tip_editor_operation_select_range">Slide finger to select text</string>
+    <!-- confirm -->
     <string name="text_confirm_save_pasted_content">Save the pasted content?</string>
     <string name="text_confirm_save_copied_content">Save the copied content?</string>
     <string name="text_confirm_save_input_content">Save the committed content?</string>
     <string name="text_confirm_delete_selected">Delete the selected items?</string>
     <string name="text_confirm_clear_all">Clear all items?</string>
-    <!-- confirm -->
     <string name="text_confirm_ime_enable_first">
         &lt;p>&lt;b>%1$s&lt;/b> has not been enabled in the system,
         &amp;#160;so it cannot be activated.&lt;/p>
