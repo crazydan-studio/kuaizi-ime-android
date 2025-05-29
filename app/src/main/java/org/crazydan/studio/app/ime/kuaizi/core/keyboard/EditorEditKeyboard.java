@@ -41,7 +41,7 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
     @Override
     public KeyFactory buildKeyFactory(KeyboardContext context) {
         if (this.state.type != State.Type.Editor_Edit_Doing) {
-            return do_buildKeyFactory(context);
+            return do_BuildKeyFactory(context);
         }
 
         KeyTableConfig keyTableConfig = createKeyTableConfig(context);
@@ -59,7 +59,8 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
         };
     }
 
-    protected KeyFactory do_buildKeyFactory(KeyboardContext context) {
+    /** 构建 {@link State.Type#Editor_Edit_Doing} 状态以外的 {@link KeyFactory} */
+    protected KeyFactory do_BuildKeyFactory(KeyboardContext context) {
         return null;
     }
 
@@ -72,6 +73,7 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
         }
     }
 
+    /** 响应 {@link State.Type#Editor_Edit_Doing} 状态以外的 {@link UserKeyMsg} */
     protected void on_UserKey_Msg(KeyboardContext context, UserKeyMsg msg) {}
 
     @Override

@@ -56,7 +56,7 @@ public class EmojiKeyboard extends InputCandidateKeyboard {
     }
 
     @Override
-    public KeyFactory do_buildKeyFactory(KeyboardContext context) {
+    public KeyFactory do_BuildKeyFactory(KeyboardContext context) {
         if (this.state.type != State.Type.InputCandidate_Choose_Doing) {
             return null;
         }

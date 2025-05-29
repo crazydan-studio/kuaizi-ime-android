@@ -57,7 +57,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
     public boolean isMaster() {return true;}
 
     @Override
-    public KeyFactory do_buildKeyFactory(KeyboardContext context) {
+    public KeyFactory do_BuildKeyFactory(KeyboardContext context) {
         KeyTableConfig keyTableConf = createKeyTableConfig(context);
         PinyinKeyTable keyTable = PinyinKeyTable.create(keyTableConf);
 
