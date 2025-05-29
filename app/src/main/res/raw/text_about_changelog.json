@@ -1,4 +1,24 @@
 {
+  "3.1.1": {
+    "date": "2025-05-29",
+    "logs": [
+      {
+        "t": "在工具栏中新增撤销和重做功能按钮（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/53#issuecomment-2764370864\">#53</a>）。感谢&nbsp;<a href=\"https://github.com/qpst4\">@qpst4</a>&nbsp;的热心建议"
+      },
+      {
+        "t": "支持以长按光标定位按键的方式进入文本选择模式，提升文本编辑效率"
+      },
+      {
+        "t": "修复视图更新与用户操作不同步的问题，避免操作发生迟钝"
+      },
+      {
+        "t": "修复在英文键盘快速点击两个不同按键会造成后一个按键输入为大写字母的问题（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/58#issuecomment-2909647706\">#58</a>）。感谢&nbsp;<a href=\"https://github.com/MparkG\">@MparkG</a>&nbsp;的热心反馈"
+      },
+      {
+        "t": "修复系统虚拟导航按键遮挡键盘的问题，自动根据导航按键的高度在键盘底部添加空白（<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/54#issuecomment-2782141500\">#54</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/57\">#57</a>、<a href=\"https://github.com/crazydan-studio/kuaizi-ime/issues/59\">#59</a>）。感谢&nbsp;<a href=\"https://github.com/vongi\">@vongi</a>、<a href=\"https://github.com/Appel-flappen\">@Appel-flappen</a>&nbsp;和&nbsp;<a href=\"https://github.com/mxruben\">@mxruben</a>&nbsp;的热心反馈"
+      }
+    ]
+  },
   "3.1.0": {
     "date": "2025-03-29",
     "logs": [
