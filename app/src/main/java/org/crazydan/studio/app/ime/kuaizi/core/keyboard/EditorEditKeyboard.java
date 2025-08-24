@@ -90,7 +90,6 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
     protected boolean try_On_CtrlKey_Editor_Cursor_Locator_Msg(KeyboardContext context, UserKeyMsg msg) {
         switch (msg.type) {
             case Press_Key_Start: {
-                show_InputTooltip(context, EditorEditStateData.Target.cursor.tipResId);
                 return true;
             }
             case SingleTap_Key: {
@@ -104,8 +103,6 @@ public abstract class EditorEditKeyboard extends BaseKeyboard {
             }
             case LongPress_Key_Tick: {
                 do_Start_Editor_Editing(context, EditorEditStateData.Target.selection, msg.data().at);
-
-                show_InputTooltip(context, EditorEditStateData.Target.selection.tipResId);
                 return true;
             }
             case FingerMoving_Start: {
