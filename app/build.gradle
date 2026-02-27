@@ -11,6 +11,7 @@ android {
         applicationId 'org.crazydan.studio.app.ime.kuaizi'
         minSdk 25
         targetSdk 35
+
         // https://developer.android.com/studio/publish/versioning
         versionCode 311
         versionName '3.1.1'
@@ -118,6 +119,7 @@ android.buildTypes.configureEach { buildType ->
 }
 
 dependencies {
+    implementation(project(":rime"))
     //implementation 'com.tencent.vasdolly:helper:3.0.6'
 
     implementation 'androidx.appcompat:appcompat:1.7.0'
