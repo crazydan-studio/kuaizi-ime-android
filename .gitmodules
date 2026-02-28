@@ -1,0 +1,21 @@
+[submodule "libtrime/src/main/jni/OpenCC"]
+	path = libtrime/src/main/jni/OpenCC
+	url = git@github.com:BYVoid/OpenCC.git
+[submodule "libtrime/src/main/jni/librime"]
+	path = libtrime/src/main/jni/librime
+	url = git@github.com:rime/librime.git
+[submodule "libtrime/src/main/jni/librime-lua"]
+	path = libtrime/src/main/jni/librime-lua
+	url = git@github.com:hchunhui/librime-lua.git
+[submodule "libtrime/src/main/jni/librime-lua-deps"]
+	path = libtrime/src/main/jni/librime-lua-deps
+	url = git@github.com:hchunhui/librime-lua.git
+[submodule "libtrime/src/main/jni/librime-octagram"]
+	path = libtrime/src/main/jni/librime-octagram
+	url = git@github.com:lotem/librime-octagram.git
+[submodule "libtrime/src/main/jni/librime-predict"]
+	path = libtrime/src/main/jni/librime-predict
+	url = git@github.com:rime/librime-predict.git
+[submodule "libtrime/src/main/jni/snappy"]
+	path = libtrime/src/main/jni/snappy
+	url = git@github.com:google/snappy.git

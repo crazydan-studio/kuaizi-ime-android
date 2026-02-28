@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace 'org.crazydan.studio.ime.rime'
+    namespace 'org.crazydan.studio.ime.libtrime'
     compileSdk 35
 
     defaultConfig {
@@ -11,10 +11,19 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+
+        ndk {
+            //abiFilters 'armeabi-v7a', 'x86'
+            abiFilters 'arm64-v8a', 'x86_64'
+        }
     }
 
     buildTypes {
         release {
+            // 可重复构建不能在发布包中包含版本控制信息：
+            // https://f-droid.org/en/docs/Reproducible_Builds/#vcs-info
+            vcsInfo.include false
+
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -28,4 +37,7 @@ android {
 
 dependencies {
     testImplementation 'junit:junit:4.13.2'
+
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }
