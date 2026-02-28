@@ -1,0 +1,16 @@
+# https://github.com/dockcross/dockcross
+FROM docker.io/dockcross/android-arm64
+
+
+ENV BOOST_VERSION=1.89.0
+ENV BOOST_SHA256=67acec02d0d118b5de9eb441f5fb707b3a1cdd884be00ca24b9a73c995511f74
+RUN mkdir -p /deps \
+    && curl -L \
+        -o /deps/boost-${BOOST_VERSION}.tar.xz \
+        https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-cmake.tar.xz \
+    && echo \
+        "${BOOST_SHA256} /deps/boost-${BOOST_VERSION}.tar.xz" \
+       | sha256sum --check
+
+
+WORKDIR /build
