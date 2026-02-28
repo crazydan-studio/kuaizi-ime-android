@@ -20,7 +20,6 @@ fi
 
 pushd "${DIR_SOURCE}"
     git submodule update --init --recursive librime snappy
-    git apply --directory=librime-lua-deps patches/lua.patch
 popd
 
 
@@ -30,11 +29,16 @@ for arch in "${archs[@]}"; do
     mkdir -p "${output}"
 
     $OCI_EXE run --rm -it \
-        -v "${DIR_SOURCE}:/source:ro" \
+        -v "${DIR_SOURCE}:/mnt:ro" \
         -v "${output}:/output" \
         ${DCR_IMAGE} \
         bash -c " \
-            ln -s /deps/boost-\${BOOST_VERSION}.tar.xz \
+            mkdir /source \
+            && cp -r /mnt/* /source \
+            && pushd /source/librime-lua-deps \
+            && patch -p1 < /source/patches/lua.patch \
+            && popd \
+            && ln -s /deps/boost-\${BOOST_VERSION}.tar.xz \
                 boost-\${BOOST_VERSION}.tar.xz \
             && cmake -H/source \
                 -DCMAKE_SYSTEM_NAME=Android \
@@ -45,7 +49,8 @@ for arch in "${archs[@]}"; do
                 -DCMAKE_ANDROID_ARCH_ABI=${arch} \
             && make -j4 rime_jni \
             && mv librime_jni/librime_jni.so /output \
-        "
+        " \
+    || exit 1
 done
 
 uid="$(id -u)"
