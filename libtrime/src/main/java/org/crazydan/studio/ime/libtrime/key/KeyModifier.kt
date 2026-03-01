@@ -1,0 +1,147 @@
+/*
+ * 筷字输入法 - 高效编辑需要又好又快的输入法
+ * Copyright (C) 2026 Crazydan Studio <https://studio.crazydan.org>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.
+ * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+ */
+
+package org.crazydan.studio.ime.libtrime.key
+
+import android.view.KeyEvent
+import splitties.bitflags.hasFlag
+
+/**
+ * translated from
+ * [librime/key_table.h](https://github.com/rime/librime/blob/1.11.2/src/rime/key_table.h)
+ */
+enum class KeyModifier(
+    val modifier: UInt,
+) {
+    None(0u),
+    Shift(1u shl 0),
+    Lock(1u shl 1), // CapsLock
+    Control(1u shl 2),
+    Mod1(1u shl 3),
+    Alt(Mod1),
+    Mod2(1u shl 4), // NumLock
+    Mod3(1u shl 5),
+    Mod4(1u shl 6),
+    Mod5(1u shl 7),
+    Button1(1u shl 8),
+    Button2(1u shl 9),
+    Button3(1u shl 10),
+    Button4(1u shl 11),
+    Button5(1u shl 12),
+    Handled(1u shl 24),
+    Forward(1u shl 25),
+    Ignored(Forward),
+    Super(1u shl 26),
+    Hyper(1u shl 27),
+    Meta(1u shl 28),
+    Release(1u shl 30),
+    Modifier(0x5f001fffu),
+    ;
+
+    constructor(other: KeyModifier) : this(other.modifier)
+
+    infix fun or(other: KeyModifier): UInt = modifier or other.modifier
+
+    infix fun or(other: UInt): UInt = modifier or other
+}
+
+operator fun UInt.plus(other: KeyModifier) = or(other.modifier)
+
+operator fun UInt.minus(other: KeyModifier) = and(other.modifier.inv())
+
+@JvmInline
+value class KeyModifiers(
+    val modifiers: UInt,
+) {
+    constructor(vararg modifiers: KeyModifier) : this(mergeModifiers(modifiers))
+
+    fun has(modifier: KeyModifier) = modifiers.hasFlag(modifier.modifier)
+
+    val alt get() = has(KeyModifier.Alt)
+    val ctrl get() = has(KeyModifier.Control)
+    val shift get() = has(KeyModifier.Shift)
+    val meta get() = has(KeyModifier.Meta)
+    val numLock get() = has(KeyModifier.Mod2) // NumLock
+    val capsLock get() = has(KeyModifier.Lock)
+
+    val release get() = has(KeyModifier.Release)
+
+    val metaState: Int get() {
+        var metaState = 0
+        if (alt) metaState = KeyEvent.META_ALT_ON or KeyEvent.META_ALT_LEFT_ON
+        if (ctrl) metaState = metaState or KeyEvent.META_CTRL_ON or KeyEvent.META_CTRL_LEFT_ON
+        if (shift) metaState = metaState or KeyEvent.META_SHIFT_ON or KeyEvent.META_SHIFT_LEFT_ON
+        if (meta) metaState = metaState or KeyEvent.META_META_ON or KeyEvent.META_META_LEFT_ON
+        if (numLock) metaState = metaState or KeyEvent.META_NUM_LOCK_ON
+        if (capsLock) metaState = metaState or KeyEvent.META_CAPS_LOCK_ON
+        return metaState
+    }
+
+    fun toInt() = modifiers.toInt()
+
+    companion object {
+        val Empty = KeyModifiers(0u)
+
+        val Release = KeyModifiers(KeyModifier.Release)
+
+        fun of(v: Int) = KeyModifiers(v.toUInt())
+
+        fun fromKeyEvent(event: KeyEvent): KeyModifiers {
+            val isRelease = event.action == KeyEvent.ACTION_UP
+            // drop modifier state when using combination keys to input number/symbol on some phones
+            // because rime doesn't recognize selection key with modifiers (eg. Alt+Q for 1)
+            // in which case event.getNumber().toInt() == event.getUnicodeChar()
+            // ... but some keys can have event.getNumber() return 0, need to check displayLabel as well
+            val unicode = event.unicodeChar
+            // skip ' ', because it would produce same unicodeChar regardless of the modifier
+            if (unicode != 0 && unicode != ' '.code) {
+                val char = unicode.toChar()
+                if (char == event.number || event.displayLabel.uppercaseChar() != char.uppercaseChar()) {
+                    return if (isRelease) Release else Empty
+                }
+            }
+            var states = KeyModifier.None.modifier
+            event.apply {
+                // we just need to make rime care about following uncommented
+                // modifier states when forwarding physical keyboard event
+                if (isAltPressed) states += KeyModifier.Alt
+                if (isCtrlPressed) states += KeyModifier.Control
+                if (isShiftPressed) states += KeyModifier.Shift
+                if (isCapsLockOn) states += KeyModifier.Lock
+//                if (isNumLockOn) states += KeyModifier.Mod2 // NumLock
+//                if (isMetaPressed) states += KeyModifier.Meta
+                if (isRelease) states += KeyModifier.Release
+            }
+            return KeyModifiers(states)
+        }
+
+        fun fromMetaState(metaState: Int): KeyModifiers {
+            var states = KeyModifier.None.modifier
+            if (metaState.hasFlag(KeyEvent.META_ALT_ON)) states += KeyModifier.Alt
+            if (metaState.hasFlag(KeyEvent.META_CTRL_ON)) states += KeyModifier.Control
+            if (metaState.hasFlag(KeyEvent.META_SHIFT_ON)) states += KeyModifier.Shift
+            if (metaState.hasFlag(KeyEvent.META_NUM_LOCK_ON)) states += KeyModifier.Mod2 // NumLock
+            if (metaState.hasFlag(KeyEvent.META_CAPS_LOCK_ON)) states += KeyModifier.Lock
+            if (metaState.hasFlag(KeyEvent.META_META_ON)) states += KeyModifier.Meta
+            return KeyModifiers(states)
+        }
+
+        fun mergeModifiers(arr: Array<out KeyModifier>): UInt = arr.fold(KeyModifier.None.modifier) { acc, it -> acc or it.modifier }
+    }
+}

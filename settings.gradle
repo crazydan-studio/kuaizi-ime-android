@@ -19,3 +19,4 @@ dependencyResolutionManagement {
 rootProject.name = "Kuaizi IME"
 include ':app'
 include ':libtrime'
+include ':libtrime:codegen'
