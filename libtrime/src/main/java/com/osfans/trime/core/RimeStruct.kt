@@ -10,6 +10,8 @@ data class SchemaItem(
 )
 
 data class CandidateItem(
+    /** 候选字 */
     val text: String,
+    /** 候选字拼音（带声调） */
     val comment: String = "",
 )

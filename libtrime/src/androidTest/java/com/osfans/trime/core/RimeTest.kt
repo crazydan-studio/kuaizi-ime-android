@@ -20,7 +20,9 @@
 package com.osfans.trime.core
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 
 /**
  *
@@ -29,4 +31,16 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class RimeTest {
+
+    @Test
+    fun test_startupRime() {
+        val dir = File("src/test/assets")
+        Rime.startupRime(
+            sharedDir = dir.absolutePath,
+            userDir = dir.absolutePath,
+            fullCheck = false,
+        )
+
+        Rime.exitRime()
+    }
 }

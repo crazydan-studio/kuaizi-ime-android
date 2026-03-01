@@ -27,7 +27,7 @@ object Rime {
     external fun startupRime(
         sharedDir: String,
         userDir: String,
-        versionName: String,
+        versionName: String = "trime-3.3.9",
         fullCheck: Boolean,
     )
 
