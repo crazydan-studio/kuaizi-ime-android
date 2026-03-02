@@ -1,0 +1,23 @@
+# https://f-droid.org/en/docs/Build_Metadata_Reference/
+RepoType: git
+# 采用本地仓库（通过 Docker 容器挂载）。Note: 不支持子模块
+Repo: /repo/source
+
+Builds:
+  - versionName: {{version_name}}
+    versionCode: {{version_code}}
+    commit: master
+    subdir: app
+    submodules: true
+    sudo:
+      - apt-get update
+      - apt-get -y install automake g++ libtool make python-is-python3
+    gradle:
+      - yes
+    prebuild:
+      #- sdkmanager 'cmake;3.31.6'
+      #- cd ..
+      #- git apply --directory=app/src/main/jni/librime-lua-deps patches/lua.patch
+    scandelete:
+      - libtrime/src/main/jni
+    ndk: r28
