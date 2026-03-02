@@ -27,6 +27,7 @@ import com.osfans.trime.core.RimeKeyMapping
 value class KeyValue(
     val value: Int,
 ) {
+    /** Rime 按键 [value] 所对应的 Android 系统按键 [KeyEvent]#KEYCODE_* */
     val keyCode get() = RimeKeyMapping.valToKeyCode(value)
 
     override fun toString() = "0x" + value.toString(16).padStart(4, '0')

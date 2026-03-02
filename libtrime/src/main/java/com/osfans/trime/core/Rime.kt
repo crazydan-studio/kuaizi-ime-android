@@ -27,7 +27,7 @@ object Rime {
     external fun startupRime(
         sharedDir: String,
         userDir: String,
-        versionName: String = "trime-3.3.9",
+        versionName: String = "3.3.9", // Trime version
         fullCheck: Boolean,
     )
 
@@ -49,8 +49,10 @@ object Rime {
     // input
     @JvmStatic
     external fun processRimeKey(
-        keycode: Int,
-        mask: Int,
+        /** Rime 按键值，其对应 [RimeKeyMapping]#RimeKey_* */
+        keyVal: Int,
+        /** 控制按键组合标记，如 Shift+Ctrl 等，通过 [android.view.KeyEvent]#META_* 做 or 运算得到 */
+        modifiers: Int,
     ): Boolean
 
     @JvmStatic

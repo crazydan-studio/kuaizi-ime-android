@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "org.crazydan.studio.ime.libtrime"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 25

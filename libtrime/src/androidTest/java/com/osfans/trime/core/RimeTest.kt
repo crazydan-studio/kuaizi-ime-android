@@ -20,6 +20,7 @@
 package com.osfans.trime.core
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
@@ -34,12 +35,52 @@ class RimeTest {
 
     @Test
     fun test_startupRime() {
-        val dir = File("src/test/assets")
+        withRimeContext {
+            // nothing
+        }
+    }
+
+    @Test
+    fun test_inputKeys() {
+        withRimeContext {
+            val spells = "shi jie ren min da tuan jie wan sui".split("\\s+")
+            val candidates = "世 界 人 民 大 团 结 万 岁".split("\\s+")
+
+            spells.forEachIndexed { i, spell ->
+                spell.toCharArray().forEach { ch ->
+                    pressKey(ch)
+                }
+
+                if (i < spells.size - 1) {
+                    pressKey('\'')
+                }
+            }
+
+            val results = Rime.getRimeCandidates(0, 1)
+            results.forEach {
+                it.text + ' ' + it.comment
+            }
+        }
+    }
+
+    private fun pressKey(ch: Char) {
+        val value = RimeKeyMapping.nameToKeyVal(ch.toString())
+
+        Rime.processRimeKey(value, 0)
+    }
+
+    private fun withRimeContext(block: () -> Unit) {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val sharedDataDir = File(appContext.getExternalFilesDir(null), "rime").also { it.mkdirs() }
+        val userDir = File(appContext.filesDir, "user").also { it.mkdirs() }
+
         Rime.startupRime(
-            sharedDir = dir.absolutePath,
-            userDir = dir.absolutePath,
+            sharedDir = sharedDataDir.absolutePath,
+            userDir = userDir.absolutePath,
             fullCheck = false,
         )
+
+        block.invoke()
 
         Rime.exitRime()
     }
