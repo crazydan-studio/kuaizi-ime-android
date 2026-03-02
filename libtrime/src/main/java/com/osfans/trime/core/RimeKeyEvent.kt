@@ -5,11 +5,24 @@
 
 package com.osfans.trime.core
 
-object RimeKeyEvent {
+data class RimeKeyEvent(
+    val value: Int,
+    val modifiers: Int,
+    val repr: String,
+) {
 
-    @JvmStatic
-    external fun getKeycodeByName(name: String): Int
+    override fun toString() = repr
 
-    @JvmStatic
-    external fun getModifierByName(name: String): Int
+    companion object {
+        val None = RimeKeyEvent(0, 0, "0x0000")
+
+        @JvmStatic
+        external fun parse(repr: String): RimeKeyEvent
+
+        @JvmStatic
+        external fun getKeycodeByName(name: String): Int
+
+        @JvmStatic
+        external fun getModifierByName(name: String): Int
+    }
 }

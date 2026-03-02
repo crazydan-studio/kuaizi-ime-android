@@ -16,6 +16,15 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        // https://developer.android.com/reference/tools/gradle-api/7.4/com/android/build/api/dsl/ExternalNativeBuildOptions
+        @Suppress("UnstableApiUsage")
+        externalNativeBuild {
+            cmake {
+                //arguments += listOf("-DCMAKE_ANDROID_STL_TYPE=c++_static", "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+                abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64")
+            }
+        }
     }
 
     buildTypes {
@@ -41,6 +50,13 @@ android {
             jvmTarget.set(JvmTarget.JVM_1_8)
             // https://youtrack.jetbrains.com/issue/KT-73255/Change-defaulting-rule-for-annotations
             freeCompilerArgs.add("-Xannotation-default-target=param-property")
+        }
+    }
+
+    // https://developer.android.com/reference/tools/gradle-api/7.4/com/android/build/api/dsl/ExternalNativeBuild
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/jni/CMakeLists.txt")
         }
     }
 }
