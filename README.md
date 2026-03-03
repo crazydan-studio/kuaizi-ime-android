@@ -236,6 +236,6 @@ inputboard_view ..> input_list_view: dispatch\n<<InputMsg>>
 
 详细的赞助清单请查看[《友情赞助清单》](https://github.com/crazydan-studio/kuaizi-ime/blob/master/docs/donate/index.md)。
 
-| 支付宝 | 微信支付 |
-| -- | -- |
-| <img src="https://github.com/crazydan-studio/kuaizi-ime/blob/master/docs/donate/alipay.jpg?raw=true" width="200px"/> | <img src="https://github.com/crazydan-studio/kuaizi-ime/blob/master/docs/donate/wechat.png?raw=true" width="200px"/> |
+| 支付宝 (Alipay) | 微信支付 (WeChat Pay) | PayPal |
+| -- | -- | -- |
+| <img src="https://studio.crazydan.org/donate/alipay.jpg" width="200px"/> | <img src="https://studio.crazydan.org/donate/wechat.png" width="200px"/> | <img src="https://studio.crazydan.org/donate/kuaizi-ime.png" width="200px"/> |
