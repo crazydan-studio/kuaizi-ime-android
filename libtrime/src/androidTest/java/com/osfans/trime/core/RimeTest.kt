@@ -21,8 +21,10 @@ package com.osfans.trime.core
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
+import timber.log.Timber
 import java.io.File
 
 /**
@@ -32,6 +34,9 @@ import java.io.File
  */
 @RunWith(AndroidJUnit4::class)
 class RimeTest {
+    init {
+        Timber.plant(Timber.DebugTree())
+    }
 
     @Test
     fun test_startupRime() {
@@ -43,30 +48,44 @@ class RimeTest {
     @Test
     fun test_inputKeys() {
         withRimeContext {
-            val spells = "shi jie ren min da tuan jie wan sui".split("\\s+")
-            val candidates = "世 界 人 民 大 团 结 万 岁".split("\\s+")
+            val spells = "shi jie ren min da tuan jie wan sui".split("\\s+".toRegex())
+            val expectedCandidates = "世(shì)界(jiè)人(rén)民(mín)大(dà)团(tuán)结(jié)万(wàn)岁(suì)"
 
-            spells.forEachIndexed { i, spell ->
+            val candidates = spells.mapIndexed { index, spell ->
                 spell.toCharArray().forEach { ch ->
-                    pressKey(ch)
+                    if (!pressKey(ch)) {
+                        Timber.e("Cannot process key '$ch'")
+                    }
                 }
 
-                if (i < spells.size - 1) {
-                    pressKey('\'')
+                val context = Rime.getRimeContext()
+
+                val candidates = context.menu.candidates
+                var selected = 0;
+                if (candidates.size > 1 && spell == "jie" && index < 2) {
+                    selected = 1 // 结(jié) and 界(jiè)
                 }
+
+                // Note: Rime.selectRimeCandidate 会更新字的权重而导致后续选字与预期不符
+                pressKey(' ') // trigger commit
+                //Rime.selectRimeCandidate(selected, false)
+
+                candidates[selected]
             }
 
-            val results = Rime.getRimeCandidates(0, 1)
-            results.forEach {
-                it.text + ' ' + it.comment
-            }
+            assertEquals(expectedCandidates, candidates.joinToString("") { it.text + "(${it.comment})" })
         }
     }
 
-    private fun pressKey(ch: Char) {
-        val value = RimeKeyMapping.nameToKeyVal(ch.toString())
+    private fun pressKey(ch: Char): Boolean {
+        val keyName = when (ch) {
+            ' ' -> "space"
+            '\'' -> "apostrophe"
+            else -> ch.toString()
+        }
+        val value = RimeKeyMapping.nameToKeyVal(keyName)
 
-        Rime.processRimeKey(value, 0)
+        return Rime.processRimeKey(value, 0)
     }
 
     private fun withRimeContext(block: () -> Unit) {
@@ -74,11 +93,30 @@ class RimeTest {
         val sharedDataDir = File(appContext.getExternalFilesDir(null), "rime").also { it.mkdirs() }
         val userDir = File(appContext.filesDir, "user").also { it.mkdirs() }
 
+        val assets = arrayOf(
+            "default.yaml",
+            //
+            "wanxiang.dict.yaml",
+            "wanxiang.schema.yaml",
+            "wanxiang_algebra.yaml",
+            //
+            "dicts/zi.dict.yaml",
+        )
+        assets.forEach { asset ->
+            val target = File(sharedDataDir, asset).also { it.parentFile?.mkdirs() }
+            appContext.assets.open("rime/${asset}").copyTo(target.outputStream())
+        }
+
         Rime.startupRime(
             sharedDir = sharedDataDir.absolutePath,
             userDir = userDir.absolutePath,
             fullCheck = false,
         )
+        Thread.sleep(500)
+
+        val schemas = Rime.getRimeSchemaList()
+        assertEquals("wanxiang", schemas[0].id)
+        Rime.selectRimeSchema(schemas[0].id)
 
         block.invoke()
 

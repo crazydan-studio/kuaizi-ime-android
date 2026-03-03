@@ -5,6 +5,12 @@
 
 package com.osfans.trime.core
 
+import timber.log.Timber
+
+/**
+ * 只有 Rime 启动、同步和部署 schema（输入方案）/配置文件才是异步的，其与接口均为同步的。
+ * 但为了统一上层调用，强制要求以消息形式监听输入等
+ */
 object Rime {
     init {
         System.loadLibrary("rime_jni")
@@ -18,11 +24,13 @@ object Rime {
         params: Array<Any>,
     ) {
         // TODO 分发来自 Rime 的消息
+        Timber.i("Got rime message (type=${type})")
     }
 
     // ++++++++++++++++++++++++++ Native Interface +++++++++++++++++++++++++++
 
     // init
+    /** Rime 启动是异步的，需要监听 1-Schema, 2-Option, 3-Deploy 消息 */
     @JvmStatic
     external fun startupRime(
         sharedDir: String,
@@ -103,6 +111,7 @@ object Rime {
     @JvmStatic
     external fun setRimeCaretPos(caretPos: Int)
 
+    /** 选择候选字列表中指定序号的候选字：其将更新候选字的权重 */
     @JvmStatic
     external fun selectRimeCandidate(index: Int, global: Boolean): Boolean
 

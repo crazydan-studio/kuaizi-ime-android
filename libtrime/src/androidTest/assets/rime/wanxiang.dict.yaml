@@ -1,0 +1,10 @@
+# 万象主字典文件，通过 import_tables 引入多个子字典文件
+
+---
+name: wanxiang
+version: "LTS"
+sort: by_weight  #字典初始排序，可選original或by_weight
+use_preset_vocabulary: false
+import_tables:
+  - dicts/zi            #字表，包含了所有带拼音的汉字
+...

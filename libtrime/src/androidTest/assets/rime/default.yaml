@@ -1,0 +1,8 @@
+# Rime 主配置文件
+
+# 输入方案
+schema_list:
+  - schema: wanxiang
+
+menu:
+  page_size: 6  # 候选词个数

@@ -10,8 +10,11 @@ data class CommitProto(
 )
 
 data class CandidateProto(
+    /** 候选字 */
     val text: String,
+    /** 候选字拼音（带声调） */
     val comment: String?,
+    /** 候选字标签（即其在候选字列表中的序号，从 1 开始） */
     val label: String,
 )
 
@@ -37,12 +40,17 @@ data class CompositionProto(
 }
 
 data class MenuProto(
+    /** 候选字分页大小 */
     val pageSize: Int = 0,
+    /** 候选字分页起始序号 */
     val pageNumber: Int = 0,
+    /** 是否为最后一页 */
     val isLastPage: Boolean = false,
     val highlightedCandidateIndex: Int = 0,
+    /** 候选字列表 */
     val candidates: Array<CandidateProto> = arrayOf(),
     val selectKeys: String? = null,
+    /** 候选字序号，其为候选字列表 [candidates] 中候选字的 label */
     val selectLabels: Array<String> = arrayOf(),
 ) {
     override fun equals(other: Any?): Boolean {

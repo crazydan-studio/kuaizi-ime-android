@@ -1,0 +1,59 @@
+# 万象输入方案配置
+
+schema:
+  schema_id: wanxiang
+  name: 万象拼音
+  version: "LTS"
+
+# 拼写设定
+speller:
+  # 如果不想让什么标点直接上屏，可以加在 alphabet，或者编辑标点符号为两个及以上的映射，alphabet就是将字符纳入输入编码的范畴
+  alphabet: zyxwvutsrqponmlkjihgfedcbaZYXWVUTSRQPONMLKJIHGFEDCBA1234567890`;/\
+  # initials 定义仅作为始码的按键，排除 ` 让单个的 ` 可以直接上屏
+  initials: zyxwvutsrqponmlkjihgfedcbaZYXWVUTSRQPONMLKJIHGFEDCBA/
+  delimiter: " '"        # 系统配置，第一位<空格>是拼音之间的分隔符；第二位<'>表示可以手动输入单引号来分割拼音。
+  visual_delimiter: " "  # super_preedit.lua配置：是否让分隔符号跟着一起转换，例如nǐ'hǎo 在实际使用中表现出视觉拥挤，我们可以让delimiter平时是'转换为拼音的时候使用空格nǐ hǎo，更符合实际。
+  tone_isolate: true     # super_preedit.lua配置：是否将数字声调从转换后拼音中隔离出来（true=隔离， false 直接参与转换）例如：nǐ3
+  algebra:
+    __patch:
+      - wanxiang_algebra:/base/全拼 # 可选输入方案名称：全拼，自然码, 自然龙, 汉心龙，小鹤双拼, 搜狗双拼, 微软双拼, 智能ABC, 紫光双拼, 国标双拼，拼音加加，乱序17
+
+# 主翻译器，拼音，支持短语和整句输入
+translator:
+  dictionary: wanxiang         # 挂载主词库
+  enable_completion: true      # 启用候选词补全
+  enable_user_dict: true       # 是否开启自动调频，即开启用户词典
+  core_word_length: 4          # >0 启用，按段学词 + 相邻段拼接
+  max_word_length: 7           # >0 启用，过长短语不记整词，只加元素权重
+  contextual_suggestions: false  #模型用来开启词组权重预测，效果一般关闭
+  max_homophones: 8
+  max_homographs: 8
+  initial_quality: 3           #初始质量拼音的权重应该比英文大
+  spelling_hints: 30           #将注释以词典code字符串形式完全暴露，通过super_comment.lua完全接管，灵活配置。
+  always_show_comments: true   # Rime 默认在 preedit 等于 comment 时取消显示 comment，这里强制一直显示，供super_comment_preedit.lua做判断用。
+  comment_format: {comment}    #将注释以词典字符串形式完全暴露，通过super_preedit.lua完全接管，灵活配置。
+
+editor:
+  bindings:
+    Return: confirm # 上屏候选项
+
+# 输入引擎，必须配置才能处理输入的字符
+engine:
+  processors:
+    - ascii_composer                            #处理英文模式及中英文切换
+    - speller                                   #拼写处理器，接受字符按键，编辑输入
+    - punctuator                                #符号处理器，将单个字符按键直接映射为标点符号或文字
+    - selector                                  #选字处理器，处理数字选字键〔可以换成别的哦〕、上、下候选定位、换页
+    - navigator                                 #处理输入栏内的光标移动
+    - express_editor                            #编辑器，处理空格、回车上屏、回退键
+  segmentors:
+    - ascii_segmentor                           #标识英文段落〔譬如在英文模式下〕字母直接上屛
+    - matcher                                   #配合 recognizer 标识符合特定规则的段落，如网址、反查等，加上特定 tag
+    - abc_segmentor                             #标识常规的文字段落，加上 abc 这个 tag
+    - punct_segmentor                           #标识符号段落〔键入标点符号用〕加上 punct 这个 tag
+    - fallback_segmentor                        #标识其他未标识段落，必须放在最后帮助tag模式切换后回退重新处理
+  translators:
+    - punct_translator                     #配合 punct_segmentor 转换标点符号
+    - script_translator                    #脚本翻译器，用于拼音、粤拼等基于音节表的输入方案
+  filters:
+    - uniquifier                                    # 去重
