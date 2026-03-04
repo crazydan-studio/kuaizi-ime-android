@@ -13,26 +13,26 @@ object RimeConfig {
     }
 
     @JvmStatic
-    private external fun openRimeConfig(configId: String): Long
+    external fun openRimeConfig(configId: String): Long
 
     @JvmStatic
-    private external fun openRimeUserConfig(configId: String): Long
+    external fun openRimeUserConfig(configId: String): Long
 
     @JvmStatic
-    private external fun openRimeSchema(schemaId: String): Long
+    external fun openRimeSchema(schemaId: String): Long
 
     @JvmStatic
-    private external fun getRimeConfigInt(peer: Long, key: String): Int?
+    external fun getRimeConfigInt(configRef: Long, key: String): Int?
 
     @JvmStatic
-    private external fun getRimeConfigString(peer: Long, key: String): String?
+    external fun getRimeConfigString(configRef: Long, key: String): String?
 
     @JvmStatic
-    private external fun getRimeConfigListItemPath(peer: Long, key: String): Array<String>
+    external fun getRimeConfigListItemPath(configRef: Long, key: String): Array<String>
 
     @JvmStatic
-    private external fun setRimeConfigBool(peer: Long, key: String, value: Boolean)
+    external fun setRimeConfigBool(configRef: Long, key: String, value: Boolean)
 
     @JvmStatic
-    private external fun closeRimeConfig(peer: Long)
+    external fun closeRimeConfig(configRef: Long)
 }

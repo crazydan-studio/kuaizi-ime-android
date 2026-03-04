@@ -5,8 +5,11 @@
 
 package com.osfans.trime.core
 
+import com.osfans.trime.core.Rime.getCurrentRimeSchema
+import com.osfans.trime.core.Rime.getRimeOption
 import com.osfans.trime.core.Rime.getRimeSchemaList
 import com.osfans.trime.core.Rime.getSelectedRimeSchemaList
+import com.osfans.trime.core.Rime.setRimeOption
 import timber.log.Timber
 
 /**
@@ -18,7 +21,7 @@ object Rime {
         System.loadLibrary("rime_jni")
     }
 
-    // ++++++++++++++++++++++++++++ Call by native ++++++++++++++++++++++++
+    // --------------------------------- Call by native ---------------------------------
 
     @JvmStatic
     fun handleRimeMessage(
@@ -29,7 +32,7 @@ object Rime {
         Timber.i("Got rime message (type=${type})")
     }
 
-    // ++++++++++++++++++++++++++ Native Interface +++++++++++++++++++++++++++
+    // ---------------------------------- Native Interface --------------------------------
 
     // init
     /** Rime 启动是异步的，需要监听 1-Schema, 2-Option, 3-Deploy 消息 */
@@ -47,7 +50,7 @@ object Rime {
     @JvmStatic
     external fun exitRime()
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ------------------------------------------------------------------
 
     /**
      * 部署/更新 Rime 配置文件
@@ -80,7 +83,7 @@ object Rime {
     @JvmStatic
     external fun syncRimeUserData(): Boolean
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ------------------------------------------------------------------
 
     /** see [setRimeOption] */
     @JvmStatic
@@ -99,7 +102,7 @@ object Rime {
     @JvmStatic
     external fun setRimeOption(option: String, value: Boolean)
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ------------------------------------------------------------------
 
     // input
     @JvmStatic
@@ -118,7 +121,7 @@ object Rime {
     @JvmStatic
     external fun clearRimeComposition()
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ------------------------------------------------------------------
 
     // output
     @JvmStatic
@@ -132,7 +135,7 @@ object Rime {
     @JvmStatic
     external fun getRimeStatus(): StatusProto
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ------------------------------------------------------------------
 
     /** 获取当前正在输入的字符串 */
     @JvmStatic
@@ -144,7 +147,7 @@ object Rime {
     @JvmStatic
     external fun setRimeCaretPos(caretPos: Int)
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ------------------------------------------------------------------
 
     /** 获取候选字分页数据 */
     @JvmStatic
@@ -170,7 +173,7 @@ object Rime {
     @JvmStatic
     external fun changeRimeCandidatePage(backward: Boolean): Boolean
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ------------------------------------------------------------------
     // Note: 以下接口名与业务层的概念存在混淆，为避免修改 jni 映射接口名，这里仅通过文档强调各自的区别
     // 输入方案（Schema）涉及的操作：部署 -> 启用 -> 激活
 
@@ -238,7 +241,7 @@ object Rime {
         schemaFile: String
     ): Boolean
 
-    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ------------------------------------------------------------------
 
     // testing
     @JvmStatic
