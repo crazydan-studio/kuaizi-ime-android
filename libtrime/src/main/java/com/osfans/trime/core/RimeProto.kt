@@ -5,12 +5,14 @@
 
 package com.osfans.trime.core
 
+// source from https://github.com/osfans/trime/blob/develop/app/src/main/java/com/osfans/trime/core/RimeProto.kt
+
 data class CommitProto(
     val text: String?,
 )
 
 data class CandidateProto(
-    /** 候选字 */
+    /** 候选字/短语文本 */
     val text: String,
     /** 候选字拼音（带声调） */
     val comment: String?,
@@ -46,6 +48,7 @@ data class MenuProto(
     val pageNumber: Int = 0,
     /** 是否为最后一页 */
     val isLastPage: Boolean = false,
+    /** 高亮候选字的序号 */
     val highlightedCandidateIndex: Int = 0,
     /** 候选字列表 */
     val candidates: Array<CandidateProto> = arrayOf(),
@@ -89,14 +92,20 @@ data class ContextProto(
     val caretPos: Int = 0,
 )
 
+/** see `RimeGetStatus` in `librime/src/rime_api_impl.h` */
 data class StatusProto(
     val schemaId: String = "",
     val schemaName: String = "",
     val isDisabled: Boolean = true,
     val isComposing: Boolean = false,
+    /** 是否为英文输入模式：`true` - 英文；`false` - 中文 */
     val isAsciiMode: Boolean = true,
+    /** 是否为全角字符输入模式：`true` - 全角；`false` - 半角 */
     val isFullShape: Boolean = false,
+    /** 是否为简体字输出模式 */
     val isSimplified: Boolean = false,
+    /** 是否为繁体字输出输出模式 */
     val isTraditional: Boolean = false,
+    /** 是否为英文标点输入模式 */
     val isAsciiPunct: Boolean = true,
 )

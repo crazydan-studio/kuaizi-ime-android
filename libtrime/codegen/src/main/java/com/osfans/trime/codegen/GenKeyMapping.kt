@@ -22,6 +22,8 @@ private typealias RimeKeyVal = Int
 private typealias AndroidKeyCode = String
 private typealias KeyPair = Pair<Pair<RimeKeyName, RimeKeyVal>, AndroidKeyCode>
 
+// source from https://github.com/osfans/trime/blob/develop/codegen/src/main/java/com/osfans/trime/codegen/GenKeyMapping.kt
+
 /**
  * This file has been taken from fcitx5-android project, since we have very similar key mapping with theirs.
  * Following modifications were done by TRIME to the original source code:

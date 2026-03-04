@@ -4,6 +4,8 @@
 
 package com.osfans.trime.core
 
+// source from https://github.com/osfans/trime/blob/develop/app/src/main/java/com/osfans/trime/core/Structs.kt
+
 /** 输入方案 */
 data class SchemaItem(
     val id: String,

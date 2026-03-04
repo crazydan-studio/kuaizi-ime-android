@@ -5,6 +5,8 @@
 
 package com.osfans.trime.core
 
+// source from https://github.com/osfans/trime/blob/develop/app/src/main/java/com/osfans/trime/core/RimeConfig.kt
+
 object RimeConfig {
     init {
         System.loadLibrary("rime_jni")

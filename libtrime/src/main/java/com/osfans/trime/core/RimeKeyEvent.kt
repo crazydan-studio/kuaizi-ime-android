@@ -5,6 +5,8 @@
 
 package com.osfans.trime.core
 
+// source from https://github.com/osfans/trime/blob/develop/app/src/main/java/com/osfans/trime/core/RimeKeyEvent.kt
+
 data class RimeKeyEvent(
     val value: Int,
     val modifiers: Int,
