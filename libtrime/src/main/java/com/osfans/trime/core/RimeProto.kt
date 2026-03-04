@@ -50,7 +50,7 @@ data class MenuProto(
     /** 候选字列表 */
     val candidates: Array<CandidateProto> = arrayOf(),
     val selectKeys: String? = null,
-    /** 候选字序号，其为候选字列表 [candidates] 中候选字的 label */
+    /** 候选字序号，其为候选字列表 [candidates] 中候选字的 [CandidateProto.label] */
     val selectLabels: Array<String> = arrayOf(),
 ) {
     override fun equals(other: Any?): Boolean {

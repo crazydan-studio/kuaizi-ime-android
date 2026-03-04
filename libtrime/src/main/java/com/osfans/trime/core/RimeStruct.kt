@@ -4,6 +4,7 @@
 
 package com.osfans.trime.core
 
+/** 输入方案 */
 data class SchemaItem(
     val id: String,
     val name: String = "",
