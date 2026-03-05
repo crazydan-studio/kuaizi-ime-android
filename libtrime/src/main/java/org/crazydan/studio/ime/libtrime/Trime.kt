@@ -28,26 +28,38 @@ import kotlinx.coroutines.flow.SharedFlow
 import java.io.File
 
 /**
- * Trime 接口
- *
  * source from [trime/RimeApi.kt](https://github.com/osfans/trime/blob/develop/app/src/main/java/com/osfans/trime/core/RimeApi.kt)
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2026-03-04
  */
 interface Trime {
+    interface Config {
+        /** Rime 用户数据目录 */
+        var userDataDir: File
+
+        /** Rime 共享数据目录 */
+        var sharedDataDir: File
+    }
+
+    /** 通过 [TrimeSession.run] 启动对 [TrimeMessage] 的监听 */
     val messageFlow: SharedFlow<TrimeMessage<*>>
 
     val isReady: Boolean
 
     // -------------------------------------------------------------------
 
+    suspend fun input()
+
+    // -------------------------------------------------------------------
+    // Note: Rime Schema 需要依次经历 部署 -> 启用 -> 激活 三个步骤
+
     /**
      * 获取已激活的输入方案（id 值）
      *
-     * Note: 可通过 [TrimeConfig.openSchema] 获取输入方案的配置数据
+     * Note: 可通过 [TrimeConfig.openSchemaConfig] 获取输入方案的配置数据
      */
-    suspend fun getActiveSchema(): String
+    suspend fun getActivatedSchema(): String
 
     /** 激活指定的输入方案 */
     suspend fun activateSchema(schemaId: String): Boolean
@@ -55,14 +67,22 @@ interface Trime {
     /** 获取已启用的输入方案 */
     suspend fun getEnabledSchemas(): Array<TrimeSchema>
 
-    /** 获取可用的（已部署的，包括未启用的）输入方案 */
-    suspend fun getAvailableSchemas(): Array<TrimeSchema>
-
     /** 启用指定的输入方案 */
     suspend fun enableSchemas(schemaIds: Array<String>): Boolean
+
+    /** 获取已部署的输入方案 */
+    suspend fun getDeployedSchemas(): Array<TrimeSchema>
 
     /** 部署 `.schema.yaml` 输入方案文件 */
     suspend fun deploySchema(schemaFile: File): Boolean
 
+    // TODO 部署 zip 压缩包：支持对万象拼音的直接部署
+
     // -------------------------------------------------------------------
+
+    /**
+     * 重新（全量）构建共享/用户目录中的数据，**适合首次部署或重大更新之后**。
+     * 详见 [com.osfans.trime.core.Rime.startupRime] (`fullCheck == true`)
+     */
+    suspend fun rebuild()
 }

@@ -10,32 +10,89 @@ import com.osfans.trime.core.Rime.getRimeOption
 import com.osfans.trime.core.Rime.getRimeSchemaList
 import com.osfans.trime.core.Rime.getSelectedRimeSchemaList
 import com.osfans.trime.core.Rime.setRimeOption
-import timber.log.Timber
+
+typealias RimeMessageHandler = (Int, Array<Any>) -> Unit
 
 /**
  * 只有 Rime 启动、同步和部署 schema（输入方案）/配置文件才是异步的，其与接口均为同步的。
  * 但为了统一上层调用，强制要求以消息形式监听输入等
  */
 object Rime {
+    private val rimeMessageHandlers = ArrayList<RimeMessageHandler>()
+
     init {
         System.loadLibrary("rime_jni")
     }
 
-    // --------------------------------- Call by native ---------------------------------
+    fun registerRimeMessageHandler(handler: RimeMessageHandler) {
+        if (!rimeMessageHandlers.contains(handler)) {
+            rimeMessageHandlers.add(handler)
+        }
+    }
 
+    fun unregisterRimeMessageHandler(handler: RimeMessageHandler) {
+        rimeMessageHandlers.remove(handler)
+    }
+
+    // --------------------------------- Called by Native ---------------------------------
+
+    /**
+     *  处理来自 Rime native 层的消息，主要为 `1 - Schema`, `2 - Option`, `3 - Deploy`
+     *
+     * Note: 该函数由 c/c++ 代码调用，不能更改签名
+     */
     @JvmStatic
-    fun handleRimeMessage(
-        type: Int,
-        params: Array<Any>,
-    ) {
-        // TODO 分发来自 Rime 的消息
-        Timber.i("Got rime message (type=${type})")
+    fun handleRimeMessage(type: Int, params: Array<Any>) {
+        rimeMessageHandlers.forEach { it.invoke(type, params) }
     }
 
     // ---------------------------------- Native Interface --------------------------------
 
     // init
-    /** Rime 启动是异步的，需要监听 1-Schema, 2-Option, 3-Deploy 消息 */
+    /**
+     * ## `fullCheck = true` 时的操作
+     *
+     * 执行完整的维护流程，无条件执行所有任务：
+     *
+     * 1. **clean_old_log_files** - 清理旧日志文件
+     * 2. **installation_update** - 更新 `installation.yaml`
+     * 3. **workspace_update** - 更新工作区，构建所有 Schema
+     * 4. **user_dict_upgrade** - 升级用户词典
+     * 5. **cleanup_trash** - 清理回收站目录
+     *
+     * ## `fullCheck = false` 时的操作
+     *
+     * 执行增量维护，先检测变更：
+     *
+     * 1. **clean_old_log_files** - 清理旧日志文件
+     * 2. **installation_update** - 更新 `installation.yaml`
+     * 3. **detect_modifications** - 检测文件变更
+     *    - 检查用户数据目录和共享数据目录中的 `.yaml` 文件
+     *    - 比较文件修改时间与 `user.yaml` 中的 `last_build_time`
+     *    - 如果没有变更，提前返回
+     * 4. **仅当检测到变更时才执行**：
+     *    - `workspace_update`
+     *    - `user_dict_upgrade`
+     *    - `cleanup_trash`
+     *
+     * ## 对文件和数据的影响
+     *
+     * | 任务 | 影响的文件/数据 | 效果 |
+     * |------|----------------|------|
+     * | `clean_old_log_files` | 临时目录中的旧日志文件 | 删除非当日的 `.log` 文件 |
+     * | `installation_update` | `installation.yaml` | 更新安装配置 |
+     * | `detect_modifications` | 用户/共享目录的 `.yaml` 文件 | 检查是否需要重建 |
+     * | `workspace_update` | `staging_dir` 中的编译文件 | 重新构建 Schema 和词典 |
+     * | `user_dict_upgrade` | 用户词典数据库 | 升级词典格式 |
+     * | `cleanup_trash` | `$user_data_dir/trash` 目录 | 清理过时文件 |
+     *
+     * ## Notes
+     *
+     * - `fullCheck=true` 强制执行完整维护，适合**首次部署或重大更新**
+     * - `fullCheck=false` 执行智能维护，只在检测到变更时才重建，提高效率
+     * - 所有任务在维护线程中**异步执行**
+     * - 维护期间输入法会进入维护模式，暂时禁用输入功能
+     */
     @JvmStatic
     external fun startupRime(
         /** Rime 共享数据目录绝对路径 */
@@ -43,7 +100,7 @@ object Rime {
         /** Rime 用户数据目录绝对路径 */
         userDir: String,
         /** Rime 发行方（在 JNI C 代码中已固定为 Trime）的版本号 */
-        versionName: String = "3.3.9", // Trime version
+        versionName: String = "3.3.9", // TODO Trime version from src/main/jni/CMakeLists.txt
         fullCheck: Boolean,
     )
 
@@ -149,12 +206,12 @@ object Rime {
 
     // ------------------------------------------------------------------
 
-    /** 获取候选字分页数据 */
+    /** 获取候选字分页数据。循环分页可获取到全部候选字 */
     @JvmStatic
     external fun getRimeCandidates(
         /** 分页起始序号（从 0 开始） */
         startIndex: Int,
-        /** 分页大小：设置一个较大的数，可以得到全部候选字 */
+        /** 分页大小 */
         limit: Int,
     ): Array<CandidateItem>
 

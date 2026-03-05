@@ -24,25 +24,40 @@
 
 package org.crazydan.studio.ime.libtrime
 
+import com.osfans.trime.core.RimeLifecycle
+import com.osfans.trime.core.lifecycleScope
+import com.osfans.trime.core.whenReady
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.crazydan.studio.ime.libtrime.TrimeDaemon.trimeImpl
+import org.crazydan.studio.ime.libtrime.impl.TrimeImpl
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
 /**
  * Trime 守护进程，用于管理单例 [Trime] 和已创建的 [TrimeSession]。
- * 当所有 [TrimeSession] 全部被销毁后，[TrimeDaemon] 将自动关闭 [Trime]
+ * 当所有 [TrimeSession] 全部被销毁后，[TrimeDaemon] 将自动关闭 [Trime]。
  *
- * 实现参考自 [trime/RimeDaemon.kt](https://github.com/osfans/trime/blob/develop/app/src/main/java/com/osfans/trime/daemon/RimeDaemon.kt)
+ * 在调用 [TrimeSession] 的 `run`/`runXxx`/`launchXxx` 函数之前必须先通过
+ * [TrimeSession.config] 配置 Trime:
+ * ```kotlin
+ * val rime = RimeDaemon.createSession(javaClass.name)
+ * rime.config {
+ *     userDataDir = File(...)
+ *     sharedDataDir = File(...)
+ * }
+ * ```
+ *
+ * source from [trime/RimeDaemon.kt](https://github.com/osfans/trime/blob/develop/app/src/main/java/com/osfans/trime/daemon/RimeDaemon.kt)
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2026-03-04
  */
 object TrimeDaemon {
-    /** 通过委托模式将 [trimeImpl] 封装为 [Trime] 接口，避免上层直接访问 [TrimeImpl] 上的函数 */
+    /** 通过委托模式将 [trimeImpl] 封装为 [Trime] 接口，避免上层直接访问 [org.crazydan.studio.ime.libtrime.impl.TrimeImpl] 上的函数 */
     private val trimeInf by lazy { object : Trime by trimeImpl {} }
+    private val trimeCnf by lazy { object : Trime.Config by trimeImpl {} }
 
     private val trimeImpl by lazy { TrimeImpl() }
 
@@ -56,7 +71,7 @@ object TrimeDaemon {
         }
 
         if (trimeImpl.lifecycle.currentState == RimeLifecycle.State.STOPPED) {
-            trimeImpl.startup()
+            trimeImpl.start()
         }
 
         val session = establish(name)
@@ -73,13 +88,21 @@ object TrimeDaemon {
 
         sessions -= name
         if (sessions.isEmpty()) {
-            trimeImpl.finalize()
+            trimeImpl.stop()
         }
+    }
+
+    /**  Restart Trime instance to deploy while keep the session */
+    fun restartTrime() = lock.withLock {
+        trimeImpl.stop()
+        trimeImpl.start()
     }
 
     // ------------------------------------------------------------------
 
+    /** 构造 [TrimeSession] 会话 */
     private fun establish(name: String) = object : TrimeSession {
+
         override val lifecycleScope: CoroutineScope
             get() = trimeImpl.lifecycle.lifecycleScope
 
@@ -87,6 +110,24 @@ object TrimeDaemon {
             block()
         } else {
             throw IllegalStateException("Trime session $name should be established via ${javaClass.simpleName}#createSession() first")
+        }
+
+        override fun config(block: Trime.Config.() -> Unit) {
+            val oldUserDataDir = trimeImpl.getUserDataDir()
+            val oldSharedDataDir = trimeImpl.getSharedDataDir()
+
+            block(trimeCnf)
+            if (!trimeImpl.isReady) {
+                return
+            }
+
+            val newUserDataDir = trimeImpl.getUserDataDir()
+            val newSharedDataDir = trimeImpl.getSharedDataDir()
+            if ((oldUserDataDir != null && newUserDataDir != null && oldUserDataDir != newUserDataDir)
+                || (oldSharedDataDir != null && newSharedDataDir != null && oldSharedDataDir != newSharedDataDir)
+            ) {
+                restartTrime()
+            }
         }
 
         override fun <T> run(block: suspend Trime.() -> T): T = ensureEstablished {
@@ -105,8 +146,4 @@ object TrimeDaemon {
             }
         }
     }
-}
-
-private class TrimeImpl : Trime {
-    //
 }

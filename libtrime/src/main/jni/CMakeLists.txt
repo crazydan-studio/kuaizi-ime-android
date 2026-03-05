@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.18.0)
 
-project(trime-lib VERSION 3.0.0)
+project(trime-lib VERSION 3.3.9)
 
 # for reproducible build
 add_link_options("LINKER:--hash-style=gnu,--build-id=none")

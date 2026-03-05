@@ -36,19 +36,32 @@ import kotlinx.coroutines.launch
  * @date 2026-03-04
  */
 interface TrimeSession {
-
     val lifecycleScope: CoroutineScope
+
+    /**
+     * Set or update [Trime] configurations.
+     *
+     * Note: only when [Trime.Config.userDataDir] and [Trime.Config.sharedDataDir] are specified
+     * can the Trime be started. If the Rime was already started, it will be restarted automatically.
+     */
+    fun config(block: Trime.Config.() -> Unit)
 
     /**
      * Run an operation immediately
      * The suspended [block] will be executed in caller's thread.
      * Use this function only for non-blocking operations like
-     * accessing [Trime.messageFlow].
+     * accessing [Trime.messageFlow]:
+     * ```kotlin
+     * val rime = RimeDaemon.createSession(javaClass.name)
+     * rime.run { messageFlow }.collect {
+     *     handleRimeMessage(it)
+     * }
+     * ```
      */
     fun <T> run(block: suspend Trime.() -> T): T
 
     /**
-     * Run an operation if rime is at ready state.
+     * Run an operation if Trime is at ready state ([Trime.isReady] == `true`).
      * Otherwise, do nothing.
      * The [block] will be executed in executed in thread pool.
      * This function does not block or suspend the caller.
@@ -56,8 +69,8 @@ interface TrimeSession {
     fun runIfReady(block: suspend Trime.() -> Unit)
 
     /**
-     * Run an operation immediately if rime is at ready state.
-     * Otherwise, caller will be suspended until rime is ready and operation is done.
+     * Run an operation immediately if Trime is at ready state ([Trime.isReady] == `true`).
+     * Otherwise, caller will be suspended until Trime is ready and operation is done.
      * The [block] will be executed in caller's thread.
      * Client should use this function in most cases.
      */

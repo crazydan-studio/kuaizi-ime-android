@@ -105,7 +105,7 @@ class TrimeConfig private constructor(
             TrimeConfig(openRimeUserConfig(configId))
 
         /** 打开 Schema 配置文件（如 `luna_pinyin.schema.yaml`） */
-        fun openSchema(schemaId: String): TrimeConfig =
+        fun openSchemaConfig(schemaId: String): TrimeConfig =
             TrimeConfig(openRimeSchema(schemaId))
     }
 }
