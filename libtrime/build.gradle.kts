@@ -59,6 +59,35 @@ android {
             path = file("src/main/jni/CMakeLists.txt")
         }
     }
+
+    packaging {
+        resources {
+            excludes +=
+                setOf(
+                    // https://github.com/amzxyz/rime_wanxiang/tree/v15.0.3?tab=readme-ov-file#8--%E8%87%AA%E5%AE%9A%E4%B9%89%E6%89%A9%E5%B1%95-%E7%BA%BF%E4%B8%8A%E6%95%B0%E6%8D%AE%E8%8E%B7%E5%8F%96
+                    "/assets/rime_wanxiang/.git*",
+                    "/assets/rime_wanxiang/version.txt",
+                    "/assets/rime_wanxiang/weasel.yaml",
+                    "/assets/rime_wanxiang/wanxiang_t9.*",
+                    "/assets/rime_wanxiang/wanxiang_mixedcode.*",
+                    "/assets/rime_wanxiang/lua/data/chinese_english.txt",
+                    "/assets/rime_wanxiang/lua/data/english_chinese.txt",
+                    "/assets/rime_wanxiang/lua/data/t9_abbrev.txt",
+                    "/assets/rime_wanxiang/lua/data/tips_*",
+                    "/assets/rime_wanxiang/custom/*.txt",
+                    "/assets/rime_wanxiang/custom/wanxiang_pro.*",
+                    "/assets/rime_wanxiang/custom/wanxiang_chaifen*",
+                    "/assets/rime_wanxiang/custom/wanxiang_mixedcode.*",
+                    "/assets/rime_wanxiang/dicts/renming.dict.yaml",
+                    "/assets/rime_wanxiang/dicts/wuzhong.dict.yaml",
+                    "/assets/rime_wanxiang/**/*.json",
+                    "/assets/rime_wanxiang/**/*.md",
+                    "/assets/rime_wanxiang/**/*.png",
+                    "/assets/rime_wanxiang/**/*.jpg",
+                    "/assets/rime_wanxiang/**/*.zip",
+                )
+        }
+    }
 }
 
 dependencies {
