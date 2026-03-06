@@ -36,10 +36,10 @@ import java.io.File
 interface Trime {
     interface Config {
         /** Rime 用户数据目录 */
-        var userDataDir: File
+        var userDataDir: File?
 
         /** Rime 共享数据目录 */
-        var sharedDataDir: File
+        var sharedDataDir: File?
     }
 
     /** 通过 [TrimeSession.run] 启动对 [TrimeMessage] 的监听 */

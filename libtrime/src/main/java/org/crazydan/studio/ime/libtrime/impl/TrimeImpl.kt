@@ -35,6 +35,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 import org.crazydan.studio.ime.libtrime.Trime
 import org.crazydan.studio.ime.libtrime.TrimeMessage
+import org.crazydan.studio.ime.libtrime.TrimeSchema
+import org.crazydan.studio.ime.libtrime.TrimeWord
 import timber.log.Timber
 import java.io.File
 
@@ -54,8 +56,8 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
     }
 
     // ---------------------------------- Configuration --------------------------------------
-    override lateinit var userDataDir: File
-    override lateinit var sharedDataDir: File
+    override var userDataDir: File? = null
+    override var sharedDataDir: File? = null
 
     // ----------------------------------- Message -------------------------------------
     override val messageFlow = messageFlow_.asSharedFlow()
@@ -94,18 +96,6 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
 
     // ------------------------------------------------------------------------
 
-    fun getUserDataDir() = if (this::userDataDir.isInitialized) userDataDir else null
-    fun getSharedDataDir() = if (this::sharedDataDir.isInitialized) sharedDataDir else null
-
-    // ------------------------------------------------------------------------
-
-    override suspend fun redeploy() = withRimeContext {
-        Rime.exitRime()
-        startRime(true)
-    }
-
-    // ------------------------------------------------------------------------
-
     fun start() {
         if (lifecycle.currentState != RimeLifecycle.State.STOPPED) {
             Timber.Forest.w("Skip starting Trime: not at stopped state!")
@@ -138,6 +128,56 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
 
     // ------------------------------------------------------------------------
 
+    override suspend fun getCandidates(
+        input: String,
+        top: Int
+    ): Array<TrimeWord> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun predictPhrase(inputs: Array<String>): Array<TrimeWord> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun commitPhrase(phrase: Array<TrimeWord>) {
+        TODO("Not yet implemented")
+    }
+
+    // ------------------------------------------------------------------------
+
+    override suspend fun getActivatedSchema(): String {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun activateSchema(schemaId: String): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getEnabledSchemas(): Array<TrimeSchema> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun enableSchemas(schemaIds: Array<String>): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getDeployedSchemas(): Array<TrimeSchema> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deploySchema(schemaFile: File): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    // ------------------------------------------------------------------------
+
+    override suspend fun redeploy() = withRimeContext {
+        Rime.exitRime()
+        startRime(true)
+    }
+
+    // ------------------------------------------------------------------------
+
     private fun startRime(
         /**
          * - 为 `true` 时强制执行数据文件的完整维护，适合首次部署或重大更新
@@ -145,11 +185,11 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
          */
         fullCheck: Boolean,
     ) {
-        requireNotNull(getUserDataDir()) {
+        requireNotNull(userDataDir) {
             "Rime userDataDir isn't specified," +
                     " please initialize it in TrimeSession.config first"
         }
-        requireNotNull(getSharedDataDir()) {
+        requireNotNull(sharedDataDir) {
             "Rime sharedDataDir isn't specified," +
                     " please initialize it in TrimeSession.config first"
         }
@@ -157,15 +197,15 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
         Timber.Forest.d(
             """
             Starting Rime with:
-            userDataDir: ${userDataDir.absolutePath}
-            sharedDataDir: ${sharedDataDir.absolutePath}
+            userDataDir: ${userDataDir!!.absolutePath}
+            sharedDataDir: ${sharedDataDir!!.absolutePath}
             fullCheck: $fullCheck
             """.trimIndent(),
         )
 
         Rime.startupRime(
-            sharedDir = sharedDataDir.absolutePath,
-            userDir = userDataDir.absolutePath,
+            sharedDir = sharedDataDir!!.absolutePath,
+            userDir = userDataDir!!.absolutePath,
             fullCheck = fullCheck,
         )
     }

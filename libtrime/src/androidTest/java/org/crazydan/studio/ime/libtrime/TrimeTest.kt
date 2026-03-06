@@ -26,12 +26,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Instrumented test, which will execute on an Android device.
  *
- * See [testing documentation](http://d.android.com/tools/testing).
+ * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
+ * @date 2026-03-06
  */
 @RunWith(AndroidJUnit4::class)
-class ExampleInstrumentedTest {
+class TrimeTest {
 
     @Test
     fun useAppContext() {

@@ -113,16 +113,16 @@ object TrimeDaemon {
         }
 
         override fun config(block: Trime.Config.() -> Unit) {
-            val oldUserDataDir = trimeImpl.getUserDataDir()
-            val oldSharedDataDir = trimeImpl.getSharedDataDir()
+            val oldUserDataDir = trimeImpl.userDataDir
+            val oldSharedDataDir = trimeImpl.sharedDataDir
 
             block(trimeCnf)
             if (!trimeImpl.isReady) {
                 return
             }
 
-            val newUserDataDir = trimeImpl.getUserDataDir()
-            val newSharedDataDir = trimeImpl.getSharedDataDir()
+            val newUserDataDir = trimeImpl.userDataDir
+            val newSharedDataDir = trimeImpl.sharedDataDir
             if ((oldUserDataDir != null && newUserDataDir != null && oldUserDataDir != newUserDataDir)
                 || (oldSharedDataDir != null && newSharedDataDir != null && oldSharedDataDir != newSharedDataDir)
             ) {
