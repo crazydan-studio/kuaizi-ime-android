@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-package org.crazydan.studio.ime.libtrime.key
+package com.osfans.trime.core
 
 import android.view.KeyEvent
 import splitties.bitflags.hasFlag

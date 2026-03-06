@@ -3,11 +3,10 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-package org.crazydan.studio.ime.libtrime.key
+package com.osfans.trime.core
 
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
-import com.osfans.trime.core.RimeKeyMapping
 
 // source from https://github.com/osfans/trime/blob/develop/app/src/main/java/com/osfans/trime/core/KeyValue.kt
 

@@ -99,7 +99,7 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
 
     // ------------------------------------------------------------------------
 
-    override suspend fun rebuild() = withRimeContext {
+    override suspend fun redeploy() = withRimeContext {
         Rime.exitRime()
         startRime(true)
     }
