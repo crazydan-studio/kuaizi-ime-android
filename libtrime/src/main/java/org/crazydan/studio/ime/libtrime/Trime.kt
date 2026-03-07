@@ -48,6 +48,8 @@ interface Trime {
     val isReady: Boolean
 
     // -------------------------------------------------------------------
+    // Note: 将 Rime 当作输入法数据库使用，确保候选字获取和输入预测前后均重置 Rime 的输入状态，
+    // 避免结果被干扰 TODO 根据输入获得预测结果，需要提供当前音码、当前 schema 等状态数据
 
     /** 获取输入（全拼、双拼等）对应的候选字列表：结果按使用权重降序排序 */
     suspend fun getCandidates(
@@ -73,6 +75,9 @@ interface Trime {
     // -------------------------------------------------------------------
     // Note: Rime Schema 需要依次经历 部署 -> 启用 -> 激活 三个步骤
 
+    /** 激活指定的输入方案 */
+    suspend fun activateSchema(schemaId: String): Boolean
+
     /**
      * 获取已激活的输入方案（id 值）
      *
@@ -80,22 +85,17 @@ interface Trime {
      */
     suspend fun getActivatedSchema(): String
 
-    /** 激活指定的输入方案 */
-    suspend fun activateSchema(schemaId: String): Boolean
+    /** 启用指定的输入方案 */
+    suspend fun enableSchemas(schemaIds: Array<String>): Boolean
 
     /** 获取已启用的输入方案 */
     suspend fun getEnabledSchemas(): Array<TrimeSchema>
 
-    /** 启用指定的输入方案 */
-    suspend fun enableSchemas(schemaIds: Array<String>): Boolean
-
-    /** 获取已部署的输入方案 */
-    suspend fun getDeployedSchemas(): Array<TrimeSchema>
-
     /** 部署 `.schema.yaml` 输入方案文件 */
     suspend fun deploySchema(schemaFile: File): Boolean
 
-    // TODO 部署 zip 压缩包：支持对万象拼音的直接部署
+    /** 获取已部署的输入方案 */
+    suspend fun getDeployedSchemas(): Array<TrimeSchema>
 
     // -------------------------------------------------------------------
 

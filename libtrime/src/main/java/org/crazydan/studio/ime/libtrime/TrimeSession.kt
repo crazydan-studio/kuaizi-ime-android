@@ -39,22 +39,14 @@ interface TrimeSession {
     val lifecycleScope: CoroutineScope
 
     /**
-     * Set or update [Trime] configurations.
-     *
-     * Note: only when [Trime.Config.userDataDir] and [Trime.Config.sharedDataDir] are specified
-     * can the Trime be started. If the Rime was already started, it will be restarted automatically.
-     */
-    fun config(block: Trime.Config.() -> Unit)
-
-    /**
      * Run an operation immediately
      * The suspended [block] will be executed in caller's thread.
      * Use this function only for non-blocking operations like
      * accessing [Trime.messageFlow]:
      * ```kotlin
-     * val rime = RimeDaemon.createSession(javaClass.name)
-     * rime.run { messageFlow }.collect {
-     *     handleRimeMessage(it)
+     * val session = TrimeDaemon.openSession(javaClass.name)
+     * session.run { messageFlow }.collect {
+     *     handleTrimeMessage(it)
      * }
      * ```
      */
@@ -81,4 +73,7 @@ interface TrimeSession {
             runOnReady { block(this) }
         }
     }
+
+    /** Close the current Trime session */
+    fun close()
 }

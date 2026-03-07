@@ -21,9 +21,14 @@ package org.crazydan.studio.ime.libtrime
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.Assert
+import kotlinx.coroutines.runBlocking
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.io.File
 
 /**
  *
@@ -32,11 +37,38 @@ import org.junit.runner.RunWith
  */
 @RunWith(AndroidJUnit4::class)
 class TrimeTest {
+    val session by lazy { TrimeDaemon.openSession(javaClass.name) }
+
+    @Before
+    fun setUp() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+
+        TrimeDaemon.configTrime(appContext) {
+            userDataDir = File(appContext.filesDir, "rime-user")
+            sharedDataDir = File(appContext.getExternalFilesDir(null), "rime-shared")
+        }
+    }
+
+    @After
+    fun tearDown() {
+        session.close()
+    }
 
     @Test
-    fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        Assert.assertEquals("org.crazydan.studio.ime.libtrime", appContext.packageName)
+    fun test_activateSchema() {
+        withTrimeContext {
+            val deployedSchemas = getDeployedSchemas()
+            val enabledSchemas = getEnabledSchemas()
+            assertTrue(enabledSchemas.isNotEmpty())
+            assertTrue(deployedSchemas.size > enabledSchemas.size)
+
+            val activated = activateSchema("wanxiang")
+            assertTrue(activated)
+            assertEquals("wanxiang", getActivatedSchema())
+        }
+    }
+
+    private fun withTrimeContext(block: suspend Trime.() -> Unit) = runBlocking {
+        session.runOnReady(block)
     }
 }

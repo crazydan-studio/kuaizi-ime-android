@@ -114,7 +114,7 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
             return
         }
 
-        Timber.Forest.i("Trime finalize()")
+        Timber.Forest.i("Trime stop()")
         lifecycle.emitState(RimeLifecycle.State.STOPPING)
         dispatcher.stop().let {
             if (it.isNotEmpty()) {
@@ -145,29 +145,23 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
 
     // ------------------------------------------------------------------------
 
-    override suspend fun getActivatedSchema(): String {
-        TODO("Not yet implemented")
-    }
+    override suspend fun activateSchema(schemaId: String): Boolean =
+        Rime.selectRimeSchema(schemaId)
 
-    override suspend fun activateSchema(schemaId: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getActivatedSchema(): String =
+        Rime.getCurrentRimeSchema()
 
-    override suspend fun getEnabledSchemas(): Array<TrimeSchema> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun enableSchemas(schemaIds: Array<String>): Boolean =
+        Rime.selectRimeSchemas(schemaIds)
 
-    override suspend fun enableSchemas(schemaIds: Array<String>): Boolean {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getEnabledSchemas(): Array<TrimeSchema> =
+        TrimeSchema.from(Rime.getRimeSchemaList())
 
-    override suspend fun getDeployedSchemas(): Array<TrimeSchema> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deploySchema(schemaFile: File): Boolean =
+        Rime.deployRimeSchemaFile(schemaFile.absolutePath)
 
-    override suspend fun deploySchema(schemaFile: File): Boolean {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getDeployedSchemas(): Array<TrimeSchema> =
+        TrimeSchema.from(Rime.getAvailableRimeSchemaList())
 
     // ------------------------------------------------------------------------
 
@@ -187,12 +181,15 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
     ) {
         requireNotNull(userDataDir) {
             "Rime userDataDir isn't specified," +
-                    " please initialize it in TrimeSession.config first"
+                    " please initialize it in TrimeDaemon.configTrime first"
         }
         requireNotNull(sharedDataDir) {
             "Rime sharedDataDir isn't specified," +
-                    " please initialize it in TrimeSession.config first"
+                    " please initialize it in TrimeDaemon.configTrime first"
         }
+
+        userDataDir!!.mkdirs()
+        sharedDataDir!!.mkdirs()
 
         Timber.Forest.d(
             """
@@ -212,5 +209,9 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
 
     private fun handleRimeMessage(type: Int, params: Array<Any>) {
         // TODO
+
+//        if (type == 3 && params[0] != "start") {
+//            lifecycle.emitState(RimeLifecycle.State.READY)
+//        }
     }
 }

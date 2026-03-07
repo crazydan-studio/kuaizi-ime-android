@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.ime.libtrime
 
+import com.osfans.trime.core.SchemaItem
+
 /**
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
@@ -27,4 +29,16 @@ package org.crazydan.studio.ime.libtrime
 data class TrimeSchema(
     val id: String,
     val name: String = "",
-)
+) {
+
+    companion object {
+        fun from(item: SchemaItem): TrimeSchema =
+            TrimeSchema(
+                id = item.id,
+                name = item.name,
+            )
+
+        fun from(items: Array<SchemaItem>): Array<TrimeSchema> =
+            items.map(::from).toTypedArray()
+    }
+}

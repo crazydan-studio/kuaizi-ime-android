@@ -21,7 +21,10 @@ package com.osfans.trime.core
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import org.crazydan.studio.ime.libtrime.utils.copyToDir
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import timber.log.Timber
@@ -36,6 +39,27 @@ import java.io.File
 class RimeTest {
     init {
         Timber.plant(Timber.DebugTree())
+    }
+
+    @Before
+    fun setUp() {
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val sharedDataDir = File(appContext.getExternalFilesDir(null), "rime").also { it.mkdirs() }
+        val userDir = File(appContext.filesDir, "user").also { it.mkdirs() }
+
+        appContext.assets.copyToDir("rime", sharedDataDir)
+
+        Rime.startupRime(
+            sharedDir = sharedDataDir.absolutePath,
+            userDir = userDir.absolutePath,
+            fullCheck = false,
+        )
+        Thread.sleep(500)
+    }
+
+    @After
+    fun tearDown() {
+        Rime.exitRime()
     }
 
     @Test
@@ -89,37 +113,10 @@ class RimeTest {
     }
 
     private fun withRimeContext(block: () -> Unit) {
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val sharedDataDir = File(appContext.getExternalFilesDir(null), "rime").also { it.mkdirs() }
-        val userDir = File(appContext.filesDir, "user").also { it.mkdirs() }
-
-        val assets = arrayOf(
-            "default.yaml",
-            //
-            "wanxiang.dict.yaml",
-            "wanxiang.schema.yaml",
-            "wanxiang_algebra.yaml",
-            //
-            "dicts/zi.dict.yaml",
-        )
-        assets.forEach { asset ->
-            val target = File(sharedDataDir, asset).also { it.parentFile?.mkdirs() }
-            appContext.assets.open("rime/${asset}").copyTo(target.outputStream())
-        }
-
-        Rime.startupRime(
-            sharedDir = sharedDataDir.absolutePath,
-            userDir = userDir.absolutePath,
-            fullCheck = false,
-        )
-        Thread.sleep(500)
-
         val schemas = Rime.getRimeSchemaList()
         assertEquals("wanxiang", schemas[0].id)
         Rime.selectRimeSchema(schemas[0].id)
 
-        block.invoke()
-
-        Rime.exitRime()
+        block()
     }
 }
