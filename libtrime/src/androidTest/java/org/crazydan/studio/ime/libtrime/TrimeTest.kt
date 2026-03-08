@@ -22,6 +22,7 @@ package org.crazydan.studio.ime.libtrime
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
+import org.crazydan.studio.ime.libtrime.utils.copyToDir
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -42,10 +43,14 @@ class TrimeTest {
     @Before
     fun setUp() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        val userDir = File(appContext.filesDir, "rime-user")
+        val sharedDir = File(appContext.getExternalFilesDir(null), "rime-shared")
+
+        appContext.assets.copyToDir("rime_wanxiang", sharedDir)
 
         TrimeDaemon.configTrime(appContext) {
-            userDataDir = File(appContext.filesDir, "rime-user")
-            sharedDataDir = File(appContext.getExternalFilesDir(null), "rime-shared")
+            userDataDir = userDir
+            sharedDataDir = sharedDir
         }
     }
 

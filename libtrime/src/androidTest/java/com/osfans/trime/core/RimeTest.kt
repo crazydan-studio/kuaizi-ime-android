@@ -37,20 +37,17 @@ import java.io.File
  */
 @RunWith(AndroidJUnit4::class)
 class RimeTest {
-    init {
-        Timber.plant(Timber.DebugTree())
-    }
 
     @Before
     fun setUp() {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        val sharedDataDir = File(appContext.getExternalFilesDir(null), "rime").also { it.mkdirs() }
-        val userDir = File(appContext.filesDir, "user").also { it.mkdirs() }
+        val userDir = File(appContext.getExternalFilesDir(null), "rime-user").also { it.mkdirs() }
+        val sharedDir = File(appContext.getExternalFilesDir(null), "rime-shared").also { it.mkdirs() }
 
-        appContext.assets.copyToDir("rime", sharedDataDir)
+        appContext.assets.copyToDir("rime_wanxiang_simple", sharedDir)
 
         Rime.startupRime(
-            sharedDir = sharedDataDir.absolutePath,
+            sharedDir = sharedDir.absolutePath,
             userDir = userDir.absolutePath,
             fullCheck = false,
         )
