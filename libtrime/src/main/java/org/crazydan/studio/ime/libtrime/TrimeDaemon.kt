@@ -110,9 +110,6 @@ object TrimeDaemon {
         val newUserDataDir = trimeImpl.userDataDir
         val newSharedDataDir = trimeImpl.sharedDataDir
 
-        prepareRimeSchemas(context, newSharedDataDir)
-
-        // TODO Rime 实例已启动且 schema 有更新时，需重启 Rime
         if (!trimeImpl.isReady) {
             return
         }
@@ -163,14 +160,5 @@ object TrimeDaemon {
         override fun close() {
             closeSession(name)
         }
-    }
-
-    private fun prepareRimeSchemas(context: Context, sharedDataDir: File?) {
-        if (sharedDataDir == null) {
-            return
-        }
-
-        val source = "rime_wanxiang"
-        context.assets.copyToDir(source, sharedDataDir)
     }
 }

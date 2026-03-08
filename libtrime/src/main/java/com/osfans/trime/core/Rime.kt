@@ -15,7 +15,45 @@ typealias RimeMessageHandler = (Int, Array<Any>) -> Unit
 
 /**
  * 只有 Rime 启动、同步和部署 schema（输入方案）/配置文件才是异步的，其与接口均为同步的。
- * 但为了统一上层调用，强制要求以消息形式监听输入等
+ * 但为了统一上层调用，强制要求以消息形式监听输入等。
+ *
+ * ## 用户目录
+ *
+ * 目录结构：
+ * ```
+ * $user_data_dir/
+ * ├── installation.yaml         # 安装信息
+ * ├── user.yaml                 # 用户配置
+ * ├── default.custom.yaml       # 自定义配置
+ * ├── luna_pinyin.userdb.kct    # 用户词典
+ * ├── build/                    # 编译文件
+ * │   ├── luna_pinyin.prism.bin
+ * │   └── luna_pinyin.table.bin
+ * └── sync/                     # 同步目录
+ *     └── user_id/
+ *         ├── default.yaml
+ *         └── luna_pinyin.userdb.txt
+ * ```
+ *
+ * - 用户词典使用 LevelDB 存储，支持高效的读写操作
+ * - 同步功能将二进制词典转换为文本格式，便于版本控制
+ * - 配置文件支持 `.custom.yaml` 扩展，避免覆盖系统默认配置
+ *
+ * ## 共享目录
+ *
+ * 目录结构：
+ * ```
+ * $shared_data_dir/
+ * ├── *.schema.yaml          # 输入方案配置文件
+ * ├── *.dict.yaml           # 词典源文件
+ * ├── opencc/               # OpenCC 繁简转换配置
+ * │   ├── t2s.json         # 繁转简配置
+ * │   └── s2t.json         # 简转繁配置
+ * └── build/                # 预编译的二进制文件
+ *     ├── *.prism.bin      # 拼音棱镜文件
+ *     ├── *.table.bin      # 码表文件
+ *     └── *.reverse.bin    # 反向词典文件
+ * ```
  */
 object Rime {
     private val rimeMessageHandlers = ArrayList<RimeMessageHandler>()

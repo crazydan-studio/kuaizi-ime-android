@@ -19,6 +19,3 @@
 [submodule "libtrime/src/main/jni/snappy"]
 	path = libtrime/src/main/jni/snappy
 	url = git@github.com:google/snappy.git
-[submodule "libtrime/src/main/assets/rime_wanxiang"]
-	path = libtrime/src/main/assets/rime_wanxiang
-	url = git@github.com:amzxyz/rime_wanxiang.git
