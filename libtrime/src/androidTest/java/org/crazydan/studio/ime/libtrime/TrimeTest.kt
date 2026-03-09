@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.ime.libtrime
 
+import android.content.Context
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
@@ -38,6 +39,7 @@ import java.io.File
  */
 @RunWith(AndroidJUnit4::class)
 class TrimeTest {
+    val schema = "wanxiang"
     val session by lazy { TrimeDaemon.openSession(javaClass.name) }
 
     @Before
@@ -46,7 +48,7 @@ class TrimeTest {
         val userDir = File(appContext.filesDir, "rime-user")
         val sharedDir = File(appContext.getExternalFilesDir(null), "rime-shared")
 
-        appContext.assets.copyToDir("rime_wanxiang", sharedDir)
+        prepareData(appContext, userDir)
 
         TrimeDaemon.configTrime(appContext) {
             userDataDir = userDir
@@ -67,13 +69,49 @@ class TrimeTest {
             assertTrue(enabledSchemas.isNotEmpty())
             assertTrue(deployedSchemas.size > enabledSchemas.size)
 
-            val activated = activateSchema("wanxiang")
+            val activated = activateSchema(schema)
             assertTrue(activated)
-            assertEquals("wanxiang", getActivatedSchema())
+            assertEquals(schema, getActivatedSchema())
+        }
+    }
+
+    @Test
+    fun test_inputPinyin() {
+        withTrimeContext {
+            activateSchema(schema)
+
+            val spells = "shi jie ren min da tuan jie wan sui".split("\\s+".toRegex())
+            val expectedCandidates = "世(shì)界(jiè)人(rén)民(mín)大(dà)团(tuán)结(jié)万(wàn)岁(suì)"
+
+            val candidates = inputSpells(spells)
+            assertEquals(expectedCandidates, candidates.joinToString("") { it.text + "(${it.spell})" })
         }
     }
 
     private fun withTrimeContext(block: suspend Trime.() -> Unit) = runBlocking {
         session.runOnReady(block)
+    }
+
+    private fun prepareData(context: Context, userDir: File) {
+        context.assets.copyToDir("rime_wanxiang/rime-wanxiang-base.zip", userDir, unzip = true)
+        context.assets.copyToDir("rime_wanxiang/wanxiang-lts-zh-hans.gram", userDir)
+
+        context.assets.copyToDir("rime_wanxiang/installed", userDir)
+
+        val userConfigFile = userDir.resolve("user.yaml")
+        // 修改 user.yaml 中的构建时间 var/last_build_time 以避免重新部署
+        // Note: 仅针对已准备了部署文件的情况 (see src/androidTest/assets/rime_wanxiang/README.md)
+        if (userConfigFile.exists()) {
+            val currentTime = 10 + System.currentTimeMillis() / 1000
+            userConfigFile.writeText(
+                """
+                    var:
+                      last_build_time: $currentTime
+                      previously_selected_schema: $schema
+                      schema_access_time:
+                        $schema: $currentTime
+                """.trimIndent()
+            )
+        }
     }
 }

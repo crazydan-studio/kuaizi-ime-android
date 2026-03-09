@@ -21,10 +21,24 @@ package org.crazydan.studio.ime.libtrime.utils
 
 import android.content.res.AssetManager
 import java.io.File
+import java.io.FileNotFoundException
 
-/** 将 `assets` 目录中的指定文件或指定目录中的所有文件复制到目标目录中 */
-fun AssetManager.copyToDir(source: String, targetDir: File, recursively: Boolean = true) {
-    copyAssetFilesToDir(this, source, targetDir, recursively = recursively)
+/**
+ * 将 `assets` 目录中的指定文件或指定目录中的所有文件复制到目标目录中。
+ * Note: 若源文件不存在，则不做处理。
+ */
+fun AssetManager.copyToDir(
+    source: String, targetDir: File,
+    /** 是否递归复制子目录中的文件 */
+    recursively: Boolean = true,
+    /**
+     * 若 [source] 为 `.zip` 文件，是否直接将其解压到 [targetDir]。
+     *
+     * Note: 若 [source] 不是 zip 文件则忽略该参数。
+     */
+    unzip: Boolean = false
+) {
+    copyAssetFilesToDir(this, source, targetDir, recursively = recursively, unzip = unzip)
 }
 
 private fun copyAssetFilesToDir(
@@ -33,22 +47,32 @@ private fun copyAssetFilesToDir(
     targetDir: File,
     targetFilePath: String = "",
     recursively: Boolean,
+    unzip: Boolean,
 ) {
     val sourceFiles = assets.list(source)
 
     // For normal file
     if (sourceFiles.isNullOrEmpty()) {
-        val targetFile = File(
-            targetDir,
-            targetFilePath.ifEmpty { source.substringAfterLast('/') }
-        ).also {
-            it.parentFile?.mkdirs()
-        }
+        try {
+            assets.open(source).use { input ->
+                if (unzip && source.endsWith(".zip")) {
+                    targetDir.mkdirs()
 
-        assets.open(source).use { input ->
-            targetFile.outputStream().use { output ->
-                input.copyTo(output)
+                    ZipUtils.unzipToDir(input, targetDir)
+                } else {
+                    val targetFile = File(
+                        targetDir,
+                        targetFilePath.ifEmpty { source.substringAfterLast('/') }
+                    ).also {
+                        it.parentFile?.mkdirs()
+                    }
+
+                    targetFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
             }
+        } catch (_: FileNotFoundException) {
         }
     }
     // For directory
@@ -59,6 +83,7 @@ private fun copyAssetFilesToDir(
                 source = "$source/$file", targetDir = targetDir,
                 targetFilePath = if (targetFilePath.isEmpty()) file else "$targetFilePath/$file",
                 recursively = true,
+                unzip = false,
             )
         }
     }

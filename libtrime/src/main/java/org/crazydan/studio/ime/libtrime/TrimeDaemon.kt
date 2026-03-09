@@ -34,8 +34,6 @@ import kotlinx.coroutines.runBlocking
 import org.crazydan.studio.ime.libtrime.TrimeDaemon.configTrime
 import org.crazydan.studio.ime.libtrime.TrimeDaemon.trimeImpl
 import org.crazydan.studio.ime.libtrime.impl.TrimeImpl
-import org.crazydan.studio.ime.libtrime.utils.copyToDir
-import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 

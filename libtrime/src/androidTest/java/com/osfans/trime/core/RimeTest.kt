@@ -51,6 +51,7 @@ class RimeTest {
             userDir = userDir.absolutePath,
             fullCheck = false,
         )
+        // 等待 Rime 就绪
         Thread.sleep(500)
     }
 
