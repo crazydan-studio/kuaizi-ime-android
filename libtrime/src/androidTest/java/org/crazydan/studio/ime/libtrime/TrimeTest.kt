@@ -30,6 +30,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import timber.log.Timber
 import java.io.File
 
 /**
@@ -81,15 +82,58 @@ class TrimeTest {
             activateSchema(schema)
 
             val spells = "shi jie ren min da tuan jie wan sui".split("\\s+".toRegex())
-            val expectedCandidates = "世(shì)界(jiè)人(rén)民(mín)大(dà)团(tuán)结(jié)万(wàn)岁(suì)"
+            val expectedPhrase = "世(shì)界(jiè)人(rén)民(mín)大(dà)团(tuán)结(jié)万(wàn)岁(suì)"
 
-            val candidates = inputSpells(spells)
-            assertEquals(expectedCandidates, candidates.joinToString("") { it.text + "(${it.spell})" })
+            val phrase = predictPhrase(spells)
+            assertEquals(expectedPhrase, phrase.joinToString("") { it.text + "(${it.spell})" })
         }
     }
 
     private fun withTrimeContext(block: suspend Trime.() -> Unit) = runBlocking {
         session.runOnReady(block)
+    }
+
+    private suspend fun predictPhrase(inputs: List<String>): List<TrimeWord> = session.runOnReady {
+        clearComposition()
+        setSwitchesOption("tone_hint", true)
+
+        inputs.forEach { input ->
+            input.toCharArray().forEach { ch ->
+                if (!processKey(ch)) {
+                    Timber.e("Cannot process key '$ch'")
+                }
+            }
+            processKey('\'')
+        }
+
+        val firstCandidate = getCurrentCandidates().first()
+        if (firstCandidate.hasSpell()) {
+            return@runOnReady firstCandidate.splitBySpell()
+        }
+
+        var predictedText = firstCandidate.text
+        val phrase = mutableListOf<TrimeWord>()
+        while (phrase.size != inputs.size) {
+            val candidates = getCurrentCandidates()
+            if (candidates.isEmpty()) {
+                break
+            }
+
+            for ((index, candidate) in candidates.withIndex()) {
+                val text = candidate.text
+                if (!candidate.hasSpell() || !predictedText.startsWith(text)) {
+                    continue
+                }
+
+                predictedText = predictedText.substring(text.length)
+                phrase.addAll(candidate.splitBySpell())
+
+                selectCandidate(index, false)
+                break
+            }
+        }
+
+        return@runOnReady phrase
     }
 
     private fun prepareData(context: Context, userDir: File) {

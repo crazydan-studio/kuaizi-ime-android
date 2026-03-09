@@ -24,8 +24,12 @@
 
 package org.crazydan.studio.ime.libtrime.impl
 
+import android.view.KeyEvent
+import com.osfans.trime.core.KeyModifiers
+import com.osfans.trime.core.KeyValue
 import com.osfans.trime.core.Rime
 import com.osfans.trime.core.RimeDispatcher
+import com.osfans.trime.core.RimeKeyMapping
 import com.osfans.trime.core.RimeLifecycle
 import com.osfans.trime.core.RimeLifecycleOwner
 import com.osfans.trime.core.RimeLifecycleRegistry
@@ -128,46 +132,110 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
 
     // ------------------------------------------------------------------------
 
-    override suspend fun getCandidates(
-        input: String,
-        top: Int
-    ): Array<TrimeWord> {
-        TODO("Not yet implemented")
+    override suspend fun processKey(keyChar: Char): Boolean = withRimeContext {
+        processKeyInner(keyChar, 0)
     }
 
-    override suspend fun predictPhrase(inputs: Array<String>): Array<TrimeWord> {
-        TODO("Not yet implemented")
+    override suspend fun processKey(keyEvent: KeyEvent): Boolean = withRimeContext {
+        val value = KeyValue.fromKeyEvent(keyEvent)
+        val modifiers = KeyModifiers.fromKeyEvent(keyEvent)
+
+        processKeyInner(value.value, modifiers.toInt())
     }
 
-    override suspend fun commitPhrase(phrase: Array<TrimeWord>) {
-        TODO("Not yet implemented")
+    override suspend fun getRawInput(): String = withRimeContext {
+        Rime.getRimeRawInput()
+    }
+
+    override suspend fun getCaretPos(): Int = withRimeContext {
+        Rime.getRimeCaretPos()
+    }
+
+    override suspend fun setCaretPos(caretPos: Int) = withRimeContext {
+        Rime.setRimeCaretPos(caretPos)
+    }
+
+    override suspend fun commitComposition(): Boolean = withRimeContext {
+        Rime.commitRimeComposition()
+    }
+
+    override suspend fun clearComposition() = withRimeContext {
+        Rime.clearRimeComposition()
     }
 
     // ------------------------------------------------------------------------
 
-    override suspend fun activateSchema(schemaId: String): Boolean =
+    override suspend fun getCandidates(pageStart: Int, pageSize: Int): Array<TrimeWord> = withRimeContext {
+        val items = Rime.getRimeCandidates(pageStart, pageSize)
+        TrimeWord.from(items)
+    }
+
+    override suspend fun getCurrentCandidates(): Array<TrimeWord> = withRimeContext {
+        return@withRimeContext Rime.getRimeContext().menu.candidates.map {
+            TrimeWord(
+                text = it.text,
+                spell = it.comment,
+            )
+        }.toTypedArray()
+    }
+
+    override suspend fun selectCandidate(index: Int, global: Boolean): Boolean = withRimeContext {
+        Rime.selectRimeCandidate(index, global)
+    }
+
+    override suspend fun deleteCandidate(index: Int, global: Boolean): Boolean = withRimeContext {
+        Rime.deleteRimeCandidate(index, global)
+    }
+
+    override suspend fun nextCandidatePage(): Boolean = withRimeContext {
+        Rime.changeRimeCandidatePage(false)
+    }
+
+    override suspend fun prevCandidatePage(): Boolean = withRimeContext {
+        Rime.changeRimeCandidatePage(true)
+    }
+
+    // ------------------------------------------------------------------------
+
+    override suspend fun getSwitchesOption(option: String): Boolean = withRimeContext {
+        Rime.getRimeOption(option)
+    }
+
+    override suspend fun setSwitchesOption(option: String, value: Boolean) = withRimeContext {
+        Rime.setRimeOption(option, value)
+    }
+
+    // ------------------------------------------------------------------------
+
+    override suspend fun activateSchema(schemaId: String): Boolean = withRimeContext {
         Rime.selectRimeSchema(schemaId)
+    }
 
-    override suspend fun getActivatedSchema(): String =
+    override suspend fun getActivatedSchema(): String = withRimeContext {
         Rime.getCurrentRimeSchema()
+    }
 
-    override suspend fun enableSchemas(schemaIds: Array<String>): Boolean =
+    override suspend fun enableSchemas(schemaIds: Array<String>): Boolean = withRimeContext {
         Rime.selectRimeSchemas(schemaIds)
+    }
 
-    override suspend fun getEnabledSchemas(): Array<TrimeSchema> =
+    override suspend fun getEnabledSchemas(): Array<TrimeSchema> = withRimeContext {
         TrimeSchema.from(Rime.getRimeSchemaList())
+    }
 
-    override suspend fun deploySchema(schemaFile: File): Boolean =
+    override suspend fun deploySchema(schemaFile: File): Boolean = withRimeContext {
         Rime.deployRimeSchemaFile(schemaFile.absolutePath)
+    }
 
-    override suspend fun getDeployedSchemas(): Array<TrimeSchema> =
+    override suspend fun getDeployedSchemas(): Array<TrimeSchema> = withRimeContext {
         TrimeSchema.from(Rime.getAvailableRimeSchemaList())
+    }
 
     // ------------------------------------------------------------------------
 
-    override suspend fun redeploy() = withRimeContext {
+    override suspend fun redeploy(full: Boolean) = withRimeContext {
         Rime.exitRime()
-        startRime(true)
+        startRime(full)
     }
 
     // ------------------------------------------------------------------------
@@ -213,5 +281,38 @@ class TrimeImpl : Trime, Trime.Config, RimeLifecycleOwner {
 //        if (type == 3 && params[0] != "start") {
 //            lifecycle.emitState(RimeLifecycle.State.READY)
 //        }
+    }
+
+    private fun processKeyInner(ch: Char, modifiers: Int): Boolean {
+        val keyName = when (ch) {
+            ' ' -> "space"
+            '\'' -> "apostrophe"
+            '#' -> "numbersign"
+            '*' -> "asterisk"
+            '+' -> "plus"
+            ',' -> "comma"
+            '-' -> "minus"
+            '.' -> "period"
+            '/' -> "slash"
+            ';' -> "semicolon"
+            '=' -> "equal"
+            '[' -> "bracketleft"
+            '\\' -> "backslash"
+            ']' -> "bracketright"
+            '`' -> "grave"
+            else -> ch.toString()
+        }
+        val value = RimeKeyMapping.nameToKeyVal(keyName)
+
+        return processKeyInner(value, modifiers)
+    }
+
+    private fun processKeyInner(keyVal: Int, modifiers: Int): Boolean {
+        val handled = Rime.processRimeKey(keyVal, modifiers)
+        if (!handled) {
+            //
+        }
+
+        return handled
     }
 }

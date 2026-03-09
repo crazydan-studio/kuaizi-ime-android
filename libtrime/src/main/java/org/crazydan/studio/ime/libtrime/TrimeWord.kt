@@ -19,10 +19,36 @@
 
 package org.crazydan.studio.ime.libtrime
 
+import com.osfans.trime.core.CandidateItem
+
 /** （单个）字信息 */
 data class TrimeWord(
     /** 文本 */
     val text: String,
     /** 读音：非汉字没有读音信息 */
     val spell: String?,
-)
+) {
+
+    companion object {
+
+        fun from(item: CandidateItem): TrimeWord =
+            TrimeWord(
+                text = item.text,
+                spell = item.comment.ifBlank { null },
+            )
+
+        fun from(items: Array<CandidateItem>): Array<TrimeWord> =
+            items.map(::from).toTypedArray()
+    }
+
+    fun hasSpell(): Boolean =
+        !spell.isNullOrEmpty() && spell != "∞"
+
+    fun splitBySpell(): List<TrimeWord> =
+        spell?.split("\\s+".toRegex())?.mapIndexed { index, s ->
+            TrimeWord(
+                text = text[index].toString(),
+                spell = s,
+            )
+        } ?: listOf()
+}

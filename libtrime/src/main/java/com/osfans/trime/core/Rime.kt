@@ -261,6 +261,7 @@ object Rime {
     /** 选择候选字列表中指定序号的候选字：其将更新候选字的权重 */
     @JvmStatic
     external fun selectRimeCandidate(
+        /** 从 0 开始 */
         index: Int,
         /** 为 `false` 时，[index] 为当前分页中的序号；为 `true` 时，[index] 为整个候选字列表中的序号 */
         global: Boolean,
@@ -268,6 +269,7 @@ object Rime {
 
     @JvmStatic
     external fun deleteRimeCandidate(
+        /** 从 0 开始 */
         index: Int,
         /** 为 `false` 时，[index] 为当前分页中的序号；为 `true` 时，[index] 为整个候选字列表中的序号 */
         global: Boolean,

@@ -24,6 +24,7 @@
 
 package org.crazydan.studio.ime.libtrime
 
+import android.view.KeyEvent
 import kotlinx.coroutines.flow.SharedFlow
 import java.io.File
 
@@ -49,26 +50,39 @@ interface Trime {
 
     // -------------------------------------------------------------------
 
-    /** 获取输入（全拼、双拼等）对应的候选字列表：结果按使用权重降序排序 */
-    suspend fun getCandidates(
-        input: String,
-        /** 若 <= 0，则获取全部候选字，否则，仅获取前 [top] 个候选字 */
-        top: Int = -1,
-    ): Array<TrimeWord>
+    /** 处理字符按键 */
+    suspend fun processKey(keyChar: Char): Boolean
 
-    /** 获取输入（全拼、双拼等）对应的最佳候选字 */
-    suspend fun getBestCandidate(input: String): TrimeWord? =
-        getCandidates(input, 1).firstOrNull()
+    /** 处理 Android 按键事件 [KeyEvent] */
+    suspend fun processKey(keyEvent: KeyEvent): Boolean
 
-    /** 根据输入（全拼、双拼等）预测短语 */
-    suspend fun predictPhrase(inputs: Array<String>): Array<TrimeWord>
+    suspend fun getRawInput(): String
 
-    /** 提交短语从而更新用户词库中的字词权重 */
-    suspend fun commitPhrase(phrase: Array<TrimeWord>)
+    suspend fun getCaretPos(): Int
+
+    suspend fun setCaretPos(caretPos: Int)
+
+    suspend fun commitComposition(): Boolean
+    suspend fun clearComposition()
 
     // -------------------------------------------------------------------
 
-    // 通过 /pinyin - 全拼，/zrm - 自然码，/flypy - 小鹤 命令切换 Schema 所支持的输入法
+    suspend fun getCandidates(pageStart: Int, pageSize: Int): Array<TrimeWord>
+    suspend fun getCurrentCandidates(): Array<TrimeWord>
+
+    suspend fun selectCandidate(index: Int, global: Boolean): Boolean
+    suspend fun deleteCandidate(index: Int, global: Boolean): Boolean
+
+    suspend fun nextCandidatePage(): Boolean
+    suspend fun prevCandidatePage(): Boolean
+
+    // -------------------------------------------------------------------
+    // 启用/禁用 `.schema.yaml` 中 `switches` 的选项
+
+    suspend fun getSwitchesOption(option: String): Boolean
+
+    /** Note: 当 `switches/options` 为 `[a, b, c]` 形式时，启用其中任意一项均会自动禁用其他项 */
+    suspend fun setSwitchesOption(option: String, value: Boolean)
 
     // -------------------------------------------------------------------
     // Note: Rime Schema 需要依次经历 部署 -> 启用 -> 激活 三个步骤
@@ -98,8 +112,11 @@ interface Trime {
     // -------------------------------------------------------------------
 
     /**
-     * 重新（全量）部署共享/用户目录中的数据，**适合首次部署或重大更新之后**。
+     * 重新部署共享/用户目录中的数据。
      * 详见 [com.osfans.trime.core.Rime.startupRime] (`fullCheck == true`)
      */
-    suspend fun redeploy()
+    suspend fun redeploy(
+        /** 是否全量重新部署。全量部署**适合首次部署或重大更新之后** */
+        full: Boolean = false
+    )
 }
