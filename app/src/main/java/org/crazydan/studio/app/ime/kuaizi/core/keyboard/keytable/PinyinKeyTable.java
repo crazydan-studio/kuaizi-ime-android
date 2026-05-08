@@ -188,7 +188,19 @@ public class PinyinKeyTable extends KeyTable {
                 }
 
                 boolean disabled = Objects.equals(level1Char, nextChar);
-                gridKeys[i][j] = level1CharKey(nextChar, (b) -> b.disabled(disabled));
+                Key nextCharKey = level1CharKey(nextChar, (b) -> b.disabled(disabled));
+
+                if (level0Char.equals("h") && nextChar.equals("m")) {
+                    gridKeys[0][7] = nextCharKey;
+                } else if (level0Char.equals("h") && nextChar.equals("ng")) {
+                    gridKeys[1][7] = nextCharKey;
+                } else if (level0Char.equals("e") && nextChar.equals("r")) {
+                    gridKeys[2][5] = nextCharKey;
+                } else if (level0Char.equals("e") && nextChar.equals("i")) {
+                    gridKeys[1][5] = nextCharKey;
+                } else {
+                    gridKeys[i][j] = nextCharKey;
+                }
             }
         }
     }
