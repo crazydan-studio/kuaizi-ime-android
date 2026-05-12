@@ -10,6 +10,7 @@
 |------|------|------|
 | 000 | [架构总览](000-architecture-overview.md) | v4 整体架构设计，包括分层、消息流、技术选型和与 Java 版本的架构对比 |
 | 100 | [键盘状态机设计](100-keyboard-state-machine.md) | 键盘状态机重构，从继承链到组合模式，Sealed class 状态定义和转换规则 |
+| 150 | [输入面板与按键面板分离设计](150-input-key-panel-separation.md) | 输入手势与按键渲染分离：输入面板（透明手势层）接收手势识别为 InputGesture，按键面板纯展示；叠加布局模式；后续支持全屏输入模式 |
 | 200 | [输入列表重构设计](200-input-list-redesign.md) | InputList 重构，不可变数据模型、游标管理、线程安全改进 |
 | 300 | [字典系统重构设计](300-dict-system-redesign.md) | 字典系统重构，协程化、Room/SQLDelight 选型、升级策略 |
 | 400 | [UI Compose 迁移设计](400-ui-compose-migration.md) | UI 层从 View 到 Compose 的迁移方案、性能验证、IME 桥接 |
