@@ -140,7 +140,7 @@ Java 版本的设置分为两个页面，组织如下：
 ```kotlin
 @Composable
 fun SettingsScreen(
-    config: Config,
+    config: ImeConfig,
     onConfigChanged: (Config) -> Unit,
     onNavigate: (SettingsRoute) -> Unit,
 ) {
@@ -310,7 +310,7 @@ val HandMode.displayName: String
  * 预览区域不可交互，仅用于视觉确认。
  */
 @Composable
-fun KeyboardPreview(config: Config) {
+fun KeyboardPreview(config: ImeConfig) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -322,11 +322,11 @@ fun KeyboardPreview(config: Config) {
                 .height(180.dp) // 缩小的键盘预览高度
                 .clip(RoundedCornerShape(8.dp)),
         ) {
-            ImeTheme(themeType = config.themeType) {
+            ImeTheme(themeType = config.ui.themeType) {
                 // 使用真实键盘 Composable，但 scale 缩小
                 Box(modifier = Modifier.scale(0.5f).fillMaxSize()) {
                     StandardKeyboard(
-                        keyGrid = pinyinKeyGridPreview(config.handMode),
+                        keyGrid = pinyinKeyGridPreview(config.engine.handMode),
                         keyboardState = KeyboardState.Idle,
                         onKeyPress = { _, _ -> }, // 不可交互
                     )
@@ -422,7 +422,7 @@ fun EnhancedSwitchPreference(
 ```kotlin
 @Composable
 fun InputSettings(
-    config: Config,
+    config: ImeConfig,
     onConfigChanged: (Config) -> Unit,
 ) {
     EnhancedSwitchPreference(
@@ -537,7 +537,7 @@ fun LazyListScope.sectionHeader(title: String) {
 ```kotlin
 @Composable
 fun SettingsScreen(
-    config: Config,
+    config: ImeConfig,
     onConfigChanged: (Config) -> Unit,
     onNavigate: (SettingsRoute) -> Unit,
 ) {
@@ -610,7 +610,7 @@ val searchableSettings = listOf(
  */
 @Composable
 fun QuickSettingsPopup(
-    config: Config,
+    config: ImeConfig,
     onConfigChanged: (Config) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -648,7 +648,7 @@ fun QuickSettingsPopup(
                                         ThemeType.FollowSystem -> Icons.Outlined.BrightnessAuto
                                     },
                                     contentDescription = theme.displayName,
-                                    tint = if (config.themeType == theme) {
+                                    tint = if (config.ui.themeType == theme) {
                                         MaterialTheme.colorScheme.primary
                                     } else {
                                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -670,8 +670,8 @@ fun QuickSettingsPopup(
                     SegmentedButtonGroup {
                         HandMode.entries.forEach { mode ->
                             SegmentedButton(
-                                selected = config.handMode == mode,
-                                onClick = { onConfigChanged(config.copy(handMode = mode)) },
+                                selected = config.engine.handMode == mode,
+                                onClick = { onConfigChanged(config.copy(engine = config.engine.copy(handMode = mode)) },
                             ) {
                                 Text(mode.displayName)
                             }

@@ -70,7 +70,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 │  配置持久化（DataStore）+ 设置页面 + 引导页面                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                      ViewModel Layer   ← :app 模块               │
-│  ImeViewModel → StateFlow<ImeState> + 配置持久化 + Output 桥接    │
+│  ImeViewModel（来自 :ime-ui）+ 配置持久化（独立）+ Output 桥接    │
 ├─────────────────────────────────────────────────────────────────┤
 │                         UI Layer      ← :ime-ui 库               │
 │  Compose 缺省 UI：InputPanel / KeyPanel / FeedbackPanel          │
@@ -85,11 +85,11 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 │                        Data Layer      ← :ime-engine 库          │
 │  DictProvider 接口 + SqliteDictProvider 内置实现                  │
 │  PinyinDict / UserInputDataDict / UserInputFavoriteDict          │
-│  (数据库层可替换；配置通过 ImeEngineConfig 代码设置，不含持久化)    │
+│  (数据库层可替换；配置通过 ImeConfig 代码设置，引擎/UI 配置明确隔离)    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-> **注意**：`:ime-engine` 库模块和 `:ime-ui` 库模块的设计详见文档 160。v4 采用三层库架构：引擎库（`:ime-engine`，纯 Kotlin，Domain Layer + Data Layer）、UI 库（`:ime-ui`，Compose 缺省 UI，UI Layer）、应用模块（`:app`，Platform Layer + ViewModel Layer + 配置持久化 + 设置页面）。第三方应用可以引入 `:ime-engine` + `:ime-ui` 获得完整的输入法能力与缺省 UI，也可以仅引入 `:ime-engine` 自行实现 UI。库的配置通过 `ImeEngineConfig` 在代码中设置，不含配置持久化层；数据库层通过 `DictProvider` 接口支持外部替换；收藏、剪贴板等可选功能通过 `Feature` 标记按需禁用。
+> **注意**：`:ime-engine` 库模块和 `:ime-ui` 库模块的设计详见文档 160。v4 采用三层库架构：引擎库（`:ime-engine`，纯 Kotlin，Domain Layer + Data Layer）、UI 库（`:ime-ui`，Compose 缺省 UI，UI Layer）、应用模块（`:app`，Platform Layer + ViewModel Layer + 配置持久化 + 设置页面）。第三方应用可以引入 `:ime-engine` + `:ime-ui` 获得完整的输入法能力与缺省 UI，也可以仅引入 `:ime-engine` 自行实现 UI。库的配置通过 `ImeConfig`（含引擎配置 `EngineConfig` 和 UI 配置 `UiConfig` 的明确隔离）在代码中设置，不含配置持久化层；数据库层通过 `DictProvider` 接口支持外部替换；收藏、剪贴板等可选功能通过 `Feature` 标记按需禁用。`:app` 模块直接使用 UI 库的 `ImeViewModel`，不继承也不扩展，配置通过 `ImeConfig` 与引擎交互。
 
 ### 3.2 核心设计决策
 
@@ -151,7 +151,7 @@ sealed class ImeIntent {
     data class FavoriteSaved(val text: String) : ImeIntent()
 
     // 配置变更
-    data class ConfigChanged(val config: ImeEngineConfig) : ImeIntent()
+    data class ConfigChanged(val config: ImeConfig) : ImeIntent()
 }
 ```
 
@@ -166,7 +166,7 @@ data class ImeState(
     val candidates: CandidateState = CandidateState(),
     val clipboard: ClipboardState = ClipboardState(),
     val favorites: FavoritesState = FavoritesState(),
-    val config: ImeEngineConfig = ImeEngineConfig(),
+    val config: ImeConfig = ImeConfig(), // 含 engine（引擎配置）和 ui（UI 配置）
 )
 ```
 

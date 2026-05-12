@@ -52,157 +52,127 @@ ConfigKey (枚举，定义所有配置键和默认值)
 
 ### 3.1 数据模型
 
-> **注意**：`Config` 是 `:app` 模块的应用级配置，包含 UI 偏好和引擎配置。引擎库 `:ime-engine` 使用 `ImeEngineConfig`（详见文档 160 第 4.2 节）作为纯代码配置，不含持久化。`Config` 中与引擎相关的字段（如 `handMode`、`enableXPad`）在运行时需同步到 `ImeEngineConfig`，此同步由 :app 模块的 `ImeViewModel` 负责（详见文档 160 第 8.4 节）。两套配置的字段映射关系需在实现时进一步明确。
+> **设计决策**：v4 配置系统采用统一的 `ImeConfig`（定义在 `:ime-engine` 库，详见文档 160 第 4.2 节），替代原设计中分离的 `ImeEngineConfig`（引擎配置）和 `Config`（应用配置）。`ImeConfig` 包含 `EngineConfig`（引擎配置）和 `UiConfig`（UI 配置）两个嵌套 data class，引擎与 UI 配置在数据结构上明确隔离。`:app` 模块的 `ConfigRepository` 直接持久化和恢复 `ImeConfig`，不再需要独立的 `Config` data class 和两套配置之间的运行时同步。
 
 ```kotlin
 /**
- * 输入法配置，不可变。
- * 所有配置项通过 data class 的 copy() 方法更新。
+ * 输入法配置（ImeConfig 的 :app 模块视角说明）。
+ *
+ * ImeConfig 定义在 :ime-engine 库中（详见文档 160 第 4.2 节），
+ * 包含 EngineConfig（引擎配置）和 UiConfig（UI 配置）。
+ * 此处仅列出 :app 模块关心的配置项与 Java 版本的对照关系。
+ *
+ * 运行时修改优先规则：
+ * - 通过键盘 UI 进行的临时修改（如临时切换左右手模式）优先于持久化配置
+ * - ImeConfig.runtimeOverrides 记录被运行时覆盖的字段
+ * - 持久化配置同步到引擎时，跳过已被运行时覆盖的字段
+ *
+ * 完整的 ImeConfig 定义见文档 160 第 4.2 节。
  */
-data class Config(
-    // 外观
-    val themeType: ThemeType = ThemeType.FollowSystem,
-    val handMode: HandMode = HandMode.Right,
-
-    // 输入
-    val enableXPad: Boolean = true,
-    val enableLatinUsePinyinKeysInXPad: Boolean = false,
-    val adaptDesktopSwipeUpGesture: Boolean = false,
-    val enableCandidateVariantFirst: Boolean = false,
-
-    // 隐私
-    val disableUserInputData: Boolean = false,
-
-    // 反馈
-    val disableKeyClickedAudio: Boolean = false,
-    val disableKeyAnimation: Boolean = false,
-    val disableCandidatesPagingAudio: Boolean = false,
-    val disableKeyPopupTips: Boolean = false,
-    val disableGestureSlippingTrail: Boolean = false,
-    val disableClipPopupTips: Boolean = false,
-    val clipPopupTipsTimeout: Int = 15,
-
-    // 日志与诊断（详见文档 900）
-    /** 发布版本的日志等级。仅对 release 构建生效，debug 构建始终为 VERBOSE */
-    val logLevel: LogLevel = LogLevel.WARN,
-    /** 日志文件存放目录路径。null 表示使用缺省应用私有目录 */
-    val logStoragePath: String? = null,
-
-    // 输入练习演示（详见文档 930）
-    /** 输入练习演示的播放速度倍率 */
-    val practicePlaybackSpeed: Float = 1.0f,
-    /** 输入练习演示中是否显示手指指示器 */
-    val practiceShowFingerOverlay: Boolean = true,
-    /** 输入练习演示中是否显示滑行轨迹 */
-    val practiceShowSwipeTrail: Boolean = true,
-)
-
-enum class ThemeType { Light, Night, FollowSystem }
-enum class HandMode { Left, Right }
 ```
 
 ### 3.2 DataStore 实现
 
 ```kotlin
-class ConfigRepository(private val dataStore: DataStore<Config>) {
-    val config: Flow<Config> = dataStore.data
-
-    suspend fun update(transform: (Config) -> Config) {
-        dataStore.updateData(transform)
-    }
-
-    companion object {
-        fun create(context: Context): ConfigRepository {
-            val dataStore = PreferenceDataStoreFactory.create(
-                serializer = ConfigSerializer,
-            ) {
-                context.preferencesDataStoreFile("ime_config")
-            }
-            return ConfigRepository(dataStore)
-        }
-    }
-}
-
-object ConfigSerializer : Serializer<Config> {
-    override val defaultValue: Config = Config()
-
-    override suspend fun readFrom(input: InputStream): Config {
-        // 从 Preferences 反序列化
-        val prefs = Preferences.parseFrom(input)
-        return Config(
-            themeType = ThemeType.entries[prefs.getInt("theme_type", 2)],
-            handMode = HandMode.entries[prefs.getInt("hand_mode", 1)],
-            enableXPad = prefs.getBoolean("enable_x_pad", true),
-            // ...
-        )
-    }
-
-    override suspend fun writeTo(t: Config, output: OutputStream) {
-        // 序列化为 Preferences
-        val prefs = preferencesOf(
-            "theme_type" to t.themeType.ordinal,
-            "hand_mode" to t.handMode.ordinal,
-            "enable_x_pad" to t.enableXPad,
-            // ...
-        )
-        prefs.writeTo(output)
-    }
-}
-```
-
-### 3.3 简化方案：使用 Preferences DataStore
-
-由于配置项都是基本类型，使用 Preferences DataStore 更简单：
-
-```kotlin
+/**
+ * 配置仓库，管理 ImeConfig 的持久化。
+ *
+ * 直接持久化 ImeConfig（含 EngineConfig 和 UiConfig），
+ * 无需独立的 Config data class 或两套配置的同步逻辑。
+ */
 class ConfigRepository(private val context: Context) {
     private val Context.dataStore by preferencesDataStore("ime_config")
 
-    val config: Flow<Config> = context.dataStore.data.map { prefs ->
-        Config(
-            themeType = ThemeType.entries[prefs[THEME_TYPE] ?: ThemeType.FollowSystem.ordinal],
-            handMode = HandMode.entries[prefs[HAND_MODE] ?: HandMode.Right.ordinal],
-            enableXPad = prefs[ENABLE_X_PAD] ?: true,
-            enableLatinUsePinyinKeysInXPad = prefs[ENABLE_LATIN_USE_PINYIN_KEYS] ?: false,
-            adaptDesktopSwipeUpGesture = prefs[ADAPT_DESKTOP_SWIPE] ?: false,
-            enableCandidateVariantFirst = prefs[ENABLE_VARIANT_FIRST] ?: false,
-            disableUserInputData = prefs[DISABLE_USER_INPUT_DATA] ?: false,
-            disableKeyClickedAudio = prefs[DISABLE_KEY_AUDIO] ?: false,
-            disableKeyAnimation = prefs[DISABLE_KEY_ANIMATION] ?: false,
-            disableCandidatesPagingAudio = prefs[DISABLE_PAGING_AUDIO] ?: false,
-            disableKeyPopupTips = prefs[DISABLE_KEY_POPUP_TIPS] ?: false,
-            disableGestureSlippingTrail = prefs[DISABLE_GESTURE_TRAIL] ?: false,
-            disableClipPopupTips = prefs[DISABLE_CLIP_POPUP_TIPS] ?: false,
-            clipPopupTipsTimeout = prefs[CLIP_POPUP_TIMEOUT] ?: 15,
+    val config: Flow<ImeConfig> = context.dataStore.data.map { prefs ->
+        ImeConfig(
+            engine = ImeConfig.EngineConfig(
+                keyboardType = KeyboardType.entries[prefs[KEYBOARD_TYPE] ?: KeyboardType.Pinyin.ordinal],
+                handMode = HandMode.entries[prefs[HAND_MODE] ?: HandMode.Right.ordinal],
+                features = parseFeatures(prefs),
+                candidatePredictionEnabled = prefs[CANDIDATE_PREDICTION] ?: true,
+                singleLineInput = prefs[SINGLE_LINE_INPUT] ?: false,
+            ),
+            ui = ImeConfig.UiConfig(
+                themeType = ThemeType.entries[prefs[THEME_TYPE] ?: ThemeType.FollowSystem.ordinal],
+                xPadEnabled = prefs[ENABLE_X_PAD] ?: true,
+                audioFeedbackEnabled = prefs[AUDIO_FEEDBACK] ?: true,
+                hapticFeedbackEnabled = prefs[HAPTIC_FEEDBACK] ?: true,
+                disableKeyAnimation = prefs[DISABLE_KEY_ANIMATION] ?: false,
+                disableKeyPopupTips = prefs[DISABLE_KEY_POPUP_TIPS] ?: false,
+                disableGestureSlippingTrail = prefs[DISABLE_GESTURE_TRAIL] ?: false,
+                disableClipPopupTips = prefs[DISABLE_CLIP_POPUP_TIPS] ?: false,
+                clipPopupTipsTimeout = prefs[CLIP_POPUP_TIMEOUT] ?: 15,
+                adaptDesktopSwipeUpGesture = prefs[ADAPT_DESKTOP_SWIPE] ?: false,
+                enableCandidateVariantFirst = prefs[ENABLE_VARIANT_FIRST] ?: false,
+                enableLatinUsePinyinKeysInXPad = prefs[ENABLE_LATIN_USE_PINYIN_KEYS] ?: false,
+                disableUserInputData = prefs[DISABLE_USER_INPUT_DATA] ?: false,
+                disableCandidatesPagingAudio = prefs[DISABLE_PAGING_AUDIO] ?: false,
+                practicePlaybackSpeed = prefs[PRACTICE_PLAYBACK_SPEED] ?: 1.0f,
+                practiceShowFingerOverlay = prefs[PRACTICE_SHOW_FINGER] ?: true,
+                practiceShowSwipeTrail = prefs[PRACTICE_SHOW_TRAIL] ?: true,
+                logLevel = LogLevel.entries[prefs[LOG_LEVEL] ?: LogLevel.WARN.ordinal],
+                logStoragePath = prefs[LOG_STORAGE_PATH],
+            ),
         )
     }
 
-    suspend fun updateConfig(transform: (Config) -> Config) {
+    suspend fun updateConfig(transform: (ImeConfig) -> ImeConfig) {
         context.dataStore.edit { prefs ->
             val current = config.first()
             val new = transform(current)
-            prefs[THEME_TYPE] = new.themeType.ordinal
-            prefs[HAND_MODE] = new.handMode.ordinal
-            prefs[ENABLE_X_PAD] = new.enableXPad
-            // ...
+            // 持久化引擎配置
+            prefs[KEYBOARD_TYPE] = new.engine.keyboardType.ordinal
+            prefs[HAND_MODE] = new.engine.handMode.ordinal
+            prefs[CANDIDATE_PREDICTION] = new.engine.candidatePredictionEnabled
+            prefs[SINGLE_LINE_INPUT] = new.engine.singleLineInput
+            serializeFeatures(prefs, new.engine.features)
+            // 持久化 UI 配置
+            prefs[THEME_TYPE] = new.ui.themeType.ordinal
+            prefs[ENABLE_X_PAD] = new.ui.xPadEnabled
+            prefs[AUDIO_FEEDBACK] = new.ui.audioFeedbackEnabled
+            prefs[HAPTIC_FEEDBACK] = new.ui.hapticFeedbackEnabled
+            prefs[DISABLE_KEY_ANIMATION] = new.ui.disableKeyAnimation
+            prefs[DISABLE_KEY_POPUP_TIPS] = new.ui.disableKeyPopupTips
+            prefs[DISABLE_GESTURE_TRAIL] = new.ui.disableGestureSlippingTrail
+            prefs[DISABLE_CLIP_POPUP_TIPS] = new.ui.disableClipPopupTips
+            prefs[CLIP_POPUP_TIMEOUT] = new.ui.clipPopupTipsTimeout
+            prefs[ADAPT_DESKTOP_SWIPE] = new.ui.adaptDesktopSwipeUpGesture
+            prefs[ENABLE_VARIANT_FIRST] = new.ui.enableCandidateVariantFirst
+            prefs[ENABLE_LATIN_USE_PINYIN_KEYS] = new.ui.enableLatinUsePinyinKeysInXPad
+            prefs[DISABLE_USER_INPUT_DATA] = new.ui.disableUserInputData
+            prefs[DISABLE_PAGING_AUDIO] = new.ui.disableCandidatesPagingAudio
+            prefs[PRACTICE_PLAYBACK_SPEED] = new.ui.practicePlaybackSpeed
+            prefs[PRACTICE_SHOW_FINGER] = new.ui.practiceShowFingerOverlay
+            prefs[PRACTICE_SHOW_TRAIL] = new.ui.practiceShowSwipeTrail
+            prefs[LOG_LEVEL] = new.ui.logLevel.ordinal
+            if (new.ui.logStoragePath != null) prefs[LOG_STORAGE_PATH] = new.ui.logStoragePath
         }
     }
 
     companion object {
-        private val THEME_TYPE = intPreferencesKey("theme_type")
+        private val KEYBOARD_TYPE = intPreferencesKey("keyboard_type")
         private val HAND_MODE = intPreferencesKey("hand_mode")
+        private val CANDIDATE_PREDICTION = booleanPreferencesKey("candidate_prediction")
+        private val SINGLE_LINE_INPUT = booleanPreferencesKey("single_line_input")
+        private val THEME_TYPE = intPreferencesKey("theme_type")
         private val ENABLE_X_PAD = booleanPreferencesKey("enable_x_pad")
-        private val ENABLE_LATIN_USE_PINYIN_KEYS = booleanPreferencesKey("enable_latin_use_pinyin_keys")
-        private val ADAPT_DESKTOP_SWIPE = booleanPreferencesKey("adapt_desktop_swipe")
-        private val ENABLE_VARIANT_FIRST = booleanPreferencesKey("enable_variant_first")
-        private val DISABLE_USER_INPUT_DATA = booleanPreferencesKey("disable_user_input_data")
-        private val DISABLE_KEY_AUDIO = booleanPreferencesKey("disable_key_audio")
+        private val AUDIO_FEEDBACK = booleanPreferencesKey("audio_feedback")
+        private val HAPTIC_FEEDBACK = booleanPreferencesKey("haptic_feedback")
         private val DISABLE_KEY_ANIMATION = booleanPreferencesKey("disable_key_animation")
-        private val DISABLE_PAGING_AUDIO = booleanPreferencesKey("disable_paging_audio")
         private val DISABLE_KEY_POPUP_TIPS = booleanPreferencesKey("disable_key_popup_tips")
         private val DISABLE_GESTURE_TRAIL = booleanPreferencesKey("disable_gesture_trail")
         private val DISABLE_CLIP_POPUP_TIPS = booleanPreferencesKey("disable_clip_popup_tips")
         private val CLIP_POPUP_TIMEOUT = intPreferencesKey("clip_popup_timeout")
+        private val ADAPT_DESKTOP_SWIPE = booleanPreferencesKey("adapt_desktop_swipe")
+        private val ENABLE_VARIANT_FIRST = booleanPreferencesKey("enable_variant_first")
+        private val ENABLE_LATIN_USE_PINYIN_KEYS = booleanPreferencesKey("enable_latin_use_pinyin_keys")
+        private val DISABLE_USER_INPUT_DATA = booleanPreferencesKey("disable_user_input_data")
+        private val DISABLE_PAGING_AUDIO = booleanPreferencesKey("disable_paging_audio")
+        private val PRACTICE_PLAYBACK_SPEED = floatPreferencesKey("practice_playback_speed")
+        private val PRACTICE_SHOW_FINGER = booleanPreferencesKey("practice_show_finger")
+        private val PRACTICE_SHOW_TRAIL = booleanPreferencesKey("practice_show_trail")
+        private val LOG_LEVEL = intPreferencesKey("log_level")
+        private val LOG_STORAGE_PATH = stringPreferencesKey("log_storage_path")
     }
 }
 ```

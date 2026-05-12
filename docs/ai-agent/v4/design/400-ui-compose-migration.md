@@ -45,7 +45,7 @@ IMEditor → InputMsg → IMEService → IMEditorView → View
 fun ImeScreen(viewModel: ImeViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    ImeTheme(themeType = state.config.themeType) {
+    ImeTheme(themeType = state.config.ui.themeType) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // 候选项栏（浮动/固定）
             CandidateBar(
@@ -406,7 +406,7 @@ Canvas(modifier = modifier.fillMaxSize()) {
 ```kotlin
 @Composable
 fun SettingsScreen(
-    config: Config,
+    config: ImeConfig,
     onConfigChanged: (Config) -> Unit,
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -426,8 +426,8 @@ fun SettingsScreen(
         LazyColumn {
             // 外观（高频，默认展开）
             sectionHeader("外观")
-            item { ThemeSelector(config.themeType) { onConfigChanged(config.copy(themeType = it)) } }
-            item { HandModeToggle(config.handMode) { onConfigChanged(config.copy(handMode = it)) } }
+            item { ThemeSelector(config.ui.themeType) { onConfigChanged(config.copy(ui = config.ui.copy(themeType = it))) } }
+            item { HandModeToggle(config.engine.handMode) { onConfigChanged(config.copy(engine = config.engine.copy(handMode = it))) } }
             item { KeyboardPreview(config) }
 
             // 输入体验（高频）

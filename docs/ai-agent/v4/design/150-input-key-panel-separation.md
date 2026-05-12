@@ -1345,7 +1345,7 @@ fun ImeScreen(viewModel: ImeViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val feedbackState = remember { GestureFeedbackState() }
 
-    ImeTheme(themeType = state.config.themeType) {
+    ImeTheme(themeType = state.config.ui.themeType) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // 候选项栏
             CandidateBar(
