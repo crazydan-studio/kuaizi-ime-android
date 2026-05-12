@@ -69,7 +69,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 │  IMEService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
 ├─────────────────────────────────────────────────────────────────┤
 │                         UI Layer                                 │
-│  Compose: InputPanel / KeyPanel / CandidateBar / InputBar / Settings / InputPractice │
+│  Compose: InputPanel / KeyPanel / FeedbackPanel / CandidateBar / InputBar / Settings / InputPractice │
 ├─────────────────────────────────────────────────────────────────┤
 │                      ViewModel Layer                              │
 │  IMEViewModel → StateFlow<IMEState> + Intent 处理                │
@@ -105,15 +105,18 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 │ 输入面板 │ ──────────→│ViewModel │ ──────────→ │  ViewModel │ ────────→ │  State   │
 │InputPanel│            │.handleG..│             │  .reduce() │           │ (不可变)  │
 └──────────┘            └──────────┘             └────────────┘           └──────────┘
-                                                        │                      │
-                              按键面板                        │     StateFlow<IMEState>
-                             KeyPanel                        │                      │
-                            (纯展示)                         │                      │
-                             ┌────────────────────────────────┘                      │
-                             ←──────────────────────────────────────────────────────┘
+        │                                                  │                      │
+        │ FeedbackState                                    │     StateFlow<IMEState>
+        │                                                  │                      │
+        ▼                                                  │                      │
+┌──────────────┐                     按键面板               │                      │
+│  反馈面板     │                    KeyPanel                │                      │
+│FeedbackPanel │                   (纯展示)                 │                      │
+│(透明绘制)    │                      ┌─────────────────────┘                      │
+└──────────────┘                      ←────────────────────────────────────────────┘
 ```
 
-> **注意**：输入面板与按键面板的分离设计详见文档 150。输入面板是唯一的触摸事件接收者，识别手势后输出 `InputGesture`，经 ViewModel 转换为 `IMEIntent`；按键面板纯展示，根据 `IMEState` 渲染按键布局和状态。
+> **注意**：输入面板、按键面板与反馈面板的三层分离设计详见文档 150。输入面板是唯一的触摸事件接收者，识别手势后输出 `InputGesture`，经 ViewModel 转换为 `IMEIntent`；按键面板纯展示，根据 `IMEState` 渲染按键布局和持续性状态；反馈面板独立绘制临时性手势视觉反馈（滑行轨迹、按键高亮等），由 `GestureFeedbackState` 驱动，不触发按键面板重组。反馈面板支持多实例，可灵活叠加在输入面板或按键面板上。
 
 **Intent 定义**：
 
