@@ -85,6 +85,14 @@ data class Config(
     val logLevel: LogLevel = LogLevel.WARN,
     /** 日志文件存放目录路径。null 表示使用缺省应用私有目录 */
     val logStoragePath: String? = null,
+
+    // 输入练习演示（详见文档 930）
+    /** 输入练习演示的播放速度倍率 */
+    val practicePlaybackSpeed: Float = 1.0f,
+    /** 输入练习演示中是否显示手指指示器 */
+    val practiceShowFingerOverlay: Boolean = true,
+    /** 输入练习演示中是否显示滑行轨迹 */
+    val practiceShowSwipeTrail: Boolean = true,
 )
 
 enum class ThemeType { Light, Night, FollowSystem }
