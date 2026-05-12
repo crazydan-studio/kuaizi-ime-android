@@ -269,38 +269,9 @@ Java 版本的 InputList 从主线程和异步字典回调线程同时访问：
 ### 4.2 v4 解决方案
 
 ```kotlin
-// UI 库中的 ImeViewModel（文档 160 第 8.4 节）
-// 轻量桥接层，直接委托给 ImeEngine
-class ImeViewModel(
-    val engine: ImeEngine,
-) : ViewModel() {
-    val state: StateFlow<ImeState> = engine.state
-
-    fun handleGesture(gesture: InputGesture) {
-        engine.handleGesture(gesture)
-    }
-
-    fun handleIntent(intent: ImeIntent) {
-        engine.handleIntent(intent)
-    }
-}
-
-// :app 模块中的 ImeViewModel 扩展版
-// 增加 DataStore 配置持久化和 InputConnection 输出桥接
-class ImeViewModel(
-    engine: ImeEngine,
-    private val configRepository: ConfigRepository,
-) : ImeViewModel(engine) {
-    init {
-        viewModelScope.launch {
-            configRepository.config.collect { config ->
-                engine.updateConfig { engineConfig ->
-                    engineConfig.copy(handMode = config.handMode)
-                }
-            }
-        }
-    }
-}
+// ImeViewModel 的详细设计见文档 160 第 8.4 节
+// UI 库版本：轻量桥接层，直接委托给 ImeEngine
+// :app 扩展版：增加 DataStore 配置持久化和 InputConnection 输出桥接
 
 // 引擎内部的 reduce 逻辑（ImeEngine.reduce）
 // 所有状态变更串行执行，StateFlow 保证原子性

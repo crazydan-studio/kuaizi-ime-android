@@ -13,7 +13,7 @@
 | 150 | [输入面板、按键面板与反馈面板三层分离设计](150-input-key-panel-separation.md) | 输入手势、按键渲染与手势反馈三层分离：输入面板（透明手势层）接收手势识别为 InputGesture，按键面板纯展示（持续性状态渲染），反馈面板独立透明绘制（临时性手势反馈，支持多实例）；叠加布局模式；后续支持全屏输入模式 |
 | 160 | [IME 引擎库与 UI 库设计](160-ime-engine-library.md) | 三层库架构：引擎库 `:ime-engine`（纯 Kotlin，可独立使用）+ UI 库 `:ime-ui`（Compose 缺省 UI，对第三方应用开放）+ 应用模块 `:app`（IME 服务 + 设置）。引擎与 UI 完全分离，配置通过 ImeEngineConfig 代码设置，DictProvider 接口支持替换内置 SQLite 实现，Feature 标记按需禁用收藏/剪贴板等功能；UI 库提供 ImeEditText、ImeKeyboard、ImeInputHost 等即插即用组件，第三方应用可直接使用缺省 UI 或自行替换 |
 | 200 | [输入列表重构设计](200-input-list-redesign.md) | InputList 重构，不可变数据模型、游标管理、线程安全改进 |
-| 300 | [字典系统重构设计](300-dict-system-redesign.md) | 字典系统重构，协程化、Room/SQLDelight 选型、升级策略 |
+| 300 | [字典系统重构设计](300-dict-system-redesign.md) | 字典系统重构，协程化、Room 数据库、升级策略 |
 | 400 | [UI Compose 迁移设计](400-ui-compose-migration.md) | UI 层从 View 到 Compose 的迁移方案、性能验证、IME 桥接 |
 | 500 | [配置与设置系统设计](500-config-and-settings.md) | 配置系统重构，DataStore 替代 SharedPreferences、主题系统 |
 | 600 | [剪贴板与收藏系统设计](600-clipboard-and-favorites.md) | 剪贴板检测、收藏管理的重构，类型安全的数据模型 |
@@ -30,7 +30,7 @@
 
 1. **ImeEngineConfig 与 Config 的职责边界**：`ImeEngineConfig`（`:ime-engine` 库）和 `Config`（`:app` 模块，文档 500）存在字段重叠（如 `handMode`、`xPadEnabled`/`enableXPad`）。需明确：`ImeEngineConfig` 是引擎级配置（不依赖 Android 框架），`Config` 是应用级配置（含 UI 偏好如 `themeType`）。`ImeEngineConfig` 中的 `handMode` 和 `xPadEnabled` 与 `Config` 中的 `handMode` 和 `enableXPad` 在运行时如何同步需进一步确定
 2. **ImeState.config 的实际类型**：当前文档中 `ImeState.config` 已统一为 `ImeEngineConfig`（与文档 160 对齐），但引擎状态是否应包含完整的引擎配置，还是仅包含影响渲染的配置子集，需要在实现时验证
-3. **字典数据库方案**：Room 与 SQLDelight 的最终选型需在开发初期做技术验证后确定（文档 000 第 5.5 节）
+3. **字典数据库方案**：现阶段直接采用 Room 框架，后续视情况决定是否更换方案（文档 000 第 5.5 节、文档 300 第 3.2 节）
 4. **ImeViewModel 在 :app 模块中的继承方式**：当前设计让 :app 的 `ImeViewModel(engine, configRepository)` 继承 UI 库的 `ImeViewModel(engine)`（文档 160 第 8.4 节），但 Kotlin 的类继承可能带来构造参数兼容性问题，是否改为组合模式（持有一个 UI 库 ImeViewModel 实例）需在实现时评估
 5. **InputPanel 手势检测的性能**：InputPanel 作为全屏透明层拦截所有触摸事件，在高频滑行输入时的性能表现需要在原型阶段验证（文档 000 第 7 节）
 6. **Compose 在 IME 环境中的性能**：Compose 在 InputMethodService 中的内存占用和渲染帧率需要在原型阶段验证，必要时降级为 View（文档 400 第 7 节）

@@ -51,6 +51,8 @@ v4 版本的核心目标是将整个项目从 Java 迁移到 Kotlin，同时：
 | [design/index.md](design/index.md) | 设计文档索引 |
 | [design/000-architecture-overview.md](design/000-architecture-overview.md) | 架构总览 |
 | [design/100-keyboard-state-machine.md](design/100-keyboard-state-machine.md) | 键盘状态机设计 |
+| [design/150-input-key-panel-separation.md](design/150-input-key-panel-separation.md) | 输入面板、按键面板与反馈面板三层分离设计 |
+| [design/160-ime-engine-library.md](design/160-ime-engine-library.md) | IME 引擎库与 UI 库设计 |
 | [design/200-input-list-redesign.md](design/200-input-list-redesign.md) | 输入列表重构设计 |
 | [design/300-dict-system-redesign.md](design/300-dict-system-redesign.md) | 字典系统重构设计 |
 | [design/400-ui-compose-migration.md](design/400-ui-compose-migration.md) | UI Compose 迁移设计 |
@@ -58,6 +60,10 @@ v4 版本的核心目标是将整个项目从 Java 迁移到 Kotlin，同时：
 | [design/600-clipboard-and-favorites.md](design/600-clipboard-and-favorites.md) | 剪贴板与收藏系统设计 |
 | [design/700-xpad-redesign.md](design/700-xpad-redesign.md) | X-Pad 重构设计 |
 | [design/800-user-data-import-export.md](design/800-user-data-import-export.md) | 用户数据导入导出设计（v4 新增） |
+| [design/900-app-logging.md](design/900-app-logging.md) | 应用日志系统设计（v4 新增） |
+| [design/910-ui-testing.md](design/910-ui-testing.md) | UI 测试方案设计（v4 新增） |
+| [design/920-config-ui-improvement.md](design/920-config-ui-improvement.md) | 配置界面改进设计（v4 新增） |
+| [design/930-input-action-programming.md](design/930-input-action-programming.md) | 输入动作程序化设计（v4 新增） |
 
 ### 计划文档 — `plans/`
 

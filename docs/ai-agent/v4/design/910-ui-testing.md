@@ -739,7 +739,7 @@ class UITestReferenceDetector : Detector(), Detector.UastScanner {
         object : UElementHandler() {
             override fun visitCallExpression(node: UCallExpression) {
                 val className = node.classReference?.qualifiedName ?: return
-                if (className.startsWith("org.crazydan.studio.app.ime.kuaizi.uitest.")) {
+                if (className.startsWith("org.crazydan.ime.app.uitest.")) {
                     // 检查是否在 main 源集中
                     val sourceSet = context.file.path.substringAfter("/src/").substringBefore("/")
                     if (sourceSet == "main") {
