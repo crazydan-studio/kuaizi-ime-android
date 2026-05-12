@@ -473,15 +473,25 @@ object SwipePathInterpolator {
  * 在键盘上绘制一个半透明的圆形手指指示器，
  * 跟随播放器解析出的实时坐标移动，模拟用户手指操作。
  * release 构建中可用，用于输入练习演示。
+ *
+ * **与 GestureFeedbackState.fingerIndicator 的关系**：
+ * 本 Composable 渲染的手指指示器状态由 `GestureFeedbackState.fingerIndicator`
+ * 驱动（定义在文档 150 第 4.3 节），而非独立的 `FingerOverlayState`。
+ * `InputActionPlayer` 通过 `GestureFeedbackState.setFingerIndicator()` 更新状态，
+ * `FeedbackPanel`（文档 150 第 6.3 节）在配置了 `FeedbackElementType.FingerIndicator`
+ * 时自动渲染手指指示器。因此，本 Composable 是 `FeedbackPanel` 渲染逻辑的
+ * 等价实现，二者共享同一状态源 `GestureFeedbackState.fingerIndicator`，
+ * 不存在独立于 `GestureFeedbackState` 的 `FingerOverlayState`。
  */
 @Composable
 fun FingerOverlay(
-    state: FingerOverlayState,
+    state: GestureFeedbackState,
     modifier: Modifier = Modifier,
 ) {
-    val fingerPosition by state.position.collectAsState()
-    val fingerVisible by state.visible.collectAsState()
-    val fingerPressed by state.pressed.collectAsState()
+    val fingerIndicator by state.fingerIndicator.collectAsState()
+    val fingerPosition = fingerIndicator?.position ?: Offset.Zero
+    val fingerVisible = fingerIndicator?.visible ?: false
+    val fingerPressed = fingerIndicator?.pressed ?: false
 
     if (!fingerVisible) return
 
@@ -523,48 +533,9 @@ fun FingerOverlay(
 }
 
 class FingerOverlayState {
-    private val _position = MutableStateFlow(Offset.Zero)
-    val position: StateFlow<Offset> = _position.asStateFlow()
-
-    private val _visible = MutableStateFlow(false)
-    val visible: StateFlow<Boolean> = _visible.asStateFlow()
-
-    private val _pressed = MutableStateFlow(false)
-    val pressed: StateFlow<Boolean> = _pressed.asStateFlow()
-
-    fun moveTo(offset: Offset) {
-        _position.value = offset
-    }
-
-    /**
-     * 沿路径动画移动手指指示器。
-     *
-     * @param path 贝塞尔曲线插值路径点（由 SwipePathInterpolator 生成）
-     * @param durationMs 动画持续时间
-     */
-    suspend fun animateAlongPath(path: List<Offset>, durationMs: Long) {
-        if (path.size < 2) return
-        val stepDuration = durationMs / (path.size - 1)
-        for (i in 1 until path.size) {
-            val animatable = Animatable(0f)
-            animatable.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = stepDuration.toInt()),
-            ) {
-                val from = path[i - 1]
-                val to = path[i]
-                _position.value = Offset(
-                    x = from.x + (to.x - from.x) * value,
-                    y = from.y + (to.y - from.y) * value,
-                )
-            }
-        }
-    }
-
-    fun show() { _visible.value = true }
-    fun hide() { _visible.value = false }
-    fun pressDown() { _pressed.value = true }
-    fun pressUp() { _pressed.value = false }
+    // 已合并到 GestureFeedbackState.fingerIndicator（文档 150 第 4.3 节）。
+    // InputActionPlayer 直接通过 feedbackState.setFingerIndicator() 驱动手指指示器，
+    // 不再需要独立的 FingerOverlayState。
 }
 ```
 
@@ -653,7 +624,7 @@ fun KeyHighlightOverlay(
  */
 class InputActionPlayer(
     private val viewModel: ImeViewModel,
-    private val fingerOverlay: FingerOverlayState,
+    private val feedbackState: GestureFeedbackState,
     private val positionResolver: KeyPositionResolver,
     private val scope: CoroutineScope,
 ) {
@@ -683,7 +654,9 @@ class InputActionPlayer(
         if (_playbackState.value is PlaybackState.Playing) return
 
         _playbackState.value = PlaybackState.Playing(script)
-        fingerOverlay.show()
+        feedbackState.setFingerIndicator(FingerIndicatorState(
+            position = Offset.Zero, pressed = false, visible = true
+        ))
 
         job = scope.launch {
             val startTime = System.currentTimeMillis()
@@ -705,7 +678,7 @@ class InputActionPlayer(
                 actionIndex++
             }
 
-            fingerOverlay.hide()
+            feedbackState.setFingerIndicator(null)
             _playbackState.value = PlaybackState.Finished(script)
         }
     }
@@ -721,7 +694,7 @@ class InputActionPlayer(
 
     fun stop() {
         job?.cancel()
-        fingerOverlay.hide()
+        feedbackState.setFingerIndicator(null)
         _trailPoints.value = emptyList()
         actionIndex = 0
         _playbackState.value = PlaybackState.Idle
@@ -749,8 +722,9 @@ class InputActionPlayer(
         when (action) {
             is InputAction.KeyDown -> {
                 val position = positionResolver.resolve(action.key) ?: return
-                fingerOverlay.moveTo(position)
-                fingerOverlay.pressDown()
+                feedbackState.setFingerIndicator(FingerIndicatorState(
+                    position = position, pressed = true, visible = true
+                ))
                 viewModel.handleIntent(ImeIntent.KeyPressed(action.key, KeyGesture.Tap))
             }
             is InputAction.SwipeTo -> {
@@ -763,32 +737,67 @@ class InputActionPlayer(
 
                 // 沿路径动画移动手指
                 scope.launch {
-                    fingerOverlay.animateAlongPath(path, action.duration)
+                    animateFingerAlongPath(feedbackState, path, action.duration)
                 }
                 viewModel.handleIntent(ImeIntent.KeyPressed(action.toKey, KeyGesture.Swipe))
             }
             is InputAction.KeyUp -> {
                 val position = positionResolver.resolve(action.key)
-                if (position != null) {
-                    fingerOverlay.moveTo(position)
-                }
-                fingerOverlay.pressUp()
+                val currentIndicator = feedbackState.fingerIndicator.value
+                feedbackState.setFingerIndicator(FingerIndicatorState(
+                    position = position ?: currentIndicator?.position ?: Offset.Zero,
+                    pressed = false, visible = true
+                ))
             }
             is InputAction.Wait -> {
                 // 等待已由时间轴控制
             }
             is InputAction.SelectCandidate -> {
                 val position = positionResolver.resolveCandidatePosition(action.candidateIndex) ?: return
-                fingerOverlay.moveTo(position)
-                fingerOverlay.pressDown()
+                feedbackState.setFingerIndicator(FingerIndicatorState(
+                    position = position, pressed = true, visible = true
+                ))
                 scope.launch {
                     delay(100)
-                    fingerOverlay.pressUp()
+                    feedbackState.setFingerIndicator(FingerIndicatorState(
+                        position = position, pressed = false, visible = true
+                    ))
                 }
                 viewModel.handleIntent(ImeIntent.CandidateSelected(/* candidate */))
             }
             is InputAction.SwitchKeyboard -> {
                 viewModel.handleIntent(ImeIntent.SwitchKeyboard(action.targetType))
+            }
+        }
+    }
+
+    /**
+     * 沿路径动画移动手指指示器（通过 GestureFeedbackState.fingerIndicator）。
+     */
+    private suspend fun animateFingerAlongPath(
+        feedbackState: GestureFeedbackState,
+        path: List<Offset>,
+        durationMs: Long,
+    ) {
+        if (path.size < 2) return
+        val stepDuration = durationMs / (path.size - 1)
+        val current = feedbackState.fingerIndicator.value
+        for (i in 1 until path.size) {
+            val animatable = Animatable(0f)
+            animatable.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(durationMillis = stepDuration.toInt()),
+            ) {
+                val from = path[i - 1]
+                val to = path[i]
+                feedbackState.setFingerIndicator(FingerIndicatorState(
+                    position = Offset(
+                        x = from.x + (to.x - from.x) * value,
+                        y = from.y + (to.y - from.y) * value,
+                    ),
+                    pressed = current?.pressed ?: false,
+                    visible = true,
+                ))
             }
         }
     }
@@ -1127,10 +1136,10 @@ class InputPracticeViewModel(
     private val _state = MutableStateFlow(InputPracticeState())
     val state: StateFlow<InputPracticeState> = _state.asStateFlow()
 
-    val fingerOverlayState = FingerOverlayState()
+    val fingerOverlayState = gestureFeedbackState // 使用统一的 GestureFeedbackState
     val actionPlayer = InputActionPlayer(
         viewModel = imeViewModel,
-        fingerOverlay = fingerOverlayState,
+        feedbackState = gestureFeedbackState,
         positionResolver = positionResolver,
         scope = viewModelScope,
     )

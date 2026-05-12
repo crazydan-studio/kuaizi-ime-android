@@ -321,26 +321,26 @@ data class ImeConfig(
         val audioFeedbackEnabled: Boolean = true,
         /** 触觉反馈是否启用 */
         val hapticFeedbackEnabled: Boolean = true,
-        /** 是否禁用按键动画 */
-        val disableKeyAnimation: Boolean = false,
-        /** 是否禁用按键弹出提示 */
-        val disableKeyPopupTips: Boolean = false,
-        /** 是否禁用手势轨迹 */
-        val disableGestureSlippingTrail: Boolean = false,
-        /** 是否禁用剪贴板弹出提示 */
-        val disableClipPopupTips: Boolean = false,
+        /** 按键动画是否启用 */
+        val keyAnimationEnabled: Boolean = true,
+        /** 按键放大提示是否启用 */
+        val keyPopupTipsEnabled: Boolean = true,
+        /** 滑行轨迹是否启用 */
+        val gestureSlippingTrailEnabled: Boolean = true,
+        /** 剪贴板粘贴提示是否启用 */
+        val clipPopupTipsEnabled: Boolean = true,
         /** 剪贴板提示超时（秒） */
         val clipPopupTipsTimeout: Int = 15,
         /** 是否适配桌面滑动手势 */
         val adaptDesktopSwipeUpGesture: Boolean = false,
         /** 候选字繁体是否优先 */
-        val enableCandidateVariantFirst: Boolean = false,
+        val candidateVariantFirstEnabled: Boolean = false,
         /** 拉丁键盘是否复用拼音 X-Pad 布局 */
-        val enableLatinUsePinyinKeysInXPad: Boolean = false,
-        /** 是否禁用用户输入数据记录 */
-        val disableUserInputData: Boolean = false,
-        /** 是否禁用翻页音效 */
-        val disableCandidatesPagingAudio: Boolean = false,
+        val latinUsePinyinKeysInXPadEnabled: Boolean = false,
+        /** 用户输入数据记录是否启用 */
+        val userInputDataEnabled: Boolean = true,
+        /** 翻页音效是否启用 */
+        val candidatesPagingAudioEnabled: Boolean = true,
         /** 输入练习演示的播放速度倍率 */
         val practicePlaybackSpeed: Float = 1.0f,
         /** 输入练习演示中是否显示手指指示器 */

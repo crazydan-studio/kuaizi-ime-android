@@ -73,6 +73,7 @@ Java 版本的设置分为两个页面，组织如下：
 │
 ├── 反馈控制                      ← 中频：个性化调节
 │   ├── 按键音效                  ← Switch（肯定式：启用/关闭）
+│   ├── 触觉反馈                  ← Switch
 │   ├── 按键动画                  ← Switch
 │   ├── 翻页提示音                ← Switch
 │   ├── 按键放大提示              ← Switch（原"禁用按键弹出提示"）
@@ -115,24 +116,23 @@ Java 版本的设置分为两个页面，组织如下：
 | 关于 → 友情赞助 | 关于 → 友情赞助 | 保留捐赠入口，提供用户对本应用开发支持的便捷途径 |
 | 关于 → Alpha 用户协议 | 移除 | v4 不再有 alpha 变体 |
 
-### 3.4 语义反转映射
+### 3.4 配置字段映射
 
-所有「禁用」前缀的配置改为「启用」语义，UI 层做映射。`ImeConfig.UiConfig` 中的字段命名混合使用肯定式（`*Enabled`）和否定式（`disable*`）——肯定式字段（如 `audioFeedbackEnabled`）与 UI 语义一致无需反转，否定式字段（如 `disableKeyAnimation`）需在 UI 层反转：
+所有配置项统一使用肯定式命名（`*Enabled` 后缀），与 UI 语义一致，无需反转映射：
 
 | ImeConfig.UiConfig 属性 | UI 显示名称（正向） | UI 默认值 | 映射关系 |
 |-------------------------|---------------------|-----------|----------|
 | `audioFeedbackEnabled` | 按键音效 | 开（Config=true → UI 开） | 直接映射 |
 | `hapticFeedbackEnabled` | 触觉反馈 | 开 | 直接映射 |
-| `disableKeyAnimation` | 按键动画 | 开（Config=false → UI 开） | 反转映射 |
-| `disableCandidatesPagingAudio` | 翻页提示音 | 开 | 反转映射 |
-| `disableKeyPopupTips` | 按键放大提示 | 开 | 反转映射 |
-| `disableGestureSlippingTrail` | 滑行轨迹显示 | 开 | 反转映射 |
-| `disableClipPopupTips` | 剪贴板粘贴提示 | 开 | 反转映射 |
-| `disableUserInputData` | 记录输入习惯 | 开（Config=false → UI 开） | 反转映射 |
+| `keyAnimationEnabled` | 按键动画 | 开（Config=true → UI 开） | 直接映射 |
+| `candidatesPagingAudioEnabled` | 翻页提示音 | 开 | 直接映射 |
+| `keyPopupTipsEnabled` | 按键放大提示 | 开 | 直接映射 |
+| `gestureSlippingTrailEnabled` | 滑行轨迹显示 | 开 | 直接映射 |
+| `clipPopupTipsEnabled` | 剪贴板粘贴提示 | 开 | 直接映射 |
+| `userInputDataEnabled` | 记录输入习惯 | 开（Config=true → UI 开） | 直接映射 |
 
 映射规则：
-- 肯定式字段（`*Enabled`）：UI 开关值 = `config.ui.*Enabled`
-- 否定式字段（`disable*`）：UI 开关值 = `!config.ui.disable*`
+- 所有字段统一使用肯定式命名（`*Enabled` 后缀）：UI 开关值 = `config.ui.*Enabled`
 
 ---
 
@@ -406,18 +406,18 @@ fun EnhancedSwitchPreference(
 | 配置项 | 标题 | 描述 |
 |--------|------|------|
 | `xPadEnabled` | X-Pad 连续输入 | 启用后可通过滑行在六边形面板上连续输入拼音 |
-| `enableLatinUsePinyinKeysInXPad` | 拉丁键盘复用拼音布局 | 在拉丁键盘中使用与拼音相同的 X-Pad 布局 |
-| `enableCandidateVariantFirst` | 繁体异体字优先 | 候选字中优先显示繁体和异体字形式 |
+| `latinUsePinyinKeysInXPadEnabled` | 拉丁键盘复用拼音布局 | 在拉丁键盘中使用与拼音相同的 X-Pad 布局 |
+| `candidateVariantFirstEnabled` | 繁体异体字优先 | 候选字中优先显示繁体和异体字形式 |
 | `adaptDesktopSwipeUpGesture` | 适配桌面滑动手势 | 避免键盘上滑与桌面手势冲突 |
 | `audioFeedbackEnabled` | 按键音效 | 按下按键时播放提示音 |
 | `hapticFeedbackEnabled` | 触觉反馈 | 按下按键时触发触觉反馈 |
-| `!disableKeyAnimation` | 按键动画 | 按下按键时显示按压动画效果 |
-| `!disableCandidatesPagingAudio` | 翻页提示音 | 候选字翻页时播放提示音 |
-| `!disableKeyPopupTips` | 按键放大提示 | 按下按键时在上方显示放大的按键内容 |
-| `!disableGestureSlippingTrail` | 滑行轨迹显示 | 滑行输入时在键盘上绘制手指移动轨迹 |
-| `!disableClipPopupTips` | 剪贴板粘贴提示 | 检测到剪贴板内容时弹出粘贴提示 |
+| `keyAnimationEnabled` | 按键动画 | 按下按键时显示按压动画效果 |
+| `candidatesPagingAudioEnabled` | 翻页提示音 | 候选字翻页时播放提示音 |
+| `keyPopupTipsEnabled` | 按键放大提示 | 按下按键时在上方显示放大的按键内容 |
+| `gestureSlippingTrailEnabled` | 滑行轨迹显示 | 滑行输入时在键盘上绘制手指移动轨迹 |
+| `clipPopupTipsEnabled` | 剪贴板粘贴提示 | 检测到剪贴板内容时弹出粘贴提示 |
 | `clipPopupTipsTimeout` | 剪贴板提示自动关闭 | 提示显示后自动关闭的等待时间 |
-| `!disableUserInputData` | 记录输入习惯 | 根据输入频率优化候选字排序，关闭后不影响正常输入 |
+| `userInputDataEnabled` | 记录输入习惯 | 根据输入频率优化候选字排序，关闭后不影响正常输入 |
 
 ### 4.6 条件显示逻辑
 
@@ -440,8 +440,8 @@ fun InputSettings(
     EnhancedSwitchPreference(
         title = "拉丁键盘复用拼音布局",
         description = "在拉丁键盘中使用与拼音相同的 X-Pad 布局",
-        checked = config.ui.enableLatinUsePinyinKeysInXPad,
-        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(enableLatinUsePinyinKeysInXPad = it))) },
+        checked = config.ui.latinUsePinyinKeysInXPadEnabled,
+        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(latinUsePinyinKeysInXPadEnabled = it))) },
         visible = config.ui.xPadEnabled,
         dependentHint = if (!config.ui.xPadEnabled) "需先启用 X-Pad 连续输入" else null,
     )
@@ -449,8 +449,8 @@ fun InputSettings(
     EnhancedSwitchPreference(
         title = "繁体异体字优先",
         description = "候选字中优先显示繁体和异体字形式",
-        checked = config.ui.enableCandidateVariantFirst,
-        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(enableCandidateVariantFirst = it))) },
+        checked = config.ui.candidateVariantFirstEnabled,
+        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(candidateVariantFirstEnabled = it))) },
     )
 
     EnhancedSwitchPreference(

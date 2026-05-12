@@ -561,7 +561,7 @@ class CrashInterceptor(
 ```
 2026-05-12 14:32:15.891 [ERROR] [Crash] [main] 未捕获异常 [main]
 java.lang.NullPointerException: InputConnection is null
-    at org.crazydan.studio.app.ime.kuaizi.platform.ImeService.commitText(ImeService.kt:156)
+    at org.crazydan.studio.app.ime.kuaizi.ImeService.commitText(ImeService.kt:156)
     at org.crazydan.studio.app.ime.kuaizi.ui.ImeViewModel.reduce(ImeViewModel.kt:89)
     at org.crazydan.studio.app.ime.kuaizi.ui.ImeViewModel.handleIntent(ImeViewModel.kt:45)
     ...
