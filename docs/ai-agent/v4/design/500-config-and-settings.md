@@ -54,6 +54,8 @@ ConfigKey (枚举，定义所有配置键和默认值)
 
 > **设计决策**：v4 配置系统采用统一的 `ImeConfig`（定义在 `:ime-engine` 库，详见文档 160 第 4.2 节），替代原设计中分离的 `ImeEngineConfig`（引擎配置）和 `Config`（应用配置）。`ImeConfig` 包含 `EngineConfig`（引擎配置）和 `UiConfig`（UI 配置）两个嵌套 data class，引擎与 UI 配置在数据结构上明确隔离。`:app` 模块的 `ConfigRepository` 直接持久化和恢复 `ImeConfig`，不再需要独立的 `Config` data class 和两套配置之间的运行时同步。
 
+**运行时优先原则**：`ImeConfig` 在运行时的修改始终优先于应用侧配置，直到应用重启。重启时，`ImeConfig` 根据持久化配置进行初始化。`ImeConfig.runtimeOverrides` 记录被运行时临时修改的字段，持久化同步时跳过这些字段。
+
 ```kotlin
 /**
  * 输入法配置（ImeConfig 的 :app 模块视角说明）。
@@ -261,10 +263,10 @@ fun ImeTheme(
 
 | Java 配置功能 | v4 对应 | 改进说明 |
 |-------------|---------|---------|
-| `Config.Immutable` | `Config` data class | 移除层叠覆盖，单一不可变配置 |
+| `Config.Immutable` | `ImeConfig` data class | 移除层叠覆盖，统一不可变配置 |
 | `Config.Mutable` | `ConfigRepository.updateConfig()` | DataStore 原子更新 |
-| `ConfigChangeListener` | `Flow<Config>` | 响应式更新，自动生命周期管理 |
-| `ConfigKey` 枚举 | `Config` 属性 | 类型安全，编译期检查 |
+| `ConfigChangeListener` | `Flow<ImeConfig>` | 响应式更新，自动生命周期管理 |
+| `ConfigKey` 枚举 | `ImeConfig` 属性 | 类型安全，编译期检查 |
 | `IMEConfig` 桥接 | `ConfigRepository` | DataStore 直接管理 |
 | `SharedPreferences` | `DataStore<Preferences>` | 异步、类型安全、无 ANR |
 | 主题资源 (`themes.xml`, `attrs.xml`) | Compose 主题 | 声明式主题系统 |

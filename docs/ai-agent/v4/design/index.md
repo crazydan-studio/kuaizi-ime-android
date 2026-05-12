@@ -34,4 +34,9 @@
 4. ~~**ImeViewModel 在 :app 模块中的继承方式**~~：✅ 已解决。`:app` 模块直接使用 UI 库的 `ImeViewModel`，不继承也不扩展。配置持久化和 InputConnection 桥接等平台特定职责由 `:app` 中的独立组件承担（文档 160 第 8.4 节）
 5. **InputPanel 手势检测的性能**：InputPanel 作为全屏透明层拦截所有触摸事件，在高频滑行输入时的性能表现需要在原型阶段验证（文档 000 第 7 节）
 6. **Compose 在 IME 环境中的性能**：Compose 在 InputMethodService 中的内存占用和渲染帧率需要在原型阶段验证，必要时降级为 View（文档 400 第 7 节）
-7. **ImeConfig 运行时覆盖的精确语义**：`ImeConfig.runtimeOverrides` 标记被运行时临时修改的字段，持久化同步时需跳过这些字段。但运行时覆盖的「有效期」需进一步确定：临时切换的左右手模式在何时失效（引擎重启？用户主动重置？会话结束？），需在实现时明确
+7. ~~**ImeConfig 运行时覆盖的精确语义**~~：✅ 已解决。`ImeConfig` 在运行时的修改始终优先于应用侧配置，直到应用重启。重启时，`ImeConfig` 根据持久化配置进行初始化。`ImeConfig.runtimeOverrides` 记录被运行时覆盖的字段，持久化同步时跳过这些字段（文档 160 第 4.2 节、文档 500 第 3.1 节）
+8. ~~**:app 模块的包结构**~~：✅ 已决定。:app 模块不加子模块名，直接使用顶级包名 `org.crazydan.studio.app.ime.kuaizi`（文档 160 第 3.1 节）
+9. ~~**StandardKeyboard 命名**~~：✅ 已决定。StandardKeyboard 保持命名不变，不重命名为 ImeKeyboard 或类似名称
+10. **FingerOverlay 与 GestureFeedbackState 的手指指示器职责边界**：文档 150 的 `GestureFeedbackState.fingerIndicator` 和文档 930 的 `FingerOverlayState` 功能重叠——前者由真实手势驱动，后者由程序化输入动画驱动。二者是否应合并为单一状态源，还是在 `GestureFeedbackState` 中区分「真实手势」和「程序化动画」两种手指指示器来源，需在实现时明确（文档 150 第 4.3 节、文档 930 第 4.2 节）
+11. ~~**ConfigBackupEntry 与 ImeConfig 的映射**~~：✅ 已解决。文档 800 的 `ConfigBackupEntry` 已重构为嵌套结构，与 `ImeConfig` 的 `EngineConfig` 和 `UiConfig` 对齐（文档 800 第 3.2 节）
+12. **910 UI 测试工具的包名一致性**：文档 910 的 Lint 规则已更新包名为 `org.crazydan.studio.app.ime.kuaizi.uitest.`（移除 `.app.` 子模块名），但 `debug` 源集中的 UI 测试工具实现代码仍需在实现时确保包名一致

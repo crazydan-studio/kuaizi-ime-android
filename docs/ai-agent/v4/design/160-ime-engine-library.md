@@ -73,7 +73,14 @@ ImeIntegratedActivity (Activity)
 kuaizi-ime-android/
 ├── code/
 │   ├── app/                     ← 应用模块（系统 IME 服务 + 设置）
-│   │   └── build.gradle.kts     ← implementation(":ime-engine"), implementation(":ime-ui")
+│   │   ├── build.gradle.kts     ← implementation(":ime-engine"), implementation(":ime-ui")
+│   │   └── src/main/
+│   │       └── org/crazydan/studio/app/ime/kuaizi/   ← 直接使用顶级包名，不加子模块名
+│   │           ├── ImeService.kt
+│   │           ├── InputConnectionBridge.kt
+│   │           ├── ConfigRepository.kt
+│   │           ├── settings/     ← 设置页面
+│   │           └── guide/       ← 引导页面
 │   │
 │   ├── ime-ui/                  ← UI 库模块（Compose 缺省 UI）
 │   │   ├── build.gradle.kts     ← android.library
@@ -222,8 +229,9 @@ class ImeEngine internal constructor(
      * 更新运行时配置。
      *
      * 应用配置变更并触发必要的重组。
-     * 运行时修改优先于持久化配置：已被运行时覆盖的字段
-     * （记录在 config.runtimeOverrides 中）不会被持久化同步覆盖。
+     * 运行时修改始终优先于持久化配置，直到应用重启：
+     * 已被运行时覆盖的字段（记录在 config.runtimeOverrides 中）
+     * 不会被持久化同步覆盖。应用重启时，ImeConfig 根据持久化配置重新初始化。
      */
     fun updateConfig(block: (ImeConfig) -> ImeConfig) {
         config = block(config)
@@ -257,7 +265,7 @@ class ImeEngine internal constructor(
 
 `ImeConfig` 是统一的运行时配置，同时包含引擎配置和 UI 配置，二者在数据结构上明确隔离，以方便第三方按需使用。引擎配置（`engine`）影响引擎的核心行为，UI 配置（`ui`）影响界面呈现和交互反馈。库不内置配置持久化，所有配置通过 `ImeConfig` 在创建时或运行时设置，持久化是应用层的职责（如 `:app` 模块使用 DataStore）。
 
-> **设计决策**：`ImeConfig` 合并了原 `ImeEngineConfig`（引擎配置）与 `:app` 模块的 `Config`（应用配置，文档 500）的职责，消除两套配置之间的字段重叠和同步问题。`ImeConfig` 作为引擎的运行时配置状态，可在 `:app` 模块中动态修改以直接影响引擎状态，UI 侧（含 `:ime-ui` 库）通过 `ImeState.config` 自动同步更新。在 `:app` 模块的配置界面上的操作需同时做配置持久化和对 `ImeConfig` 的更新，但需确保运行时的修改优先——例如，左右手模式可以临时切换，而在配置界面上的左右手模式的配置切换不影响对该模式的临时修改。
+> **设计决策**：`ImeConfig` 合并了原 `ImeEngineConfig`（引擎配置）与 `:app` 模块的 `Config`（应用配置，文档 500）的职责，消除两套配置之间的字段重叠和同步问题。`ImeConfig` 作为引擎的运行时配置状态，可在 `:app` 模块中动态修改以直接影响引擎状态，UI 侧（含 `:ime-ui` 库）通过 `ImeState.config` 自动同步更新。在 `:app` 模块的配置界面上的操作需同时做配置持久化和对 `ImeConfig` 的更新，但需确保运行时的修改优先——`ImeConfig` 在运行时的修改始终优先于应用侧配置，直到应用重启。重启时，`ImeConfig` 根据持久化配置进行初始化。`ImeConfig.runtimeOverrides` 记录被运行时临时修改的字段，持久化同步时跳过这些字段。
 
 ```kotlin
 /**
@@ -268,8 +276,8 @@ class ImeEngine internal constructor(
  * 持久化是应用层的职责（如 :app 模块使用 DataStore）。
  *
  * 运行时修改优先规则：通过键盘 UI 进行的临时修改（如临时切换左右手模式）
- * 优先于持久化配置中的对应值。当持久化配置变更同步到引擎时，
- * 已被运行时覆盖的字段不会被覆盖。
+ * 始终优先于应用侧配置，直到应用重启。重启时，ImeConfig 根据持久化配置进行初始化。
+ * ImeConfig.runtimeOverrides 记录被运行时覆盖的字段，持久化同步时跳过这些字段。
  */
 data class ImeConfig(
     /** 引擎配置（影响核心输入行为） */

@@ -242,7 +242,7 @@ data class KeyboardResult(
 ```kotlin
 class PinyinKeyboard(
     private val dict: PinyinDict,
-    private val config: Config,
+    private val config: ImeConfig,
     private val stateMachine: KeyboardStateMachine,
 ) : Keyboard() {
     override val type = KeyboardType.Pinyin
@@ -399,7 +399,7 @@ interface KeyTableGenerator {
 }
 
 data class KeyTableContext(
-    val config: Config,
+    val config: ImeConfig,
     val inputState: InputListState,
     val keyboardState: KeyboardState,
     val candidates: List<InputWord>,

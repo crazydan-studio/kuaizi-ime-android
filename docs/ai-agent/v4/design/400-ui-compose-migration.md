@@ -407,7 +407,7 @@ Canvas(modifier = modifier.fillMaxSize()) {
 @Composable
 fun SettingsScreen(
     config: ImeConfig,
-    onConfigChanged: (Config) -> Unit,
+    onConfigChanged: (ImeConfig) -> Unit,
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
 

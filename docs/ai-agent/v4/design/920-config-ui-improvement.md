@@ -117,10 +117,10 @@ Java 版本的设置分为两个页面，组织如下：
 
 ### 3.4 语义反转映射
 
-所有「禁用」前缀的配置改为「启用」语义，Config 数据模型保持 `disable*` 命名以保持内部一致性，UI 层做映射：
+所有「禁用」前缀的配置改为「启用」语义，`ImeConfig.UiConfig` 中保持 `disable*` 命名以保持内部一致性，UI 层做映射：
 
-| Config 属性（内部） | UI 显示名称（正向） | UI 默认值 |
-|---------------------|---------------------|-----------|
+| ImeConfig.UiConfig 属性（内部） | UI 显示名称（正向） | UI 默认值 |
+|-------------------------------|---------------------|-----------|
 | `disableKeyClickedAudio` | 按键音效 | 关（Config=true → UI 关） |
 | `disableKeyAnimation` | 按键动画 | 关 |
 | `disableCandidatesPagingAudio` | 翻页提示音 | 关 |
@@ -129,7 +129,7 @@ Java 版本的设置分为两个页面，组织如下：
 | `disableClipPopupTips` | 剪贴板粘贴提示 | 关 |
 | `disableUserInputData` | 记录输入习惯 | 开（Config=false → UI 开） |
 
-映射规则：UI 开关值 = `!config.disable*`
+映射规则：UI 开关值 = `!config.ui.disable*`
 
 ---
 
@@ -141,7 +141,7 @@ Java 版本的设置分为两个页面，组织如下：
 @Composable
 fun SettingsScreen(
     config: ImeConfig,
-    onConfigChanged: (Config) -> Unit,
+    onConfigChanged: (ImeConfig) -> Unit,
     onNavigate: (SettingsRoute) -> Unit,
 ) {
     LazyColumn(
@@ -423,37 +423,37 @@ fun EnhancedSwitchPreference(
 @Composable
 fun InputSettings(
     config: ImeConfig,
-    onConfigChanged: (Config) -> Unit,
+    onConfigChanged: (ImeConfig) -> Unit,
 ) {
     EnhancedSwitchPreference(
         title = "X-Pad 连续输入",
         description = "启用后可通过滑行在六边形面板上连续输入拼音",
-        checked = config.enableXPad,
-        onCheckedChange = { onConfigChanged(config.copy(enableXPad = it)) },
+        checked = config.ui.xPadEnabled,
+        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(xPadEnabled = it))) },
     )
 
     // 仅当 X-Pad 启用时显示
     EnhancedSwitchPreference(
         title = "拉丁键盘复用拼音布局",
         description = "在拉丁键盘中使用与拼音相同的 X-Pad 布局",
-        checked = config.enableLatinUsePinyinKeysInXPad,
-        onCheckedChange = { onConfigChanged(config.copy(enableLatinUsePinyinKeysInXPad = it)) },
-        visible = config.enableXPad,
-        dependentHint = if (!config.enableXPad) "需先启用 X-Pad 连续输入" else null,
+        checked = config.ui.enableLatinUsePinyinKeysInXPad,
+        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(enableLatinUsePinyinKeysInXPad = it))) },
+        visible = config.ui.xPadEnabled,
+        dependentHint = if (!config.ui.xPadEnabled) "需先启用 X-Pad 连续输入" else null,
     )
 
     EnhancedSwitchPreference(
         title = "繁体异体字优先",
         description = "候选字中优先显示繁体和异体字形式",
-        checked = config.enableCandidateVariantFirst,
-        onCheckedChange = { onConfigChanged(config.copy(enableCandidateVariantFirst = it)) },
+        checked = config.ui.enableCandidateVariantFirst,
+        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(enableCandidateVariantFirst = it))) },
     )
 
     EnhancedSwitchPreference(
         title = "适配桌面滑动手势",
         description = "避免键盘上滑与桌面手势冲突",
-        checked = config.adaptDesktopSwipeUpGesture,
-        onCheckedChange = { onConfigChanged(config.copy(adaptDesktopSwipeUpGesture = it)) },
+        checked = config.ui.adaptDesktopSwipeUpGesture,
+        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(adaptDesktopSwipeUpGesture = it))) },
     )
 }
 ```
@@ -538,7 +538,7 @@ fun LazyListScope.sectionHeader(title: String) {
 @Composable
 fun SettingsScreen(
     config: ImeConfig,
-    onConfigChanged: (Config) -> Unit,
+    onConfigChanged: (ImeConfig) -> Unit,
     onNavigate: (SettingsRoute) -> Unit,
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -611,7 +611,7 @@ val searchableSettings = listOf(
 @Composable
 fun QuickSettingsPopup(
     config: ImeConfig,
-    onConfigChanged: (Config) -> Unit,
+    onConfigChanged: (ImeConfig) -> Unit,
     onDismiss: () -> Unit,
 ) {
     PopupWindow(
@@ -638,7 +638,7 @@ fun QuickSettingsPopup(
                     Row {
                         ThemeType.entries.forEach { theme ->
                             IconButton(
-                                onClick = { onConfigChanged(config.copy(themeType = theme)) },
+                                onClick = { onConfigChanged(config.copy(ui = config.ui.copy(themeType = theme))) },
                                 modifier = Modifier.size(32.dp),
                             ) {
                                 Icon(
@@ -688,8 +688,8 @@ fun QuickSettingsPopup(
                 ) {
                     Text("X-Pad", modifier = Modifier.weight(1f))
                     Switch(
-                        checked = config.enableXPad,
-                        onCheckedChange = { onConfigChanged(config.copy(enableXPad = it)) },
+                        checked = config.ui.xPadEnabled,
+                        onCheckedChange = { onConfigChanged(config.copy(ui = config.ui.copy(xPadEnabled = it))) },
                     )
                 }
 
