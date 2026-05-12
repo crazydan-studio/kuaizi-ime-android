@@ -269,14 +269,14 @@ Java 版本的 InputList 从主线程和异步字典回调线程同时访问：
 ### 4.2 v4 解决方案
 
 ```kotlin
-class IMEViewModel(
+class ImeViewModel(
     private val dict: PinyinDict,
     private val config: Config,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(IMEState())
-    val state: StateFlow<IMEState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(ImeState())
+    val state: StateFlow<ImeState> = _state.asStateFlow()
 
-    fun handleIntent(intent: IMEIntent) {
+    fun handleIntent(intent: ImeIntent) {
         viewModelScope.launch {
             val current = _state.value
             val newState = reduce(current, intent)
@@ -284,9 +284,9 @@ class IMEViewModel(
         }
     }
 
-    private suspend fun reduce(state: IMEState, intent: IMEIntent): IMEState {
+    private suspend fun reduce(state: ImeState, intent: ImeIntent): ImeState {
         return when (intent) {
-            is IMEIntent.KeyPressed -> {
+            is ImeIntent.KeyPressed -> {
                 // 1. 更新 InputList（在主线程，StateFlow 保证原子性）
                 val newInputList = state.inputList.appendChar(
                     InputItem.Char(id = uuid(), text = intent.key.label, keys = listOf(intent.key))

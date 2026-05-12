@@ -66,15 +66,15 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Platform Layer  ← :app 模块               │
-│  IMEService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
+│  ImeService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
 │  配置持久化（DataStore）+ 设置页面 + 引导页面                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                      ViewModel Layer   ← :app 模块               │
-│  IMEViewModel → StateFlow<IMEState> + 配置持久化 + Output 桥接    │
+│  ImeViewModel → StateFlow<ImeState> + 配置持久化 + Output 桥接    │
 ├─────────────────────────────────────────────────────────────────┤
 │                         UI Layer      ← :ime-ui 库               │
 │  Compose 缺省 UI：InputPanel / KeyPanel / FeedbackPanel          │
-│  CandidateBar / InputBar / ImeEditText / KuaiziKeyboard          │
+│  CandidateBar / InputBar / ImeEditText / ImeKeyboard          │
 │  ImeInputHost / 主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
@@ -113,7 +113,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 │InputPanel│            │.handleG..│             │  .reduce() │           │ (不可变)  │
 └──────────┘            └──────────┘             └────────────┘           └──────────┘
         │                                                  │                      │
-        │ FeedbackState                                    │     StateFlow<IMEState>
+        │ FeedbackState                                    │     StateFlow<ImeState>
         │                                                  │                      │
         ▼                                                  │                      │
 ┌──────────────┐                     按键面板               │                      │
@@ -128,37 +128,37 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 **Intent 定义**：
 
 ```kotlin
-sealed class IMEIntent {
+sealed class ImeIntent {
     // 键盘按键
-    data class KeyPressed(val key: InputKey, val gesture: KeyGesture) : IMEIntent()
-    data class KeyLongPressed(val key: InputKey) : IMEIntent()
+    data class KeyPressed(val key: InputKey, val gesture: KeyGesture) : ImeIntent()
+    data class KeyLongPressed(val key: InputKey) : ImeIntent()
 
     // 候选选择
-    data class CandidateSelected(val candidate: Candidate) : IMEIntent()
-    data class CandidatePaged(val direction: PageDirection) : IMEIntent()
+    data class CandidateSelected(val candidate: Candidate) : ImeIntent()
+    data class CandidatePaged(val direction: PageDirection) : ImeIntent()
 
     // 键盘切换
-    data class SwitchKeyboard(val type: KeyboardType) : IMEIntent()
+    data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
 
     // 编辑操作
-    data object CommitInput : IMEIntent()
-    data object DeleteInput : IMEIntent()
-    data object CleanInput : IMEIntent()
-    data class EditorAction(val action: EditorActionType) : IMEIntent()
+    data object CommitInput : ImeIntent()
+    data object DeleteInput : ImeIntent()
+    data object CleanInput : ImeIntent()
+    data class EditorAction(val action: EditorActionType) : ImeIntent()
 
     // 剪贴板与收藏
-    data class ClipPasted(val clip: InputClip) : IMEIntent()
-    data class FavoriteSaved(val text: String) : IMEIntent()
+    data class ClipPasted(val clip: InputClip) : ImeIntent()
+    data class FavoriteSaved(val text: String) : ImeIntent()
 
     // 配置变更
-    data class ConfigChanged(val config: Config) : IMEIntent()
+    data class ConfigChanged(val config: Config) : ImeIntent()
 }
 ```
 
 **State 定义**：
 
 ```kotlin
-data class IMEState(
+data class ImeState(
     val keyboardType: KeyboardType = KeyboardType.Pinyin,
     val keyboardState: KeyboardState = KeyboardState.Idle,
     val inputList: InputListState = InputListState(),
@@ -227,7 +227,7 @@ Java 版本有三套消息体系：
 v4 统一为 Intent 体系：
 
 ```kotlin
-sealed class IMEIntent {
+sealed class ImeIntent {
     // 原 UserKeyMsg + UserInputMsg → 统一为 Intent
     // 原 InputMsg → StateFlow 的状态变更自动传播到 UI
 }
@@ -244,9 +244,9 @@ sealed class IMEIntent {
 ```
 1. 用户按键
    ↓
-2. Compose 手势检测 → 生成 IMEIntent.KeyPressed
+2. Compose 手势检测 → 生成 ImeIntent.KeyPressed
    ↓
-3. IMEViewModel.handleIntent(intent)
+3. ImeViewModel.handleIntent(intent)
    ↓
 4. reduce(state, intent)
    ├─ 更新 keyboardState（状态机转换）
@@ -266,7 +266,7 @@ sealed class IMEIntent {
 ```
 1. 用户点击提交
    ↓
-2. IMEIntent.CommitInput
+2. ImeIntent.CommitInput
    ↓
 3. reduce 提取 inputList 的文本
    ↓

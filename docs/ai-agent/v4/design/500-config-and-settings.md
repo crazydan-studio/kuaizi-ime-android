@@ -212,7 +212,7 @@ class ConfigRepository(private val context: Context) {
 ### 4.1 主题定义
 
 ```kotlin
-data class IMEColors(
+data class ImeColors(
     // 键盘
     val keyBackground: Color,
     val keyForeground: Color,
@@ -244,28 +244,28 @@ data class IMEColors(
     val divider: Color,
 )
 
-object IMEThemes {
-    val Light = IMEColors(
+object ImeThemes {
+    val Light = ImeColors(
         keyBackground = Color(0xFFE8E8E8),
         keyForeground = Color(0xFF333333),
         // ...
     )
 
-    val Night = IMEColors(
+    val Night = ImeColors(
         keyBackground = Color(0xFF333333),
         keyForeground = Color(0xFFE8E8E8),
         // ...
     )
 }
 
-val LocalIMEColors = compositionLocalOf { IMEThemes.Light }
+val LocalImeColors = compositionLocalOf { ImeThemes.Light }
 ```
 
 ### 4.2 跟随系统主题
 
 ```kotlin
 @Composable
-fun KuaiziIMETheme(
+fun ImeTheme(
     themeType: ThemeType = ThemeType.FollowSystem,
     content: @Composable () -> Unit,
 ) {
@@ -275,9 +275,9 @@ fun KuaiziIMETheme(
         ThemeType.FollowSystem -> isSystemInDarkTheme()
     }
 
-    val colors = if (isDark) IMEThemes.Night else IMEThemes.Light
+    val colors = if (isDark) ImeThemes.Night else ImeThemes.Light
 
-    CompositionLocalProvider(LocalIMEColors provides colors) {
+    CompositionLocalProvider(LocalImeColors provides colors) {
         content()
     }
 }
@@ -296,4 +296,4 @@ fun KuaiziIMETheme(
 | `IMEConfig` 桥接 | `ConfigRepository` | DataStore 直接管理 |
 | `SharedPreferences` | `DataStore<Preferences>` | 异步、类型安全、无 ANR |
 | 主题资源 (`themes.xml`, `attrs.xml`) | Compose 主题 | 声明式主题系统 |
-| 60+ 主题属性 | `IMEColors` data class | 类型安全，IDE 自动补全 |
+| 60+ 主题属性 | `ImeColors` data class | 类型安全，IDE 自动补全 |

@@ -333,12 +333,12 @@ enum class ImportStrategy {
 ### 3.4 Intent 扩展
 
 ```kotlin
-sealed class IMEIntent {
+sealed class ImeIntent {
     // ... 已有 Intent ...
 
     // 用户数据导入导出
-    data class ExportUserData(val uri: Uri) : IMEIntent()
-    data class ImportUserData(val uri: Uri, val strategy: ImportStrategy) : IMEIntent()
+    data class ExportUserData(val uri: Uri) : ImeIntent()
+    data class ImportUserData(val uri: Uri, val strategy: ImportStrategy) : ImeIntent()
 }
 ```
 
@@ -377,7 +377,7 @@ fun DataManagementSection(
 val createFileLauncher = rememberLauncherForActivityResult(
     ActivityResultContracts.CreateDocument("application/json")
 ) { uri ->
-    uri?.let { viewModel.handleIntent(IMEIntent.ExportUserData(it)) }
+    uri?.let { viewModel.handleIntent(ImeIntent.ExportUserData(it)) }
 }
 
 // 导入：使用 Activity Result API 打开文件

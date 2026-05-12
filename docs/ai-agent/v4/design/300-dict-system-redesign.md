@@ -246,7 +246,7 @@ class DictRepository(
     version = 4,
     exportSchema = true,
 )
-abstract class KuaiziDatabase : RoomDatabase() {
+abstract class ImeDatabase : RoomDatabase() {
     abstract fun pinyinWordDao(): PinyinWordDao
     abstract fun pinyinPhraseDao(): PinyinPhraseDao
     abstract fun userInputDao(): UserInputDao
@@ -280,8 +280,8 @@ code/app/src/main/assets/dict/
 **数据库初始化**：
 
 ```kotlin
-fun createDatabase(context: Context): KuaiziDatabase {
-    return Room.databaseBuilder(context, KuaiziDatabase::class.java, "kuaizi_dict.db")
+fun createDatabase(context: Context): ImeDatabase {
+    return Room.databaseBuilder(context, ImeDatabase::class.java, "kuaizi_dict.db")
         .createFromAsset("dict/pinyin_word_dict.db")
         .addMigrations(MIGRATION_3_4)
         .build()

@@ -550,23 +550,23 @@ val UITestTool.displayName: String
 
 ### 5.2 集成入口
 
-在 `IMEService` 的 ComposeView 层次中，debug 构建额外包裹 UI 测试覆盖层：
+在 `ImeService` 的 ComposeView 层次中，debug 构建额外包裹 UI 测试覆盖层：
 
 ```kotlin
 // main 源集
 @Composable
-fun KuaiziIMERoot(state: IMEState, intentHandler: (IMEIntent) -> Unit) {
-    KuaiziIMETheme(themeType = state.config.themeType) {
-        IMEMainScreen(state, intentHandler)
+fun ImeRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
+    ImeTheme(themeType = state.config.themeType) {
+        ImeMainScreen(state, intentHandler)
     }
 }
 
 // debug 源集
 @Composable
-fun KuaiziIMERoot(state: IMEState, intentHandler: (IMEIntent) -> Unit) {
-    KuaiziIMETheme(themeType = state.config.themeType) {
+fun ImeRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
+    ImeTheme(themeType = state.config.themeType) {
         Box {
-            IMEMainScreen(state, intentHandler)
+            ImeMainScreen(state, intentHandler)
 
             // UI 测试覆盖层（仅 debug 构建存在）
             val overlay = remember { UITestOverlay.create() }
@@ -579,7 +579,7 @@ fun KuaiziIMERoot(state: IMEState, intentHandler: (IMEIntent) -> Unit) {
 }
 ```
 
-通过同一函数签名 `KuaiziIMERoot` 在不同源集中的不同实现，debug 构建自动包含 UI 测试覆盖层，release 构建不含任何覆盖层代码。这种方式无需在 `main` 源集中使用 `if (BuildConfig.DEBUG)` 判断，确保 release 代码路径完全干净。
+通过同一函数签名 `ImeRoot` 在不同源集中的不同实现，debug 构建自动包含 UI 测试覆盖层，release 构建不含任何覆盖层代码。这种方式无需在 `main` 源集中使用 `if (BuildConfig.DEBUG)` 判断，确保 release 代码路径完全干净。
 
 ---
 
@@ -660,9 +660,9 @@ class PinyinKeyboardScreenshotTest {
     @Test
     fun pinyinKeyboardIdle() {
         paparazzi.snapshot {
-            KuaiziIMETheme(themeType = ThemeType.Light) {
+            ImeTheme(themeType = ThemeType.Light) {
                 KeyboardScreen(
-                    state = IMEState(
+                    state = ImeState(
                         keyboardType = KeyboardType.Pinyin,
                         keyboardState = KeyboardState.Idle,
                     ),
@@ -675,9 +675,9 @@ class PinyinKeyboardScreenshotTest {
     @Test
     fun pinyinKeyboardWithCandidates() {
         paparazzi.snapshot {
-            KuaiziIMETheme(themeType = ThemeType.Light) {
+            ImeTheme(themeType = ThemeType.Light) {
                 KeyboardScreen(
-                    state = IMEState(
+                    state = ImeState(
                         keyboardType = KeyboardType.Pinyin,
                         keyboardState = KeyboardState.InputWaiting(
                             inputChars = listOf(charInput('n'), charInput('i')),

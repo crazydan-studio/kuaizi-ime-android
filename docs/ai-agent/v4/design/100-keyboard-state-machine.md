@@ -160,7 +160,7 @@ class KeyboardStateMachine(
     val state: KeyboardState get() = _state
     private val stateHistory = ArrayDeque<KeyboardState>(maxSize = 10)
 
-    fun transition(transition: KeyboardTransition): List<IMEIntent> {
+    fun transition(transition: KeyboardTransition): List<ImeIntent> {
         val (newState, sideEffects) = when (_state) {
             is KeyboardState.Idle -> handleFromIdle(transition)
             is KeyboardState.PinyinInput.Waiting -> handleFromPinyinWaiting(transition)
@@ -227,12 +227,12 @@ val KeyboardType.initialState: KeyboardState
 sealed class Keyboard {
     abstract val type: KeyboardType
     abstract val state: KeyboardState
-    abstract fun handleIntent(intent: IMEIntent): KeyboardResult
+    abstract fun handleIntent(intent: ImeIntent): KeyboardResult
 }
 
 data class KeyboardResult(
     val newState: KeyboardState,
-    val sideEffects: List<IMEIntent> = emptyList(),
+    val sideEffects: List<ImeIntent> = emptyList(),
     val commitText: String? = null,
 )
 ```
@@ -248,11 +248,11 @@ class PinyinKeyboard(
     override val type = KeyboardType.Pinyin
     override val state get() = stateMachine.state
 
-    override fun handleIntent(intent: IMEIntent): KeyboardResult {
+    override fun handleIntent(intent: ImeIntent): KeyboardResult {
         return when (intent) {
-            is IMEIntent.KeyPressed -> handleKeyPress(intent)
-            is IMEIntent.CandidateSelected -> handleCandidateSelection(intent)
-            is IMEIntent.CandidatePaged -> handleCandidatePaging(intent)
+            is ImeIntent.KeyPressed -> handleKeyPress(intent)
+            is ImeIntent.CandidateSelected -> handleCandidateSelection(intent)
+            is ImeIntent.CandidatePaged -> handleCandidatePaging(intent)
             else -> KeyboardResult(state)
         }
     }

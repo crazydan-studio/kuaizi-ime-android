@@ -40,21 +40,21 @@ IMEditor → InputMsg → IMEService → IMEditorView → View
 
 ```kotlin
 @Composable
-fun IMEScreen(viewModel: IMEViewModel = viewModel()) {
+fun ImeScreen(viewModel: ImeViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    KuaiziIMETheme(themeType = state.config.themeType) {
+    ImeTheme(themeType = state.config.themeType) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // 候选项栏（浮动/固定）
             CandidateBar(
                 candidates = state.candidates,
-                onCandidateSelected = { viewModel.handleIntent(IMEIntent.CandidateSelected(it)) },
+                onCandidateSelected = { viewModel.handleIntent(ImeIntent.CandidateSelected(it)) },
             )
 
             // 输入栏
             InputBar(
                 inputList = state.inputList,
-                onGapTapped = { viewModel.handleIntent(IMEIntent.CursorMoveTo(it)) },
+                onGapTapped = { viewModel.handleIntent(ImeIntent.CursorMoveTo(it)) },
             )
 
             // 键盘区域
@@ -63,7 +63,7 @@ fun IMEScreen(viewModel: IMEViewModel = viewModel()) {
                 keyGrid = state.keyGrid,
                 keyboardState = state.keyboardState,
                 onKeyPress = { key, gesture ->
-                    viewModel.handleIntent(IMEIntent.KeyPressed(key, gesture))
+                    viewModel.handleIntent(ImeIntent.KeyPressed(key, gesture))
                 },
             )
 
@@ -71,7 +71,7 @@ fun IMEScreen(viewModel: IMEViewModel = viewModel()) {
             Toolbar(
                 keyboardType = state.keyboardType,
                 config = state.config,
-                onSwitchKeyboard = { viewModel.handleIntent(IMEIntent.SwitchKeyboard(it)) },
+                onSwitchKeyboard = { viewModel.handleIntent(ImeIntent.SwitchKeyboard(it)) },
             )
         }
 
@@ -85,7 +85,7 @@ fun IMEScreen(viewModel: IMEViewModel = viewModel()) {
 ### 3.2 ComposeView 桥接
 
 ```kotlin
-class KuaiziIMEService : InputMethodService() {
+class ImeService : InputMethodService() {
     private var composeView: ComposeView? = null
 
     override fun onCreateInputView(): View {
@@ -94,10 +94,10 @@ class KuaiziIMEService : InputMethodService() {
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
             )
             setContent {
-                val viewModel: IMEViewModel = viewModel(
-                    factory = IMEViewModelFactory(this@KuaiziIMEService)
+                val viewModel: ImeViewModel = viewModel(
+                    factory = ImeViewModelFactory(this@ImeService)
                 )
-                IMEScreen(viewModel = viewModel)
+                ImeScreen(viewModel = viewModel)
             }
         }
     }
@@ -535,7 +535,7 @@ fun SettingsScreen(
 
 | Java UI 组件 | Compose 对应 | 改进说明 |
 |-------------|-------------|---------|
-| `MainboardView` | `IMEScreen` 顶层组合 | 声明式布局 |
+| `MainboardView` | `ImeScreen` 顶层组合 | 声明式布局 |
 | `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyboard` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
 | `KeyboardViewLayoutManager` | Compose `Row`/`Column` + `Modifier.weight` | 移除自定义 LayoutManager |
 | `KeyboardViewGestureListener` | `Modifier.pointerInput` | Compose 手势 API |
