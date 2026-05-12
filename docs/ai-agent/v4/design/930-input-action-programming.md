@@ -1368,7 +1368,7 @@ class PinyinInputActionTest {
 | 编译层 | `main` | `ActionScriptCompiler`（字符→逻辑动作） | ✅ |
 | 坐标解析 | `main` | `KeyPositionResolver`、`ComposeKeyPositionResolver` | ✅ |
 | 路径生成 | `main` | `SwipePathInterpolator`（贝塞尔曲线） | ✅ |
-| 播放层 | `main` | `InputActionPlayer`、`FingerOverlayState` | ✅ |
+| 播放层 | `main` | `InputActionPlayer`、`GestureFeedbackState.fingerIndicator` | ✅ |
 | 动画覆盖层 | `main` | `FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay` | ✅ |
 | 演示 UI | `main` | `InputPracticeScreen`、`ActionPlayerPanel`、`InputMethodSelector` | ✅ |
 | 预置脚本 | `main` | `assets/scripts/` 预置演示脚本 | ✅ |
