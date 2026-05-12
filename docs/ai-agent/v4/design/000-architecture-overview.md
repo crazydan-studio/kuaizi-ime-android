@@ -65,24 +65,27 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Platform Layer                            │
+│                        Platform Layer  ← :app 模块               │
 │  IMEService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
 ├─────────────────────────────────────────────────────────────────┤
-│                         UI Layer                                 │
+│                         UI Layer      ← :app 模块               │
 │  Compose: InputPanel / KeyPanel / FeedbackPanel / CandidateBar / InputBar / Settings / InputPractice │
 ├─────────────────────────────────────────────────────────────────┤
-│                      ViewModel Layer                              │
+│                      ViewModel Layer   ← :app 模块               │
 │  IMEViewModel → StateFlow<IMEState> + Intent 处理                │
 ├─────────────────────────────────────────────────────────────────┤
-│                       Domain Layer                               │
-│  Keyboard / InputList / Inputboard / Favoriteboard              │
-│  (纯 Kotlin，不依赖 Android 框架)                                │
+│                       Domain Layer     ← :ime-engine 库          │
+│  ImeEngine / Keyboard / InputList / Inputboard / Favoriteboard  │
+│  (纯 Kotlin，不依赖 Android 框架，可独立作为库被外部程序引入)       │
 ├─────────────────────────────────────────────────────────────────┤
-│                        Data Layer                                │
-│  PinyinDict / UserInputDataDict / UserInputFavoriteDict / Config│
-│  (Room/SQLDelight + DataStore)                                   │
+│                        Data Layer      ← :ime-engine 库          │
+│  DictProvider 接口 + SqliteDictProvider 内置实现                  │
+│  PinyinDict / UserInputDataDict / UserInputFavoriteDict          │
+│  (数据库层可替换；配置通过 ImeEngineConfig 代码设置，不含持久化)    │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+> **注意**：`:ime-engine` 库模块的设计详见文档 160。Domain Layer 和 Data Layer 属于库模块，可被外部程序以库的形式引入；Platform Layer、UI Layer 和 ViewModel Layer 属于 `:app` 模块。库的配置通过 `ImeEngineConfig` 在代码中设置，不含配置持久化层；数据库层通过 `DictProvider` 接口支持外部替换；收藏、剪贴板等可选功能通过 `Feature` 标记按需禁用。
 
 ### 3.2 核心设计决策
 
