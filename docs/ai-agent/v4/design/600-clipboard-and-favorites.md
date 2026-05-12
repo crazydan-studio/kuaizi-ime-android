@@ -196,7 +196,7 @@ fun ClipTipPopup(
                 Text(
                     text = clip.text,
                     maxLines = 2,
-                    overflow = TextOverflow.MiddleEllipsis,
+                    overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.bodySmall,
                 )
 

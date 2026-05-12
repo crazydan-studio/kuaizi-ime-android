@@ -38,6 +38,8 @@ IMEditor → InputMsg → IMEService → IMEditorView → View
 
 ### 3.1 整体架构
 
+> **注意**：键盘区域的三层面板架构（InputPanel / FeedbackPanel / KeyPanel）详见文档 150。本节仅描述 Compose 迁移的组件对照，不重复三层面板的设计细节。
+
 ```kotlin
 @Composable
 fun ImeScreen(viewModel: ImeViewModel = viewModel()) {
@@ -57,14 +59,9 @@ fun ImeScreen(viewModel: ImeViewModel = viewModel()) {
                 onGapTapped = { viewModel.handleIntent(ImeIntent.CursorMoveTo(it)) },
             )
 
-            // 键盘区域
-            KeyboardArea(
-                keyboardType = state.keyboardType,
-                keyGrid = state.keyGrid,
-                keyboardState = state.keyboardState,
-                onKeyPress = { key, gesture ->
-                    viewModel.handleIntent(ImeIntent.KeyPressed(key, gesture))
-                },
+            // 键盘区域（三层面板组合，详见文档 150）
+            ImeKeyboard(
+                engine = viewModel.engine,
             )
 
             // 工具栏（键盘上方的控制栏）
@@ -112,86 +109,54 @@ class ImeService : InputMethodService() {
 
 ### 3.3 键盘视图
 
+> **注意**：键盘视图在 v4 中拆分为三层面板（详见文档 150）：KeyPanel（纯展示，不处理触摸）、InputPanel（透明手势层）、FeedbackPanel（透明反馈绘制层）。KeyPanel 中的 KeyView 不处理触摸事件，触摸由 InputPanel 统一拦截。以下仅展示 KeyPanel 中的按键渲染逻辑。
+
 ```kotlin
+// KeyPanel：纯展示层，不处理触摸事件
 @Composable
-fun KeyboardArea(
+fun KeyPanel(
     keyboardType: KeyboardType,
     keyGrid: List<List<InputKey>>,
     keyboardState: KeyboardState,
-    onKeyPress: (InputKey, KeyGesture) -> Unit,
+    onLayoutInfoChanged: (KeyPanelLayoutInfo) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     when (keyboardType) {
         KeyboardType.Pinyin, KeyboardType.Latin, KeyboardType.Number,
         KeyboardType.Symbol, KeyboardType.Editor, KeyboardType.Math,
-        -> StandardKeyboard(keyGrid, keyboardState, onKeyPress)
+        -> StandardKeyPanel(keyGrid, keyboardState, onLayoutInfoChanged, modifier)
 
-        KeyboardType.Emoji -> EmojiKeyboard(keyGrid, keyboardState, onKeyPress)
-        KeyboardType.Candidate -> CandidateKeyboard(keyGrid, onKeyPress)
-        KeyboardType.CommitOption -> CommitOptionKeyboard(keyGrid, onKeyPress)
-    }
-}
-
-@Composable
-fun StandardKeyboard(
-    keyGrid: List<List<InputKey>>,
-    keyboardState: KeyboardState,
-    onKeyPress: (InputKey, KeyGesture) -> Unit,
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        keyGrid.forEachIndexed { rowIndex, row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                row.forEach { key ->
-                    KeyView(
-                        key = key,
-                        isActive = isKeyActive(key, keyboardState),
-                        onPress = { onKeyPress(key, KeyGesture.Tap) },
-                        onLongPress = { onKeyPress(key, KeyGesture.LongPress) },
-                        modifier = Modifier.weight(key.weight),
-                    )
-                }
-            }
-        }
+        KeyboardType.Emoji -> EmojiKeyPanel(keyGrid, keyboardState, onLayoutInfoChanged, modifier)
+        KeyboardType.Candidate -> CandidateKeyPanel(keyGrid, onLayoutInfoChanged, modifier)
+        KeyboardType.CommitOption -> CommitOptionKeyPanel(keyGrid, onLayoutInfoChanged, modifier)
     }
 }
 ```
 
+完整的三层面板组合（InputPanel + FeedbackPanel + KeyPanel）由 `ImeKeyboard` 集成组件封装，详见文档 160 第 5.4 节。
+
 ### 3.4 按键视图
 
+> **注意**：KeyView 在 v4 中是纯展示组件，不处理触摸事件，也不绘制手势反馈。触摸由 InputPanel 统一拦截（详见文档 150），手势反馈由 FeedbackPanel 绘制。KeyView 仅渲染按键的常规状态（标签、背景、激活/禁用等持续性状态）。
+
 ```kotlin
+/**
+ * 按键视图（纯展示，无触摸处理，无手势反馈）。
+ *
+ * 按键的"按下"视觉状态由 keyboardState 驱动（持续性状态），
+ * 手势触发的临时高亮由 FeedbackPanel 绘制。
+ */
 @Composable
 fun KeyView(
     key: InputKey,
     isActive: Boolean,
-    onPress: () -> Unit,
-    onLongPress: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val haptics = LocalHapticFeedback.current
-    val interactionSource = remember { MutableInteractionSource() }
-
     Box(
         modifier = modifier
             .height(48.dp)
             .clip(RoundedCornerShape(4.dp))
-            .background(if (isActive) activeKeyColor else keyBackgroundColor)
-            .combinedClickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
-                    onPress()
-                },
-                onLongClick = {
-                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLongPress()
-                },
-            ),
+            .background(if (isActive) activeKeyColor else keyBackgroundColor),
         contentAlignment = Alignment.Center,
     ) {
         when (key) {
@@ -268,7 +233,7 @@ fun CandidateItem(candidate: InputWord, onClick: () -> Unit) {
                 maxFontSize = 16.sp,
                 stepSize = 1.sp,
             ),
-            overflow = TextOverflow.MiddleEllipsis,
+            overflow = TextOverflow.Ellipsis,
             style = TextStyle(color = candidateForegroundColor),
         )
     }
@@ -383,64 +348,39 @@ Modifier.pointerInput(zones) {
 
 ## 5. 滑行输入手势
 
-### 5.1 手势检测
+> **注意**：v4 的滑行手势检测统一由 InputPanel 处理（详见文档 150 第 5 节），手势轨迹绘制由 FeedbackPanel 处理（详见文档 150 第 6 节）。InputPanel 是透明的手势拦截层，识别手势后输出 InputGesture；FeedbackPanel 是独立的透明绘制层，根据 GestureFeedbackState 绘制滑行轨迹、按键高亮等视觉反馈。以下仅列出 Compose 手势 API 的基本用法参考。
+
+### 5.1 Compose 手势 API 参考
 
 ```kotlin
-@Composable
-fun rememberSwipeGestureState(
-    onSwipePath: (startKey: InputKey, path: List<Offset>) -> Unit,
-): SwipeGestureState {
-    return remember { SwipeGestureState(onSwipePath) }
-}
-
-Modifier.pointerInput(Unit) {
+// InputPanel 中的手势检测核心逻辑（详见文档 150 第 5.2 节）
+Modifier.pointerInput(keyPanelLayout, keyboardType) {
     awaitEachGesture {
-        val down = awaitFirstDown()
-        val startKey = findKeyAt(down.position)
-        val path = mutableListOf(down.position)
-
-        do {
-            val event = awaitPointerEvent(PointerEventPass.Main)
-            path.addAll(event.changes.map { it.position })
-        } while (event.changes.any { it.pressed })
-
-        if (startKey != null && path.size > 2) {
-            onSwipePath(startKey, path)
-        }
+        val down = awaitFirstDown(requireUnconsumed = false)
+        // 根据 keyPanelLayout 查找触摸位置对应的按键
+        // 识别手势类型（点击/长按/滑行/翻转）
+        // 输出 InputGesture → ViewModel
+        // 同步更新 GestureFeedbackState → FeedbackPanel
     }
 }
 ```
 
-### 5.2 手势轨迹绘制
+### 5.2 Compose Canvas 绘制参考
 
 ```kotlin
-@Composable
-fun GestureTrailOverlay(
-    path: List<Offset>,
-    modifier: Modifier = Modifier,
-) {
-    Canvas(modifier = modifier.fillMaxSize()) {
-        if (path.size < 2) return@Canvas
-
-        val trailPath = Path().apply {
-            moveTo(path[0])
-            for (i in 1 until path.size) {
+// FeedbackPanel 中的轨迹绘制（详见文档 150 第 6.4 节）
+Canvas(modifier = modifier.fillMaxSize()) {
+    if (touchTrailPoints.size >= 2) {
+        val path = Path().apply {
+            moveTo(touchTrailPoints.first())
+            for (i in 1 until touchTrailPoints.size) {
                 quadraticBezierTo(
-                    path[i - 1],
-                    midpoint(path[i - 1], path[i]),
+                    touchTrailPoints[i - 1],
+                    midpoint(touchTrailPoints[i - 1], touchTrailPoints[i]),
                 )
             }
         }
-
-        drawPath(
-            path = trailPath,
-            color = gestureTrailColor,
-            style = Stroke(
-                width = 3f,
-                cap = StrokeCap.Round,
-                pathEffect = null,
-            ),
-        )
+        drawPath(path, color = gestureTrailColor, style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round))
     }
 }
 ```

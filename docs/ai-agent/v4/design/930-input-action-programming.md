@@ -1010,7 +1010,7 @@ fun InputPracticeScreen(
                     }
                 },
             )
-n        },
+        },
     ) { padding ->
         Column(
             modifier = Modifier

@@ -52,6 +52,8 @@ ConfigKey (枚举，定义所有配置键和默认值)
 
 ### 3.1 数据模型
 
+> **注意**：`Config` 是 `:app` 模块的应用级配置，包含 UI 偏好和引擎配置。引擎库 `:ime-engine` 使用 `ImeEngineConfig`（详见文档 160 第 4.2 节）作为纯代码配置，不含持久化。`Config` 中与引擎相关的字段（如 `handMode`、`enableXPad`）在运行时需同步到 `ImeEngineConfig`，此同步由 :app 模块的 `ImeViewModel` 负责（详见文档 160 第 8.4 节）。两套配置的字段映射关系需在实现时进一步明确。
+
 ```kotlin
 /**
  * 输入法配置，不可变。

@@ -187,6 +187,8 @@ interface FavoriteDao {
 
 ### 3.5 Repository 层
 
+> **注意**：`DictRepository` 是引擎库内部基于 Room 的字典访问实现，属于 `:ime-engine` 模块的内部组件。引擎库对外暴露的公共接口是 `DictProvider`（详见文档 160 第 6 节），`DictRepository` 是 `DictProvider` 的内部实现细节——`SqliteDictProvider` 内部委托 `DictRepository` 完成实际的数据库操作。第三方应用可通过实现 `DictProvider` 接口替换整个字典层，而无需了解 `DictRepository` 的存在。
+
 ```kotlin
 class DictRepository(
     private val wordDao: PinyinWordDao,

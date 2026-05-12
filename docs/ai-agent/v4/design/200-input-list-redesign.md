@@ -269,38 +269,57 @@ Java 版本的 InputList 从主线程和异步字典回调线程同时访问：
 ### 4.2 v4 解决方案
 
 ```kotlin
+// UI 库中的 ImeViewModel（文档 160 第 8.4 节）
+// 轻量桥接层，直接委托给 ImeEngine
 class ImeViewModel(
-    private val dict: PinyinDict,
-    private val config: Config,
+    val engine: ImeEngine,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(ImeState())
-    val state: StateFlow<ImeState> = _state.asStateFlow()
+    val state: StateFlow<ImeState> = engine.state
 
-    fun handleIntent(intent: ImeIntent) {
-        viewModelScope.launch {
-            val current = _state.value
-            val newState = reduce(current, intent)
-            _state.value = newState
-        }
+    fun handleGesture(gesture: InputGesture) {
+        engine.handleGesture(gesture)
     }
 
-    private suspend fun reduce(state: ImeState, intent: ImeIntent): ImeState {
-        return when (intent) {
-            is ImeIntent.KeyPressed -> {
-                // 1. 更新 InputList（在主线程，StateFlow 保证原子性）
-                val newInputList = state.inputList.appendChar(
-                    InputItem.Char(id = uuid(), text = intent.key.label, keys = listOf(intent.key))
-                )
-                // 2. 异步查询候选（协程，不阻塞主线程）
-                val candidates = dict.lookupAsync(newInputList.pending?.text ?: "")
-                // 3. 返回新状态
-                state.copy(
-                    inputList = newInputList,
-                    candidates = CandidateState(candidates = candidates),
-                )
+    fun handleIntent(intent: ImeIntent) {
+        engine.handleIntent(intent)
+    }
+}
+
+// :app 模块中的 ImeViewModel 扩展版
+// 增加 DataStore 配置持久化和 InputConnection 输出桥接
+class ImeViewModel(
+    engine: ImeEngine,
+    private val configRepository: ConfigRepository,
+) : ImeViewModel(engine) {
+    init {
+        viewModelScope.launch {
+            configRepository.config.collect { config ->
+                engine.updateConfig { engineConfig ->
+                    engineConfig.copy(handMode = config.handMode)
+                }
             }
-            // ...
         }
+    }
+}
+
+// 引擎内部的 reduce 逻辑（ImeEngine.reduce）
+// 所有状态变更串行执行，StateFlow 保证原子性
+private suspend fun reduce(state: ImeState, intent: ImeIntent): ImeState {
+    return when (intent) {
+        is ImeIntent.KeyPressed -> {
+            // 1. 更新 InputList（StateFlow 保证原子性）
+            val newInputList = state.inputList.appendChar(
+                InputItem.Char(id = uuid(), text = intent.key.label, keys = listOf(intent.key))
+            )
+            // 2. 异步查询候选（协程，不阻塞主线程）
+            val candidates = dictProvider.pinyin.queryCandidates(newInputList.pending?.text ?: "")
+            // 3. 返回新状态
+            state.copy(
+                inputList = newInputList,
+                candidates = CandidateState(candidates = candidates),
+            )
+        }
+        // ...
     }
 }
 ```

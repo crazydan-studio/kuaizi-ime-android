@@ -28,4 +28,9 @@
 
 ## 待定事项
 
-> 当前无待定事项。设计过程中发现的待定事项将在各文档中明确标注。
+1. **ImeEngineConfig 与 Config 的职责边界**：`ImeEngineConfig`（`:ime-engine` 库）和 `Config`（`:app` 模块，文档 500）存在字段重叠（如 `handMode`、`xPadEnabled`/`enableXPad`）。需明确：`ImeEngineConfig` 是引擎级配置（不依赖 Android 框架），`Config` 是应用级配置（含 UI 偏好如 `themeType`）。`ImeEngineConfig` 中的 `handMode` 和 `xPadEnabled` 与 `Config` 中的 `handMode` 和 `enableXPad` 在运行时如何同步需进一步确定
+2. **ImeState.config 的实际类型**：当前文档中 `ImeState.config` 已统一为 `ImeEngineConfig`（与文档 160 对齐），但引擎状态是否应包含完整的引擎配置，还是仅包含影响渲染的配置子集，需要在实现时验证
+3. **字典数据库方案**：Room 与 SQLDelight 的最终选型需在开发初期做技术验证后确定（文档 000 第 5.5 节）
+4. **ImeViewModel 在 :app 模块中的继承方式**：当前设计让 :app 的 `ImeViewModel(engine, configRepository)` 继承 UI 库的 `ImeViewModel(engine)`（文档 160 第 8.4 节），但 Kotlin 的类继承可能带来构造参数兼容性问题，是否改为组合模式（持有一个 UI 库 ImeViewModel 实例）需在实现时评估
+5. **InputPanel 手势检测的性能**：InputPanel 作为全屏透明层拦截所有触摸事件，在高频滑行输入时的性能表现需要在原型阶段验证（文档 000 第 7 节）
+6. **Compose 在 IME 环境中的性能**：Compose 在 InputMethodService 中的内存占用和渲染帧率需要在原型阶段验证，必要时降级为 View（文档 400 第 7 节）
