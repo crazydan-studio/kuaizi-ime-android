@@ -1,5 +1,5 @@
-筷字输入法 Android 客户端（Kotlin 重构版）
-===================================
+筷字输入法 Android 客户端
+========================
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
   alt="Get it on F-Droid"
