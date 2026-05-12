@@ -1,10 +1,14 @@
-# 160 — IME 引擎库设计
+# 160 — IME 引擎库与 UI 库设计
 
 ## 1. 概述
 
-v4 版本将筷字输入法核心引擎设计为可被其他程序以库的形式引入的独立模块 `:ime-engine`，提供完整的输入法能力支持。该库对应 Java 版本中 `ImeSupportEditText` + `ImeIntegratedActivity` 的同等能力，但架构更加清晰：引擎与 UI 完全分离，配置通过代码设置（不含配置层），内置数据库层支持被外部实现替换，收藏和剪贴板等可选功能可按需禁用。
+v4 版本将筷字输入法设计为三层库架构，支持其他程序以库的形式引入，提供完整的输入法能力支持。该架构对应 Java 版本中 `ImeSupportEditText` + `ImeIntegratedActivity` 的同等能力，但远超原有设计：
 
-库模块的核心价值在于：任何 Android 应用都可以通过引入 `:ime-engine` 模块，获得筷字输入法的完整输入能力——拼音滑行、X-Pad 连续输入、候选选择、输入列表管理、撤销重做等——而无需依赖系统 IME 服务。这对于应用内嵌输入场景（如练习应用、游戏内聊天、安全输入框等）至关重要。
+- **引擎库 `:ime-engine`**：纯 Kotlin，不依赖 Android 框架（字典 I/O 除外），提供核心输入引擎能力
+- **UI 库 `:ime-ui`**：基于 Compose 的缺省 UI 实现，对第三方应用开放，可作为即插即用的输入界面使用，也可被自定义 UI 替换
+- **应用模块 `:app`**：系统 IME 服务壳、设置页面、配置持久化，是库的官方消费者
+
+库的核心价值在于：任何 Android 应用都可以通过引入 `:ime-engine` + `:ime-ui`，获得筷字输入法的完整输入能力和缺省 UI——拼音滑行、X-Pad 连续输入、候选选择、输入列表管理、撤销重做等——而无需依赖系统 IME 服务。仅需要引擎逻辑的场景（如文本预处理、自动化测试）可以只引入 `:ime-engine` 而不引入 UI 库。需要完全自定义 UI 的场景可以只引入 `:ime-engine` 并自行实现视图层。
 
 ---
 
@@ -54,58 +58,97 @@ ImeIntegratedActivity (Activity)
 | **无独立库模块** | 整个 IME 在 `:app` 中，无法作为依赖被其他项目引入 |
 | **ImeIntegratedActivity 耦合 Activity** | 嵌入输入法必须继承特定 Activity，不够灵活；无法在 Fragment、Dialog 或自定义 View 中使用 |
 | **引擎与视图不分离** | `IMEditorView` 直接引用 `IMEditor`，无法仅使用引擎而不引入视图层 |
+| **视图不可复用** | 视图层与 IMEService 耦合，第三方应用无法直接复用 Compose UI 组件 |
 | **配置硬编码 SharedPreferences** | 库的使用者无法通过代码设置配置，必须依赖 SharedPreferences |
 | **数据库不可替换** | `IMEditorDict` 是单例，使用固定路径的 SQLite，外部无法替换为其他存储实现 |
 | **功能不可裁剪** | 收藏和剪贴板功能与引擎深度绑定，无法按需禁用 |
 
 ---
 
-## 3. v4 库模块设计
+## 3. v4 三层库架构
 
 ### 3.1 模块划分
 
 ```
 kuaizi-ime-android/
 ├── code/
-│   ├── app/                  ← 应用模块（系统 IME 服务 + 设置 + 引导）
-│   │   └── build.gradle.kts  ← implementation(project(":ime-engine"))
+│   ├── app/                     ← 应用模块（系统 IME 服务 + 设置）
+│   │   └── build.gradle.kts     ← implementation(":ime-engine"), implementation(":ime-ui")
 │   │
-│   └── ime-engine/           ← 引擎库模块（新）
-│       ├── build.gradle.kts  ← android.library
+│   ├── ime-ui/                  ← UI 库模块（Compose 缺省 UI）
+│   │   ├── build.gradle.kts     ← android.library
+│   │   └── src/main/
+│   │       └── org/crazydan/ime/ui/
+│   │           ├── theme/       ← 主题系统（IMEColors, IMEThemes, KuaiziIMETheme）
+│   │           ├── panel/       ← 三层面板（InputPanel, KeyPanel, FeedbackPanel）
+│   │           ├── keyboard/    ← 键盘组件（StandardKeyboard, EmojiKeyboard, XPadView）
+│   │           ├── candidate/   ← 候选栏（CandidateBar, CandidateItem）
+│   │           ├── input/       ← 输入栏（InputBar, CharInputItem, GapInputItem）
+│   │           ├── editor/      ← 编辑器组件（ImeEditText, ImeEditorHost）
+│   │           ├── clipboard/   ← 剪贴板 UI（ClipTipPopup）
+│   │           ├── favorite/    ← 收藏 UI（FavoritesPanel）
+│   │           ├── practice/    ← 输入练习 UI（FingerOverlay, ActionPlayerPanel）
+│   │           └── integration/ ← 集成组件（KuaiziKeyboard, ImeInputHost）
+│   │
+│   └── ime-engine/              ← 引擎库模块（纯 Kotlin）
+│       ├── build.gradle.kts     ← android.library
 │       └── src/main/
 │           └── org/crazydan/ime/engine/
-│               ├── api/          ← 公开 API（ImeEngine, ImeOutput, ImeConfig）
-│               ├── domain/       ← 领域层（Keyboard, InputList, Inputboard）
-│               ├── dict/         ← 字典系统（接口 + 内置实现）
-│               ├── input/        ← 输入类型（InputKey, InputWord, InputGesture）
-│               └── state/        ← 状态定义（KeyboardState, IMEState）
+│               ├── api/         ← 公开 API（ImeEngine, ImeOutput, ImeEngineConfig）
+│               ├── domain/      ← 领域层（Keyboard, InputList, Inputboard）
+│               ├── dict/        ← 字典系统（接口 + 内置实现）
+│               ├── input/       ← 输入类型（InputKey, InputWord, InputGesture）
+│               └── state/       ← 状态定义（KeyboardState, IMEState）
 │
 ├── docs/
 └── ...
 ```
 
-**模块职责**：
+### 3.2 模块职责与依赖
 
 | 模块 | 职责 | 依赖 |
 |------|------|------|
 | `:ime-engine` | IME 核心引擎，纯 Kotlin，不依赖 Android 框架（字典 I/O 除外） | Kotlin 标准库 + 协程 |
-| `:app` | 系统 IME 服务、Compose UI、设置页面 | `:ime-engine` + Compose + DataStore |
+| `:ime-ui` | Compose 缺省 UI，包含完整的输入法界面组件 | `:ime-engine` + Compose + Material3 |
+| `:app` | 系统 IME 服务、配置持久化（DataStore）、设置页面 | `:ime-engine` + `:ime-ui` + DataStore + Lifecycle |
 
-### 3.2 设计原则
+**依赖关系图**：
+
+```
+┌──────────┐
+│  :app    │ 应用模块（IME 服务 + 设置 + 配置持久化）
+└────┬─────┘
+     │ depends on
+     ├──────────────────────┐
+     ▼                      ▼
+┌──────────┐          ┌──────────┐
+│ :ime-ui  │          │:ime-engine│
+│ Compose  │          │ 纯 Kotlin │
+│ 缺省 UI  │          │ 核心引擎  │
+└────┬─────┘          └───────────┘
+     │ depends on
+     ▼
+┌──────────┐
+│:ime-engine│
+└───────────┘
+```
+
+### 3.3 设计原则
 
 1. **引擎与 UI 完全分离**：`:ime-engine` 不包含任何 Compose 代码或 Android View，只暴露状态流和意图接口
-2. **配置通过代码设置**：库不内置配置持久化，所有配置通过 `ImeEngineConfig` 在创建时或运行时设置
-3. **数据库层可替换**：字典接口与实现分离，内置 SQLite 实现，外部可提供自己的 `DictProvider`
-4. **功能可裁剪**：收藏和剪贴板等可选功能通过 `Feature` 标记按需启用/禁用
-5. **Fail Fast**：非法操作（如禁用收藏后调用收藏功能）立即抛出异常而非静默忽略
+2. **UI 库作为缺省实现对外开放**：`:ime-ui` 提供完整的 Compose UI 组件，第三方应用可直接使用，也可替换为自定义 UI
+3. **配置通过代码设置**：库不内置配置持久化，所有配置通过 `ImeEngineConfig` 在创建时或运行时设置
+4. **数据库层可替换**：字典接口与实现分离，内置 SQLite 实现，外部可提供自己的 `DictProvider`
+5. **功能可裁剪**：收藏和剪贴板等可选功能通过 `Feature` 标记按需启用/禁用
+6. **Fail Fast**：非法操作（如禁用收藏后调用收藏功能）立即抛出异常而非静默忽略
 
 ---
 
-## 4. 公开 API 设计
+## 4. 引擎库公开 API
 
 ### 4.1 ImeEngine
 
-`ImeEngine` 是库的核心入口点，对应 Java 版本的 `IMEditor` 但接口更清晰：
+`ImeEngine` 是引擎库的核心入口点，对应 Java 版本的 `IMEditor` 但接口更清晰：
 
 ```kotlin
 /**
@@ -368,13 +411,81 @@ data class EditorState(
 )
 ```
 
-### 4.4 ImeEditText
+---
+
+## 5. UI 库设计
+
+### 5.1 设计目标
+
+UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方应用开放。第三方应用可以直接使用库中的 Compose 组件构建完整的输入法界面，无需自行实现视图层。同时，UI 库的设计遵循「可替换」原则：所有 UI 组件仅依赖 `:ime-engine` 的公开 API（StateFlow、Intent、ImeOutput），不依赖引擎内部实现，因此第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能。
+
+**UI 库的定位**：
+
+| 定位 | 说明 |
+|------|------|
+| **缺省实现** | 提供完整的、即插即用的输入法 UI，第三方应用引入后开箱即用 |
+| **可替换** | 所有 UI 组件仅依赖引擎公开 API，第三方应用可自行替换任意组件 |
+| **可组合** | 组件粒度合理，第三方应用可选择性使用部分组件（如只用键盘不用候选栏） |
+| **可定制** | 通过主题系统（IMEColors）和配置参数控制外观和行为 |
+
+### 5.2 UI 库组件清单
+
+UI 库中的组件按层次组织，从底层的原子组件到顶层的集成组件：
+
+**原子组件（由上层组合使用，也可单独使用）**：
+
+| 组件 | 包路径 | 说明 | 对应设计文档 |
+|------|--------|------|------------|
+| `KeyView` | `keyboard` | 单个按键渲染（纯展示，无触摸） | 150, 400 |
+| `CandidateItem` | `candidate` | 单个候选项 | 400 |
+| `CharInputItem` / `GapInputItem` | `input` | 输入栏中的字符/间隙项 | 200, 400 |
+| `ClipTipPopup` | `clipboard` | 剪贴板提示弹窗 | 600 |
+| `FavoriteItem` | `favorite` | 收藏项（含滑动删除） | 600 |
+| `FingerOverlay` | `practice` | 手指指示器（程序化输入动画） | 930 |
+
+**面板组件（由原子组件组合而成，可独立使用）**：
+
+| 组件 | 包路径 | 说明 | 对应设计文档 |
+|------|--------|------|------------|
+| `InputPanel` | `panel` | 透明手势拦截层 | 150 |
+| `KeyPanel` / `StandardKeyPanel` | `panel` | 按键渲染层 | 150 |
+| `FeedbackPanel` | `panel` | 透明反馈绘制层 | 150 |
+| `CandidateBar` | `candidate` | 候选栏 | 400 |
+| `InputBar` | `input` | 输入栏 | 200, 400 |
+| `FavoritesPanel` | `favorite` | 收藏面板 | 600 |
+| `XPadView` | `keyboard` | X-Pad 六边形面板 | 700 |
+| `ActionPlayerPanel` | `practice` | 播放控制面板 | 930 |
+
+**编辑器组件（对应 Java 版本 ImeSupportEditText）**：
+
+| 组件 | 包路径 | 说明 |
+|------|--------|------|
+| `ImeEditText` | `editor` | 自动消费 ImeOutput 的文本编辑框，对应 Java ImeSupportEditText |
+| `ImeEditorHost` | `editor` | ImeEditText + 键盘的完整编辑器组合 |
+
+**集成组件（一站式解决方案）**：
+
+| 组件 | 包路径 | 说明 |
+|------|--------|------|
+| `KuaiziKeyboard` | `integration` | 完整键盘组件（三层面板 + 候选栏 + 输入栏 + 工具栏） |
+| `ImeInputHost` | `integration` | ImeEditText + KuaiziKeyboard 的完整输入方案 |
+
+**主题系统**：
+
+| 组件 | 包路径 | 说明 |
+|------|--------|------|
+| `IMEColors` | `theme` | 颜色定义（键盘/候选/输入栏/X-Pad） |
+| `IMEThemes` | `theme` | 预置主题（Light/Night） |
+| `KuaiziIMETheme` | `theme` | 主题 Composable（支持跟随系统） |
+| `LocalIMEColors` | `theme` | CompositionLocal 提供颜色 |
+
+### 5.3 ImeEditText
 
 提供与 Java 版本 `ImeSupportEditText` 等价的便利组件，自动消费 `ImeOutput` 并应用到自身：
 
 ```kotlin
 /**
- * IME 支持的 EditText。
+ * IME 支持的编辑框。
  *
  * 对应 Java 版本的 ImeSupportEditText，但通过 ImeEngine 驱动，
  * 而非 InputMsg 消息系统。
@@ -391,14 +502,8 @@ data class EditorState(
  *     dictProvider = SqliteDictProvider(context),
  * )
  *
- * // 在布局中使用
+ * // 在 Compose 布局中使用
  * ImeEditText(
- *     engine = engine,
- *     modifier = Modifier.fillMaxWidth(),
- * )
- *
- * // 或在 Compose 中
- * KuaiziKeyboard(
  *     engine = engine,
  *     modifier = Modifier.fillMaxWidth(),
  * )
@@ -414,15 +519,13 @@ fun ImeEditText(
 
     // 收集引擎输出并应用到文本编辑
     LaunchedEffect(engine) {
-        engine.output.collect { output ->
+        engine.output.receiveAsFlow().collect { output ->
             when (output) {
                 is ImeOutput.CommitText -> {
-                    // 在光标位置插入文本（或替换选区）
                     text = text.replaceRange(selection.start, selection.end, output.text)
                     selection = TextRange(selection.start + output.text.length)
                 }
                 is ImeOutput.RevokeCommit -> {
-                    // 恢复到提交前的状态
                     text = output.beforeState.text
                     selection = TextRange(
                         output.beforeState.selectionStart,
@@ -460,11 +563,169 @@ fun ImeEditText(
 }
 ```
 
+### 5.4 KuaiziKeyboard
+
+一站式键盘组件，将三层面板、候选栏、输入栏组合为一个完整的输入键盘：
+
+```kotlin
+/**
+ * 筷字输入法完整键盘组件。
+ *
+ * 将三层面板（InputPanel / FeedbackPanel / KeyPanel）、
+ * 候选栏、输入栏、工具栏组合为一个完整的输入法键盘界面。
+ *
+ * 第三方应用可直接使用此组件获得完整的输入法 UI，
+ * 无需手动组合底层组件。
+ *
+ * @param engine IME 引擎实例
+ * @param modifier 修饰符
+ * @param layoutMode 布局模式（默认叠加模式）
+ * @param showToolbar 是否显示工具栏
+ * @param showCandidateBar 是否显示候选栏
+ * @param showInputBar 是否显示输入栏
+ */
+@Composable
+fun KuaiziKeyboard(
+    engine: ImeEngine,
+    modifier: Modifier = Modifier,
+    layoutMode: LayoutMode = LayoutMode.Overlay,
+    showToolbar: Boolean = true,
+    showCandidateBar: Boolean = true,
+    showInputBar: Boolean = true,
+) {
+    val state by engine.state.collectAsStateWithLifecycle()
+    val feedbackState = remember { GestureFeedbackState() }
+    var keyPanelLayout by remember { mutableStateOf(KeyPanelLayoutInfo()) }
+
+    KuaiziIMETheme(themeType = state.config.themeType) {
+        Box(modifier = modifier) {
+            when (layoutMode) {
+                is LayoutMode.Overlay -> {
+                    // 底层：按键面板
+                    KeyPanel(
+                        keyboardType = state.keyboardType,
+                        keyGrid = state.keyGrid,
+                        keyboardState = state.keyboardState,
+                        onLayoutInfoChanged = { keyPanelLayout = it },
+                    )
+
+                    // 中层：反馈面板
+                    FeedbackPanel(
+                        elements = FeedbackPanelSet.OverlaySet.allElements,
+                        feedbackState = feedbackState,
+                        keyPanelLayout = keyPanelLayout,
+                    )
+
+                    // 顶层：输入面板
+                    InputPanel(
+                        keyPanelLayout = keyPanelLayout,
+                        keyboardType = state.keyboardType,
+                        feedbackState = feedbackState,
+                        onGesture = { engine.handleGesture(it) },
+                    )
+                }
+            }
+
+            // 候选栏
+            if (showCandidateBar) {
+                CandidateBar(
+                    candidates = state.candidates,
+                    onCandidateSelected = { candidate ->
+                        engine.handleIntent(IMEIntent.CandidateSelected(candidate))
+                    },
+                )
+            }
+
+            // 输入栏
+            if (showInputBar) {
+                InputBar(
+                    inputList = state.inputList,
+                    onGapTapped = { index ->
+                        engine.handleIntent(IMEIntent.CursorMoveTo(index))
+                    },
+                )
+            }
+        }
+    }
+}
+```
+
+### 5.5 ImeInputHost
+
+最顶层的集成组件，将 ImeEditText 和 KuaiziKeyboard 组合为完整的输入方案，对应 Java 版本中 `ImeIntegratedActivity` 提供的能力，但更加灵活：
+
+```kotlin
+/**
+ * 完整输入方案集成组件。
+ *
+ * 将 ImeEditText 和 KuaiziKeyboard 组合为一个完整的输入法方案。
+ * 对应 Java 版本中 ImeIntegratedActivity 提供的能力，
+ * 但不绑定 Activity，可在任意 Composable 中使用。
+ *
+ * 使用方式：
+ * ```kotlin
+ * // 最简单的用法：一行代码获得完整的内嵌输入法
+ * ImeInputHost(
+ *     engine = remember { ImeEngine.create(...) },
+ * )
+ *
+ * // 自定义布局：编辑框在上方，键盘在下方
+ * ImeInputHost(
+ *     engine = engine,
+ *     editorPosition = ImeInputHost.EditorPosition.Top,
+ *     keyboardHeight = 280.dp,
+ * )
+ * ```
+ */
+@Composable
+fun ImeInputHost(
+    engine: ImeEngine,
+    modifier: Modifier = Modifier,
+    editorPosition: EditorPosition = EditorPosition.Top,
+    keyboardHeight: Dp = 280.dp,
+    showToolbar: Boolean = true,
+    showCandidateBar: Boolean = true,
+    showInputBar: Boolean = true,
+) {
+    Column(modifier = modifier) {
+        if (editorPosition == EditorPosition.Top) {
+            ImeEditText(
+                engine = engine,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            )
+        }
+
+        KuaiziKeyboard(
+            engine = engine,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(keyboardHeight),
+            showToolbar = showToolbar,
+            showCandidateBar = showCandidateBar,
+            showInputBar = showInputBar,
+        )
+
+        if (editorPosition == EditorPosition.Bottom) {
+            ImeEditText(
+                engine = engine,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+            )
+        }
+    }
+
+    enum class EditorPosition { Top, Bottom }
+}
+```
+
 ---
 
-## 5. 字典层可替换设计
+## 6. 字典层可替换设计
 
-### 5.1 DictProvider 接口
+### 6.1 DictProvider 接口
 
 字典接口与实现分离，内置 SQLite 实现，外部可提供自己的实现：
 
@@ -549,7 +810,7 @@ interface UserInputFavoriteDict {
 }
 ```
 
-### 5.2 内置实现
+### 6.2 内置实现
 
 ```kotlin
 /**
@@ -577,7 +838,6 @@ class SqliteDictProvider(
     private var db: SQLiteDatabase? = null
 
     override suspend fun initialize() {
-        // 从 assets/dict/ 复制或打开预构建字典数据库
         val dbPath = context.getDatabasePath("kuaizi_dict.db")
         if (!dbPath.exists()) {
             context.assets.open("dict/pinyin.db").use { input ->
@@ -604,7 +864,7 @@ class SqliteDictProvider(
 }
 ```
 
-### 5.3 自定义实现示例
+### 6.3 自定义实现示例
 
 ```kotlin
 /**
@@ -643,9 +903,9 @@ class RemoteDictProvider(
 
 ---
 
-## 6. 功能可裁剪设计
+## 7. 功能可裁剪设计
 
-### 6.1 FeatureRegistry
+### 7.1 FeatureRegistry
 
 引擎内部通过 `FeatureRegistry` 查询功能启用状态，禁用的功能不创建相关组件，相关调用抛出异常：
 
@@ -676,16 +936,16 @@ class FeatureRegistry(
 }
 ```
 
-### 6.2 各功能的裁剪影响
+### 7.2 各功能的裁剪影响
 
-| 功能 | 禁用后的影响 | 引擎内部检查点 |
-|------|------------|---------------|
-| **Clipboard** | 不创建剪贴板监听器；`ImeOutput.CommitText` 不包含剪贴板粘贴；剪贴板提示弹窗不显示 | `Inputboard` 初始化时检查，若禁用则跳过剪贴板组件创建 |
-| **Favorites** | 不创建收藏管理器；`ImeOutput.CommitText` 不包含收藏粘贴；收藏面板不显示 | `Favoriteboard` 初始化时检查，若禁用则跳过收藏组件创建 |
-| **InputPractice** | 不创建 `InputActionPlayer`；手指指示器不可用；程序化输入相关 Intent 抛出异常 | `InputActionPlayer` 创建时检查，若禁用则返回 null |
-| **CandidatePrediction** | 不使用 HMM+Viterbi 预测；候选仅按静态频率排序 | `PinyinCandidateEvaluator` 初始化时检查，若禁用则使用简单排序 |
+| 功能 | 禁用后的影响 | 引擎内部检查点 | UI 库影响 |
+|------|------------|---------------|----------|
+| **Clipboard** | 不创建剪贴板监听器；`ImeOutput.CommitText` 不包含剪贴板粘贴；剪贴板提示弹窗不显示 | `Inputboard` 初始化时检查，若禁用则跳过剪贴板组件创建 | `ClipTipPopup` 不渲染；`KuaiziKeyboard` 隐藏剪贴板相关 UI |
+| **Favorites** | 不创建收藏管理器；`ImeOutput.CommitText` 不包含收藏粘贴；收藏面板不显示 | `Favoriteboard` 初始化时检查，若禁用则跳过收藏组件创建 | `FavoritesPanel` 不渲染；`ClipTipPopup` 隐藏收藏按钮 |
+| **InputPractice** | 不创建 `InputActionPlayer`；手指指示器不可用；程序化输入相关 Intent 抛出异常 | `InputActionPlayer` 创建时检查，若禁用则返回 null | `FingerOverlay` 不渲染；`ActionPlayerPanel` 不渲染 |
+| **CandidatePrediction** | 不使用 HMM+Viterbi 预测；候选仅按静态频率排序 | `PinyinCandidateEvaluator` 初始化时检查，若禁用则使用简单排序 | 无直接影响，候选排序方式变更 |
 
-### 6.3 使用示例
+### 7.3 使用示例
 
 ```kotlin
 // 最小配置：仅核心输入能力，无收藏、剪贴板、练习、预测
@@ -724,9 +984,9 @@ val secureEngine = ImeEngine.create(
 
 ---
 
-## 7. 引擎与 UI 的边界
+## 8. 引擎与 UI 的边界
 
-### 7.1 引擎暴露给 UI 的契约
+### 8.1 引擎暴露给 UI 的契约
 
 引擎通过 `StateFlow<IMEState>` 暴露状态，UI 层订阅此状态进行渲染。引擎不包含任何 Compose 代码：
 
@@ -749,20 +1009,52 @@ data class IMEState(
 )
 ```
 
-### 7.2 UI 层对引擎的使用
+### 8.2 UI 库对引擎的依赖方式
 
-`:app` 模块中的 `IMEViewModel` 桥接引擎和 Compose UI：
+UI 库中的所有组件仅通过以下三个通道与引擎交互，不直接访问引擎内部实现：
+
+| 通道 | 方向 | 说明 |
+|------|------|------|
+| `engine.state: StateFlow<IMEState>` | 引擎 → UI | 订阅状态进行渲染 |
+| `engine.handleGesture(InputGesture)` | UI → 引擎 | 发送用户手势 |
+| `engine.handleIntent(IMEIntent)` | UI → 引擎 | 发送用户意图 |
+| `engine.output: ReceiveChannel<ImeOutput>` | 引擎 → UI | 接收编辑输出指令 |
+
+这种设计确保了 UI 库和引擎库的完全解耦——第三方应用可以用自定义 UI 替换 `:ime-ui` 中的任何组件，只要遵循相同的交互契约即可。
+
+### 8.3 UI 库与 :app 模块的职责划分
+
+| 职责 | `:ime-ui` 库 | `:app` 模块 |
+|------|-------------|------------|
+| 三层面板（InputPanel / KeyPanel / FeedbackPanel） | ✅ | ❌ |
+| 候选栏、输入栏 | ✅ | ❌ |
+| ImeEditText、ImeEditorHost | ✅ | ❌ |
+| KuaiziKeyboard、ImeInputHost | ✅ | ❌ |
+| 主题系统（IMEColors / KuaiziIMETheme） | ✅ | ❌ |
+| 剪贴板/收藏 UI 组件 | ✅ | ❌ |
+| 输入练习 UI（FingerOverlay / ActionPlayerPanel） | ✅ | ❌ |
+| IMEService（KuaiziIMEService） | ❌ | ✅ |
+| InputConnectionBridge | ❌ | ✅ |
+| 配置持久化（DataStore） | ❌ | ✅ |
+| 设置页面（SettingsScreen） | ❌ | ✅ |
+| 引导页面 | ❌ | ✅ |
+
+### 8.4 IMEViewModel 的归属
+
+`IMEViewModel` 桥接引擎和 UI，但其归属需要根据使用场景区分：
+
+**UI 库中的 `ImeViewModel`**（轻量级，仅持有引擎引用并转发调用）：
 
 ```kotlin
 /**
  * IME ViewModel，桥接 ImeEngine 和 Compose UI。
  *
- * :app 模块中的 ViewModel，持有 ImeEngine 实例，
- * 将引擎状态转发给 Compose UI，将 UI 事件转发给引擎。
- * 此类在 :ime-engine 中不存在，仅属于 :app 模块。
+ * 在 UI 库中提供，作为引擎与 UI 之间的薄桥接层。
+ * 第三方应用可以直接使用此 ViewModel，
+ * 也可以用自己的 ViewModel 替换。
  */
-class IMEViewModel(
-    private val engine: ImeEngine,
+class ImeViewModel(
+    val engine: ImeEngine,
 ) : ViewModel() {
 
     /** 直接暴露引擎状态给 UI */
@@ -777,6 +1069,40 @@ class IMEViewModel(
     fun handleIntent(intent: IMEIntent) {
         engine.handleIntent(intent)
     }
+}
+```
+
+**:app 模块中的 `IMEViewModel`**（扩展版，增加配置持久化和 InputConnection 桥接）：
+
+```kotlin
+/**
+ * :app 模块的 IME ViewModel。
+ *
+ * 扩展 UI 库的 ImeViewModel，增加：
+ * - DataStore 配置持久化
+ * - InputConnection 输出桥接
+ * - IME Service 生命周期管理
+ */
+class IMEViewModel(
+    engine: ImeEngine,
+    private val configRepository: ConfigRepository,
+) : ImeViewModel(engine) {
+
+    init {
+        // 从 DataStore 加载配置并应用到引擎
+        viewModelScope.launch {
+            configRepository.config.collect { config ->
+                engine.updateConfig { engineConfig ->
+                    engineConfig.copy(
+                        handMode = config.handMode,
+                        xPadEnabled = config.enableXPad,
+                        audioFeedbackEnabled = !config.disableKeyClickedAudio,
+                        // ...
+                    )
+                }
+            }
+        }
+    }
 
     /** 应用编辑输出（由 IMEService 调用，通过 InputConnection） */
     fun collectOutput(scope: CoroutineScope, block: suspend (ImeOutput) -> Unit) {
@@ -787,16 +1113,16 @@ class IMEViewModel(
 }
 ```
 
-### 7.3 引擎与 InputConnection 的桥接
+### 8.5 引擎与 InputConnection 的桥接
 
-在系统 IME 模式下，`ImeOutput` 需要映射到 `InputConnection` 操作：
+在系统 IME 模式下，`ImeOutput` 需要映射到 `InputConnection` 操作。此桥接在 `:app` 模块中，不属于引擎库或 UI 库：
 
 ```kotlin
 /**
  * 将 ImeOutput 映射到 InputConnection 操作。
  *
  * 此桥接在 :app 模块的 IMEService 中，
- * 不属于 :ime-engine 库。
+ * 不属于 :ime-engine 或 :ime-ui 库。
  */
 class InputConnectionBridge(
     private val inputConnection: InputConnection,
@@ -807,14 +1133,12 @@ class InputConnectionBridge(
                 inputConnection.commitText(output.text, 1)
             }
             is ImeOutput.RevokeCommit -> {
-                // 通过 SelectionOp 记录和撤销
                 inputConnection.setSelection(
                     output.beforeState.selectionStart,
                     output.beforeState.selectionEnd,
                 )
             }
             is ImeOutput.InsertPairedSymbols -> {
-                // 提交左符号 + 选中 + 右符号
                 val selectedText = inputConnection.getSelectedText(0) ?: ""
                 inputConnection.commitText(
                     output.left + selectedText + output.right, 1,
@@ -831,7 +1155,6 @@ class InputConnectionBridge(
                 inputConnection.sendKeyEvent(KeyEvent(KeyEvent.ACTION_UP, keyCode))
             }
             is ImeOutput.SelectRange -> {
-                // Shift + DPAD
                 val keyCode = when (output.direction) {
                     CursorDirection.Left -> KeyEvent.KEYCODE_DPAD_LEFT
                     CursorDirection.Right -> KeyEvent.KEYCODE_DPAD_RIGHT
@@ -854,7 +1177,6 @@ class InputConnectionBridge(
                         )
                     }
                     EditorAction.SelectAll -> {
-                        // 全选通过 performContextMenuAction
                         inputConnection.performContextMenuAction(android.R.id.selectAll)
                     }
                     EditorAction.Copy -> {
@@ -881,44 +1203,12 @@ class InputConnectionBridge(
 
 ---
 
-## 8. 引擎的完整能力清单
-
-### 8.1 核心输入能力
-
-| 能力 | 说明 | ImeOutput |
-|------|------|-----------|
-| 拼音输入 | 通过按键组合输入拼音，查询候选字词 | `CommitText` |
-| 滑行输入 | 在按键间滑行，自动识别声母韵母 | `CommitText` |
-| X-Pad 输入 | 通过六边形面板连续滑行输入 | `CommitText` |
-| 候选选择 | 从候选列表中选择目标字词 | `CommitText` |
-| 候选翻页 | 翻页查看更多候选 | 状态变更，无输出 |
-| 候选过滤 | 通过拼音/部首/声调过滤候选 | 状态变更，无输出 |
-| 配对符号 | 输入 ()、""、[] 等配对符号 | `InsertPairedSymbols` |
-| 输入列表管理 | 输入列表的显示、编辑、游标移动 | 状态变更 + `MoveCursor` |
-| 撤销/重做 | 撤销和重做输入操作 | `RevokeCommit` |
-| 键盘切换 | 切换拼音/拉丁/数字/符号/Emoji 等 | 状态变更，无输出 |
-| 长按输入 | 长按按键触发二级功能 | `CommitText` 或状态变更 |
-
-### 8.2 可选能力
-
-| 能力 | Feature | 说明 | ImeOutput |
-|------|---------|------|-----------|
-| 剪贴板监听 | `Clipboard` | 监听系统剪贴板，提取结构化数据 | 状态变更 |
-| 剪贴板粘贴 | `Clipboard` | 粘贴剪贴板内容 | `CommitText` |
-| 剪贴板提示 | `Clipboard` | 检测到验证码等特殊内容时弹窗提示 | 状态变更 |
-| 收藏管理 | `Favorites` | 收藏常用文本 | 状态变更 |
-| 收藏粘贴 | `Favorites` | 粘贴收藏的文本 | `CommitText` |
-| 输入练习 | `InputPractice` | 程序化输入动画演示 | 状态变更 |
-| 候选预测 | `CandidatePrediction` | HMM+Viterbi 候选排序 | 状态变更 |
-
----
-
 ## 9. 库模块的依赖关系
 
 ### 9.1 内部依赖
 
 ```
-ImeEngine (公开入口)
+ImeEngine (公开入口, :ime-engine)
   ├── ImeEngineConfig       ← 配置（纯数据）
   ├── FeatureRegistry       ← 功能注册（纯逻辑）
   ├── KeyboardStateMachine  ← 状态机（纯逻辑）
@@ -928,19 +1218,33 @@ ImeEngine (公开入口)
   ├── Keyboard              ← 键盘组合模式（纯逻辑）
   ├── Inputboard            ← 输入板（纯逻辑）
   └── Favoriteboard         ← 收藏板（纯逻辑，Feature.Favorites 启用时）
+
+KuaiziKeyboard (公开入口, :ime-ui)
+  ├── InputPanel            ← 手势拦截层（依赖 Compose + engine.state）
+  ├── KeyPanel              ← 按键渲染层（依赖 Compose + engine.state）
+  ├── FeedbackPanel         ← 反馈绘制层（依赖 Compose + GestureFeedbackState）
+  ├── CandidateBar          ← 候选栏（依赖 Compose + engine.state）
+  ├── InputBar              ← 输入栏（依赖 Compose + engine.state）
+  ├── IMEColors / KuaiziIMETheme ← 主题系统（依赖 Compose）
+  └── ImeViewModel          ← 轻量桥接（依赖 ViewModel + engine）
 ```
 
 ### 9.2 外部依赖
 
-| 依赖 | 必需 | 说明 |
-|------|------|------|
-| Kotlin 标准库 | ✅ | 开发语言 |
-| Kotlin 协程 | ✅ | 异步字典查询 |
-| Android Context | ⚠️ | 仅 SqliteDictProvider 需要；自定义实现可替换 |
-| Android InputConnection | ❌ | 属于 :app 模块，不属于引擎 |
-| Compose | ❌ | 属于 :app 模块，不属于引擎 |
+| 依赖 | :ime-engine | :ime-ui | :app |
+|------|:-----------:|:-------:|:----:|
+| Kotlin 标准库 | ✅ | ✅ | ✅ |
+| Kotlin 协程 | ✅ | ✅ | ✅ |
+| Compose UI | ❌ | ✅ | ✅ |
+| Compose Material3 | ❌ | ✅ | ✅ |
+| Lifecycle ViewModel | ❌ | ✅ | ✅ |
+| Android Context | ⚠️ 仅 SqliteDictProvider | ❌ | ✅ |
+| DataStore | ❌ | ❌ | ✅ |
+| Android InputConnection | ❌ | ❌ | ✅ |
 
 ### 9.3 库的 build.gradle.kts
+
+**`:ime-engine`**：
 
 ```kotlin
 plugins {
@@ -976,13 +1280,66 @@ dependencies {
 }
 ```
 
+**`:ime-ui`**：
+
+```kotlin
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+}
+
+android {
+    namespace = "org.crazydan.ime.ui"
+    compileSdk = 35
+
+    defaultConfig {
+        minSdk = 24
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    buildFeatures {
+        compose = true
+    }
+}
+
+dependencies {
+    // 引擎库
+    api(project(":ime-engine"))
+
+    // Compose
+    implementation(platform("androidx.compose:compose-bom:2026.04.01"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+
+    // Lifecycle ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.0")
+
+    // 测试依赖
+    testImplementation("junit:junit:4.13.2")
+}
+```
+
+> **注意**：`:ime-ui` 使用 `api(project(":ime-engine"))` 而非 `implementation`，使得引入 `:ime-ui` 的模块可以同时访问 `:ime-engine` 的公开 API，无需重复声明依赖。
+
 ---
 
 ## 10. 库的使用场景
 
 ### 10.1 系统 IME 服务
 
-`:app` 模块的 `KuaiziIMEService` 使用引擎提供系统级输入法服务：
+`:app` 模块的 `KuaiziIMEService` 使用引擎和 UI 库提供系统级输入法服务：
 
 ```kotlin
 class KuaiziIMEService : InputMethodService() {
@@ -1008,8 +1365,8 @@ class KuaiziIMEService : InputMethodService() {
     override fun onCreateInputView(): View {
         return ComposeView(this).also {
             it.setContent {
-                val viewModel = remember { IMEViewModel(engine!!) }
-                IMEScreen(viewModel)
+                val viewModel = remember { IMEViewModel(engine!!, configRepository) }
+                KuaiziKeyboard(engine = engine!!)
             }
         }
     }
@@ -1022,9 +1379,9 @@ class KuaiziIMEService : InputMethodService() {
 }
 ```
 
-### 10.2 应用内嵌输入法
+### 10.2 应用内嵌输入法（使用 UI 库）
 
-第三方应用通过引擎和 Compose 组件在应用内嵌入输入法：
+第三方应用通过引擎库和 UI 库在应用内嵌入完整输入法，这是最常见的使用场景：
 
 ```kotlin
 @Composable
@@ -1039,23 +1396,84 @@ fun ChatScreen() {
         )
     }
 
+    // 使用 ImeInputHost：一行代码获得完整的内嵌输入法
+    ImeInputHost(
+        engine = engine,
+        keyboardHeight = 280.dp,
+    )
+}
+```
+
+或者更灵活地组合组件：
+
+```kotlin
+@Composable
+fun CustomInputScreen() {
+    val engine = remember {
+        ImeEngine.create(
+            config = ImeEngineConfig(features = Feature.DefaultSet),
+            dictProvider = SqliteDictProvider(LocalContext.current),
+        )
+    }
+
     Column {
-        // 聊天消息列表
-        MessageList(...)
+        // 自定义编辑区域
+        MyCustomEditor(
+            onOutput = { output ->
+                // 自行处理 ImeOutput
+            },
+        )
 
-        // 输入框
-        ImeEditText(engine = engine)
-
-        // 内嵌键盘
+        // 使用 UI 库的键盘组件
         KuaiziKeyboard(
             engine = engine,
             modifier = Modifier.fillMaxWidth().height(280.dp),
+            showToolbar = false, // 隐藏工具栏
         )
     }
 }
 ```
 
-### 10.3 测试环境
+### 10.3 应用内嵌输入法（自定义 UI，不使用 UI 库）
+
+仅引入 `:ime-engine`，自行实现所有 UI：
+
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation(project(":ime-engine"))
+    // 不引入 :ime-ui
+}
+
+@Composable
+fun CustomInputScreen() {
+    val engine = remember {
+        ImeEngine.create(
+            config = ImeEngineConfig(features = emptySet()),
+            dictProvider = SqliteDictProvider(LocalContext.current),
+        )
+    }
+    val state by engine.state.collectAsStateWithLifecycle()
+
+    // 完全自定义的 UI
+    MyCustomKeyboard(
+        keyGrid = state.keyGrid,
+        keyboardState = state.keyboardState,
+        onKeyPress = { key ->
+            engine.handleGesture(InputGesture.Tap(System.currentTimeMillis(), key))
+        },
+    )
+
+    // 自行处理输出
+    LaunchedEffect(engine) {
+        engine.output.receiveAsFlow().collect { output ->
+            myCustomEditor.applyOutput(output)
+        }
+    }
+}
+```
+
+### 10.4 测试环境
 
 使用内存字典提供者在测试中验证引擎逻辑：
 
@@ -1096,7 +1514,7 @@ class ImeEngineTest {
 }
 ```
 
-### 10.4 无 UI 的纯引擎模式
+### 10.5 无 UI 的纯引擎模式
 
 某些场景仅需要引擎的逻辑能力，不需要任何 UI：
 
@@ -1127,38 +1545,121 @@ class PinyinTextProcessor {
 }
 ```
 
+### 10.6 仅使用部分 UI 组件
+
+第三方应用可以只使用 UI 库中的部分组件，而非完整的 `KuaiziKeyboard`：
+
+```kotlin
+@Composable
+fun MinimalInputScreen() {
+    val engine = remember { ImeEngine.create(...) }
+    val state by engine.state.collectAsStateWithLifecycle()
+    val feedbackState = remember { GestureFeedbackState() }
+
+    Column {
+        // 只用候选栏
+        CandidateBar(
+            candidates = state.candidates,
+            onCandidateSelected = { candidate ->
+                engine.handleIntent(IMEIntent.CandidateSelected(candidate))
+            },
+        )
+
+        // 只用输入栏
+        InputBar(
+            inputList = state.inputList,
+            onGapTapped = { index ->
+                engine.handleIntent(IMEIntent.CursorMoveTo(index))
+            },
+        )
+
+        // 自定义键盘布局，但使用 UI 库的反馈面板
+        MyCustomKeyLayout(
+            keyGrid = state.keyGrid,
+            keyboardState = state.keyboardState,
+        )
+
+        FeedbackPanel(
+            elements = setOf(FeedbackElementType.TouchTrail, FeedbackElementType.KeyHighlight),
+            feedbackState = feedbackState,
+            keyPanelLayout = myCustomLayoutInfo,
+        )
+    }
+}
+```
+
 ---
 
-## 11. 与其他设计文档的协作
+## 11. 引擎的完整能力清单
+
+### 11.1 核心输入能力
+
+| 能力 | 说明 | ImeOutput |
+|------|------|-----------|
+| 拼音输入 | 通过按键组合输入拼音，查询候选字词 | `CommitText` |
+| 滑行输入 | 在按键间滑行，自动识别声母韵母 | `CommitText` |
+| X-Pad 输入 | 通过六边形面板连续滑行输入 | `CommitText` |
+| 候选选择 | 从候选列表中选择目标字词 | `CommitText` |
+| 候选翻页 | 翻页查看更多候选 | 状态变更，无输出 |
+| 候选过滤 | 通过拼音/部首/声调过滤候选 | 状态变更，无输出 |
+| 配对符号 | 输入 ()、""、[] 等配对符号 | `InsertPairedSymbols` |
+| 输入列表管理 | 输入列表的显示、编辑、游标移动 | 状态变更 + `MoveCursor` |
+| 撤销/重做 | 撤销和重做输入操作 | `RevokeCommit` |
+| 键盘切换 | 切换拼音/拉丁/数字/符号/Emoji 等 | 状态变更，无输出 |
+| 长按输入 | 长按按键触发二级功能 | `CommitText` 或状态变更 |
+
+### 11.2 可选能力
+
+| 能力 | Feature | 说明 | ImeOutput |
+|------|---------|------|-----------|
+| 剪贴板监听 | `Clipboard` | 监听系统剪贴板，提取结构化数据 | 状态变更 |
+| 剪贴板粘贴 | `Clipboard` | 粘贴剪贴板内容 | `CommitText` |
+| 剪贴板提示 | `Clipboard` | 检测到验证码等特殊内容时弹窗提示 | 状态变更 |
+| 收藏管理 | `Favorites` | 收藏常用文本 | 状态变更 |
+| 收藏粘贴 | `Favorites` | 粘贴收藏的文本 | `CommitText` |
+| 输入练习 | `InputPractice` | 程序化输入动画演示 | 状态变更 |
+| 候选预测 | `CandidatePrediction` | HMM+Viterbi 候选排序 | 状态变更 |
+
+---
+
+## 12. 与其他设计文档的协作
 
 | 协作系统 | 协作方式 |
 |----------|----------|
-| 架构总览（000） | `:ime-engine` 模块对应 Domain Layer + Data Layer 的接口层；`:app` 模块对应 Platform Layer + UI Layer + ViewModel Layer |
+| 架构总览（000） | `:ime-engine` 模块对应 Domain Layer + Data Layer 的接口层；`:ime-ui` 模块对应 UI Layer 的缺省实现；`:app` 模块对应 Platform Layer + ViewModel Layer + 配置持久化 + 设置页面 |
 | 键盘状态机（100） | `KeyboardStateMachine` 在引擎内部运行，通过 `IMEState.keyboardState` 暴露状态 |
-| 面板分离（150） | 三层面板（InputPanel / KeyPanel / FeedbackPanel）在 `:app` 模块中实现，引擎不包含面板代码 |
+| 面板分离（150） | 三层面板（InputPanel / KeyPanel / FeedbackPanel）在 `:ime-ui` 库中实现，引擎不包含面板代码 |
 | 输入列表（200） | `InputListOperator` 在引擎内部运行，通过 `IMEState.inputList` 暴露状态 |
 | 字典系统（300） | `DictProvider` 接口在引擎中定义，`SqliteDictProvider` 在引擎中实现；外部可替换 |
-| UI 迁移（400） | Compose 组件在 `:app` 中，订阅引擎状态进行渲染 |
+| UI 迁移（400） | Compose 组件在 `:ime-ui` 库中实现，订阅引擎状态进行渲染 |
 | 配置系统（500） | `ImeEngineConfig` 是引擎的配置接口，不含持久化；`:app` 的 DataStore 持久化是应用层职责 |
-| 剪贴板与收藏（600） | 通过 `Feature.Clipboard` 和 `Feature.Favorites` 按需启用/禁用 |
-| X-Pad（700） | X-Pad 逻辑在引擎的 `Keyboard.Pinyin` 中，X-Pad 渲染在 `:app` 的 KeyPanel 中 |
-| 输入动作程序化（930） | `InputActionPlayer` 通过 `Feature.InputPractice` 按需启用，通过引擎的 `GestureFeedbackState` 驱动反馈 |
+| 剪贴板与收藏（600） | 通过 `Feature.Clipboard` 和 `Feature.Favorites` 按需启用/禁用；UI 组件在 `:ime-ui` 中 |
+| X-Pad（700） | X-Pad 逻辑在引擎的 `Keyboard.Pinyin` 中，X-Pad 渲染在 `:ime-ui` 的 KeyPanel 中 |
+| 输入动作程序化（930） | `InputActionPlayer` 通过 `Feature.InputPractice` 按需启用，通过引擎的 `GestureFeedbackState` 驱动反馈；UI 组件在 `:ime-ui` 中 |
 
 ---
 
-## 12. Java 功能完整对照
+## 13. Java 功能完整对照
 
-| Java 组件 | v4 库模块对应 | 说明 |
-|-----------|-------------|------|
-| `IMEditor` | `ImeEngine` | 核心引擎入口，接口更清晰 |
-| `ImeSupportEditText` | `ImeEditText`（Compose） | 自动消费 ImeOutput |
-| `ImeIntegratedActivity` | 无直接对应，由库使用者自行组合 | 更灵活，不绑定 Activity |
-| `InputMsgListener` | `ImeOutput` 收集 | 从消息回调改为 Flow/Channel |
-| `InputMsg` / `InputMsgType` | `ImeOutput` sealed class | 从枚举消息改为类型安全的 sealed class |
-| `UserKeyMsg` / `UserInputMsg` | `InputGesture` / `IMEIntent` | 从消息系统改为 Intent 体系 |
-| `IMEConfig` | `ImeEngineConfig` | 无 SharedPreferences，纯代码配置 |
-| `IMEditorDict` | `DictProvider` 接口 + `SqliteDictProvider` 实现 | 从单例改为可替换的接口 |
-| `ConfigChangeListener` | `ImeEngine.updateConfig()` | 从回调改为主动更新 |
-| N/A | `Feature` / `FeatureRegistry` | 新增：功能可裁剪 |
-| N/A | `InputConnectionBridge` | 新增：引擎输出到 InputConnection 的桥接 |
-| N/A | `InMemoryDictProvider` | 新增：测试用内存字典 |
+| Java 组件 | v4 库模块对应 | 所属模块 | 说明 |
+|-----------|-------------|---------|------|
+| `IMEditor` | `ImeEngine` | `:ime-engine` | 核心引擎入口，接口更清晰 |
+| `ImeSupportEditText` | `ImeEditText`（Compose） | `:ime-ui` | 自动消费 ImeOutput |
+| `ImeIntegratedActivity` | `ImeInputHost`（Compose） | `:ime-ui` | 不绑定 Activity，可在任意 Composable 中使用 |
+| `InputMsgListener` | `ImeOutput` 收集 | `:ime-engine` | 从消息回调改为 Flow/Channel |
+| `InputMsg` / `InputMsgType` | `ImeOutput` sealed class | `:ime-engine` | 从枚举消息改为类型安全的 sealed class |
+| `UserKeyMsg` / `UserInputMsg` | `InputGesture` / `IMEIntent` | `:ime-engine` | 从消息系统改为 Intent 体系 |
+| `IMEConfig` | `ImeEngineConfig` | `:ime-engine` | 无 SharedPreferences，纯代码配置 |
+| `IMEditorDict` | `DictProvider` 接口 + `SqliteDictProvider` 实现 | `:ime-engine` | 从单例改为可替换的接口 |
+| `ConfigChangeListener` | `ImeEngine.updateConfig()` | `:ime-engine` | 从回调改为主动更新 |
+| `KeyboardView` + 手势检测 | `InputPanel` + `KeyPanel` + `FeedbackPanel` | `:ime-ui` | 三层分离，职责清晰 |
+| `CandidatesView` | `CandidateBar` | `:ime-ui` | Compose LazyRow |
+| `InputListView` | `InputBar` | `:ime-ui` | Compose LazyRow |
+| `XPadView` | `XPadView`（Compose Canvas） | `:ime-ui` | Compose Canvas |
+| `FavoriteboardView` | `FavoritesPanel` | `:ime-ui` | Compose LazyColumn + SwipeToDismiss |
+| `MainboardView` | `KuaiziKeyboard` | `:ime-ui` | 一站式键盘组件 |
+| N/A | `Feature` / `FeatureRegistry` | `:ime-engine` | 新增：功能可裁剪 |
+| N/A | `InputConnectionBridge` | `:app` | 新增：引擎输出到 InputConnection 的桥接 |
+| N/A | `InMemoryDictProvider` | `:ime-engine` | 新增：测试用内存字典 |
+| N/A | `ImeInputHost` | `:ime-ui` | 新增：完整输入方案集成组件 |
+| N/A | `IMEColors` / `KuaiziIMETheme` | `:ime-ui` | 新增：可定制主题系统 |

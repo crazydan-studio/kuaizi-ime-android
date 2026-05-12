@@ -67,12 +67,16 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Platform Layer  ← :app 模块               │
 │  IMEService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
-├─────────────────────────────────────────────────────────────────┤
-│                         UI Layer      ← :app 模块               │
-│  Compose: InputPanel / KeyPanel / FeedbackPanel / CandidateBar / InputBar / Settings / InputPractice │
+│  配置持久化（DataStore）+ 设置页面 + 引导页面                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                      ViewModel Layer   ← :app 模块               │
-│  IMEViewModel → StateFlow<IMEState> + Intent 处理                │
+│  IMEViewModel → StateFlow<IMEState> + 配置持久化 + Output 桥接    │
+├─────────────────────────────────────────────────────────────────┤
+│                         UI Layer      ← :ime-ui 库               │
+│  Compose 缺省 UI：InputPanel / KeyPanel / FeedbackPanel          │
+│  CandidateBar / InputBar / ImeEditText / KuaiziKeyboard          │
+│  ImeInputHost / 主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
+│  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
 │                       Domain Layer     ← :ime-engine 库          │
 │  ImeEngine / Keyboard / InputList / Inputboard / Favoriteboard  │
@@ -85,7 +89,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-> **注意**：`:ime-engine` 库模块的设计详见文档 160。Domain Layer 和 Data Layer 属于库模块，可被外部程序以库的形式引入；Platform Layer、UI Layer 和 ViewModel Layer 属于 `:app` 模块。库的配置通过 `ImeEngineConfig` 在代码中设置，不含配置持久化层；数据库层通过 `DictProvider` 接口支持外部替换；收藏、剪贴板等可选功能通过 `Feature` 标记按需禁用。
+> **注意**：`:ime-engine` 库模块和 `:ime-ui` 库模块的设计详见文档 160。v4 采用三层库架构：引擎库（`:ime-engine`，纯 Kotlin，Domain Layer + Data Layer）、UI 库（`:ime-ui`，Compose 缺省 UI，UI Layer）、应用模块（`:app`，Platform Layer + ViewModel Layer + 配置持久化 + 设置页面）。第三方应用可以引入 `:ime-engine` + `:ime-ui` 获得完整的输入法能力与缺省 UI，也可以仅引入 `:ime-engine` 自行实现 UI。库的配置通过 `ImeEngineConfig` 在代码中设置，不含配置持久化层；数据库层通过 `DictProvider` 接口支持外部替换；收藏、剪贴板等可选功能通过 `Feature` 标记按需禁用。
 
 ### 3.2 核心设计决策
 
