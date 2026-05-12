@@ -1,0 +1,351 @@
+# 000 — 架构总览
+
+## 1. 概述
+
+v4 版本对筷字输入法进行全面的 Kotlin 重构，保留 Java 版本的消息驱动架构核心思想，同时利用 Kotlin 和现代 Android 开发技术进行现代化改造。核心改进方向：从命令式 MVP 转向声明式 MVI，从继承链转向组合模式，从手写异步转向协程，从 View 系统转向 Compose。
+
+---
+
+## 2. Java 版本架构分析
+
+### 2.1 现有架构
+
+Java 版本采用自定义消息驱动的 MVP 架构：
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    IMEService                         │
+│  (Android Service, Message Router/Dispatcher)        │
+│  - 生命周期管理                                       │
+│  - InputConnection 操作                               │
+│  - 路由: UserMsg → IMEditor, InputMsg → IMEditorView  │
+└───────────┬──────────────────────┬───────────────────┘
+            │                      │
+    UserKeyMsg/UserInputMsg    InputMsg
+            │                      │
+            ▼                      ▼
+┌───────────────────┐    ┌────────────────────┐
+│    IMEditor       │    │   IMEditorView     │
+│  (Model/Presenter)│    │   (View Layer)     │
+│  ├─ Keyboard      │    │  ├─ MainboardView  │
+│  ├─ Inputboard    │    │  │  ├─ KeyboardView │
+│  ├─ Favoriteboard │    │  │  └─ InputboardView│
+│  ├─ InputList     │    │  │     └─ InputListView│
+│  └─ IMEditorDict  │    │  ├─ FavoriteboardView│
+│                    │    │  └─ CandidatesView │
+└───────────────────┘    └────────────────────┘
+```
+
+### 2.2 架构优点（保留）
+
+1. **消息驱动的单向数据流**：UserMsg 从 View 层向上发送到 IMEService，再分发到 Model 层；InputMsg 从 Model 层向上发送到 IMEService，再分发到 View 层。这种单向消息流确保了数据流向的可追踪性
+2. **Model-View 严格分离**：模型层和视图层不直接通信，所有交互通过消息传递，降低了耦合
+3. **Context 模式**：`KeyboardContext`、`InputboardContext`、`FavoriteboardContext` 携带共享状态进入模型操作，避免了全局状态的滥用
+4. **不可变 Key 对象 + Builder 缓存**：Key 对象是不可变的，通过 Builder 模式创建并缓存，避免了重复创建
+5. **状态机驱动的键盘逻辑**：键盘的输入、滑行、翻转、候选选择等状态通过有限状态机管理，状态转换有明确规则
+
+### 2.3 架构问题（改进）
+
+1. **深层继承链**：`PinyinKeyboard → EditorEditKeyboard → BaseKeyboard`，行为分散在多层，难以理解完整逻辑
+2. **IMEService 职责过重**：既是消息路由器，又负责 InputConnection 操作和生命周期管理，职责不清
+3. **手动 RecyclerView 管理**：自定义 LayoutManager、GestureDetector、Adapter，代码量巨大且维护困难
+4. **线程安全风险**：`InputList` 是可变对象，从多个线程访问（主线程 UI 更新 + 异步字典查询回调）
+5. **缺乏依赖注入**：所有依赖手动通过构造参数传递，随着类关系复杂化导致参数列表膨胀
+6. **测试几乎缺失**：核心逻辑（InputList、状态机、消息路由）无单元测试，重构风险高
+7. **枚举膨胀**：`InputMsgType` 有 35+ 值、`CtrlKey.Type` 有 25+ 值，不同关注点混在一个枚举中
+8. **Favoriteboard 职责混合**：同时处理剪贴板和收藏功能，违反单一职责
+
+---
+
+## 3. v4 架构设计
+
+### 3.1 分层架构
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Platform Layer                            │
+│  IMEService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
+├─────────────────────────────────────────────────────────────────┤
+│                         UI Layer                                 │
+│  Compose: KeyboardScreen / CandidateBar / InputBar / Settings   │
+├─────────────────────────────────────────────────────────────────┤
+│                      ViewModel Layer                              │
+│  IMEViewModel → StateFlow<IMEState> + Intent 处理                │
+├─────────────────────────────────────────────────────────────────┤
+│                       Domain Layer                               │
+│  Keyboard / InputList / Inputboard / Favoriteboard              │
+│  (纯 Kotlin，不依赖 Android 框架)                                │
+├─────────────────────────────────────────────────────────────────┤
+│                        Data Layer                                │
+│  PinyinDict / UserInputDataDict / UserInputFavoriteDict / Config│
+│  (Room/SQLDelight + DataStore)                                   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 3.2 核心设计决策
+
+| 决策 | Java 版本 | Kotlin 版本 | 理由 |
+|------|-----------|-------------|------|
+| 架构模式 | 自定义 MVP | MVI | 单向数据流更清晰，状态可追踪 |
+| 消息系统 | 手动消息路由 | Intent + StateFlow | 类型安全、响应式、自动生命周期管理 |
+| 异步 | CompletableFuture + Handler | Coroutine + Flow | 结构化并发、简化异步代码 |
+| 状态管理 | 可变对象 + 手动同步 | 不可变 data class + StateFlow | 线程安全、可追踪 |
+| 键盘逻辑 | 深层继承 | 组合 + Sealed class | 逻辑集中、类型安全 |
+| UI | 自定义 View + RecyclerView | Jetpack Compose | 声明式、代码量减少 |
+| 配置 | SharedPreferences | DataStore + Flow | 类型安全、异步、响应式 |
+| 数据库 | 手写 SQLite | Room 或 SQLDelight | 类型安全、编译期检查 |
+| 依赖管理 | 手动构造 | 构造参数注入（不用 Hilt） | 项目规模适中，手动注入足够 |
+
+### 3.3 MVI 架构
+
+```
+┌──────────┐   Intent    ┌────────────┐  reduce   ┌──────────┐
+│  UI 层   │ ──────────→ │  ViewModel │ ────────→ │  State   │
+│ Compose  │             │            │           │ (不可变)  │
+└──────────┘             └────────────┘           └──────────┘
+      ↑                                                │
+      │               StateFlow<IMEState>              │
+      └────────────────────────────────────────────────┘
+```
+
+**Intent 定义**：
+
+```kotlin
+sealed class IMEIntent {
+    // 键盘按键
+    data class KeyPressed(val key: InputKey, val gesture: KeyGesture) : IMEIntent()
+    data class KeyLongPressed(val key: InputKey) : IMEIntent()
+
+    // 候选选择
+    data class CandidateSelected(val candidate: Candidate) : IMEIntent()
+    data class CandidatePaged(val direction: PageDirection) : IMEIntent()
+
+    // 键盘切换
+    data class SwitchKeyboard(val type: KeyboardType) : IMEIntent()
+
+    // 编辑操作
+    data object CommitInput : IMEIntent()
+    data object DeleteInput : IMEIntent()
+    data object CleanInput : IMEIntent()
+    data class EditorAction(val action: EditorActionType) : IMEIntent()
+
+    // 剪贴板与收藏
+    data class ClipPasted(val clip: InputClip) : IMEIntent()
+    data class FavoriteSaved(val text: String) : IMEIntent()
+
+    // 配置变更
+    data class ConfigChanged(val config: Config) : IMEIntent()
+}
+```
+
+**State 定义**：
+
+```kotlin
+data class IMEState(
+    val keyboardType: KeyboardType = KeyboardType.Pinyin,
+    val keyboardState: KeyboardState = KeyboardState.Idle,
+    val inputList: InputListState = InputListState(),
+    val candidates: CandidateState = CandidateState(),
+    val clipboard: ClipboardState = ClipboardState(),
+    val favorites: FavoritesState = FavoritesState(),
+    val config: Config = Config(),
+)
+```
+
+### 3.4 键盘逻辑的组合模式
+
+Java 版本的键盘继承链：
+
+```
+PinyinKeyboard → EditorEditKeyboard → BaseKeyboard
+LatinKeyboard → DirectInputKeyboard → BaseKeyboard
+NumberKeyboard → DirectInputKeyboard → BaseKeyboard
+MathKeyboard → BaseKeyboard
+SymbolKeyboard → BaseKeyboard
+EmojiKeyboard → BaseKeyboard
+EditorKeyboard → BaseKeyboard
+InputCandidateKeyboard → BaseKeyboard
+PinyinCandidateKeyboard → BaseKeyboard
+InputListCommitOptionKeyboard → BaseKeyboard
+```
+
+v4 版本改为组合模式：
+
+```kotlin
+sealed class Keyboard {
+    abstract val type: KeyboardType
+    abstract val state: KeyboardState
+
+    // 共享能力通过组合注入，而非继承
+    protected val audioPlayer: KeyAudioPlayer
+    protected val inputListOp: InputListOperator
+
+    class Pinyin(/* ... */) : Keyboard() { /* ... */ }
+    class Latin(/* ... */) : Keyboard() { /* ... */ }
+    class Number(/* ... */) : Keyboard() { /* ... */ }
+    class Math(/* ... */) : Keyboard() { /* ... */ }
+    class Symbol(/* ... */) : Keyboard() { /* ... */ }
+    class Emoji(/* ... */) : Keyboard() { /* ... */ }
+    class Editor(/* ... */) : Keyboard() { /* ... */ }
+}
+```
+
+**共享行为提取为独立组件**：
+
+| Java BaseKeyboard 行为 | Kotlin 独立组件 |
+|----------------------|-----------------|
+| 音频播放 | `KeyAudioPlayer` |
+| InputList 操作 | `InputListOperator` |
+| 按键消息处理 | `KeyHandler`（各键盘独立实现） |
+| 状态机管理 | `KeyboardStateMachine` |
+| 候选分页 | `CandidatePager` |
+
+### 3.5 消息系统简化
+
+Java 版本有三套消息体系：
+- `UserKeyMsg` / `UserKeyMsgType`：按键消息（7 种类型）
+- `UserInputMsg` / `UserInputMsgType`：输入消息（11 种类型）
+- `InputMsg` / `InputMsgType`：模型→视图消息（35+ 种类型）
+
+v4 统一为 Intent 体系：
+
+```kotlin
+sealed class IMEIntent {
+    // 原 UserKeyMsg + UserInputMsg → 统一为 Intent
+    // 原 InputMsg → StateFlow 的状态变更自动传播到 UI
+}
+```
+
+> **关键改变**：Java 版本需要手动分发 InputMsg 到 View 层，Kotlin 版本通过 StateFlow 自动传播状态变更，不再需要 InputMsg 体系。ViewModel 的 `reduce` 函数处理 Intent 后更新 State，UI 层自动响应。
+
+---
+
+## 4. 数据流
+
+### 4.1 按键输入完整流程
+
+```
+1. 用户按键
+   ↓
+2. Compose 手势检测 → 生成 IMEIntent.KeyPressed
+   ↓
+3. IMEViewModel.handleIntent(intent)
+   ↓
+4. reduce(state, intent)
+   ├─ 更新 keyboardState（状态机转换）
+   ├─ 查询 PinyinDict（协程）
+   ├─ 更新 candidates
+   └─ 更新 inputList
+   ↓
+5. _state.update { newState }
+   ↓
+6. Compose 订阅 StateFlow → 重组 UI
+   ↓
+7. 候选项、按键状态、输入栏自动更新
+```
+
+### 4.2 输入提交流程
+
+```
+1. 用户点击提交
+   ↓
+2. IMEIntent.CommitInput
+   ↓
+3. reduce 提取 inputList 的文本
+   ↓
+4. 通过 InputConnection.commitText() 提交到编辑器
+   ↓
+5. 重置 inputList 和 candidates
+   ↓
+6. 状态更新 → UI 自动刷新
+```
+
+---
+
+## 5. 技术选型
+
+### 5.1 核心依赖
+
+| 依赖 | 版本 | 用途 |
+|------|------|------|
+| Kotlin | 2.3.20 | 开发语言 |
+| Compose BOM | 2026.04.01 | UI 框架 |
+| Compose Material3 | BOM 管理 | 主题和组件 |
+| Lifecycle ViewModel | 最新稳定版 | ViewModel 生命周期 |
+| Kotlin Coroutines | Kotlin 自带 | 异步编程 |
+| DataStore | 最新稳定版 | 配置存储 |
+| Room 或 SQLDelight | 待定 | 字典数据库 |
+| Flexbox | 3.0.0 → Compose FlowRow | 候选栏布局 |
+
+### 5.2 移除的依赖
+
+| Java 版本依赖 | 移除原因 | 替代方案 |
+|--------------|----------|----------|
+| `androidx.appcompat:appcompat` | Compose 不需要 | Compose Material3 |
+| `androidx.preference:preference` | Compose 自建设置页 | Compose 组件 |
+| `com.google.android.material:material` | Compose 不需要 | Compose Material3 |
+| `com.google.android.flexbox:flexbox` | Compose 内置 | `FlowRow` / `LazyRow` |
+| `com.google.code.gson:gson` | 测试专用 | Kotlin Serialization |
+| `org.json:json` | 测试专用 | Kotlin Serialization |
+| `com.github.Hexworks.Mixite:mixite.core-jvm` | X-Pad 自实现六边形网格 | 自实现 `HexGrid` |
+
+### 5.3 移除的构建类型
+
+Java 版本有三个构建类型：`debug`、`release`、`alpha`。v4 版本移除 `alpha` 构建类型，仅保留 `debug` 和 `release`：
+
+| 构建类型 | Java v3 | Kotlin v4 | 说明 |
+|----------|---------|-----------|------|
+| debug | ✅ | ✅ | 调试构建，applicationIdSuffix ".debug" |
+| release | ✅ | ✅ | 发布构建，混淆+压缩 |
+| alpha | ✅ | ❌ 移除 | 不再需要独立测试渠道 |
+
+**移除 alpha 的理由**：
+- alpha 变体的唯一作用是提供独立的测试安装渠道，可通过 debug 变体或 flavor 替代
+- 减少 `alpha/` 源集、`pack-alpha.sh` 脚本、alpha 专用资源等维护成本
+- 简化构建配置，降低 CI/CD 复杂度
+
+### 5.4 构建配置变更
+
+| 配置项 | Java v3 | Kotlin v4 |
+|--------|---------|-----------|
+| 发布包命名 | 默认 Gradle 命名 | `Kuaizi_IME-{version}.apk` |
+| 签名证书路径 | `keystore/release.properties`（相对于 code 目录） | `keystore/release.properties`（相对于项目根目录） |
+| 字典资源位置 | `res/raw/` | `assets/dict/` |
+| alpha 构建脚本 | `tools/pack-alpha.sh` | 移除 |
+
+### 5.5 字典数据库方案待定
+
+| 方案 | 优势 | 劣势 |
+|------|------|------|
+| **Room** | Android 官方 ORM，与 Lifecycle 集成好，编译期 SQL 检查 | 需定义 Entity/Dao，注解较多 |
+| **SQLDelight** | KMP 兼容，类型安全 SQL，编译期检查 | 学习曲线稍高，Android 专项支持不如 Room |
+
+> **待定**：考虑到项目仅 Android 平台且已有手写 SQL 逻辑，Room 的迁移路径更直接。但 SQLDelight 的类型安全 SQL 更符合 Kotlin 风格。需要在开发初期做技术验证后决定。
+
+---
+
+## 6. 与 Java 版本的架构对比
+
+| 维度 | Java v3 | Kotlin v4 |
+|------|---------|-----------|
+| 架构模式 | 自定义 MVP + 手动消息路由 | MVI + StateFlow |
+| 消息系统 | 3 套消息（UserKeyMsg, UserInputMsg, InputMsg） | 统一 Intent + StateFlow |
+| 状态管理 | 可变对象 + 手动同步 | 不可变 data class + StateFlow |
+| 异步 | CompletableFuture + Handler | Coroutine + Flow |
+| UI | View + RecyclerView | Compose |
+| 键盘逻辑 | 深层继承（3 层） | 组合模式 + Sealed class |
+| 配置 | SharedPreferences | DataStore |
+| 数据库 | 手写 SQLiteOpenHelper | Room/SQLDelight |
+| 依赖管理 | 手动构造 | 手动构造注入（同 Java，但更简洁） |
+| 测试 | 几乎无 | 全面单元测试 |
+
+---
+
+## 7. 风险与缓解
+
+| 风险 | 影响 | 缓解措施 |
+|------|------|----------|
+| Compose 在 IME 中的性能 | 键盘响应延迟 | 原型阶段性能验证，必要时降级为 View |
+| 状态机迁移的复杂度 | 功能缺失 | 先写测试验证 Java 行为，再迁移 |
+| 字典数据库迁移 | 数据丢失 | 保留升级路径，测试所有迁移场景 |
+| X-Pad Canvas 绘制 | 视觉不一致 | 逐步迁移，与 Java 版本对比截图验证 |
