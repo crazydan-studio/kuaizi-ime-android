@@ -79,6 +79,12 @@ data class Config(
     val disableGestureSlippingTrail: Boolean = false,
     val disableClipPopupTips: Boolean = false,
     val clipPopupTipsTimeout: Int = 15,
+
+    // 日志与诊断（详见文档 900）
+    /** 发布版本的日志等级。仅对 release 构建生效，debug 构建始终为 VERBOSE */
+    val logLevel: LogLevel = LogLevel.WARN,
+    /** 日志文件存放目录路径。null 表示使用缺省应用私有目录 */
+    val logStoragePath: String? = null,
 )
 
 enum class ThemeType { Light, Night, FollowSystem }
