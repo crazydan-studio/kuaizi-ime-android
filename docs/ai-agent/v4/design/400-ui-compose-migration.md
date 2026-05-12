@@ -461,46 +461,48 @@ fun GestureTrailOverlay(
 
 ### 6.2 设置页面示例
 
+> **注意**：v4 设置页面的详细设计已独立为文档 [920 — 配置界面改进设计](920-config-ui-improvement.md)，包含场景化分组、肯定式命名、即时预览、条件显示、搜索和快捷切换等完整方案。以下仅展示基本框架。
+
 ```kotlin
 @Composable
 fun SettingsScreen(
     config: Config,
     onConfigChanged: (Config) -> Unit,
 ) {
-    LazyColumn {
-        item { SettingsSectionHeader("外观") }
-        item {
-            ThemeSelector(
-                currentTheme = config.themeType,
-                onThemeSelected = { onConfigChanged(config.copy(themeType = it)) },
-            )
-        }
-        item {
-            HandModeSelector(
-                currentHandMode = config.handMode,
-                onHandModeSelected = { onConfigChanged(config.copy(handMode = it)) },
-            )
-        }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
 
-        item { SettingsSectionHeader("输入") }
-        item {
-            SwitchPreference(
-                title = "X-Pad 输入",
-                description = "启用 X-Pad 连续输入模式",
-                checked = config.enableXPad,
-                onCheckedChange = { onConfigChanged(config.copy(enableXPad = it)) },
-            )
-        }
-        item {
-            SwitchPreference(
-                title = "繁体优先",
-                description = "候选字优先显示繁体异体字",
-                checked = config.enableVariantFirst,
-                onCheckedChange = { onConfigChanged(config.copy(enableVariantFirst = it)) },
-            )
-        }
+    Column(modifier = Modifier.fillMaxSize()) {
+        // 搜索栏
+        SearchBar(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            onSearch = {},
+            active = false,
+            onActiveChange = {},
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            placeholder = { Text("搜索设置") },
+        ) {}
 
-        // ... 更多设置项
+        LazyColumn {
+            // 外观（高频，默认展开）
+            sectionHeader("外观")
+            item { ThemeSelector(config.themeType) { onConfigChanged(config.copy(themeType = it)) } }
+            item { HandModeToggle(config.handMode) { onConfigChanged(config.copy(handMode = it)) } }
+            item { KeyboardPreview(config) }
+
+            // 输入体验（高频）
+            sectionHeader("输入体验")
+            item { InputSettings(config, onConfigChanged) }
+
+            // 反馈控制（中频）
+            sectionHeader("反馈控制")
+            item { FeedbackSettings(config, onConfigChanged) }
+
+            // 低频分组默认折叠
+            expandableSection("数据与隐私", defaultExpanded = false) { /* ... */ }
+            expandableSection("日志与诊断", defaultExpanded = false) { /* ... */ }
+            expandableSection("关于", defaultExpanded = false) { /* ... */ }
+        }
     }
 }
 ```
