@@ -117,19 +117,22 @@ Java 版本的设置分为两个页面，组织如下：
 
 ### 3.4 语义反转映射
 
-所有「禁用」前缀的配置改为「启用」语义，`ImeConfig.UiConfig` 中保持 `disable*` 命名以保持内部一致性，UI 层做映射：
+所有「禁用」前缀的配置改为「启用」语义，UI 层做映射。`ImeConfig.UiConfig` 中的字段命名混合使用肯定式（`*Enabled`）和否定式（`disable*`）——肯定式字段（如 `audioFeedbackEnabled`）与 UI 语义一致无需反转，否定式字段（如 `disableKeyAnimation`）需在 UI 层反转：
 
-| ImeConfig.UiConfig 属性（内部） | UI 显示名称（正向） | UI 默认值 |
-|-------------------------------|---------------------|-----------|
-| `disableKeyClickedAudio` | 按键音效 | 关（Config=true → UI 关） |
-| `disableKeyAnimation` | 按键动画 | 关 |
-| `disableCandidatesPagingAudio` | 翻页提示音 | 关 |
-| `disableKeyPopupTips` | 按键放大提示 | 关 |
-| `disableGestureSlippingTrail` | 滑行轨迹显示 | 关 |
-| `disableClipPopupTips` | 剪贴板粘贴提示 | 关 |
-| `disableUserInputData` | 记录输入习惯 | 开（Config=false → UI 开） |
+| ImeConfig.UiConfig 属性 | UI 显示名称（正向） | UI 默认值 | 映射关系 |
+|-------------------------|---------------------|-----------|----------|
+| `audioFeedbackEnabled` | 按键音效 | 开（Config=true → UI 开） | 直接映射 |
+| `hapticFeedbackEnabled` | 触觉反馈 | 开 | 直接映射 |
+| `disableKeyAnimation` | 按键动画 | 开（Config=false → UI 开） | 反转映射 |
+| `disableCandidatesPagingAudio` | 翻页提示音 | 开 | 反转映射 |
+| `disableKeyPopupTips` | 按键放大提示 | 开 | 反转映射 |
+| `disableGestureSlippingTrail` | 滑行轨迹显示 | 开 | 反转映射 |
+| `disableClipPopupTips` | 剪贴板粘贴提示 | 开 | 反转映射 |
+| `disableUserInputData` | 记录输入习惯 | 开（Config=false → UI 开） | 反转映射 |
 
-映射规则：UI 开关值 = `!config.ui.disable*`
+映射规则：
+- 肯定式字段（`*Enabled`）：UI 开关值 = `config.ui.*Enabled`
+- 否定式字段（`disable*`）：UI 开关值 = `!config.ui.disable*`
 
 ---
 
@@ -402,11 +405,12 @@ fun EnhancedSwitchPreference(
 
 | 配置项 | 标题 | 描述 |
 |--------|------|------|
-| `enableXPad` | X-Pad 连续输入 | 启用后可通过滑行在六边形面板上连续输入拼音 |
+| `xPadEnabled` | X-Pad 连续输入 | 启用后可通过滑行在六边形面板上连续输入拼音 |
 | `enableLatinUsePinyinKeysInXPad` | 拉丁键盘复用拼音布局 | 在拉丁键盘中使用与拼音相同的 X-Pad 布局 |
 | `enableCandidateVariantFirst` | 繁体异体字优先 | 候选字中优先显示繁体和异体字形式 |
 | `adaptDesktopSwipeUpGesture` | 适配桌面滑动手势 | 避免键盘上滑与桌面手势冲突 |
-| `!disableKeyClickedAudio` | 按键音效 | 按下按键时播放提示音 |
+| `audioFeedbackEnabled` | 按键音效 | 按下按键时播放提示音 |
+| `hapticFeedbackEnabled` | 触觉反馈 | 按下按键时触发触觉反馈 |
 | `!disableKeyAnimation` | 按键动画 | 按下按键时显示按压动画效果 |
 | `!disableCandidatesPagingAudio` | 翻页提示音 | 候选字翻页时播放提示音 |
 | `!disableKeyPopupTips` | 按键放大提示 | 按下按键时在上方显示放大的按键内容 |

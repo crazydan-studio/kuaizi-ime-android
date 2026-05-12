@@ -329,7 +329,7 @@ sealed class InputKey {
             override val label = target.switchLabel
             override val weight = 1.5f
         }
-        data class SwitchIME(override val weight: Float = 1.5f) : Ctrl() {
+        data class SwitchIme(override val weight: Float = 1.5f) : Ctrl() {
             override val id = "ctrl_switch_ime"
             override val label = "🌐"
         }

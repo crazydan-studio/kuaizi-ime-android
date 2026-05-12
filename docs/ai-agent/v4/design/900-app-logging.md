@@ -561,9 +561,9 @@ class CrashInterceptor(
 ```
 2026-05-12 14:32:15.891 [ERROR] [Crash] [main] 未捕获异常 [main]
 java.lang.NullPointerException: InputConnection is null
-    at org.crazydan.studio.app.ime.kuaizi.app.platform.ImeService.commitText(ImeService.kt:156)
-    at org.crazydan.studio.app.ime.kuaizi.app.viewmodel.ImeViewModel.reduce(ImeViewModel.kt:89)
-    at org.crazydan.studio.app.ime.kuaizi.app.viewmodel.ImeViewModel.handleIntent(ImeViewModel.kt:45)
+    at org.crazydan.studio.app.ime.kuaizi.platform.ImeService.commitText(ImeService.kt:156)
+    at org.crazydan.studio.app.ime.kuaizi.ui.ImeViewModel.reduce(ImeViewModel.kt:89)
+    at org.crazydan.studio.app.ime.kuaizi.ui.ImeViewModel.handleIntent(ImeViewModel.kt:45)
     ...
 ```
 
@@ -914,6 +914,6 @@ log.debug("查询结果: ${candidates.map { it.text }.joinToString()}")
 | 无崩溃拦截 | `CrashInterceptor` | 捕获未处理异常，记录完整堆栈 |
 | 无日志查看 | `LogViewerScreen` | Compose 界面浏览日志，按等级着色 |
 | 无日志导出 | `LogExportActivity` + 统一导出界面 | 系统文件选择器导出，支持日期范围选择 |
-| 无等级配置 | `Config.logLevel` | release 构建可通过设置修改 |
-| 无路径配置 | `Config.logStoragePath` | 可指定存储路径，缺省应用私有目录 |
+| 无等级配置 | `ImeConfig.UiConfig.logLevel` | release 构建可通过设置修改 |
+| 无路径配置 | `ImeConfig.UiConfig.logStoragePath` | 可指定存储路径，缺省应用私有目录 |
 | `TreeLog` ThreadLocal + synchronized | Kotlin 协程 Channel | 无线程安全风险，无死锁隐患 |
