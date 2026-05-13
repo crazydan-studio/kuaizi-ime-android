@@ -1362,18 +1362,18 @@ class PinyinInputActionTest {
 
 输入动作程序化的代码按功能分层，动画播放和练习演示作为 release 可用能力放在 main 源集中，仅操作录制等开发工具放在 debug 源集中：
 
-| 层 | 源集 | 内容 | Release 包含 |
-|----|------|------|-------------|
-| 模型层 | `main` | `InputAction`（坐标无关）、`ActionScript`、`InputMethod` | ✅ |
-| 编译层 | `main` | `ActionScriptCompiler`（字符→逻辑动作） | ✅ |
-| 坐标解析 | `main` | `KeyPositionResolver`、`ComposeKeyPositionResolver` | ✅ |
-| 路径生成 | `main` | `SwipePathInterpolator`（贝塞尔曲线） | ✅ |
-| 播放层 | `main` | `InputActionPlayer`、`GestureFeedbackState.fingerIndicator` | ✅ |
-| 动画覆盖层 | `main` | `FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay` | ✅ |
-| 演示 UI | `main` | `InputPracticeScreen`、`ActionPlayerPanel`、`InputMethodSelector` | ✅ |
-| 预置脚本 | `main` | `assets/scripts/` 预置演示脚本 | ✅ |
-| 录制工具 | `debug` | `ActionRecorder`、`RecordButton` | ❌ 开发工具 |
-| 测试驱动 | `test` | `ActionTestDriver` | ❌（test 依赖） |
+| 层 | 模块 | 源集 | 内容 | Release 包含 |
+|----|------|------|------|-------------|
+| 模型层 | :ime-engine | `main` | `InputAction`（坐标无关）、`ActionScript`、`InputMethod` | ✅ |
+| 编译层 | :ime-engine | `main` | `ActionScriptCompiler`（字符→逻辑动作） | ✅ |
+| 坐标解析 | :ime-engine + :ime-ui | `main` | `KeyPositionResolver`（:ime-engine）、`ComposeKeyPositionResolver`（:ime-ui） | ✅ |
+| 路径生成 | :ime-engine | `main` | `SwipePathInterpolator`（贝塞尔曲线） | ✅ |
+| 播放层 | :ime-ui | `main` | `InputActionPlayer`、`GestureFeedbackState.fingerIndicator` | ✅ |
+| 动画覆盖层 | :ime-ui | `main` | `FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay` | ✅ |
+| 演示 UI | :app | `main` | `InputPracticeScreen`、`ActionPlayerPanel`、`InputMethodSelector` | ✅ |
+| 预置脚本 | :app | `main` | `assets/scripts/` 预置演示脚本 | ✅ |
+| 录制工具 | :app | `debug` | `ActionRecorder`、`RecordButton` | ❌ 开发工具 |
+| 测试驱动 | :ime-engine | `test` | `ActionTestDriver` | ❌（test 依赖） |
 
 ### 10.2 Release 构建策略
 

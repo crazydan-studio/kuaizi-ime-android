@@ -72,12 +72,12 @@ kotlin {
 
 ```kotlin
 // ✅ 推荐：context parameter 替代隐式依赖
-context(UserRepository, AppConfig)
-fun findUsers(query: String): List<User> { ... }
+context(PinyinDict, ImeConfig)
+fun lookupCandidates(spell: String): List<InputWord> { ... }
 
 // ❌ 避免：全局单例
-object RepositoryHolder {
-    val instance: UserRepository get() = ...
+object PinyinDictHolder {
+    val instance: PinyinDict get() = ...
 }
 ```
 
@@ -110,18 +110,18 @@ object RepositoryHolder {
 
 ```kotlin
 // ✅ 正确：使用结构化并发
-class DataLoader(
+class IMEditor(
     private val scope: CoroutineScope,
-    private val repo: Repository,
+    private val dict: PinyinDict,
 ) {
-    fun findUsers(query: String) = scope.launch {
-        val users = repo.searchAsync(query)
-        _state.update { it.copy(items = users) }
+    fun lookupCandidates(spell: String) = scope.launch {
+        val candidates = dict.lookupAsync(spell)
+        _state.update { it.copy(candidates = candidates) }
     }
 }
 
 // ❌ 错误：使用 GlobalScope
-fun findUsers(query: String) = GlobalScope.launch { ... }
+fun lookupCandidates(spell: String) = GlobalScope.launch { ... }
 
 // ❌ 错误：取消不处理的 Job
 val job = CoroutineScope(Dispatchers.IO).launch { ... }
@@ -151,50 +151,50 @@ fun configChanges(): Flow<Config> = callbackFlow {
 
 ```kotlin
 // ✅ 推荐：Sealed class 表达有限类型集合
-sealed class Notification {
-    abstract val id: String
+sealed class InputKey {
+    abstract val label: String
 
-    data class Message(
-        override val id: String,
-        val sender: String,
-        val content: String,
-    ) : Notification()
+    data class Char(
+        override val label: String,
+        val levels: List<String>,
+        val replacements: Map<String, String>,
+    ) : InputKey()
 
-    data class Alert(
-        override val id: String,
-        val level: AlertLevel,
-    ) : Notification()
+    data class Ctrl(
+        override val label: String,
+        val type: CtrlType,
+    ) : InputKey()
 
-    data class Reminder(
-        override val id: String,
-        val time: Instant,
-    ) : Notification()
+    data class XPad(
+        override val label: String,
+        val zones: List<XPadZone>,
+    ) : InputKey()
 }
 
 // ❌ 避免：深层继承 + 抽象类
-abstract class BaseNotification { ... }
-class MessageNotification : BaseNotification() { ... }
-class AlertNotification : BaseNotification() { ... }
+abstract class Key { ... }
+class CharKey : Key() { ... }
+class CtrlKey : Key() { ... }
 ```
 
 ### Data class + copy 模式
 
 ```kotlin
 // ✅ 推荐：不可变数据 + copy 更新
-data class FilterState(
-    val items: List<FilterItem> = emptyList(),
-    val selectedIndex: Int = 0,
-    val pending: FilterItem? = null,
+data class InputState(
+    val chars: List<CharInput> = emptyList(),
+    val cursorIndex: Int = 0,
+    val pending: CharInput? = null,
 ) {
-    fun addItem(item: FilterItem): FilterState =
-        copy(items = items + item, selectedIndex = items.size + 1)
+    fun appendChar(char: CharInput): InputState =
+        copy(chars = chars + char, cursorIndex = chars.size + 1)
 }
 
 // ❌ 避免：可变数据类
-data class MutableFilterState(
-    var items: MutableList<FilterItem> = mutableListOf(),
-    var selectedIndex: Int = 0,
-    var pending: FilterItem? = null,
+data class MutableInputState(
+    var chars: MutableList<CharInput> = mutableListOf(),
+    var cursorIndex: Int = 0,
+    var pending: CharInput? = null,
 )
 ```
 
@@ -216,28 +216,28 @@ typealias ConfigKey = String
 
 ## 5. Builder 模式迁移
 
-Java 版本大量使用自定义 Builder 模式（如 `Request.build(b -> ...)`、`Payload.build(b -> ...)`），Kotlin 中应使用 DSL 风格或 data class：
+Java 版本大量使用自定义 Builder 模式（如 `InputMsg.build(b -> ...)`、`CharKey.build(b -> ...)`），Kotlin 中应使用 DSL 风格或 data class：
 
 ```kotlin
 // ✅ 推荐：DSL 风格构建
-fun request(block: RequestBuilder.() -> Unit): Request =
-    RequestBuilder().apply(block).build()
+fun inputMsg(block: InputMsgBuilder.() -> Unit): InputMsg =
+    InputMsgBuilder().apply(block).build()
 
 // 使用
-val req = request {
-    type = RequestType.Submit
-    data = Payload(items = currentItems)
+val msg = inputMsg {
+    type = InputMsgType.InputCharsDoing
+    data = InputCharsData(chars = currentChars)
 }
 
 // ✅ 推荐：Data class + 命名参数（简单场景）
-data class Request(
-    val type: RequestType,
-    val data: Payload,
+data class InputMsg(
+    val type: InputMsgType,
+    val data: InputMsgData,
 )
 
-val req = Request(
-    type = RequestType.Submit,
-    data = Payload(items = currentItems),
+val msg = InputMsg(
+    type = InputMsgType.InputCharsDoing,
+    data = InputCharsData(chars = currentChars),
 )
 ```
 
@@ -247,9 +247,9 @@ val req = Request(
 
 ```kotlin
 // ✅ 推荐：函数式链式操作
-val filtered = items
-    .filterIsInstance<Message>()
-    .map { it.content }
+val filtered = inputs
+    .filterIsInstance<CharInput>()
+    .map { it.text }
     .distinct()
 
 // ✅ 推荐：只读集合
@@ -265,9 +265,9 @@ fun getKeys(): MutableList<Key> = keyList // 暴露内部可变状态
 
 ```kotlin
 // ✅ 推荐：require/check 断言
-fun findItem(id: String): Item {
-    require(id.isNotBlank()) { "ID must not be blank" }
-    return repo[id] ?: error("No item found for id: $id")
+fun lookupCandidate(spell: String): InputWord {
+    require(spell.isNotBlank()) { "Spell must not be blank" }
+    return dict[spell] ?: error("No candidate found for spell: $spell")
 }
 
 // ✅ 推荐：Elvis 运算符提供默认值

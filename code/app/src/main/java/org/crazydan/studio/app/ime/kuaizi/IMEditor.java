@@ -536,7 +536,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             case Keep_Current:
                 // 切换本输入法到不同的系统键盘时的情况
             case By_ImeSubtype: {
-                // Note: ImeService 将在每次 start 本键盘时更新该项配置
+                // Note: IMEService 将在每次 start 本键盘时更新该项配置
                 IMESubtype imeSubtype = this.config.get(ConfigKey.ime_subtype);
 
                 if (imeSubtype == IMESubtype.latin) {
