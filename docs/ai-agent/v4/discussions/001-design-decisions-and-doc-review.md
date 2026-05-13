@@ -1,4 +1,4 @@
-# 001 — v4 设计决策完善与全文档审查
+# 001 — ImeConfig 统一配置的方案探讨
 
 ## 基本信息
 
@@ -6,94 +6,55 @@
 |------|-----|
 | 讨论日期 | 2026-05-12 |
 | 参与者 | 用户、AI Designer |
-| 主题 | 确定多项设计决策、执行全文档审查、建立测试文档体系 |
+| 主题 | ImeConfig 是否应合并引擎配置与应用配置、运行时修改与持久化配置的优先级语义 |
 
 ---
 
 ## 讨论内容
 
-### 1. 命名规范决策
+### 1. 引擎配置与应用配置是分还是合？
 
-用户提出统一类名前缀的规范要求，经讨论后确定以下规则：
+原设计中 `ImeEngineConfig`（引擎库配置）与 `:app` 模块的 `Config`（应用侧配置）是两套独立的 data class，引擎配置在创建时传入不再变更，应用配置可通过 DataStore 动态修改。
 
-- **不以 `Kuaizi` 作类名前缀**：去除所有 `KuaiziXxx` 形式的类名
-- **公共 API 类统一 `Ime` 前缀**：如 `ImeEngine`、`ImeState`、`ImeIntent`、`ImeConfig`
-- **`IME` 前缀改为 `Ime`**：`IMEState` → `ImeState`、`IMEService` → `ImeService`、`IMEIntent` → `ImeIntent`
-- **StandardKeyboard 保持命名不变**：这是 Compose 标准键盘 Composable 组件的既定命名，不做改动
-- **发布包名保持 `Kuaizi_IME-{version}.apk`**：发布包名是面向用户的外部标识，不在重命名范围内
+**分开的理由**：引擎库作为独立库，不应关心配置持久化。库的使用者只需要在创建时传入配置，运行时不变。持久化是应用层的职责，与库无关。这种分层让引擎库保持纯粹——无 Android 依赖、无 I/O 操作。
 
-### 2. 包名规范决策
+**合并的理由**：实际运行中，引擎配置和应用配置存在大量字段重叠。例如「左右手模式」既影响引擎的按键布局计算，又影响 UI 的主题呈现。两套配置需要手动同步，容易出现状态不一致——应用侧改了配置但引擎侧没更新，或引擎侧状态变了但应用侧不知道。合并后通过 `ImeConfig` 统一作为引擎的运行时状态，`EngineConfig` 和 `UiConfig` 嵌套隔离既保持了逻辑上的清晰分离，又避免了同步问题。
 
-讨论了各模块的包名结构，最终确定：
+**结论**：合并。两套配置的同步负担是真实存在的问题，而嵌套隔离可以在合并后仍保持逻辑上的清晰。对于仅使用引擎库的第三方，只需关注 `EngineConfig` 即可。
 
-- **各模块顶级包名始终为 `org.crazydan.studio.app.ime.kuaizi`**
-- **:app 模块不加子模块名**，直接使用顶级包名 `org.crazydan.studio.app.ime.kuaizi`
-- :ime-engine 和 :ime-ui 子模块可以在顶级包名下有自己的子包（如 `.engine`、`.ui`）
-- 此决策消除了原先 :app 模块可能使用 `.app.` 子包的歧义
+### 2. 运行时修改与持久化配置谁优先？
 
-### 3. ImeConfig 配置统一与运行时优先语义
+当用户通过键盘 UI 临时切换了左右手模式（运行时修改），但同时应用侧的 DataStore 中存储的还是旧的配置，这两者谁优先？
 
-这是讨论中最核心的架构决策，涉及多个方面：
+**方案 A：持久化优先**：每次 DataStore 变更都覆盖运行时状态。问题：用户的临时操作会被立即覆盖，体验很差。例如用户正在单手模式下打字，DataStore 的同步更新会将配置重置回双手模式。
 
-- **ImeEngineConfig → ImeConfig**：重命名并合并原 `ImeEngineConfig`（引擎配置）与 :app 的 `Config`（应用配置）为统一的 `ImeConfig`
-- **EngineConfig + UiConfig 嵌套隔离**：`ImeConfig` 同时包含引擎配置和 UI 配置，通过嵌套 data class 明确隔离，方便第三方按需使用
-- **运行时修改始终优先于应用侧配置**：通过键盘 UI 进行的临时修改（如临时切换左右手模式）始终优先于应用侧持久化配置，直到应用重启
-- **重启时从持久化配置重新初始化**：重启后运行时覆盖失效，ImeConfig 根据持久化配置重新初始化
-- **runtimeOverrides 记录**：`ImeConfig.runtimeOverrides: Set<ConfigField>` 记录被运行时覆盖的字段，持久化同步时跳过这些字段
+**方案 B：运行时优先，直到下次启动**：运行时修改始终优先于持久化配置，只有应用重启时才从持久化配置重新初始化。问题：用户可能忘记自己临时改过配置，重启后发现配置「回退」了，感到困惑。
 
-### 4. :app 模块定位
+**方案 C：运行时优先，并自动回写持久化**：运行时修改优先，同时自动将修改写回 DataStore。问题：对于「临时切换」场景，用户可能不希望临时操作影响持久化配置（比如借给别人用时临时切换左手模式，但不希望自己的默认配置被改掉）。
 
-明确了 :app 模块在三层库架构中的定位：
+分析后认为方案 B 最合理。运行时优先确保用户意图不被覆盖，重启重置则提供了一个明确的「恢复出厂」时机。`runtimeOverrides` 字段记录被运行时覆盖的字段，让持久化同步知道哪些字段应该跳过。对于确实希望持久化的场景，用户可以在设置页面修改（设置页面的修改同时做持久化和运行时更新），这与临时切换是不同的交互路径，语义清晰。
 
-- **视为对 :ime-engine、:ime-ui 库的使用特例**，地位与第三方应用相同
-- **直接使用 UI 库的 ImeViewModel**，不继承也不扩展
-- **配置通过 ImeConfig 与引擎交互**，不与 UI 库 ViewModel 耦合
-- 配置持久化（DataStore）和 InputConnection 桥接等平台特定职责由 :app 中的独立组件承担
+### 3. 字段命名：肯定式 vs 否定式
 
-### 5. 全文档审查
+配置字段应使用肯定式（`keyAnimationEnabled = true`）还是否定式（`disableKeyAnimation = false`）？
 
-用户要求检查全部 14 个设计文档，处理冲突内容、合并重复内容、移除冗余内容、确保内容准确清晰且无歧义。审查分三轮执行：
+否定式的问题在于阅读时需要双重否定才能理解含义：`disableKeyAnimation = false` 意为「不禁用按键动画」，即「启用按键动画」。当配置项较多时，双重否定增加认知负担。此外，UI 层的开关控件天然对应肯定式语义（Switch 开 = 启用），否定式字段需要反转映射，增加了出错概率。
 
-- **第1轮**：修正 `SwitchIME` → `SwitchIme`、:app 包名、日志配置命名、920 映射表字段不一致、920 配置项清单字段名（4 文档 5 问题）
-- **第2轮**：ImeConfig.UiConfig 8 个否定式字段统一为 `*Enabled` 肯定式命名；920 添加触觉反馈设置项；FingerOverlayState 合并到 GestureFeedbackState.fingerIndicator；910 包名确认（7 文档 9 问题）
-- **第3轮**：最终确认，修复 930 代码组织表中 FingerOverlayState 残留引用（1 文档 1 问题）
+统一为肯定式后，`keyAnimationEnabled = true` 直接表达「按键动画已启用」，与 UI 开关语义一致，映射关系也从「反转映射」简化为「直接映射」。
 
-### 6. 字典数据库方案
+### 4. :app 是否应继承 ImeViewModel？
 
-确认现阶段采用 Room 框架作为字典数据库方案，后续视情况决定是否更换。
+如果 :app 继承 ImeViewModel，可以方便地添加 InputConnection 桥接和配置持久化逻辑。但这会导致 :app 与 :ime-ui 库的 ViewModel 实现耦合，破坏库的可替换性——第三方应用无法用同样的方式继承 ImeViewModel（因为 :app 的 InputConnection 桥接是系统 IME 特有的）。
 
-### 7. README.md 审查与修改
+另一种方案是 :app 不继承 ImeViewModel，而是通过 ImeConfig 与引擎交互，配置持久化由独立组件承担。这样 :app 在库使用方式上与第三方应用完全一致——直接使用 UI 库的 ViewModel，通过 ImeConfig 控制引擎行为。InputConnection 桥接等平台特定职责由 :app 中的独立组件处理，不污染 ViewModel 的职责。
 
-将 README.md 纳入审查范围，发现并修复：
+后者更符合「:app 是库的使用特例」的定位，保持了库的通用性和可替换性。
 
-- `IMEIntent` → `ImeIntent`（命名规范）
-- `IMEService` → `ImeService`（命名规范）
-- 分层架构图未体现三层库归属 → 更新为标注 :app/:ime-ui/:ime-engine 归属
-- 缺少三层库架构描述 → 新增「三层库架构」小节，补充 ImeConfig 统一配置说明
-- 标题去掉「Kotlin 重构版」标注 → `筷字输入法 Android 客户端`
+### 5. StandardKeyboard 是否需要重命名？
 
-### 8. 测试文档体系
+按照 `IME`→`Ime` 的命名规范，`StandardKeyboard` 是否应改为 `StandardImeKeyboard`？
 
-用户要求补充测试文档目录，制定测试用例编写规范和模版，核心要求：
-
-- **只能由软件验收员编写和更新单元测试**
-- **验证测试用例是否真正通过**
-
-基于此建立了完整的测试文档体系，包括索引、编写规范和模版。
-
----
-
-## 结论与决策
-
-| # | 决策 | 说明 |
-|---|------|------|
-| 1 | 命名规范 | 不以 `Kuaizi` 作类名前缀；公共 API 统一 `Ime` 前缀；`IME`→`Ime`；StandardKeyboard 不变；发布包名 `Kuaizi_IME` 例外 |
-| 2 | 包名规范 | 各模块顶级包名 `org.crazydan.studio.app.ime.kuaizi`；:app 不加子模块名 |
-| 3 | ImeConfig 统一配置 | 合并 ImeEngineConfig 和 Config；EngineConfig+UiConfig 嵌套隔离；运行时修改始终优先于持久化，直到重启重新初始化 |
-| 4 | :app 模块定位 | 库使用特例；直接用 ImeViewModel 不继承；配置通过 ImeConfig 交互 |
-| 5 | 字典数据库 | 现阶段采用 Room 框架 |
-| 6 | 全文档审查完成 | 3 轮审查共修改 8 个文档、修复 15 个问题，文档间一致性已确认 |
-| 7 | 测试文档体系 | 建立测试目录和编写规范；验收员专属编写权限；测试必须真正通过 |
+讨论认为 `StandardKeyboard` 是 Compose 标准键盘 Composable 组件的既定命名，`Standard` 已表达「标准输入法键盘」的含义，添加 `Ime` 前缀反而冗余（`StandardImeKeyboard` 读起来不如 `StandardKeyboard` 自然）。且该名称在代码中被广泛引用，重命名带来的迁移成本大于收益。
 
 ---
 
@@ -101,6 +62,5 @@
 
 | # | 事项 | 说明 |
 |---|------|------|
-| 1 | InputPanel 手势检测性能 | 需原型阶段验证，全屏透明层在高频滑行输入时的性能表现 |
-| 2 | Compose 在 IME 中的性能 | 需原型阶段验证，Compose 在 InputMethodService 中的内存占用和渲染帧率 |
-| 3 | 测试用例编写 | 9 个测试文档（100/160/200/300/500/600/800/900/930）待验收员编写具体用例 |
+| 1 | InputPanel 手势检测性能 | 全屏透明层在高频滑行输入时的性能表现需原型验证 |
+| 2 | Compose 在 IME 中的性能 | Compose 在 InputMethodService 中的内存和帧率需原型验证 |

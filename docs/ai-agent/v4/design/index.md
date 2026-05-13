@@ -28,16 +28,5 @@
 
 ## 待定事项
 
-1. ~~**ImeConfig 与 Config 的职责边界**~~：✅ 已解决。`ImeEngineConfig` 重命名为 `ImeConfig`，同时包含引擎配置（`EngineConfig`）和 UI 配置（`UiConfig`），二者明确隔离。原 `:app` 模块的 `Config` data class 已合并到 `ImeConfig.UiConfig`，不再需要独立的 `Config` 和两套配置的同步逻辑
-2. ~~**ImeState.config 的实际类型**~~：✅ 已解决。`ImeState.config` 统一为 `ImeConfig`，包含完整的引擎配置和 UI 配置。UI 侧通过 `config.ui` 访问 UI 配置，引擎侧通过 `config.engine` 访问引擎配置
-3. ~~**字典数据库方案**~~：✅ 已决定。现阶段直接采用 Room 框架，后续视情况决定是否更换方案（文档 000 第 5.5 节、文档 300 第 3.2 节）
-4. ~~**ImeViewModel 在 :app 模块中的继承方式**~~：✅ 已解决。`:app` 模块直接使用 UI 库的 `ImeViewModel`，不继承也不扩展。配置持久化和 InputConnection 桥接等平台特定职责由 `:app` 中的独立组件承担（文档 160 第 8.4 节）
-5. **InputPanel 手势检测的性能**：InputPanel 作为全屏透明层拦截所有触摸事件，在高频滑行输入时的性能表现需要在原型阶段验证（文档 000 第 7 节）
-6. **Compose 在 IME 环境中的性能**：Compose 在 InputMethodService 中的内存占用和渲染帧率需要在原型阶段验证，必要时降级为 View（文档 400 第 7 节）
-7. ~~**ImeConfig 运行时覆盖的精确语义**~~：✅ 已解决。`ImeConfig` 在运行时的修改始终优先于应用侧配置，直到应用重启。重启时，`ImeConfig` 根据持久化配置进行初始化。`ImeConfig.runtimeOverrides` 记录被运行时覆盖的字段，持久化同步时跳过这些字段（文档 160 第 4.2 节、文档 500 第 3.1 节）
-8. ~~**:app 模块的包结构**~~：✅ 已决定。:app 模块不加子模块名，直接使用顶级包名 `org.crazydan.studio.app.ime.kuaizi`（文档 160 第 3.1 节）
-9. ~~**StandardKeyboard 命名**~~：✅ 已决定。StandardKeyboard 保持命名不变，不重命名为 ImeKeyboard 或类似名称
-10. ~~**FingerOverlay 与 GestureFeedbackState 的手指指示器职责边界**~~：✅ 已解决。`FingerOverlayState`（文档 930）已合并到 `GestureFeedbackState.fingerIndicator`（文档 150），`InputActionPlayer` 直接通过 `feedbackState.setFingerIndicator()` 驱动手指指示器，`FeedbackPanel` 在配置了 `FeedbackElementType.FingerIndicator` 时自动渲染。不再存在独立的 `FingerOverlayState`（文档 150 第 4.3 节、文档 930 第 4.2 节）
-11. ~~**ConfigBackupEntry 与 ImeConfig 的映射**~~：✅ 已解决。文档 800 的 `ConfigBackupEntry` 已重构为嵌套结构，与 `ImeConfig` 的 `EngineConfig` 和 `UiConfig` 对齐（文档 800 第 3.2 节）
-12. ~~**910 UI 测试工具的包名一致性**~~：✅ 已确认。文档 910 的 Lint 规则使用正确包名 `org.crazydan.studio.app.ime.kuaizi.uitest.`（无 `.app.` 子模块名），实现时只需遵循文档中的包名约定即可
-13. ~~**ImeConfig.UiConfig 字段命名风格统一**~~：✅ 已解决。所有字段统一使用肯定式命名（`*Enabled` 后缀），移除了 `disable*` 和 `enable*` 前缀。具体变更：`disableKeyAnimation`→`keyAnimationEnabled`、`disableKeyPopupTips`→`keyPopupTipsEnabled`、`disableGestureSlippingTrail`→`gestureSlippingTrailEnabled`、`disableClipPopupTips`→`clipPopupTipsEnabled`、`disableUserInputData`→`userInputDataEnabled`、`disableCandidatesPagingAudio`→`candidatesPagingAudioEnabled`、`enableCandidateVariantFirst`→`candidateVariantFirstEnabled`、`enableLatinUsePinyinKeysInXPad`→`latinUsePinyinKeysInXPadEnabled`。默认值同步调整为肯定式语义（如 `keyAnimationEnabled = true` 替代 `disableKeyAnimation = false`）（文档 160、500、800、920）
+1. **InputPanel 手势检测的性能**：InputPanel 作为全屏透明层拦截所有触摸事件，在高频滑行输入时的性能表现需要在原型阶段验证（文档 000 第 7 节）
+2. **Compose 在 IME 环境中的性能**：Compose 在 InputMethodService 中的内存占用和渲染帧率需要在原型阶段验证，必要时降级为 View（文档 400 第 7 节）

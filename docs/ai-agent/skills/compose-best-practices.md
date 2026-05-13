@@ -201,15 +201,15 @@ Text(text = htmlContent)
 ### 3.1 InputMethodService 与 Compose 的桥接
 
 ```kotlin
-class KuaiziIMEService : InputMethodService() {
+class ImeService : InputMethodService() {
     private var composeView: ComposeView? = null
 
     override fun onCreateInputView(): View {
         return ComposeView(this).also { composeView = it }.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                KuaiziIMETheme {
-                    IMEScreen()
+                ImeTheme {
+                    KeyboardScreen()
                 }
             }
         }
@@ -221,27 +221,27 @@ class KuaiziIMEService : InputMethodService() {
 
 ```kotlin
 // State: 不可变状态
-data class IMEState(
+data class ImeState(
     val keyboardType: KeyboardType = KeyboardType.Pinyin,
     val inputState: InputState = InputState(),
     val candidates: List<Candidate> = emptyList(),
-    val config: Config = Config(),
+    val config: ImeConfig = ImeConfig(),
 )
 
 // Intent: 用户意图
-sealed class IMEIntent {
-    data class KeyPressed(val key: InputKey) : IMEIntent()
-    data class CandidateSelected(val candidate: Candidate) : IMEIntent()
-    data class ConfigChanged(val config: Config) : IMEIntent()
-    object SwitchKeyboard : IMEIntent()
+sealed class ImeIntent {
+    data class KeyPressed(val key: InputKey) : ImeIntent()
+    data class CandidateSelected(val candidate: Candidate) : ImeIntent()
+    data class ConfigChanged(val config: ImeConfig) : ImeIntent()
+    object SwitchKeyboard : ImeIntent()
 }
 
 // ViewModel
-class IMEViewModel : ViewModel() {
-    private val _state = MutableStateFlow(IMEState())
-    val state: StateFlow<IMEState> = _state.asStateFlow()
+class ImeViewModel : ViewModel() {
+    private val _state = MutableStateFlow(ImeState())
+    val state: StateFlow<ImeState> = _state.asStateFlow()
 
-    fun handleIntent(intent: IMEIntent) {
+    fun handleIntent(intent: ImeIntent) {
         _state.update { current ->
             reduce(current, intent)
         }
@@ -289,24 +289,24 @@ fun KeyboardView(
 ```kotlin
 // ✅ 推荐：使用 remember 和 derivedStateOf 减少重组
 @Composable
-fun CandidateBar(candidates: List<Candidate>) {
-    val displayCandidates = remember(candidates) {
-        candidates.take(MAX_VISIBLE)
+fun ItemList(items: List<Item>) {
+    val displayItems = remember(items) {
+        items.take(MAX_VISIBLE)
     }
 
     LazyRow {
-        items(displayCandidates, key = { it.id }) { candidate ->
-            CandidateItem(candidate)
+        items(displayItems, key = { it.id }) { item ->
+            ItemView(item)
         }
     }
 }
 
 // ❌ 避免：每次重组都做计算
 @Composable
-fun CandidateBar(candidates: List<Candidate>) {
+fun ItemList(items: List<Item>) {
     LazyRow {
-        items(candidates.take(MAX_VISIBLE)) { candidate -> // 每次重组都创建新列表
-            CandidateItem(candidate)
+        items(items.take(MAX_VISIBLE)) { item -> // 每次重组都创建新列表
+            ItemView(item)
         }
     }
 }
@@ -330,7 +330,7 @@ LazyVerticalGrid(
 ```kotlin
 // ✅ 推荐：Lambda 不捕获可变状态
 KeyboardView(
-    onKeyPress = { key -> viewModel.handleIntent(IMEIntent.KeyPressed(key)) },
+    onKeyPress = { key -> viewModel.handleIntent(ImeIntent.KeyPressed(key)) },
 )
 
 // ❌ 避免：Lambda 捕获频繁变化的 state
@@ -349,7 +349,7 @@ KeyboardView(
 ### 5.1 主题定义
 
 ```kotlin
-data class IMEColors(
+data class ImeColors(
     val keyBackground: Color,
     val keyForeground: Color,
     val keyPressedBackground: Color,
@@ -360,24 +360,24 @@ data class IMEColors(
     // ...
 )
 
-data class IMETheme(
-    val colors: IMEColors,
-    val typography: IMETypography,
-    val shapes: IMEShapes,
+data class ImeTheme(
+    val colors: ImeColors,
+    val typography: ImeTypography,
+    val shapes: ImeShapes,
 )
 
-val LocalIMETheme = compositionLocalOf<IMETheme> { error("No IMETheme provided") }
+val LocalImeColors = compositionLocalOf<ImeColors> { error("No ImeColors provided") }
 ```
 
 ### 5.2 跟随系统主题
 
 ```kotlin
 @Composable
-fun KuaiziIMETheme(content: @Composable () -> Unit) {
+fun ImeTheme(content: @Composable () -> Unit) {
     val isDark = isSystemInDarkTheme()
-    val theme = if (isDark) darkIMETheme else lightIMETheme
+    val theme = if (isDark) darkImeTheme else lightImeTheme
 
-    CompositionLocalProvider(LocalIMETheme provides theme) {
+    CompositionLocalProvider(LocalImeColors provides theme) {
         content()
     }
 }
@@ -434,7 +434,7 @@ Modifier.pointerInput(Unit) {
 IME 中的 ComposeView 需要特别注意内存管理，因为 InputMethodService 的生命周期与普通 Activity 不同：
 
 ```kotlin
-class KuaiziIMEService : InputMethodService() {
+class ImeService : InputMethodService() {
     override fun onCreateInputView(): View {
         return ComposeView(this).apply {
             // ✅ 关键：设置正确的 Composition 策略
@@ -442,8 +442,8 @@ class KuaiziIMEService : InputMethodService() {
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
             )
             setContent {
-                KuaiziIMETheme {
-                    IMEScreen()
+                ImeTheme {
+                    KeyboardScreen()
                 }
             }
         }

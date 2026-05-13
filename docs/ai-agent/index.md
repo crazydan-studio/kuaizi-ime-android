@@ -83,8 +83,8 @@ docs/ai-agent/
 
 - `design/`、`plans/`、`discussions/` 目录下的文档以 **三位数字** 开头并根据内容确定文件名
   - 示例：`000-architecture-overview.md`、`100-keyboard-state-machine.md`
-- `logs/` 目录下的文档按 **年月** 组织子目录，以 **日期** 命名
-  - 示例：`2026/05/12.md`
+- `logs/` 目录下的文档按 **年** 组织子目录，以 **月-日** 命名（月和日采用两位数字）
+  - 示例：`2026/05-12.md`
 - `bugs/` 目录下的文档以 **三位数字** 开头和缺陷简要描述命名
   - 示例：`001-input-list-concurrent-modification.md`
 
