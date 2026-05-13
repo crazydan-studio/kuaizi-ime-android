@@ -555,18 +555,18 @@ val UITestTool.displayName: String
 ```kotlin
 // main 源集
 @Composable
-fun ImeRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
+fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
     KeyboardTheme(themeType = state.config.ui.themeType) {
-        ImeMainScreen(state, intentHandler)
+        InputScreen(state, intentHandler)
     }
 }
 
 // debug 源集
 @Composable
-fun ImeRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
+fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
     KeyboardTheme(themeType = state.config.ui.themeType) {
         Box {
-            ImeMainScreen(state, intentHandler)
+            InputScreen(state, intentHandler)
 
             // UI 测试覆盖层（仅 debug 构建存在）
             val overlay = remember { UITestOverlay.create() }
@@ -579,7 +579,7 @@ fun ImeRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
 }
 ```
 
-通过同一函数签名 `ImeRoot` 在不同源集中的不同实现，debug 构建自动包含 UI 测试覆盖层，release 构建不含任何覆盖层代码。这种方式无需在 `main` 源集中使用 `if (BuildConfig.DEBUG)` 判断，确保 release 代码路径完全干净。
+通过同一函数签名 `InputRoot` 在不同源集中的不同实现，debug 构建自动包含 UI 测试覆盖层，release 构建不含任何覆盖层代码。这种方式无需在 `main` 源集中使用 `if (BuildConfig.DEBUG)` 判断，确保 release 代码路径完全干净。
 
 ---
 
@@ -644,7 +644,7 @@ code/app/src/test/
         ├── candidate/
         │   └── CandidatePanelScreenshotTest.kt
         ├── input/
-        │   └── InputBarScreenshotTest.kt
+        │   └── InputListPanelScreenshotTest.kt
         └── theme/
             ├── LightThemeScreenshotTest.kt
             └── NightThemeScreenshotTest.kt
@@ -661,7 +661,7 @@ class PinyinKeyboardScreenshotTest {
     fun pinyinKeyboardIdle() {
         paparazzi.snapshot {
             KeyboardTheme(themeType = ThemeType.Light) {
-                KeyboardScreen(
+                InputScreen(
                     state = ImeState(
                         keyboardType = KeyboardType.Pinyin,
                         keyboardState = KeyboardState.Idle,
@@ -676,10 +676,10 @@ class PinyinKeyboardScreenshotTest {
     fun pinyinKeyboardWithCandidates() {
         paparazzi.snapshot {
             KeyboardTheme(themeType = ThemeType.Light) {
-                KeyboardScreen(
+                InputScreen(
                     state = ImeState(
                         keyboardType = KeyboardType.Pinyin,
-                        keyboardState = KeyboardState.InputWaiting(
+                        keyboardState = KeyboardState.PinyinInput.Waiting(
                             inputChars = listOf(charInput('n'), charInput('i')),
                             candidates = testCandidates,
                         ),

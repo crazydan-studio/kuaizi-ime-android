@@ -1214,7 +1214,7 @@ class IMEService : InputMethodService() {
         }
 
         return ComposeView(this).apply {
-            setContent { ImeScreen(viewModel = viewModel) }
+            setContent { InputScreen(viewModel = viewModel) }
         }
     }
 

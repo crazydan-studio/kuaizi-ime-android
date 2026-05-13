@@ -42,7 +42,7 @@ IMEditor → InputMsg → IMEService → IMEditorView → View
 
 ```kotlin
 @Composable
-fun ImeScreen(viewModel: KeyboardViewModel = viewModel()) {
+fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     KeyboardTheme(themeType = state.config.ui.themeType) {
@@ -94,7 +94,7 @@ class IMEService : InputMethodService() {
                 val viewModel: KeyboardViewModel = viewModel(
                     factory = KeyboardViewModelFactory(this@IMEService)
                 )
-                ImeScreen(viewModel = viewModel)
+                InputScreen(viewModel = viewModel)
             }
         }
     }
@@ -475,7 +475,7 @@ fun SettingsScreen(
 
 | Java UI 组件 | Compose 对应 | 改进说明 |
 |-------------|-------------|---------|
-| `MainboardView` | `ImeScreen` 顶层组合 | 声明式布局 |
+| `MainboardView` | `InputScreen` 顶层组合 | 声明式布局 |
 | `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyboard` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
 | `KeyboardViewLayoutManager` | Compose `Row`/`Column` + `Modifier.weight` | 移除自定义 LayoutManager |
 | `KeyboardViewGestureListener` | `Modifier.pointerInput` | Compose 手势 API |

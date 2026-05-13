@@ -1004,7 +1004,7 @@ class ActionScriptLoader(private val context: Context) {
  */
 @Composable
 fun ExerciseScreen(
-    viewModel: InputPracticeViewModel,
+    viewModel: ExerciseViewModel,
     onBack: () -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
@@ -1128,13 +1128,13 @@ fun InputMethodSelector(
  *
  * 管理练习状态、编译脚本、控制播放。
  */
-class InputPracticeViewModel(
+class ExerciseViewModel(
     private val compiler: ActionScriptCompiler,
     private val imeViewModel: KeyboardViewModel,
     private val positionResolver: KeyPositionResolver,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(InputPracticeState())
-    val state: StateFlow<InputPracticeState> = _state.asStateFlow()
+    private val _state = MutableStateFlow(ExerciseState())
+    val state: StateFlow<ExerciseState> = _state.asStateFlow()
 
     val fingerOverlayState = gestureFeedbackState // 使用统一的 GestureFeedbackState
     val actionPlayer = InputActionPlayer(
@@ -1165,7 +1165,7 @@ class InputPracticeViewModel(
     }
 }
 
-data class InputPracticeState(
+data class ExerciseState(
     val targetText: String = "",
     val inputMethod: InputMethod = InputMethod.Swipe,
     val inputProgress: Int = 0,

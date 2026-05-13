@@ -8,17 +8,18 @@
 
 ### 1.1 包命名
 
-- 格式：`org.crazydan.studio.app.ime.kuaizi.<module>.<submodule>`
+- 格式：`org.crazydan.studio.app.ime.kuaizi.<module>.<submodule>`（:app 模块无子模块名，直接使用顶级包名）
 - 全小写，不使用下划线
 - 模块划分与功能对应，不按技术层划分
 
 ```
-org.crazydan.studio.app.ime.kuaizi.core.key
-org.crazydan.studio.app.ime.kuaizi.core.input
-org.crazydan.studio.app.ime.kuaizi.core.keyboard
-org.crazydan.studio.app.ime.kuaizi.core.dict
+org.crazydan.studio.app.ime.kuaizi.engine.api
+org.crazydan.studio.app.ime.kuaizi.engine.domain
+org.crazydan.studio.app.ime.kuaizi.engine.dict
+org.crazydan.studio.app.ime.kuaizi.ui.theme
 org.crazydan.studio.app.ime.kuaizi.ui.keyboard
-org.crazydan.studio.app.ime.kuaizi.ui.settings
+org.crazydan.studio.app.ime.kuaizi.ui.integration
+org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 ```
 
 ### 1.2 类命名
@@ -118,7 +119,7 @@ fun processInput(
  */
 class PinyinKeyboard(
     private val dict: PinyinDict,
-    private val config: Config,
+    private val config: ImeConfig,
 ) {
     /**
      * 处理用户按键消息，更新内部状态并返回输入消息。

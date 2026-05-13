@@ -82,7 +82,7 @@ code/
 ├── ime-ui/src/test/                        ← :ime-ui 库单元测试
 │   └── org/crazydan/studio/app/ime/kuaizi/ui/
 │       └── theme/                          ← 主题系统测试
-│           └── ImeThemeTest.kt
+│           └── KeyboardThemeTest.kt
 │
 └── app/src/test/                           ← :app 模块单元测试
     └── org/crazydan/studio/app/ime/kuaizi/

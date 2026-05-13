@@ -134,7 +134,7 @@ sealed class ImeIntent {
     data class KeyLongPressed(val key: InputKey) : ImeIntent()
 
     // 候选选择
-    data class CandidateSelected(val candidate: Candidate) : ImeIntent()
+    data class CandidateSelected(val candidate: InputWord) : ImeIntent()
     data class CandidatePaged(val direction: PageDirection) : ImeIntent()
 
     // 键盘切换

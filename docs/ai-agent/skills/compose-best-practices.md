@@ -208,7 +208,7 @@ class IMEService : InputMethodService() {
         return ComposeView(this).also { composeView = it }.apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                KeyboardTheme {
+                KeyboardTheme(themeType = ThemeType.FollowSystem) {
                     InputScreen()
                 }
             }
@@ -219,24 +219,33 @@ class IMEService : InputMethodService() {
 
 ### 3.2 MVI 状态管理
 
+> **注意**：以下为简化示例，完整定义见文档 000 第 3.3 节和文档 160 第 4 节。
+
 ```kotlin
-// State: 不可变状态
+// State: 不可变状态（完整定义见文档 160 第 8 节）
 data class ImeState(
     val keyboardType: KeyboardType = KeyboardType.Pinyin,
-    val inputState: InputState = InputState(),
-    val candidates: List<Candidate> = emptyList(),
+    val keyboardState: KeyboardState = KeyboardState.Idle,
+    val keyGrid: List<List<InputKey>> = emptyList(),
+    val inputList: InputListState = InputListState(),
+    val candidates: CandidateState = CandidateState(),
+    val clipboard: ClipboardState = ClipboardState(),
+    val favorites: FavoritesState = FavoritesState(),
     val config: ImeConfig = ImeConfig(),
 )
 
-// Intent: 用户意图
+// Intent: 用户意图（完整定义见文档 160 第 4 节）
 sealed class ImeIntent {
-    data class KeyPressed(val key: InputKey) : ImeIntent()
-    data class CandidateSelected(val candidate: Candidate) : ImeIntent()
+    data class KeyPressed(val key: InputKey, val gesture: KeyGesture) : ImeIntent()
+    data class CandidateSelected(val candidate: InputWord) : ImeIntent()
+    data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
     data class ConfigChanged(val config: ImeConfig) : ImeIntent()
-    object SwitchKeyboard : ImeIntent()
+    data object CommitInput : ImeIntent()
+    // ... 更多 Intent 见文档 160
 }
 
 // ViewModel
+```
 class KeyboardViewModel : ViewModel() {
     private val _state = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()
@@ -348,36 +357,66 @@ KeyboardPanel(
 
 ### 5.1 主题定义
 
+> **注意**：以下为简化示例，完整主题系统设计见文档 500 第 4 节。v4 主题系统采用 `KeyboardColors` data class + `KeyboardThemes` 预置主题 + `KeyboardTheme` Composable 的三层结构，与 Material3 的 `MaterialTheme` 等系统命名区分。
+
 ```kotlin
 data class KeyboardColors(
     val keyBackground: Color,
     val keyForeground: Color,
     val keyPressedBackground: Color,
-    val candidateBackground: Color,
-    val candidateForeground: Color,
+    val keyActiveBackground: Color,
+    val keyDisabledBackground: Color,
+    val keyBorder: Color,
+    val candidateBarBackground: Color,
+    val candidateChipBackground: Color,
+    val candidateChipForeground: Color,
+    val candidateChipActiveBackground: Color,
     val inputBarBackground: Color,
     val inputBarForeground: Color,
-    // ...
+    val inputBarCursorColor: Color,
+    val xPadBackground: Color,
+    val xPadZoneBorder: Color,
+    val xPadZoneForeground: Color,
+    val xPadActiveZoneBackground: Color,
+    val background: Color,
+    val foreground: Color,
+    val divider: Color,
 )
 
-data class KeyboardTheme(
-    val colors: KeyboardColors,
-    val typography: KeyboardTypography,
-    val shapes: KeyboardShapes,
-)
+object KeyboardThemes {
+    val Light = KeyboardColors(
+        keyBackground = Color(0xFFE8E8E8),
+        keyForeground = Color(0xFF333333),
+        // ...
+    )
 
-val LocalKeyboardTheme = compositionLocalOf<KeyboardTheme> { error("No KeyboardTheme provided") }
+    val Night = KeyboardColors(
+        keyBackground = Color(0xFF333333),
+        keyForeground = Color(0xFFE8E8E8),
+        // ...
+    )
+}
+
+val LocalKeyboardColors = compositionLocalOf { KeyboardThemes.Light }
 ```
 
 ### 5.2 跟随系统主题
 
 ```kotlin
 @Composable
-fun KeyboardTheme(content: @Composable () -> Unit) {
-    val isDark = isSystemInDarkTheme()
-    val theme = if (isDark) darkKeyboardTheme else lightKeyboardTheme
+fun KeyboardTheme(
+    themeType: ThemeType = ThemeType.FollowSystem,
+    content: @Composable () -> Unit,
+) {
+    val isDark = when (themeType) {
+        ThemeType.Light -> false
+        ThemeType.Night -> true
+        ThemeType.FollowSystem -> isSystemInDarkTheme()
+    }
 
-    CompositionLocalProvider(LocalKeyboardTheme provides theme) {
+    val colors = if (isDark) KeyboardThemes.Night else KeyboardThemes.Light
+
+    CompositionLocalProvider(LocalKeyboardColors provides colors) {
         content()
     }
 }
@@ -442,7 +481,7 @@ class IMEService : InputMethodService() {
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
             )
             setContent {
-                KeyboardTheme {
+                KeyboardTheme(themeType = ThemeType.FollowSystem) {
                     InputScreen()
                 }
             }
