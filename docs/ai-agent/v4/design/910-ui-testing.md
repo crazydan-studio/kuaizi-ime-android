@@ -550,13 +550,13 @@ val UITestTool.displayName: String
 
 ### 5.2 集成入口
 
-在 `ImeService` 的 ComposeView 层次中，debug 构建额外包裹 UI 测试覆盖层：
+在 `IMEService` 的 ComposeView 层次中，debug 构建额外包裹 UI 测试覆盖层：
 
 ```kotlin
 // main 源集
 @Composable
 fun ImeRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
-    ImeTheme(themeType = state.config.ui.themeType) {
+    KeyboardTheme(themeType = state.config.ui.themeType) {
         ImeMainScreen(state, intentHandler)
     }
 }
@@ -564,7 +564,7 @@ fun ImeRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
 // debug 源集
 @Composable
 fun ImeRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
-    ImeTheme(themeType = state.config.ui.themeType) {
+    KeyboardTheme(themeType = state.config.ui.themeType) {
         Box {
             ImeMainScreen(state, intentHandler)
 
@@ -660,7 +660,7 @@ class PinyinKeyboardScreenshotTest {
     @Test
     fun pinyinKeyboardIdle() {
         paparazzi.snapshot {
-            ImeTheme(themeType = ThemeType.Light) {
+            KeyboardTheme(themeType = ThemeType.Light) {
                 KeyboardScreen(
                     state = ImeState(
                         keyboardType = KeyboardType.Pinyin,
@@ -675,7 +675,7 @@ class PinyinKeyboardScreenshotTest {
     @Test
     fun pinyinKeyboardWithCandidates() {
         paparazzi.snapshot {
-            ImeTheme(themeType = ThemeType.Light) {
+            KeyboardTheme(themeType = ThemeType.Light) {
                 KeyboardScreen(
                     state = ImeState(
                         keyboardType = KeyboardType.Pinyin,

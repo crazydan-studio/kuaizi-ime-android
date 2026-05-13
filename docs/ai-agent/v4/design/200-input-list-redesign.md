@@ -269,7 +269,7 @@ Java 版本的 InputList 从主线程和异步字典回调线程同时访问：
 ### 4.2 v4 解决方案
 
 ```kotlin
-// ImeViewModel 的详细设计见文档 160 第 8.4 节
+// KeyboardViewModel 的详细设计见文档 160 第 8.4 节
 // UI 库版本：轻量桥接层，直接委托给 ImeEngine
 // :app 扩展版：增加 DataStore 配置持久化和 InputConnection 输出桥接
 

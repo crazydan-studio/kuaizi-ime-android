@@ -38,14 +38,14 @@ IMEditor → InputMsg → IMEService → IMEditorView → View
 
 ### 3.1 整体架构
 
-> **注意**：键盘区域的三层面板架构（InputPanel / FeedbackPanel / KeyPanel）详见文档 150。本节仅描述 Compose 迁移的组件对照，不重复三层面板的设计细节。
+> **注意**：键盘区域的三层面板架构（InputPanel / GestureFeedbackPanel / KeyPanel）详见文档 150。本节仅描述 Compose 迁移的组件对照，不重复三层面板的设计细节。
 
 ```kotlin
 @Composable
-fun ImeScreen(viewModel: ImeViewModel = viewModel()) {
+fun ImeScreen(viewModel: KeyboardViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    ImeTheme(themeType = state.config.ui.themeType) {
+    KeyboardTheme(themeType = state.config.ui.themeType) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // 候选项栏（浮动/固定）
             CandidateBar(
@@ -60,7 +60,7 @@ fun ImeScreen(viewModel: ImeViewModel = viewModel()) {
             )
 
             // 键盘区域（三层面板组合，详见文档 150）
-            ImeKeyboard(
+            KeyboardView(
                 engine = viewModel.engine,
             )
 
@@ -82,7 +82,7 @@ fun ImeScreen(viewModel: ImeViewModel = viewModel()) {
 ### 3.2 ComposeView 桥接
 
 ```kotlin
-class ImeService : InputMethodService() {
+class IMEService : InputMethodService() {
     private var composeView: ComposeView? = null
 
     override fun onCreateInputView(): View {
@@ -91,8 +91,8 @@ class ImeService : InputMethodService() {
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
             )
             setContent {
-                val viewModel: ImeViewModel = viewModel(
-                    factory = ImeViewModelFactory(this@ImeService)
+                val viewModel: KeyboardViewModel = viewModel(
+                    factory = KeyboardViewModelFactory(this@IMEService)
                 )
                 ImeScreen(viewModel = viewModel)
             }
@@ -109,7 +109,7 @@ class ImeService : InputMethodService() {
 
 ### 3.3 键盘视图
 
-> **注意**：键盘视图在 v4 中拆分为三层面板（详见文档 150）：KeyPanel（纯展示，不处理触摸）、InputPanel（透明手势层）、FeedbackPanel（透明反馈绘制层）。KeyPanel 中的 KeyView 不处理触摸事件，触摸由 InputPanel 统一拦截。以下仅展示 KeyPanel 中的按键渲染逻辑。
+> **注意**：键盘视图在 v4 中拆分为三层面板（详见文档 150）：KeyPanel（纯展示，不处理触摸）、InputPanel（透明手势层）、GestureFeedbackPanel（透明反馈绘制层）。KeyPanel 中的 KeyView 不处理触摸事件，触摸由 InputPanel 统一拦截。以下仅展示 KeyPanel 中的按键渲染逻辑。
 
 ```kotlin
 // KeyPanel：纯展示层，不处理触摸事件
@@ -133,18 +133,18 @@ fun KeyPanel(
 }
 ```
 
-完整的三层面板组合（InputPanel + FeedbackPanel + KeyPanel）由 `ImeKeyboard` 集成组件封装，详见文档 160 第 5.4 节。
+完整的三层面板组合（InputPanel + GestureFeedbackPanel + KeyPanel）由 `KeyboardView` 集成组件封装，详见文档 160 第 5.4 节。
 
 ### 3.4 按键视图
 
-> **注意**：KeyView 在 v4 中是纯展示组件，不处理触摸事件，也不绘制手势反馈。触摸由 InputPanel 统一拦截（详见文档 150），手势反馈由 FeedbackPanel 绘制。KeyView 仅渲染按键的常规状态（标签、背景、激活/禁用等持续性状态）。
+> **注意**：KeyView 在 v4 中是纯展示组件，不处理触摸事件，也不绘制手势反馈。触摸由 InputPanel 统一拦截（详见文档 150），手势反馈由 GestureFeedbackPanel 绘制。KeyView 仅渲染按键的常规状态（标签、背景、激活/禁用等持续性状态）。
 
 ```kotlin
 /**
  * 按键视图（纯展示，无触摸处理，无手势反馈）。
  *
  * 按键的"按下"视觉状态由 keyboardState 驱动（持续性状态），
- * 手势触发的临时高亮由 FeedbackPanel 绘制。
+ * 手势触发的临时高亮由 GestureFeedbackPanel 绘制。
  */
 @Composable
 fun KeyView(
@@ -348,7 +348,7 @@ Modifier.pointerInput(zones) {
 
 ## 5. 滑行输入手势
 
-> **注意**：v4 的滑行手势检测统一由 InputPanel 处理（详见文档 150 第 5 节），手势轨迹绘制由 FeedbackPanel 处理（详见文档 150 第 6 节）。InputPanel 是透明的手势拦截层，识别手势后输出 InputGesture；FeedbackPanel 是独立的透明绘制层，根据 GestureFeedbackState 绘制滑行轨迹、按键高亮等视觉反馈。以下仅列出 Compose 手势 API 的基本用法参考。
+> **注意**：v4 的滑行手势检测统一由 InputPanel 处理（详见文档 150 第 5 节），手势轨迹绘制由 GestureFeedbackPanel 处理（详见文档 150 第 6 节）。InputPanel 是透明的手势拦截层，识别手势后输出 InputGesture；GestureFeedbackPanel 是独立的透明绘制层，根据 GestureFeedbackState 绘制滑行轨迹、按键高亮等视觉反馈。以下仅列出 Compose 手势 API 的基本用法参考。
 
 ### 5.1 Compose 手势 API 参考
 
@@ -360,7 +360,7 @@ Modifier.pointerInput(keyPanelLayout, keyboardType) {
         // 根据 keyPanelLayout 查找触摸位置对应的按键
         // 识别手势类型（点击/长按/滑行/翻转）
         // 输出 InputGesture → ViewModel
-        // 同步更新 GestureFeedbackState → FeedbackPanel
+        // 同步更新 GestureFeedbackState → GestureFeedbackPanel
     }
 }
 ```
@@ -368,7 +368,7 @@ Modifier.pointerInput(keyPanelLayout, keyboardType) {
 ### 5.2 Compose Canvas 绘制参考
 
 ```kotlin
-// FeedbackPanel 中的轨迹绘制（详见文档 150 第 6.4 节）
+// GestureFeedbackPanel 中的轨迹绘制（详见文档 150 第 6.4 节）
 Canvas(modifier = modifier.fillMaxSize()) {
     if (touchTrailPoints.size >= 2) {
         val path = Path().apply {

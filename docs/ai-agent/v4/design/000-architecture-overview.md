@@ -66,16 +66,16 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Platform Layer  ← :app 模块               │
-│  ImeService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
+│  IMEService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
 │  配置持久化（DataStore）+ 设置页面 + 引导页面                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                      ViewModel Layer   ← :app 模块               │
-│  ImeViewModel（来自 :ime-ui）+ 配置持久化（独立）+ Output 桥接    │
+│  KeyboardViewModel（来自 :ime-ui）+ 配置持久化（独立）+ Output 桥接    │
 ├─────────────────────────────────────────────────────────────────┤
 │                         UI Layer      ← :ime-ui 库               │
-│  Compose 缺省 UI：InputPanel / KeyPanel / FeedbackPanel          │
-│  CandidateBar / InputBar / ImeEditText / ImeKeyboard          │
-│  ImeInputHost / 主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
+│  Compose 缺省 UI：InputPanel / KeyPanel / GestureFeedbackPanel          │
+│  CandidateBar / InputBar / EditorField / KeyboardView          │
+│  InputHostView / 主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
 │                       Domain Layer     ← :ime-engine 库          │
@@ -89,7 +89,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-> **注意**：`:ime-engine` 库模块和 `:ime-ui` 库模块的设计详见文档 160。v4 采用三层库架构：引擎库（`:ime-engine`，纯 Kotlin，Domain Layer + Data Layer）、UI 库（`:ime-ui`，Compose 缺省 UI，UI Layer）、应用模块（`:app`，Platform Layer + ViewModel Layer + 配置持久化 + 设置页面）。第三方应用可以引入 `:ime-engine` + `:ime-ui` 获得完整的输入法能力与缺省 UI，也可以仅引入 `:ime-engine` 自行实现 UI。库的配置通过 `ImeConfig`（含引擎配置 `EngineConfig` 和 UI 配置 `UiConfig` 的明确隔离）在代码中设置，不含配置持久化层；数据库层通过 `DictProvider` 接口支持外部替换；收藏、剪贴板等可选功能通过 `Feature` 标记按需禁用。`:app` 模块直接使用 UI 库的 `ImeViewModel`，不继承也不扩展，配置通过 `ImeConfig` 与引擎交互。
+> **注意**：`:ime-engine` 库模块和 `:ime-ui` 库模块的设计详见文档 160。v4 采用三层库架构：引擎库（`:ime-engine`，纯 Kotlin，Domain Layer + Data Layer）、UI 库（`:ime-ui`，Compose 缺省 UI，UI Layer）、应用模块（`:app`，Platform Layer + ViewModel Layer + 配置持久化 + 设置页面）。第三方应用可以引入 `:ime-engine` + `:ime-ui` 获得完整的输入法能力与缺省 UI，也可以仅引入 `:ime-engine` 自行实现 UI。库的配置通过 `ImeConfig`（含引擎配置 `EngineConfig` 和 UI 配置 `UiConfig` 的明确隔离）在代码中设置，不含配置持久化层；数据库层通过 `DictProvider` 接口支持外部替换；收藏、剪贴板等可选功能通过 `Feature` 标记按需禁用。`:app` 模块直接使用 UI 库的 `KeyboardViewModel`，不继承也不扩展，配置通过 `ImeConfig` 与引擎交互。
 
 ### 3.2 核心设计决策
 
@@ -118,7 +118,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
         ▼                                                  │                      │
 ┌──────────────┐                     按键面板               │                      │
 │  反馈面板     │                    KeyPanel                │                      │
-│FeedbackPanel │                   (纯展示)                 │                      │
+│GestureFeedbackPanel │                   (纯展示)                 │                      │
 │(透明绘制)    │                      ┌─────────────────────┘                      │
 └──────────────┘                      ←────────────────────────────────────────────┘
 ```
@@ -236,7 +236,7 @@ sealed class ImeIntent {
    ↓
 2. Compose 手势检测 → 生成 ImeIntent.KeyPressed
    ↓
-3. ImeViewModel.handleIntent(intent)
+3. KeyboardViewModel.handleIntent(intent)
    ↓
 4. reduce(state, intent)
    ├─ 更新 keyboardState（状态机转换）

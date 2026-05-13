@@ -478,8 +478,8 @@ object SwipePathInterpolator {
  * 本 Composable 渲染的手指指示器状态由 `GestureFeedbackState.fingerIndicator`
  * 驱动（定义在文档 150 第 4.3 节），而非独立的 `FingerOverlayState`。
  * `InputActionPlayer` 通过 `GestureFeedbackState.setFingerIndicator()` 更新状态，
- * `FeedbackPanel`（文档 150 第 6.3 节）在配置了 `FeedbackElementType.FingerIndicator`
- * 时自动渲染手指指示器。因此，本 Composable 是 `FeedbackPanel` 渲染逻辑的
+ * `GestureFeedbackPanel`（文档 150 第 6.3 节）在配置了 `FeedbackElementType.FingerIndicator`
+ * 时自动渲染手指指示器。因此，本 Composable 是 `GestureFeedbackPanel` 渲染逻辑的
  * 等价实现，二者共享同一状态源 `GestureFeedbackState.fingerIndicator`，
  * 不存在独立于 `GestureFeedbackState` 的 `FingerOverlayState`。
  */
@@ -623,7 +623,7 @@ fun KeyHighlightOverlay(
  * - 键盘布局变更后脚本不会失效
  */
 class InputActionPlayer(
-    private val viewModel: ImeViewModel,
+    private val viewModel: KeyboardViewModel,
     private val feedbackState: GestureFeedbackState,
     private val positionResolver: KeyPositionResolver,
     private val scope: CoroutineScope,
@@ -1130,7 +1130,7 @@ fun InputMethodSelector(
  */
 class InputPracticeViewModel(
     private val compiler: ActionScriptCompiler,
-    private val imeViewModel: ImeViewModel,
+    private val imeViewModel: KeyboardViewModel,
     private val positionResolver: KeyPositionResolver,
 ) : ViewModel() {
     private val _state = MutableStateFlow(InputPracticeState())
@@ -1297,7 +1297,7 @@ fun RecordButton(
  * 可在任何线程运行，不依赖 Compose UI 和坐标解析。
  */
 class ActionTestDriver(
-    private val viewModel: ImeViewModel,
+    private val viewModel: KeyboardViewModel,
 ) {
     private val results = mutableListOf<TestStepResult>()
 
@@ -1340,7 +1340,7 @@ data class TestStepResult(
 class PinyinInputActionTest {
     @Test
     fun `swipe input ni produces candidate 你`() {
-        val viewModel = ImeViewModel(/* ... */)
+        val viewModel = KeyboardViewModel(/* ... */)
         val compiler = ActionScriptCompiler(/* ... */)
 
         val script = compiler.compile("你", InputMethod.Swipe)

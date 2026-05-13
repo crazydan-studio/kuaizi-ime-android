@@ -325,7 +325,7 @@ fun KeyboardPreview(config: ImeConfig) {
                 .height(180.dp) // 缩小的键盘预览高度
                 .clip(RoundedCornerShape(8.dp)),
         ) {
-            ImeTheme(themeType = config.ui.themeType) {
+            KeyboardTheme(themeType = config.ui.themeType) {
                 // 使用真实键盘 Composable，但 scale 缩小
                 Box(modifier = Modifier.scale(0.5f).fillMaxSize()) {
                     StandardKeyboard(
