@@ -39,7 +39,7 @@ org.crazydan.studio.app.ime.kuaizi.ui.settings
 |------|------|------|
 | 普通函数 | camelCase | `lookupCandidate()`, `commitInput()` |
 | 返回 Boolean | `is`/`has`/`should`/`can` 前缀 | `isPinyinMode()`, `hasPendingInput()` |
-| Composable 函数 | PascalCase | `KeyboardView()`, `CandidateBar()` |
+| Composable 函数 | PascalCase | `KeyboardPanel()`, `CandidatePanel()` |
 | 工厂函数 | `of`/`from`/`create` | `fromSpell()`, `createContext()` |
 | DSL builder 函数 | 与目标类同名（小写） | `inputMsg { }`, `keyTable { }` |
 

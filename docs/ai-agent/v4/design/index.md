@@ -11,7 +11,7 @@
 | 000 | [架构总览](000-architecture-overview.md) | v4 整体架构设计，包括分层、消息流、技术选型和与 Java 版本的架构对比 |
 | 100 | [键盘状态机设计](100-keyboard-state-machine.md) | 键盘状态机重构，从继承链到组合模式，Sealed class 状态定义和转换规则 |
 | 150 | [输入面板、按键面板与反馈面板三层分离设计](150-input-key-panel-separation.md) | 输入手势、按键渲染与手势反馈三层分离：输入面板（透明手势层）接收手势识别为 InputGesture，按键面板纯展示（持续性状态渲染），反馈面板独立透明绘制（临时性手势反馈，支持多实例）；叠加布局模式；后续支持全屏输入模式 |
-| 160 | [IME 引擎库与 UI 库设计](160-ime-engine-library.md) | 三层库架构：引擎库 `:ime-engine`（纯 Kotlin，可独立使用）+ UI 库 `:ime-ui`（Compose 缺省 UI，对第三方应用开放）+ 应用模块 `:app`（IME 服务 + 设置）。引擎与 UI 完全分离，统一配置 `ImeConfig`（含 `EngineConfig` 引擎配置和 `UiConfig` UI 配置的明确隔离），DictProvider 接口支持替换内置 SQLite 实现，Feature 标记按需禁用收藏/剪贴板等功能；UI 库提供 EditorField、KeyboardView、InputHostView 等即插即用组件，第三方应用可直接使用缺省 UI 或自行替换；`:app` 直接使用 UI 库的 `KeyboardViewModel`，不继承也不扩展 |
+| 160 | [IME 引擎库与 UI 库设计](160-ime-engine-library.md) | 三层库架构：引擎库 `:ime-engine`（纯 Kotlin，可独立使用）+ UI 库 `:ime-ui`（Compose 缺省 UI，对第三方应用开放）+ 应用模块 `:app`（IME 服务 + 设置）。引擎与 UI 完全分离，统一配置 `ImeConfig`（含 `EngineConfig` 引擎配置和 `UiConfig` UI 配置的明确隔离），DictProvider 接口支持替换内置 SQLite 实现，Feature 标记按需禁用收藏/剪贴板等功能；UI 库提供 EditorField、KeyboardPanel、InputHostView 等即插即用组件，第三方应用可直接使用缺省 UI 或自行替换；`:app` 直接使用 UI 库的 `KeyboardViewModel`，不继承也不扩展 |
 | 200 | [输入列表重构设计](200-input-list-redesign.md) | InputList 重构，不可变数据模型、游标管理、线程安全改进 |
 | 300 | [字典系统重构设计](300-dict-system-redesign.md) | 字典系统重构，协程化、Room 数据库、升级策略 |
 | 400 | [UI Compose 迁移设计](400-ui-compose-migration.md) | UI 层从 View 到 Compose 的迁移方案、性能验证、IME 桥接 |
@@ -36,7 +36,7 @@
 6. **Compose 在 IME 环境中的性能**：Compose 在 InputMethodService 中的内存占用和渲染帧率需要在原型阶段验证，必要时降级为 View（文档 400 第 7 节）
 7. ~~**ImeConfig 运行时覆盖的精确语义**~~：✅ 已解决。`ImeConfig` 在运行时的修改始终优先于应用侧配置，直到应用重启。重启时，`ImeConfig` 根据持久化配置进行初始化。`ImeConfig.runtimeOverrides` 记录被运行时覆盖的字段，持久化同步时跳过这些字段（文档 160 第 4.2 节、文档 500 第 3.1 节）
 8. ~~**:app 模块的包结构**~~：✅ 已决定。:app 模块不加子模块名，直接使用顶级包名 `org.crazydan.studio.app.ime.kuaizi`（文档 160 第 3.1 节）
-9. ~~**StandardKeyboard 命名**~~：✅ 已决定。StandardKeyboard 保持命名不变，不重命名为 KeyboardView 或类似名称
+9. ~~**StandardKeyboard 命名**~~：✅ 已决定。StandardKeyboard 保持命名不变，不重命名为 KeyboardPanel 或类似名称
 10. ~~**FingerOverlay 与 GestureFeedbackState 的手指指示器职责边界**~~：✅ 已解决。`FingerOverlayState`（文档 930）已合并到 `GestureFeedbackState.fingerIndicator`（文档 150），`InputActionPlayer` 直接通过 `feedbackState.setFingerIndicator()` 驱动手指指示器，`GestureFeedbackPanel` 在配置了 `FeedbackElementType.FingerIndicator` 时自动渲染。不再存在独立的 `FingerOverlayState`（文档 150 第 4.3 节、文档 930 第 4.2 节）
 11. ~~**ConfigBackupEntry 与 ImeConfig 的映射**~~：✅ 已解决。文档 800 的 `ConfigBackupEntry` 已重构为嵌套结构，与 `ImeConfig` 的 `EngineConfig` 和 `UiConfig` 对齐（文档 800 第 3.2 节）
 12. ~~**910 UI 测试工具的包名一致性**~~：✅ 已确认。文档 910 的 Lint 规则使用正确包名 `org.crazydan.studio.app.ime.kuaizi.uitest.`（无 `.app.` 子模块名），实现时只需遵循文档中的包名约定即可

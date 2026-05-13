@@ -87,7 +87,7 @@
 
 | # | 决策 | 说明 |
 |---|------|------|
-| 1 | 命名规范 | 不以 `Kuaizi` 作类名前缀；:ime-engine 公开 API 统一 `Ime` 前缀；:ime-ui 业务语义命名（XxxView/XxxPanel/XxxBar）；:app 平台惯例命名（IMEService/XxxScreen）；发布包名 `Kuaizi_IME` 例外 |
+| 1 | 命名规范 | 不以 `Kuaizi` 作类名前缀；:ime-engine 公开 API 统一 `Ime` 前缀；:ime-ui 业务语义命名（XxxPanel/XxxView）；:app 平台惯例命名（IMEService/XxxScreen）；发布包名 `Kuaizi_IME` 例外 |
 | 2 | 包名规范 | 各模块顶级包名 `org.crazydan.studio.app.ime.kuaizi`；:app 不加子模块名 |
 | 3 | ImeConfig 统一配置 | 合并 ImeEngineConfig 和 Config；EngineConfig+UiConfig 嵌套隔离；运行时修改始终优先于持久化，直到重启重新初始化 |
 | 4 | :app 模块定位 | 库使用特例；直接用 KeyboardViewModel 不继承；配置通过 ImeConfig 交互 |
@@ -101,6 +101,6 @@
 
 | # | 事项 | 说明 |
 |---|------|------|
-| 1 | InputPanel 手势检测性能 | 需原型阶段验证，全屏透明层在高频滑行输入时的性能表现 |
+| 1 | GestureInputPanel 手势检测性能 | 需原型阶段验证，全屏透明层在高频滑行输入时的性能表现 |
 | 2 | Compose 在 IME 中的性能 | 需原型阶段验证，Compose 在 InputMethodService 中的内存占用和渲染帧率 |
 | 3 | 测试用例编写 | 9 个测试文档（100/160/200/300/500/600/800/900/930）待验收员编写具体用例 |

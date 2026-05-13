@@ -134,8 +134,8 @@ IME 需要在输入区、工具栏、候选项之间管理焦点：
 
 ```kotlin
 Column(Modifier.focusRestorer()) {
-    CandidateBar(Modifier.onFocusChanged { /* ... */ })
-    KeyboardView(Modifier.onFocusChanged { /* ... */ })
+    CandidatePanel(Modifier.onFocusChanged { /* ... */ })
+    KeyboardPanel(Modifier.onFocusChanged { /* ... */ })
     Toolbar(Modifier.onFocusChanged { /* ... */ })
 }
 ```
@@ -253,7 +253,7 @@ class KeyboardViewModel : ViewModel() {
 
 ```kotlin
 @Composable
-fun KeyboardView(
+fun KeyboardPanel(
     keyGrid: List<List<InputKey>>,
     onKeyPress: (InputKey, KeyGesture) -> Unit,
 ) {
@@ -289,7 +289,7 @@ fun KeyboardView(
 ```kotlin
 // ✅ 推荐：使用 remember 和 derivedStateOf 减少重组
 @Composable
-fun CandidateBar(candidates: List<Candidate>) {
+fun CandidatePanel(candidates: List<Candidate>) {
     val displayCandidates = remember(candidates) {
         candidates.take(MAX_VISIBLE)
     }
@@ -303,7 +303,7 @@ fun CandidateBar(candidates: List<Candidate>) {
 
 // ❌ 避免：每次重组都做计算
 @Composable
-fun CandidateBar(candidates: List<Candidate>) {
+fun CandidatePanel(candidates: List<Candidate>) {
     LazyRow {
         items(candidates.take(MAX_VISIBLE)) { candidate -> // 每次重组都创建新列表
             CandidateItem(candidate)
@@ -329,12 +329,12 @@ LazyVerticalGrid(
 
 ```kotlin
 // ✅ 推荐：Lambda 不捕获可变状态
-KeyboardView(
+KeyboardPanel(
     onKeyPress = { key -> viewModel.handleIntent(ImeIntent.KeyPressed(key)) },
 )
 
 // ❌ 避免：Lambda 捕获频繁变化的 state
-KeyboardView(
+KeyboardPanel(
     onKeyPress = { key ->
         val current = state.value // 每次调用都读取 state
         process(key, current)

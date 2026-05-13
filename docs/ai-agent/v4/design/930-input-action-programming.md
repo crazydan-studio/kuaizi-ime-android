@@ -1003,7 +1003,7 @@ class ActionScriptLoader(private val context: Context) {
  * 用户可选择不同的输入方式（滑行/点击/X-Pad）观看演示。
  */
 @Composable
-fun InputPracticeScreen(
+fun ExerciseScreen(
     viewModel: InputPracticeViewModel,
     onBack: () -> Unit,
 ) {
@@ -1370,7 +1370,7 @@ class PinyinInputActionTest {
 | 路径生成 | :ime-engine | `main` | `SwipePathInterpolator`（贝塞尔曲线） | ✅ |
 | 播放层 | :ime-ui | `main` | `InputActionPlayer`、`GestureFeedbackState.fingerIndicator` | ✅ |
 | 动画覆盖层 | :ime-ui | `main` | `FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay` | ✅ |
-| 演示 UI | :app | `main` | `InputPracticeScreen`、`ActionPlayerPanel`、`InputMethodSelector` | ✅ |
+| 演示 UI | :app | `main` | `ExerciseScreen`、`ActionPlayerPanel`、`InputMethodSelector` | ✅ |
 | 预置脚本 | :app | `main` | `assets/scripts/` 预置演示脚本 | ✅ |
 | 录制工具 | :app | `debug` | `ActionRecorder`、`RecordButton` | ❌ 开发工具 |
 | 测试驱动 | :ime-engine | `test` | `ActionTestDriver` | ❌（test 依赖） |
@@ -1380,7 +1380,7 @@ class PinyinInputActionTest {
 Release 构建中：
 - 动画播放引擎和手指指示器完整可用，用于输入练习演示
 - 预置练习脚本随 APK 发布
-- `InputPracticeScreen` 可从设置或引导页进入
+- `ExerciseScreen` 可从设置或引导页进入
 - 操作录制功能不在 APK 中（`ActionRecorder` 和 `RecordButton` 在 debug 源集）
 - 播放速度、手指指示器样式等参数可通过配置系统调整
 - 坐标解析器在每次回放时实时查询键盘布局，确保适配当前设备

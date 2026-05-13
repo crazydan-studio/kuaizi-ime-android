@@ -38,7 +38,7 @@ IMEditor → InputMsg → IMEService → IMEditorView → View
 
 ### 3.1 整体架构
 
-> **注意**：键盘区域的三层面板架构（InputPanel / GestureFeedbackPanel / KeyPanel）详见文档 150。本节仅描述 Compose 迁移的组件对照，不重复三层面板的设计细节。
+> **注意**：键盘区域的三层面板架构（GestureInputPanel / GestureFeedbackPanel / KeyGridPanel）详见文档 150。本节仅描述 Compose 迁移的组件对照，不重复三层面板的设计细节。
 
 ```kotlin
 @Composable
@@ -48,19 +48,19 @@ fun ImeScreen(viewModel: KeyboardViewModel = viewModel()) {
     KeyboardTheme(themeType = state.config.ui.themeType) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // 候选项栏（浮动/固定）
-            CandidateBar(
+            CandidatePanel(
                 candidates = state.candidates,
                 onCandidateSelected = { viewModel.handleIntent(ImeIntent.CandidateSelected(it)) },
             )
 
             // 输入栏
-            InputBar(
+            InputListPanel(
                 inputList = state.inputList,
                 onGapTapped = { viewModel.handleIntent(ImeIntent.CursorMoveTo(it)) },
             )
 
             // 键盘区域（三层面板组合，详见文档 150）
-            KeyboardView(
+            KeyboardPanel(
                 engine = viewModel.engine,
             )
 
@@ -109,35 +109,35 @@ class IMEService : InputMethodService() {
 
 ### 3.3 键盘视图
 
-> **注意**：键盘视图在 v4 中拆分为三层面板（详见文档 150）：KeyPanel（纯展示，不处理触摸）、InputPanel（透明手势层）、GestureFeedbackPanel（透明反馈绘制层）。KeyPanel 中的 KeyView 不处理触摸事件，触摸由 InputPanel 统一拦截。以下仅展示 KeyPanel 中的按键渲染逻辑。
+> **注意**：键盘视图在 v4 中拆分为三层面板（详见文档 150）：KeyGridPanel（纯展示，不处理触摸）、GestureInputPanel（透明手势层）、GestureFeedbackPanel（透明反馈绘制层）。KeyGridPanel 中的 KeyView 不处理触摸事件，触摸由 GestureInputPanel 统一拦截。以下仅展示 KeyGridPanel 中的按键渲染逻辑。
 
 ```kotlin
-// KeyPanel：纯展示层，不处理触摸事件
+// KeyGridPanel：纯展示层，不处理触摸事件
 @Composable
-fun KeyPanel(
+fun KeyGridPanel(
     keyboardType: KeyboardType,
     keyGrid: List<List<InputKey>>,
     keyboardState: KeyboardState,
-    onLayoutInfoChanged: (KeyPanelLayoutInfo) -> Unit,
+    onLayoutInfoChanged: (KeyGridPanelLayoutInfo) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (keyboardType) {
         KeyboardType.Pinyin, KeyboardType.Latin, KeyboardType.Number,
         KeyboardType.Symbol, KeyboardType.Editor, KeyboardType.Math,
-        -> StandardKeyPanel(keyGrid, keyboardState, onLayoutInfoChanged, modifier)
+        -> StandardKeyGridPanel(keyGrid, keyboardState, onLayoutInfoChanged, modifier)
 
-        KeyboardType.Emoji -> EmojiKeyPanel(keyGrid, keyboardState, onLayoutInfoChanged, modifier)
-        KeyboardType.Candidate -> CandidateKeyPanel(keyGrid, onLayoutInfoChanged, modifier)
-        KeyboardType.CommitOption -> CommitOptionKeyPanel(keyGrid, onLayoutInfoChanged, modifier)
+        KeyboardType.Emoji -> EmojiKeyGridPanel(keyGrid, keyboardState, onLayoutInfoChanged, modifier)
+        KeyboardType.Candidate -> CandidateKeyGridPanel(keyGrid, onLayoutInfoChanged, modifier)
+        KeyboardType.CommitOption -> CommitOptionKeyGridPanel(keyGrid, onLayoutInfoChanged, modifier)
     }
 }
 ```
 
-完整的三层面板组合（InputPanel + GestureFeedbackPanel + KeyPanel）由 `KeyboardView` 集成组件封装，详见文档 160 第 5.4 节。
+完整的三层面板组合（GestureInputPanel + GestureFeedbackPanel + KeyGridPanel）由 `KeyboardPanel` 集成组件封装，详见文档 160 第 5.4 节。
 
 ### 3.4 按键视图
 
-> **注意**：KeyView 在 v4 中是纯展示组件，不处理触摸事件，也不绘制手势反馈。触摸由 InputPanel 统一拦截（详见文档 150），手势反馈由 GestureFeedbackPanel 绘制。KeyView 仅渲染按键的常规状态（标签、背景、激活/禁用等持续性状态）。
+> **注意**：KeyView 在 v4 中是纯展示组件，不处理触摸事件，也不绘制手势反馈。触摸由 GestureInputPanel 统一拦截（详见文档 150），手势反馈由 GestureFeedbackPanel 绘制。KeyView 仅渲染按键的常规状态（标签、背景、激活/禁用等持续性状态）。
 
 ```kotlin
 /**
@@ -190,7 +190,7 @@ fun CharKeyContent(key: InputKey.Char) {
 
 ```kotlin
 @Composable
-fun CandidateBar(
+fun CandidatePanel(
     candidates: CandidateState,
     onCandidateSelected: (InputWord) -> Unit,
 ) {
@@ -244,7 +244,7 @@ fun CandidateItem(candidate: InputWord, onClick: () -> Unit) {
 
 ```kotlin
 @Composable
-fun InputBar(
+fun InputListPanel(
     inputList: InputListState,
     onGapTapped: (Int) -> Unit,
 ) {
@@ -348,12 +348,12 @@ Modifier.pointerInput(zones) {
 
 ## 5. 滑行输入手势
 
-> **注意**：v4 的滑行手势检测统一由 InputPanel 处理（详见文档 150 第 5 节），手势轨迹绘制由 GestureFeedbackPanel 处理（详见文档 150 第 6 节）。InputPanel 是透明的手势拦截层，识别手势后输出 InputGesture；GestureFeedbackPanel 是独立的透明绘制层，根据 GestureFeedbackState 绘制滑行轨迹、按键高亮等视觉反馈。以下仅列出 Compose 手势 API 的基本用法参考。
+> **注意**：v4 的滑行手势检测统一由 GestureInputPanel 处理（详见文档 150 第 5 节），手势轨迹绘制由 GestureFeedbackPanel 处理（详见文档 150 第 6 节）。GestureInputPanel 是透明的手势拦截层，识别手势后输出 InputGesture；GestureFeedbackPanel 是独立的透明绘制层，根据 GestureFeedbackState 绘制滑行轨迹、按键高亮等视觉反馈。以下仅列出 Compose 手势 API 的基本用法参考。
 
 ### 5.1 Compose 手势 API 参考
 
 ```kotlin
-// InputPanel 中的手势检测核心逻辑（详见文档 150 第 5.2 节）
+// GestureInputPanel 中的手势检测核心逻辑（详见文档 150 第 5.2 节）
 Modifier.pointerInput(keyPanelLayout, keyboardType) {
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false)
@@ -395,7 +395,7 @@ Canvas(modifier = modifier.fillMaxSize()) {
 |-----------|-------------|
 | `Preferences` (PreferenceFragmentCompat) | `SettingsScreen` (Compose) |
 | `PreferencesTheme` | `ThemeSettingsScreen` (Compose) |
-| `Guide` (Activity) | `GuideScreen` (Compose + Navigation) | 移除 Alpha 用户协议确认逻辑 |
+| `Guide` (Activity) | `MainScreen` (Compose + Navigation) | 移除 Alpha 用户协议确认逻辑 |
 | `ExerciseGuide` | `ExerciseScreen` (Compose) | |
 | 12 个 About 页面 | `AboutScreen` (Compose + Navigation) | 移除 `AlphaUserAgreement` 页面 |
 
@@ -481,11 +481,11 @@ fun SettingsScreen(
 | `KeyboardViewGestureListener` | `Modifier.pointerInput` | Compose 手势 API |
 | `KeyboardViewKeyAnimator` | Compose 动画 API | 声明式动画 |
 | 12 种 `KeyViewHolder` | `KeyContent()` 分支 | 按类型分发 Composable |
-| `InputListView` + `InputListViewAdapter` | `InputBar` + `LazyRow` | 简化 |
+| `InputListView` + `InputListViewAdapter` | `InputListPanel` + `LazyRow` | 简化 |
 | 5 种 `InputViewHolder` | `InputItem()` 分支 | 按类型分发 Composable |
 | `InputQuickListView` | `QuickListPopup` | 浮层 |
 | `InputFavoriteListView` | `FavoritesList` + `LazyColumn` | 简化 |
-| `CandidatesView` | `CandidateBar` + `LazyRow` | FlexboxLayout → Compose |
+| `CandidatesView` | `CandidatePanel` + `LazyRow` | FlexboxLayout → Compose |
 | `FavoriteboardView` | `FavoritesScreen` | Compose |
 | `XPadView` + `XPainter` 系列 | `XPadView` + Compose `Canvas` | 统一绘制 API |
 | `ViewGestureDetector` | `Modifier.pointerInput` | 标准手势 API |
@@ -496,5 +496,5 @@ fun SettingsScreen(
 | `Toast` | Compose `Snackbar` | 标准反馈 |
 | `HtmlTextView` | `AnnotatedString.appendHtml()` | Compose 原生 HTML |
 | `Preferences` | `SettingsScreen` | Compose 设置页 |
-| `Guide` | `GuideScreen` | Compose + Navigation |
+| `Guide` | `MainScreen` | Compose + Navigation |
 | 12 个 About Activity | `AboutScreen` + Navigation | 单 Activity，移除 `AlphaUserAgreement` |

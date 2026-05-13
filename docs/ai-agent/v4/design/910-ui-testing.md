@@ -256,14 +256,14 @@ data class ComponentDebugInfo(
 
 ```
 ┌──────────────────────────────────┐
-│  CandidateBar                    │
+│  CandidatePanel                    │
 │  ─────────────────────────────   │
 │  Size:    1080 x 48 dp           │
 │  Position: (0, 1200)             │
 │  Modifiers:                      │
 │    fillMaxWidth()                 │
 │    height(48.dp)                  │
-│    background(CandidateBarBg)     │
+│    background(CandidatePanelBg)     │
 │    padding(horizontal=8.dp)       │
 │  Recompositions: 12              │
 │  ─────────────────────────────   │
@@ -642,7 +642,7 @@ code/app/src/test/
         │   ├── LatinKeyboardScreenshotTest.kt
         │   └── NumberKeyboardScreenshotTest.kt
         ├── candidate/
-        │   └── CandidateBarScreenshotTest.kt
+        │   └── CandidatePanelScreenshotTest.kt
         ├── input/
         │   └── InputBarScreenshotTest.kt
         └── theme/
