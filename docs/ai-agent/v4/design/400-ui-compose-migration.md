@@ -200,7 +200,7 @@ fun CandidatePanel(
         modifier = Modifier
             .fillMaxWidth()
             .height(40.dp)
-            .background(candidateBarBackgroundColor),
+            .background(candidatePanelBackgroundColor),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = PaddingValues(horizontal = 8.dp),
     ) {
@@ -252,7 +252,7 @@ fun InputListPanel(
         modifier = Modifier
             .fillMaxWidth()
             .height(36.dp)
-            .background(inputBarBackgroundColor),
+            .background(inputListPanelBackgroundColor),
         contentPadding = PaddingValues(horizontal = 4.dp),
     ) {
         items indexed items = inputList.inputs, key = { it.id }  { index, item ->

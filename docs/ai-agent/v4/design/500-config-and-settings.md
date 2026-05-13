@@ -196,15 +196,15 @@ data class KeyboardColors(
     val keyBorder: Color,
 
     // 候选栏
-    val candidateBarBackground: Color,
+    val candidatePanelBackground: Color,
     val candidateChipBackground: Color,
     val candidateChipForeground: Color,
     val candidateChipActiveBackground: Color,
 
     // 输入栏
-    val inputBarBackground: Color,
-    val inputBarForeground: Color,
-    val inputBarCursorColor: Color,
+    val inputListPanelBackground: Color,
+    val inputListPanelForeground: Color,
+    val inputListPanelCursorColor: Color,
 
     // X-Pad
     val xPadBackground: Color,
