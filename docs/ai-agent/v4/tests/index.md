@@ -77,7 +77,7 @@ code/
 │       │   ├── InputListTest.kt
 │       │   └── CandidatePagerTest.kt
 │       └── dict/                           ← 字典接口测试
-│           └── InMemoryImeDictProviderTest.kt
+│           └── ImeInMemoryDictProviderTest.kt
 │
 ├── ime-ui/src/test/                        ← :ime-ui 库单元测试
 │   └── org/crazydan/studio/app/ime/kuaizi/ui/

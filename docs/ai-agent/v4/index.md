@@ -28,79 +28,22 @@ v4 版本的核心目标是将整个项目从 Java 迁移到 Kotlin，同时：
 
 ## 文档目录
 
-### 设计文档 — `design/`
-
-存放架构和功能设计文档。文档以三位数字开头并根据内容命名。内容始终保持最新，无用和过时的文档需及时清理。
-
-| 文档 | 说明 |
-|------|------|
-| [design/index.md](design/index.md) | 设计文档索引 |
-| [design/000-architecture-overview.md](design/000-architecture-overview.md) | 架构总览 |
-| [design/010-naming-conventions.md](design/010-naming-conventions.md) | 命名规范 |
-| [design/100-keyboard-state-machine.md](design/100-keyboard-state-machine.md) | 键盘状态机设计 |
-| [design/150-input-key-panel-separation.md](design/150-input-key-panel-separation.md) | 输入面板、按键面板与反馈面板三层分离设计 |
-| [design/160-ime-engine-library.md](design/160-ime-engine-library.md) | IME 引擎库与 UI 库设计 |
-| [design/200-input-list-redesign.md](design/200-input-list-redesign.md) | 输入列表重构设计 |
-| [design/300-dict-system-redesign.md](design/300-dict-system-redesign.md) | 字典系统重构设计 |
-| [design/400-ui-compose-migration.md](design/400-ui-compose-migration.md) | UI Compose 迁移设计 |
-| [design/500-config-and-settings.md](design/500-config-and-settings.md) | 配置与设置系统设计 |
-| [design/600-clipboard-and-favorites.md](design/600-clipboard-and-favorites.md) | 剪贴板与收藏系统设计 |
-| [design/700-xpad-redesign.md](design/700-xpad-redesign.md) | X-Pad 重构设计 |
-| [design/800-user-data-import-export.md](design/800-user-data-import-export.md) | 用户数据导入导出设计（v4 新增） |
-| [design/900-app-logging.md](design/900-app-logging.md) | 应用日志系统设计（v4 新增） |
-| [design/910-ui-testing.md](design/910-ui-testing.md) | UI 测试方案设计（v4 新增） |
-| [design/920-config-ui-improvement.md](design/920-config-ui-improvement.md) | 配置界面改进设计（v4 新增） |
-| [design/930-input-action-programming.md](design/930-input-action-programming.md) | 输入动作程序化设计（v4 新增） |
-
-### 计划文档 — `plans/`
-
-存放开发计划文档。文档以三位数字开头并根据内容命名。内容始终保持最新，无用和过时的文档需及时清理。
-
-| 文档 | 说明 | 状态 |
+| 目录 | 说明 | 索引 |
 |------|------|------|
-| [plans/index.md](plans/index.md) | 计划文档索引 | — |
-| [plans/000-plan-authoring-and-execution-guide.md](plans/000-plan-authoring-and-execution-guide.md) | 计划编制与执行指南 | — |
-
-### 测试文档 — `tests/`
-
-存放单元测试用例文档，由软件验收员编写和维护。每个测试文档对应一个模块或功能领域，与设计文档编号一致。测试用例必须真正执行通过。
-
-| 文档 | 说明 | 状态 |
-|------|------|------|
-| [tests/index.md](tests/index.md) | 测试文档索引、核心原则、角色权限、文件组织 | — |
-| [tests/000-test-writing-guide.md](tests/000-test-writing-guide.md) | 测试用例编写规范和模版 | — |
-
-### 讨论记录 — `discussions/`
-
-存放与用户的讨论记录。文档为历史记录，不对已有内容做更新。
-
-| 文档 | 说明 |
-|------|------|
-| [discussions/index.md](discussions/index.md) | 讨论记录索引 |
-
-### 开发日志 — `logs/`
-
-存放开发日志，按年/月-日组织，以 `{年}/{月}-{日}.md` 形式命名（月和日采用两位数字）。文档为历史记录，不对已有内容做更新。
-
-| 文档 | 说明 |
-|------|------|
-| [logs/index.md](logs/index.md) | 开发日志索引 |
-
-### 缺陷修复 — `bugs/`
-
-存放缺陷修复记录。文档为历史记录，不对已有内容做更新。
-
-| 文档 | 说明 |
-|------|------|
-| [bugs/index.md](bugs/index.md) | 缺陷修复索引 |
+| `design/` | 架构和功能设计文档，始终实时更新 | [design/index.md](design/index.md) |
+| `tests/` | 单元测试用例文档，由软件验收员编写和维护 | [tests/index.md](tests/index.md) |
+| `plans/` | 开发计划文档，始终实时更新 | [plans/index.md](plans/index.md) |
+| `discussions/` | 与用户的讨论记录，只追加不修改 | [discussions/index.md](discussions/index.md) |
+| `logs/` | 开发日志，只追加不修改 | [logs/index.md](logs/index.md) |
+| `bugs/` | 缺陷修复记录，只追加不修改 | [bugs/index.md](bugs/index.md) |
 
 ---
 
-## 本目录文件组织规范
+## 文档规范
 
 ### 文件组织
 
-- 每个子目录（design/、plans/、tests/、discussions/、logs/、bugs/）都有独立的 `index.md` 作为该类文档的索引
+- 每个子目录都有独立的 `index.md` 作为该类文档的索引，具体文件清单见各索引
 - 设计文档和计划文档使用三位数字前缀排序，编号规则：
   - `000-099`：基础/框架类文档
   - `100-199`：键盘核心类文档
@@ -111,17 +54,6 @@ v4 版本的核心目标是将整个项目从 Java 迁移到 Kotlin，同时：
   - `600-699`：辅助功能类文档
   - `700-799`：X-Pad 专项类文档
   - `800-899`：数据管理类文档
-
-### 文档作用
-
-| 文档类型 | 作用 | 阅读场景 |
-|----------|------|----------|
-| 设计文档 | 描述架构、功能设计、技术选型和实现方案 | 开发前理解设计意图、开发中核对实现是否符合设计 |
-| 测试文档 | 定义单元测试用例、记录测试执行结果 | 验收员编写测试用例、执行测试验证功能是否满足设计 |
-| 计划文档 | 定义开发任务、执行步骤和验收标准 | 开发中跟踪进度、验收时核对完成情况 |
-| 讨论记录 | 记录与用户的讨论内容和结论 | 需要回顾决策背景时查阅 |
-| 开发日志 | 记录开发过程中的关键事件和决策 | 需要了解开发历史时查阅 |
-| 缺陷修复 | 记录缺陷的发现、分析和修复过程 | 需要了解缺陷历史时查阅 |
 
 ### 更新规范
 

@@ -1569,7 +1569,7 @@ class ImeSqliteDictProvider(
  *
  * 适用于测试环境或不需要持久化的场景。
  */
-class InMemoryImeDictProvider(
+class ImeInMemoryDictProvider(
     private val pinyinData: Map<String, List<InputWord>> = emptyMap(),
 ) : ImeDictProvider {
 
@@ -1591,7 +1591,7 @@ class InMemoryImeDictProvider(
  *
  * 适用于需要从服务端获取字典数据的场景。
  */
-class RemoteImeDictProvider(
+class ImeRemoteDictProvider(
     private val apiClient: ApiClient,
 ) : ImeDictProvider {
     // ... 实现略 ...
@@ -2169,7 +2169,7 @@ class ImeEngineTest {
     fun `swipe input should commit correct text`() = runTest {
         val engine = ImeEngine.create(
             config = ImeConfig(features = emptySet()),
-            dictProvider = InMemoryImeDictProvider(
+            dictProvider = ImeInMemoryDictProvider(
                 pinyinData = mapOf(
                     "ni" to listOf(InputWord("你", "ni"), InputWord("尼", "ni")),
                     "hao" to listOf(InputWord("好", "hao")),
@@ -2209,7 +2209,7 @@ class ImeEngineTest {
 class PinyinTextProcessor {
     private val engine = ImeEngine.create(
         config = ImeConfig(features = setOf(Feature.CandidatePrediction)),
-        dictProvider = InMemoryImeDictProvider(pinyinData),
+        dictProvider = ImeInMemoryDictProvider(pinyinData),
     )
 
     suspend fun convertPinyinToText(pinyin: String): String {
@@ -2348,5 +2348,5 @@ fun MinimalInputScreen() {
 | N/A | `Feature` / `FeatureRegistry` | `:ime-engine` | 新增：功能可裁剪 |
 | N/A | `InputConnectionBridge` | `:app` | 新增：引擎输出到 InputConnection 的桥接 |
 | N/A | `ImeOutputBridge` / `BaseImeOutputBridge` | `:ime-engine` | 新增：引擎与编辑器的桥梁接口 |
-| N/A | `InMemoryImeDictProvider` | `:ime-engine` | 新增：测试用内存字典 |
+| N/A | `ImeInMemoryDictProvider` | `:ime-engine` | 新增：测试用内存字典 |
 | N/A | `KeyboardColors` / `KeyboardTheme` | `:ime-ui` | 新增：可定制主题系统 |

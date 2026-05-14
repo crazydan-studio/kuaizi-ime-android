@@ -221,7 +221,7 @@ fun `should commit text when CommitInput intent processed with non-empty input l
     // Arrange：准备测试数据和环境
     val engine = ImeEngine.create(
         config = ImeConfig(),
-        dictProvider = InMemoryImeDictProvider(testPinyinData),
+        dictProvider = ImeInMemoryDictProvider(testPinyinData),
     )
     engine.handleIntent(ImeIntent.PressKey(key = InputKey.Char('n'), gesture = KeyGesture.Tap))
     engine.handleIntent(ImeIntent.PressKey(key = InputKey.Char('i'), gesture = KeyGesture.Tap))
@@ -242,18 +242,18 @@ fun `should commit text when CommitInput intent processed with non-empty input l
 - 每个测试函数独立运行，不依赖其他测试的执行顺序
 - 使用 `@BeforeEach` / `@AfterEach` 初始化和清理测试环境
 - 不依赖共享的可变状态
-- 需要外部依赖时使用 Mock 或内存实现（如 `InMemoryImeDictProvider`），不依赖真实数据库或文件系统
+- 需要外部依赖时使用 Mock 或内存实现（如 `ImeInMemoryDictProvider`），不依赖真实数据库或文件系统
 
 ### 6.4 Mock 使用原则
 
 - **优先使用真实实现**：对于纯逻辑组件（状态机、InputList、ImeConfig），直接使用真实实现而非 Mock
 - **Mock 仅用于外部依赖**：数据库、文件系统、系统服务等无法在单元测试中使用的依赖才使用 Mock
-- **使用接口而非 Mock 库**：对于字典等可替换组件，优先使用 `InMemoryImeDictProvider` 等测试专用实现，而非 Mockito 等 Mock 框架
+- **使用接口而非 Mock 库**：对于字典等可替换组件，优先使用 `ImeInMemoryDictProvider` 等测试专用实现，而非 Mockito 等 Mock 框架
 - **不 Mock 被测类自身**：被测类的内部方法不应被 Mock，否则测试失去意义
 
 ```kotlin
 // ✅ 正确：使用内存实现替代数据库
-val dictProvider = InMemoryImeDictProvider(mapOf("ni" to listOf(testWord)))
+val dictProvider = ImeInMemoryDictProvider(mapOf("ni" to listOf(testWord)))
 
 // ❌ 错误：Mock 被测类的内部方法
 val engine = mockk<ImeEngine> {
