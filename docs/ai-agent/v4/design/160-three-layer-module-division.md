@@ -69,50 +69,7 @@ ImeIntegratedActivity (Activity)
 
 ### 3.1 模块划分
 
-```
-kuaizi-ime-android/
-├── code/
-│   ├── app/                     ← 应用模块（系统 IME 服务 + 设置 + 日志诊断界面）
-│   │   ├── build.gradle.kts     ← implementation(":ime-engine"), implementation(":ime-ui")
-│   │   └── src/main/
-│   │       └── org/crazydan/studio/app/ime/kuaizi/   ← 直接使用顶级包名，不加子模块名
-│   │           ├── IMEService.kt
-│   │           ├── InputConnectionBridge.kt
-│   │           ├── ConfigRepository.kt
-│   │           ├── settings/     ← 设置页面（SettingsScreen, LogLevelSetting, LogStoragePathSetting）
-│   │           ├── logging/      ← 日志界面（LogViewerScreen, LogExportScreen, LogViewerViewModel）
-│   │           └── guide/       ← 引导页面
-│   │
-│   ├── ime-ui/                  ← UI 库模块（Compose 缺省 UI）
-│   │   ├── build.gradle.kts     ← android.library
-│   │   └── src/main/
-│   │       └── org/crazydan/studio/app/ime/kuaizi/ui/
-│   │           ├── theme/       ← 主题系统（KeyboardColors, KeyboardThemes, KeyboardTheme）
-│   │           ├── panel/       ← 三层面板（GestureInputPanel, KeyGridPanel, GestureFeedbackPanel）
-│   │           ├── keyboard/    ← 键盘组件（StandardKeyGridPanel, EmojiKeyGridPanel, XPadView）
-│   │           ├── candidate/   ← 候选栏（CandidateListPanel, CandidateItem）
-│   │           ├── input/       ← 输入栏（InputListPanel, CharInputItem, GapInputItem）
-│   │           ├── editor/      ← 编辑器桥接（EditTextBridge）
-│   │           ├── clipboard/   ← 剪贴板 UI（ClipTipPopup）
-│   │           ├── favorite/    ← 收藏 UI（FavoriteListPanel）
-│   │           ├── practice/    ← 输入练习 UI（FingerOverlay, ActionPlayerPanel）
-│   │           └── integration/ ← 集成组件（KeyboardPanel, KeyboardScreen）
-│   │
-│   └── ime-engine/              ← 引擎库模块（纯 Kotlin）
-│       ├── build.gradle.kts     ← android.library
-│       └── src/main/
-│           └── org/crazydan/studio/app/ime/kuaizi/engine/
-│               ├── api/         ← 公开 API（ImeEngine, ImeOutput, ImeConfig）
-│               ├── bridge/      ← 输出桥接（ImeOutputBridge, BaseImeOutputBridge）
-│               ├── domain/      ← 领域层（Keyboard, InputList, Inputboard）
-│               ├── dict/        ← 字典系统（接口 + 内置实现）
-│               ├── input/       ← 输入类型（InputKey, InputWord, InputGesture）
-│               ├── logging/     ← 日志基础设施（ImeLog, ImeLogger, LogLevel, LogEntry, LogWriter）
-│               └── state/       ← 状态定义（KeyboardState, ImeState）
-│
-├── docs/
-└── ...
-```
+各模块的包结构与 class 组织详见文档 [170 — 模块 Class 组织结构](170-module-class-organization.md)。
 
 ### 3.2 模块职责与依赖
 
