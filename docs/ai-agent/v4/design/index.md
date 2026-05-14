@@ -10,6 +10,7 @@
 |------|------|------|
 | 000 | [架构总览](000-architecture-overview.md) | v4 整体架构设计，包括分层、数据流、核心设计决策和与 Java 版本的架构对比 |
 | 010 | [命名规范](010-naming-conventions.md) | 三层模块命名、UI 组件后缀、KeyGridPanel 子类命名、引擎 API 命名、已更名对照 |
+| 020 | [设计缺失项分析与补充](020-design-gap-analysis.md) | Java 工作树与 v4 设计文档的全面核对：引擎核心（收藏 CRUD、剪贴板深度提取、数学计算、输入补全、拼音转换、CtrlKey 子类型）、输入模型（PinyinWord 完整字段、Space 类型、符号分组）、字典系统（HMM 已确认字、双权重、Emoji 关键字匹配、DB 迁移、PinyinCharsTree）、UI 组件（InputWordKey、弹窗系统、Toolbar 状态机、收藏面板、六边形按键）、应用模块（InputType 适配、临时配置、InputConnectionBridge 实现、交互式练习） |
 | 100 | [键盘状态机设计](100-keyboard-state-machine.md) | 键盘状态机重构，从继承链到组合模式，Sealed class 状态定义和转换规则 |
 | 150 | [输入面板、按键面板与反馈面板三层分离设计](150-input-key-panel-separation.md) | 输入手势、按键渲染与手势反馈三层分离：输入面板（透明手势层）接收手势识别为 InputGesture，按键面板纯展示（持续性状态渲染），反馈面板独立透明绘制（临时性手势反馈，支持多实例）；KeyboardPanel（叠加模式完整输入法组件）和 KeyboardScreen（全屏模式完整输入法组件），两者均包含候选栏/输入栏/工具栏/键盘区域 |
 | 160 | [三层模块划分：引擎库 `:ime-engine` + UI 库 `:ime-ui` + 应用模块 `:app`](160-three-layer-module-division.md) | 三层库架构：引擎库 `:ime-engine`（纯 Kotlin，可独立使用）+ UI 库 `:ime-ui`（Compose 缺省 UI，对第三方应用开放）+ 应用模块 `:app`（IME 服务 + 设置）。引擎与 UI 完全分离，统一配置 `ImeConfig`（含 `EngineConfig` 引擎配置和 `UiConfig` UI 配置的明确隔离），ImeIntent/ImeOutput/ImeState 完整定义，ImeDictProvider 接口支持替换内置 SQLite 实现，Feature 标记按需禁用收藏/剪贴板等功能；UI 库提供 KeyboardPanel（叠加模式完整输入法组件）、KeyboardScreen（全屏模式完整输入法组件）、EditTextBridge、ImeOutputBridge 等即插即用组件，第三方应用可直接使用缺省 UI 或自行替换；`:app` 直接使用 UI 库的 `KeyboardViewModel`，不继承也不扩展 |
