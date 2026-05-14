@@ -15,7 +15,7 @@
       - [命名规范](ai-agent/v4/design/010-naming-conventions.md)
       - [键盘状态机设计](ai-agent/v4/design/100-keyboard-state-machine.md)
       - [输入面板三层分离](ai-agent/v4/design/150-input-key-panel-separation.md)
-      - [IME 引擎库设计](ai-agent/v4/design/160-ime-engine-library.md)
+      - [三层模块划分](ai-agent/v4/design/160-three-layer-module-division.md)
       - [输入列表重构](ai-agent/v4/design/200-input-list-redesign.md)
       - [字典系统重构](ai-agent/v4/design/300-dict-system-redesign.md)
       - [UI Compose 迁移](ai-agent/v4/design/400-ui-compose-migration.md)
