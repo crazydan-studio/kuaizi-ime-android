@@ -694,7 +694,7 @@ data class LogViewerState(
  * 通过 Activity Result API 的 CreateDocument 合约，
  * 让用户选择保存位置，默认文件名包含日期范围。
  */
-class LogExportActivity : ComponentActivity() {
+class LogExportScreen : ComponentActivity() {
     private val createDocumentLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument("text/plain")
     ) { uri ->
@@ -900,7 +900,7 @@ log.debug("查询结果: ${candidates.map { it.text }.joinToString()}")
 | `LogCache` 内存缓存 | `LogStorage` 文件持久化 | 崩溃后日志不丢失，可按日期、等级、关键词检索 |
 | 无崩溃拦截 | `CrashInterceptor` | 捕获未处理异常，记录完整堆栈 |
 | 无日志查看 | `LogViewerScreen` | Compose 界面浏览日志，按等级着色 |
-| 无日志导出 | `LogExportActivity` + 统一导出界面 | 系统文件选择器导出，支持日期范围选择 |
+| 无日志导出 | `LogExportScreen` + 统一导出界面 | 系统文件选择器导出，支持日期范围选择 |
 | 无等级配置 | `ImeConfig.UiConfig.logLevel` | release 构建可通过设置修改 |
 | 无路径配置 | `ImeConfig.UiConfig.logStoragePath` | 可指定存储路径，缺省应用私有目录 |
 | `TreeLog` ThreadLocal + synchronized | Kotlin 协程 Channel | 无线程安全风险，无死锁隐患 |

@@ -72,14 +72,15 @@ ImeIntegratedActivity (Activity)
 ```
 kuaizi-ime-android/
 ├── code/
-│   ├── app/                     ← 应用模块（系统 IME 服务 + 设置）
+│   ├── app/                     ← 应用模块（系统 IME 服务 + 设置 + 日志诊断界面）
 │   │   ├── build.gradle.kts     ← implementation(":ime-engine"), implementation(":ime-ui")
 │   │   └── src/main/
 │   │       └── org/crazydan/studio/app/ime/kuaizi/   ← 直接使用顶级包名，不加子模块名
 │   │           ├── IMEService.kt
 │   │           ├── InputConnectionBridge.kt
 │   │           ├── ConfigRepository.kt
-│   │           ├── settings/     ← 设置页面
+│   │           ├── settings/     ← 设置页面（SettingsScreen, LogLevelSetting, LogStoragePathSetting）
+│   │           ├── logging/      ← 日志界面（LogViewerScreen, LogExportScreen, LogViewerViewModel）
 │   │           └── guide/       ← 引导页面
 │   │
 │   ├── ime-ui/                  ← UI 库模块（Compose 缺省 UI）
@@ -106,6 +107,7 @@ kuaizi-ime-android/
 │               ├── domain/      ← 领域层（Keyboard, InputList, Inputboard）
 │               ├── dict/        ← 字典系统（接口 + 内置实现）
 │               ├── input/       ← 输入类型（InputKey, InputWord, InputGesture）
+│               ├── logging/     ← 日志基础设施（ImeLog, ImeLogger, LogLevel, LogEntry, LogWriter）
 │               └── state/       ← 状态定义（KeyboardState, ImeState）
 │
 ├── docs/
