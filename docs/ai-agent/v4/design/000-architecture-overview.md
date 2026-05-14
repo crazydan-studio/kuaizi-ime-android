@@ -2,7 +2,7 @@
 
 ## 1. 概述
 
-v4 版本对筷字输入法进行全面的 Kotlin 重构，保留 Java 版本的消息驱动架构核心思想，同时利用 Kotlin 和现代 Android 开发技术进行现代化改造。核心改进方向：从命令式 MVP 转向声明式 MVI，从继承链转向组合模式，从手写异步转向协程，从 View 系统转向 Compose。
+v4 版本对筷字输入法进行全面的 Kotlin 重构，沿用 Java 版本确立的单向数据流设计原则，以 Kotlin 原生的 MVI + StateFlow 方案替代手写消息路由，同时利用现代 Android 开发技术进行整体现代化改造。核心改进方向：从命令式 MVP 转向声明式 MVI，从继承链转向组合模式，从手写异步转向协程，从 View 系统转向 Compose。
 
 ---
 
@@ -38,7 +38,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 
 ### 2.2 架构优点（保留）
 
-1. **消息驱动的单向数据流**：UserMsg 从 View 层向上发送到 IMEService，再分发到 Model 层；InputMsg 从 Model 层向上发送到 IMEService，再分发到 View 层。这种单向消息流确保了数据流向的可追踪性
+1. **单向数据流的设计原则**：UserMsg 从 View 层向上发送到 IMEService，再分发到 Model 层；InputMsg 从 Model 层向上发送到 IMEService，再分发到 View 层。这种单向消息流确保了数据流向的可追踪性。v4 将这一原则保留并升级：以 ImeIntent 替代 UserMsg 向上传递，以 StateFlow 替代 InputMsg 向下分发，实现类型安全、自动生命周期管理的响应式数据流
 2. **Model-View 严格分离**：模型层和视图层不直接通信，所有交互通过消息传递，降低了耦合
 3. **Context 模式**：`KeyboardContext`、`InputboardContext`、`FavoriteboardContext` 携带共享状态进入模型操作，避免了全局状态的滥用
 4. **不可变 Key 对象 + Builder 缓存**：Key 对象是不可变的，通过 Builder 模式创建并缓存，避免了重复创建
