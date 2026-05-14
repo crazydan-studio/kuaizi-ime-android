@@ -250,9 +250,9 @@ class PinyinKeyboard(
 
     override fun handleIntent(intent: ImeIntent): KeyboardResult {
         return when (intent) {
-            is ImeIntent.KeyPressed -> handleKeyPress(intent)
-            is ImeIntent.CandidateSelected -> handleCandidateSelection(intent)
-            is ImeIntent.CandidatePaged -> handleCandidatePaging(intent)
+            is ImeIntent.PressKey -> handleKeyPress(intent)
+            is ImeIntent.SelectCandidate -> handleCandidateSelection(intent)
+            is ImeIntent.PageCandidate -> handleCandidatePaging(intent)
             else -> KeyboardResult(state)
         }
     }

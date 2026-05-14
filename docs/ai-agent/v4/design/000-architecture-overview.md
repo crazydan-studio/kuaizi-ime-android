@@ -74,7 +74,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 ├─────────────────────────────────────────────────────────────────┤
 │                         UI Layer      ← :ime-ui 库               │
 │  Compose 缺省 UI：GestureInputPanel / KeyGridPanel / GestureFeedbackPanel    │
-│  CandidatePanel / InputListPanel / TextEditorBridge / KeyboardPanel      │
+│  CandidatePanel / InputListPanel / EditTextBridge / KeyboardPanel      │
 │  主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
@@ -84,7 +84,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 │  (纯 Kotlin，不依赖 Android 框架，可独立作为库被外部程序引入)       │
 ├─────────────────────────────────────────────────────────────────┤
 │                        Data Layer      ← :ime-engine 库          │
-│  DictProvider 接口 + SqliteDictProvider 内置实现                  │
+│  ImeDictProvider 接口 + ImeSqliteDictProvider 内置实现                  │
 │  PinyinDict / UserInputDataDict / UserInputFavoriteDict          │
 │  (数据库层可替换；配置通过 ImeConfig 代码设置，引擎/UI 配置明确隔离)    │
 └─────────────────────────────────────────────────────────────────┘
@@ -146,7 +146,7 @@ Java 版本有三套消息体系（UserKeyMsg 7 种、UserInputMsg 11 种、Inpu
 ```
 1. 用户按键
    ↓
-2. Compose 手势检测 → 生成 ImeIntent.KeyPressed
+2. Compose 手势检测 → 生成 ImeIntent.PressKey
    ↓
 3. KeyboardViewModel.handleIntent(intent)
    ↓

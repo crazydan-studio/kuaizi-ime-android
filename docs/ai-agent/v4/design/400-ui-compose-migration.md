@@ -50,13 +50,13 @@ fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
             // 候选项栏（浮动/固定）
             CandidatePanel(
                 candidates = state.candidates,
-                onCandidateSelected = { viewModel.handleIntent(ImeIntent.CandidateSelected(it)) },
+                onCandidateSelected = { viewModel.handleIntent(ImeIntent.SelectCandidate(it)) },
             )
 
             // 输入栏
             InputListPanel(
                 inputList = state.inputList,
-                onGapTapped = { viewModel.handleIntent(ImeIntent.CursorMoveTo(it)) },
+                onGapTapped = { viewModel.handleIntent(ImeIntent.MoveCursorTo(it)) },
             )
 
             // 键盘区域（三层面板组合，详见文档 150）

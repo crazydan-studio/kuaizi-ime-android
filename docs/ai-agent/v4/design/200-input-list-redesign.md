@@ -290,7 +290,7 @@ Java 版本的 InputList 从主线程和异步字典回调线程同时访问：
 // 所有状态变更串行执行，StateFlow 保证原子性
 private suspend fun reduce(state: ImeState, intent: ImeIntent): ImeState {
     return when (intent) {
-        is ImeIntent.KeyPressed -> {
+        is ImeIntent.PressKey -> {
             // 1. 更新 InputList（StateFlow 保证原子性）
             val newInputList = state.inputList.appendChar(
                 InputItem.Char(id = uuid(), text = intent.key.label, keys = listOf(intent.key))

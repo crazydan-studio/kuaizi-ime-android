@@ -723,7 +723,7 @@ class InputActionPlayer(
                 feedbackState.setFingerIndicator(FingerIndicatorState(
                     position = position, pressed = true, visible = true
                 ))
-                viewModel.handleIntent(ImeIntent.KeyPressed(action.key, KeyGesture.Tap))
+                viewModel.handleIntent(ImeIntent.PressKey(action.key, KeyGesture.Tap))
             }
             is InputAction.SwipeTo -> {
                 val fromPosition = positionResolver.resolve(action.fromKey) ?: return
@@ -737,7 +737,7 @@ class InputActionPlayer(
                 scope.launch {
                     animateFingerAlongPath(feedbackState, path, action.duration)
                 }
-                viewModel.handleIntent(ImeIntent.KeyPressed(action.toKey, KeyGesture.Swipe))
+                viewModel.handleIntent(ImeIntent.PressKey(action.toKey, KeyGesture.Swipe))
             }
             is InputAction.KeyUp -> {
                 val position = positionResolver.resolve(action.key)
@@ -761,7 +761,7 @@ class InputActionPlayer(
                         position = position, pressed = false, visible = true
                     ))
                 }
-                viewModel.handleIntent(ImeIntent.CandidateSelected(/* candidate */))
+                viewModel.handleIntent(ImeIntent.SelectCandidate(/* candidate */))
             }
             is InputAction.SwitchKeyboard -> {
                 viewModel.handleIntent(ImeIntent.SwitchKeyboard(action.targetType))
@@ -1306,13 +1306,13 @@ class ActionTestDriver(
             when (action) {
                 is InputAction.KeyDown -> {
                     val before = viewModel.state.value
-                    viewModel.handleIntent(ImeIntent.KeyPressed(action.key, KeyGesture.Tap))
+                    viewModel.handleIntent(ImeIntent.PressKey(action.key, KeyGesture.Tap))
                     val after = viewModel.state.value
                     results += TestStepResult(action, before, after)
                 }
                 is InputAction.SelectCandidate -> {
                     val before = viewModel.state.value
-                    viewModel.handleIntent(ImeIntent.CandidateSelected(/* candidate */))
+                    viewModel.handleIntent(ImeIntent.SelectCandidate(/* candidate */))
                     val after = viewModel.state.value
                     results += TestStepResult(action, before, after)
                 }

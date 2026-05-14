@@ -237,12 +237,12 @@ enum class FlipDirection { Left, Right, Up, Down }
 // 在 KeyboardViewModel 中
 fun handleGesture(gesture: InputGesture) {
     val intent = when (gesture) {
-        is InputGesture.Tap -> ImeIntent.KeyPressed(gesture.key, KeyGesture.Tap)
-        is InputGesture.LongPress -> ImeIntent.KeyPressed(gesture.key, KeyGesture.LongPress)
-        is InputGesture.Swipe -> ImeIntent.KeyPressed(gesture.endKey, KeyGesture.Swipe)
-        is InputGesture.Flip -> ImeIntent.KeyPressed(gesture.startKey, KeyGesture.Flip(gesture.direction))
-        is InputGesture.XPadZonePath -> ImeIntent.XPadPathSelected(gesture.startZone, gesture.path)
-        is InputGesture.CandidateTap -> ImeIntent.CandidateSelected(/* from index */)
+        is InputGesture.Tap -> ImeIntent.PressKey(gesture.key, KeyGesture.Tap)
+        is InputGesture.LongPress -> ImeIntent.PressKey(gesture.key, KeyGesture.LongPress)
+        is InputGesture.Swipe -> ImeIntent.PressKey(gesture.endKey, KeyGesture.Swipe)
+        is InputGesture.Flip -> ImeIntent.PressKey(gesture.startKey, KeyGesture.Flip(gesture.direction))
+        is InputGesture.XPadZonePath -> ImeIntent.SelectXPadPath(gesture.startZone, gesture.path)
+        is InputGesture.CandidateTap -> ImeIntent.SelectCandidate(/* from index */)
     }
     handleIntent(intent)
 }
@@ -1358,7 +1358,7 @@ fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
             // 输入栏
             InputListPanel(
                 inputList = state.inputList,
-                onGapTapped = { viewModel.handleIntent(ImeIntent.CursorMoveTo(it)) },
+                onGapTapped = { viewModel.handleIntent(ImeIntent.MoveCursorTo(it)) },
             )
 
             // 键盘区域（三层面板）
@@ -1448,7 +1448,7 @@ class InputActionPlayer(
                     FingerIndicatorState(position = position, pressed = true)
                 )
                 feedbackState.setPressedKeys(setOf(action.key))
-                viewModel.handleIntent(ImeIntent.KeyPressed(action.key, KeyGesture.Tap))
+                viewModel.handleIntent(ImeIntent.PressKey(action.key, KeyGesture.Tap))
             }
             is InputAction.SwipeTo -> {
                 val fromPosition = positionResolver.resolve(action.fromKey) ?: return
@@ -1463,7 +1463,7 @@ class InputActionPlayer(
                 scope.launch {
                     animateFingerAlongPath(path, action.duration)
                 }
-                viewModel.handleIntent(ImeIntent.KeyPressed(action.toKey, KeyGesture.Swipe))
+                viewModel.handleIntent(ImeIntent.PressKey(action.toKey, KeyGesture.Swipe))
             }
             is InputAction.KeyUp -> {
                 val position = positionResolver.resolve(action.key)
