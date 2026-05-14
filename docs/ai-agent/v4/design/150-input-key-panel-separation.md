@@ -1350,7 +1350,7 @@ fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
     KeyboardTheme(themeType = state.config.ui.themeType) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // 候选项栏
-            CandidatePanel(
+            CandidateListPanel(
                 candidates = state.candidates,
                 onCandidateSelected = { viewModel.handleGesture(InputGesture.CandidateTap(/* ... */)) },
             )

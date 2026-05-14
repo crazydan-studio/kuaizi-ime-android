@@ -74,7 +74,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 ├─────────────────────────────────────────────────────────────────┤
 │                         UI Layer      ← :ime-ui 库               │
 │  Compose 缺省 UI：GestureInputPanel / KeyGridPanel / GestureFeedbackPanel    │
-│  CandidatePanel / InputListPanel / EditTextBridge / KeyboardPanel      │
+│  CandidateListPanel / InputListPanel / EditTextBridge / KeyboardPanel      │
 │  主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
@@ -118,7 +118,7 @@ GestureInputPanel → InputGesture → ImeEngine.handleGesture()
                                  ImeEngine.reduce()
                                       ↓
                               StateFlow<ImeState> → KeyGridPanel（纯渲染）
-                              StateFlow<ImeState> → CandidatePanel
+                              StateFlow<ImeState> → CandidateListPanel
                               StateFlow<ImeState> → InputListPanel
                                       ↓
                               GestureFeedbackState → GestureFeedbackPanel（视觉反馈）
@@ -131,7 +131,7 @@ GestureInputPanel → InputGesture → ImeEngine.handleGesture()
 
 ### 3.4 键盘组合模式
 
-Java 版本通过深层继承链（如 `PinyinKeyboard → EditorEditKeyboard → BaseKeyboard`）实现键盘逻辑，v4 改为组合模式：`Keyboard` sealed class + 独立共享组件（`KeyAudioPlayer`、`InputListOperator`、`KeyHandler`、`KeyboardStateMachine`、`CandidatePager`）。完整设计见文档 100。
+Java 版本通过深层继承链（如 `PinyinKeyboard → EditorEditKeyboard → BaseKeyboard`）实现键盘逻辑，v4 改为组合模式：`Keyboard` sealed class + 独立共享组件（`KeyAudioPlayer`、`InputListOperator`、`KeyHandler`、`KeyboardStateMachine`、`CandidateListPager`）。完整设计见文档 100。
 
 ### 3.5 消息系统简化
 

@@ -75,7 +75,7 @@ code/
 │       ├── domain/                         ← 领域逻辑测试
 │       │   ├── KeyboardStateMachineTest.kt
 │       │   ├── InputListTest.kt
-│       │   └── CandidatePagerTest.kt
+│       │   └── CandidateListPagerTest.kt
 │       └── dict/                           ← 字典接口测试
 │           └── ImeInMemoryDictProviderTest.kt
 │

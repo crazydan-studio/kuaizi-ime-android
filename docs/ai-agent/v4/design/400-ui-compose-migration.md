@@ -48,7 +48,7 @@ fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
     KeyboardTheme(themeType = state.config.ui.themeType) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // 候选项栏（浮动/固定）
-            CandidatePanel(
+            CandidateListPanel(
                 candidates = state.candidates,
                 onCandidateSelected = { viewModel.handleIntent(ImeIntent.SelectCandidate(it)) },
             )
@@ -190,11 +190,11 @@ fun CharKeyContent(key: InputKey.Char) {
 
 ```kotlin
 @Composable
-fun CandidatePanel(
-    candidates: CandidateListState,
+fun CandidateListPanel(
+    state: CandidateListState,
     onCandidateSelected: (InputWord) -> Unit,
 ) {
-    if (candidates.candidates.isEmpty()) return
+    if (state.candidates.isEmpty()) return
 
     LazyRow(
         modifier = Modifier
@@ -204,7 +204,7 @@ fun CandidatePanel(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = PaddingValues(horizontal = 8.dp),
     ) {
-        items(items = candidates.candidates, key = { it.id }) { candidate ->
+        items(items = state.candidates, key = { it.id }) { candidate ->
             CandidateItem(
                 candidate = candidate,
                 onClick = { onCandidateSelected(candidate) },
@@ -485,7 +485,7 @@ fun SettingsScreen(
 | 5 种 `InputViewHolder` | `InputItem()` 分支 | 按类型分发 Composable |
 | `InputQuickListView` | `QuickListPopup` | 浮层 |
 | `InputFavoriteListView` | `FavoritesList` + `LazyColumn` | 简化 |
-| `CandidatesView` | `CandidatePanel` + `LazyRow` | FlexboxLayout → Compose |
+| `CandidatesView` | `CandidateListPanel` + `LazyRow` | FlexboxLayout → Compose |
 | `FavoriteboardView` | `FavoritesScreen` | Compose |
 | `XPadView` + `XPainter` 系列 | `XPadView` + Compose `Canvas` | 统一绘制 API |
 | `ViewGestureDetector` | `Modifier.pointerInput` | 标准手势 API |

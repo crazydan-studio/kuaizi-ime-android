@@ -228,8 +228,8 @@ fun ClipTipPopup(
 
 ```kotlin
 @Composable
-fun FavoritesPanel(
-    favorites: List<InputFavorite>,
+fun FavoriteListPanel(
+    state: FavoriteListState,
     onPaste: (InputFavorite) -> Unit,
     onDelete: (String) -> Unit,
     onClearAll: () -> Unit,
@@ -252,7 +252,7 @@ fun FavoritesPanel(
 
         // 收藏列表
         LazyColumn {
-            items(items = favorites, key = { it.text }) { favorite ->
+            items(items = state.favorites, key = { it.text }) { favorite ->
                 FavoriteItem(
                     favorite = favorite,
                     onPaste = { onPaste(favorite) },
@@ -304,7 +304,7 @@ fun FavoriteItem(
 | 正则提取（分散在多处） | `ClipboardService.extractType()` | 集中管理 |
 | `UserInputFavoriteDict` | `FavoriteService` + `FavoriteDao` | Room DAO + Flow |
 | 剪贴板浮动提示（自定义 View） | `ClipTipPopup` (Compose) | 声明式 UI |
-| 收藏面板（自定义 RecyclerView） | `FavoritesPanel` + `LazyColumn` | Compose 简化 |
+| 收藏面板（自定义 RecyclerView） | `FavoriteListPanel` + `LazyColumn` | Compose 简化 |
 | 收藏删除（手动按钮） | `SwipeToDismiss` | 滑动删除 |
 | 收藏使用计数 | `FavoriteEntity.usageCount` | 保留 |
 | 收藏保存（从输入/剪贴板） | `FavoriteService.save()` | 统一入口 |
