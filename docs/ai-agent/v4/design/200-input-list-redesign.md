@@ -300,7 +300,7 @@ private suspend fun reduce(state: ImeState, intent: ImeIntent): ImeState {
             // 3. 返回新状态
             state.copy(
                 inputList = newInputList,
-                candidates = CandidateState(candidates = candidates),
+                candidates = CandidateListState(candidates = candidates),
             )
         }
         // ...

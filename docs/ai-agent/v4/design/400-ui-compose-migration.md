@@ -191,7 +191,7 @@ fun CharKeyContent(key: InputKey.Char) {
 ```kotlin
 @Composable
 fun CandidatePanel(
-    candidates: CandidateState,
+    candidates: CandidateListState,
     onCandidateSelected: (InputWord) -> Unit,
 ) {
     if (candidates.candidates.isEmpty()) return

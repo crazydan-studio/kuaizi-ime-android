@@ -871,7 +871,7 @@ sealed class InputItem {
  *
  * 描述候选栏中的候选字词列表和分页信息。
  */
-data class CandidateState(
+data class CandidateListState(
     /** 候选字词列表 */
     val candidates: List<InputWord> = emptyList(),
     /** 当前页码（从 0 开始） */
@@ -903,7 +903,7 @@ data class ClipboardState(
  * 仅在 Feature.Favorites 启用时使用。
  * 完整的收藏设计见文档 600。
  */
-data class FavoritesState(
+data class FavoriteListState(
     /** 收藏列表 */
     val favorites: List<InputFavorite> = emptyList(),
     /** 是否正在加载 */
@@ -1703,9 +1703,9 @@ data class ImeState(
     val keyboardState: KeyboardState = KeyboardState.Idle,
     val keyGrid: List<List<InputKey>> = emptyList(),
     val inputList: InputListState = InputListState(),
-    val candidates: CandidateState = CandidateState(),
+    val candidates: CandidateListState = CandidateListState(),
     val clipboard: ClipboardState = ClipboardState(),
-    val favorites: FavoritesState = FavoritesState(),
+    val favorites: FavoriteListState = FavoriteListState(),
     val config: ImeConfig = ImeConfig(),
 )
 ```
