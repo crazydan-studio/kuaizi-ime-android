@@ -113,10 +113,23 @@ sealed class InputItem {
         override val id: String,
         val text: String,
         val keys: List<InputKey>,
+        val replacements: List<String> = emptyList(),
         val word: InputWord? = null,
         val pairSymbol: PairSymbol? = null,
     ) : InputItem() {
         val hasPair: Boolean get() = pairSymbol != null
+        /** 是否有可替换的候选（replacements 数量 > 1 表示有替换选项） */
+        val hasReplacements: Boolean get() = replacements.size > 1
+
+        /** 获取下一个替换文本，循环替换 */
+        fun nextReplacement(text: String): String {
+            if (replacements.size <= 1) return text
+            val index = replacements.indexOf(text)
+            return if (index >= 0) replacements[(index + 1) % replacements.size] else replacements[0]
+        }
+
+        /** 检查指定按键是否可以被替换 */
+        fun canReplace(key: InputKey.Char): Boolean = replacements.size > 1 && key.text in replacements
     }
 
     /** 间隔/游标位置 */

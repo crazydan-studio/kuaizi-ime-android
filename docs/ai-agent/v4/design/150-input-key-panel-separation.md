@@ -168,6 +168,8 @@ sealed class InputGesture {
     data class Tap(
         override val timestamp: Long,
         val key: InputKey,
+        /** 连续点击同一按键的次数（0=首次，1=双击，2=三击...） */
+        val tick: Int = 0,
     ) : InputGesture()
 
     /**

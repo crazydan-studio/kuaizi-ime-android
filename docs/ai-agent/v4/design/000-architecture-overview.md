@@ -70,16 +70,17 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 │  配置持久化（DataStore）+ 设置页面 + 引导页面                     │
 ├─────────────────────────────────────────────────────────────────┤
 │                      ViewModel Layer   ← :app 模块               │
-│  KeyboardViewModel（来自 :ime-ui）+ 配置持久化（独立）+ Output 桥接    │
+│  KeyboardViewModel（来自 :ime-ui）+ 配置持久化（独立）+ ImeOutputBridge 桥接    │
 ├─────────────────────────────────────────────────────────────────┤
 │                         UI Layer      ← :ime-ui 库               │
 │  Compose 缺省 UI：GestureInputPanel / KeyGridPanel / GestureFeedbackPanel    │
-│  CandidatePanel / InputListPanel / EditorField / KeyboardPanel          │
-│  InputHostView / 主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
+│  CandidatePanel / InputListPanel / TextEditorBridge / KeyboardPanel      │
+│  主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
 │                       Domain Layer     ← :ime-engine 库          │
 │  ImeEngine / Keyboard / InputList / Inputboard / Favoriteboard  │
+│  ImeOutputBridge / BaseImeOutputBridge                          │
 │  (纯 Kotlin，不依赖 Android 框架，可独立作为库被外部程序引入)       │
 ├─────────────────────────────────────────────────────────────────┤
 │                        Data Layer      ← :ime-engine 库          │
@@ -126,7 +127,7 @@ GestureInputPanel → InputGesture → ImeEngine.handleGesture()
 - **ImeIntent**：用户意图的 sealed class 表达，替代 Java 版本的三套消息体系（UserKeyMsg、UserInputMsg、InputMsg）。完整定义见文档 160 第 4.4 节
 - **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见文档 160 第 8.1 节
 - **三层面板分离**：GestureInputPanel（手势拦截层）→ GestureFeedbackPanel（反馈绘制层）→ KeyGridPanel（按键渲染层）。完整设计见文档 150
-- **ImeOutput**：引擎输出 sealed class，桥接到 InputConnection 或 EditorField。完整定义见文档 160 第 4.3 节
+- **ImeOutput**：引擎输出 sealed class，通过 ImeOutputBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见文档 160 第 4.3 节
 
 ### 3.4 键盘组合模式
 
@@ -171,9 +172,9 @@ Java 版本有三套消息体系（UserKeyMsg 7 种、UserInputMsg 11 种、Inpu
    ↓
 3. reduce 提取 inputList 的文本
    ↓
-4. 通过 InputConnection.commitText() 提交到编辑器
+4. 通过 ImeOutputBridge.commitText() 提交到编辑器
    ↓
-5. 重置 inputList 和 candidates
+5. 重置 inputList 和 candidates；引擎通过 dispatchToTarget() 自动分发到已挂载的 ImeOutputBridge
    ↓
 6. 状态更新 → UI 自动刷新
 ```
@@ -196,6 +197,7 @@ Java 版本有三套消息体系（UserKeyMsg 7 种、UserInputMsg 11 种、Inpu
 | 测试 | 几乎无 | 全面单元测试 + 截图对比 + UI 测试工具 |
 | 日志 | Logger（仅 DEBUG 生效） | AppLog（分级+持久化+崩溃拦截+查看导出） |
 | UI 调试 | 无 | 内置 UI 测试工具（debug 构建，release 自动移除） |
+| 输出桥接 | 手动 when 分发（2处重复） | ImeOutputBridge 语义化桥接（1处分发） |
 | 输入练习 | ExerciseGuide（手动 Exercise 步骤） | InputActionPlayer + ExerciseScreen（release 可用的动作动画演示） |
 
 ---

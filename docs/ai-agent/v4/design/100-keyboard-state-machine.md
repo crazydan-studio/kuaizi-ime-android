@@ -302,9 +302,22 @@ sealed class InputKey {
         override val id: String,
         override val label: String,
         val levels: List<String>,
-        val replacements: Map<String, String>,
+        val replacements: List<String> = emptyList(),
         override val weight: Float = 1f,
-    ) : InputKey()
+    ) : InputKey() {
+        /** 是否有可替换的候选 */
+        val hasReplacements: Boolean get() = replacements.size > 1
+
+        /** 获取下一个替换文本，若无可替换则返回当前文本 */
+        fun nextReplacement(current: String): String {
+            if (replacements.size <= 1) return current
+            val index = replacements.indexOf(current)
+            return if (index >= 0) replacements[(index + 1) % replacements.size] else replacements[0]
+        }
+
+        /** 当前文本是否可被替换 */
+        fun canReplace(current: String): Boolean = replacements.size > 1 && current in replacements
+    }
 
     // 控制按键
     sealed class Ctrl : InputKey() {
