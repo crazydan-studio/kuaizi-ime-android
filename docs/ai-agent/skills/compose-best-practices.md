@@ -260,14 +260,20 @@ class KeyboardViewModel : ViewModel() {
 
 ### 3.3 Compose 中的键盘渲染
 
+> **注意**：v4 采用三层分离设计（详见文档 150），键盘 UI 分离为 GestureInputPanel（手势拦截层）、GestureFeedbackPanel（反馈绘制层）和 KeyGridPanel（按键渲染层）。以下展示的是 KeyGridPanel 的纯渲染部分。
+
 ```kotlin
 @Composable
-fun KeyboardPanel(
+fun StandardKeyGridPanel(
     keyGrid: List<List<InputKey>>,
-    onKeyPress: (InputKey, KeyGesture) -> Unit,
+    keyboardState: KeyboardState,
+    onLayoutInfoChanged: (KeyGridPanelLayoutInfo) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
+    val keyPositions = remember { mutableMapOf<InputKey, Rect>() }
+
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         keyGrid.forEach { row ->
@@ -278,9 +284,19 @@ fun KeyboardPanel(
                 row.forEach { key ->
                     KeyView(
                         key = key,
-                        onPress = { onKeyPress(key, KeyGesture.Tap) },
-                        onLongPress = { onKeyPress(key, KeyGesture.LongPress) },
-                        modifier = Modifier.weight(key.weight),
+                        isActive = isKeyActive(key, keyboardState),
+                        modifier = Modifier
+                            .weight(key.weight)
+                            .onGloballyPositioned { coordinates ->
+                                keyPositions[key] = coordinates.boundsInRoot()
+                                onLayoutInfoChanged(
+                                    KeyGridPanelLayoutInfo(
+                                        keyPositions = keyPositions.toMap(),
+                                        xPadLayoutInfo = null,
+                                        candidateLayoutInfo = null,
+                                    )
+                                )
+                            },
                     )
                 }
             }
@@ -338,15 +354,15 @@ LazyVerticalGrid(
 
 ```kotlin
 // ✅ 推荐：Lambda 不捕获可变状态
-KeyboardPanel(
-    onKeyPress = { key -> viewModel.handleIntent(ImeIntent.KeyPressed(key)) },
+GestureInputPanel(
+    onGesture = { gesture -> viewModel.handleGesture(gesture) },
 )
 
 // ❌ 避免：Lambda 捕获频繁变化的 state
-KeyboardPanel(
-    onKeyPress = { key ->
+GestureInputPanel(
+    onGesture = { gesture ->
         val current = state.value // 每次调用都读取 state
-        process(key, current)
+        process(gesture, current)
     },
 )
 ```

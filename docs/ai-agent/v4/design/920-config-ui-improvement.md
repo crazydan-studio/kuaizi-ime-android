@@ -328,10 +328,9 @@ fun KeyboardPreview(config: ImeConfig) {
             KeyboardTheme(themeType = config.ui.themeType) {
                 // 使用真实键盘 Composable，但 scale 缩小
                 Box(modifier = Modifier.scale(0.5f).fillMaxSize()) {
-                    StandardKeyboard(
+                    StandardKeyGridPanel(
                         keyGrid = pinyinKeyGridPreview(config.engine.handMode),
                         keyboardState = KeyboardState.Idle,
-                        onKeyPress = { _, _ -> }, // 不可交互
                     )
                 }
             }

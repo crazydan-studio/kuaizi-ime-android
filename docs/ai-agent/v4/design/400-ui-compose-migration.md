@@ -476,7 +476,7 @@ fun SettingsScreen(
 | Java UI 组件 | Compose 对应 | 改进说明 |
 |-------------|-------------|---------|
 | `MainboardView` | `InputScreen` 顶层组合 | 声明式布局 |
-| `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyboard` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
+| `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyGridPanel` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
 | `KeyboardViewLayoutManager` | Compose `Row`/`Column` + `Modifier.weight` | 移除自定义 LayoutManager |
 | `KeyboardViewGestureListener` | `Modifier.pointerInput` | Compose 手势 API |
 | `KeyboardViewKeyAnimator` | Compose 动画 API | 声明式动画 |

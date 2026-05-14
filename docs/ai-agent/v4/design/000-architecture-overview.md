@@ -144,7 +144,7 @@ sealed class ImeIntent {
     data object CommitInput : ImeIntent()
     data object DeleteInput : ImeIntent()
     data object CleanInput : ImeIntent()
-    data class EditorAction(val action: EditorActionType) : ImeIntent()
+    data class EditAction(val action: EditorAction) : ImeIntent()
 
     // 剪贴板与收藏
     data class ClipPasted(val clip: InputClip) : ImeIntent()

@@ -88,7 +88,7 @@ kuaizi-ime-android/
 │   │       └── org/crazydan/studio/app/ime/kuaizi/ui/
 │   │           ├── theme/       ← 主题系统（KeyboardColors, KeyboardThemes, KeyboardTheme）
 │   │           ├── panel/       ← 三层面板（GestureInputPanel, KeyGridPanel, GestureFeedbackPanel）
-│   │           ├── keyboard/    ← 键盘组件（StandardKeyboard, EmojiKeyboard, XPadView）
+│   │           ├── keyboard/    ← 键盘组件（StandardKeyGridPanel, EmojiKeyboard, XPadView）
 │   │           ├── candidate/   ← 候选栏（CandidatePanel, CandidateItem）
 │   │           ├── input/       ← 输入栏（InputListPanel, CharInputItem, GapInputItem）
 │   │           ├── editor/      ← 编辑器组件（EditorField, EditorHost）
@@ -1578,8 +1578,8 @@ fun CustomInputScreen() {
     MyCustomKeyboard(
         keyGrid = state.keyGrid,
         keyboardState = state.keyboardState,
-        onKeyPress = { key ->
-            engine.handleGesture(InputGesture.Tap(System.currentTimeMillis(), key))
+        onGesture = { gesture ->
+            engine.handleGesture(gesture)
         },
     )
 
