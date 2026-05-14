@@ -63,7 +63,8 @@
 在 Compose 生态中，`View` 后缀通常用于叶子组件（如 `KeyView`、`XPadView`），表示一个独立的可渲染单元。而 `KeyboardView` 是一个组合容器，将多个子面板编排在一起——这在语义上更接近 `Panel`（面板组合）而非 `View`（单一视图）。
 
 统一为 `Panel` 后缀后，:ime-ui 模块的命名体系更清晰：
-- `Panel` 后缀 = 容器/组合器（`KeyboardPanel`、`GestureInputPanel`、`CandidatePanel`、`InputListPanel`、`KeyGridPanel`、`GestureFeedbackPanel`）
+- `Panel` 后缀 = 容器/组合器（`KeyboardPanel`、`GestureInputPanel`、`CandidateListPanel`、`InputListPanel`、`KeyGridPanel`、`GestureFeedbackPanel`）
+- `Screen` 后缀 = 全屏界面（`KeyboardScreen`、`SettingsScreen`、`MainScreen`、`ExerciseScreen`）
 - `View` 后缀 = 叶子视图（`XPadView`、`InputHostView`、`KeyView`）
 - 直接职能名 = 非组合非叶子的功能组件（`EditorField`、`EditorHost`）
 

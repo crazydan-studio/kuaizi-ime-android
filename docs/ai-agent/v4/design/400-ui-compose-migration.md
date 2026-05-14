@@ -44,42 +44,39 @@ IMEditor → InputMsg → IMEService → IMEditorView → View
 @Composable
 fun KeyboardPanel(viewModel: KeyboardViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val feedbackState = remember { GestureFeedbackState() }
+    var keyPanelLayout by remember { mutableStateOf(KeyGridPanelLayoutInfo()) }
 
     KeyboardTheme(themeType = state.config.ui.themeType) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            // 候选项栏（浮动/固定）
-            CandidateListPanel(
-                state = state.candidates,
-                onCandidateSelected = { viewModel.handleIntent(ImeIntent.SelectCandidate(it)) },
-            )
-
-            // 输入栏
-            InputListPanel(
-                state = state.inputList,
-                onGapTapped = { viewModel.handleIntent(ImeIntent.MoveCursorTo(it)) },
-            )
-
-            // 键盘区域（三层面板组合，详见文档 150）
-            ThreeLayerKeyboardArea(
-                engine = viewModel.engine,
-            )
-
-            // 工具栏（键盘上方的控制栏）
-            Toolbar(
+        Box(modifier = Modifier) {
+            // 底层：按键面板
+            KeyGridPanel(
                 keyboardType = state.keyboardType,
-                config = state.config,
-                onSwitchKeyboard = { viewModel.handleIntent(ImeIntent.SwitchKeyboard(it)) },
+                keyGrid = state.keyGrid,
+                keyboardState = state.keyboardState,
+                onLayoutInfoChanged = { keyPanelLayout = it },
+            )
+
+            // 中层：反馈面板
+            GestureFeedbackPanel(
+                elements = GestureFeedbackPanelSet.OverlaySet.allElements,
+                feedbackState = feedbackState,
+                keyPanelLayout = keyPanelLayout,
+            )
+
+            // 顶层：输入面板
+            GestureInputPanel(
+                keyPanelLayout = keyPanelLayout,
+                keyboardType = state.keyboardType,
+                feedbackState = feedbackState,
+                onGesture = { viewModel.handleGesture(it) },
             )
         }
-
-        // 浮动 UI
-        ClipTipPopup(state.clipboard, onPaste = { ... })
-        CommitOptionPopup(state.commitOptions, onSelect = { ... })
     }
 }
 ```
 
-> **注意**：`KeyboardPanel` 是 UI 库对第三方应用开放的完整输入法 UI 组件，合并了原 `InputScreen` 的职责。其内部的键盘区域由三层面板（GestureInputPanel / GestureFeedbackPanel / KeyGridPanel）组合而成，详见文档 150。
+> **注意**：`KeyboardPanel` 是 UI 库的三层面板叠加模式键盘面板，直接包含 GestureInputPanel / GestureFeedbackPanel / KeyGridPanel 三层面板（无中间包装层）。叠加模式下，第三方应用需自行组合 KeyboardPanel + CandidateListPanel + InputListPanel + Toolbar。全屏模式请使用 `KeyboardScreen`（详见文档 160 第 5.4b 节）。
 
 ### 3.2 ComposeView 桥接
 
@@ -96,7 +93,20 @@ class IMEService : InputMethodService() {
                 val viewModel: KeyboardViewModel = viewModel(
                     factory = KeyboardViewModelFactory(this@IMEService)
                 )
-                KeyboardPanel(viewModel = viewModel)
+                val state by viewModel.state.collectAsStateWithLifecycle()
+                KeyboardTheme(themeType = state.config.ui.themeType) {
+                    Column {
+                        CandidateListPanel(
+                            state = state.candidates,
+                            onCandidateSelected = { viewModel.handleIntent(ImeIntent.SelectCandidate(it)) },
+                        )
+                        InputListPanel(
+                            state = state.inputList,
+                            onGapTapped = { viewModel.handleIntent(ImeIntent.MoveCursorTo(it)) },
+                        )
+                        KeyboardPanel(viewModel = viewModel)
+                    }
+                }
             }
         }
     }
@@ -135,7 +145,7 @@ fun KeyGridPanel(
 }
 ```
 
-完整的三层面板组合（GestureInputPanel + GestureFeedbackPanel + KeyGridPanel）由 `KeyboardPanel` 集成组件封装，详见文档 160 第 5.4 节。
+三层面板直接在 `KeyboardPanel` 中叠加（无中间包装层），详见文档 160 第 5.4 节。
 
 ### 3.4 按键视图
 
@@ -477,7 +487,7 @@ fun SettingsScreen(
 
 | Java UI 组件 | Compose 对应 | 改进说明 |
 |-------------|-------------|---------|
-| `MainboardView` | `KeyboardPanel` 完整输入法 UI | 声明式布局，合并原 InputScreen 职责 |
+| `MainboardView` | `KeyboardPanel`（叠加模式）/ `KeyboardScreen`（全屏模式） | 三层面板直接叠加/分离布局，合并原 ThreeLayerKeyboardArea 和 InputScreen 职责 |
 | `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyGridPanel` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
 | `KeyboardViewLayoutManager` | Compose `Row`/`Column` + `Modifier.weight` | 移除自定义 LayoutManager |
 | `KeyboardViewGestureListener` | `Modifier.pointerInput` | Compose 手势 API |

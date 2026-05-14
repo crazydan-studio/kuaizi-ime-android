@@ -661,6 +661,7 @@ class PinyinKeyboardScreenshotTest {
     fun pinyinKeyboardIdle() {
         paparazzi.snapshot {
             KeyboardTheme(themeType = ThemeType.Light) {
+                // KeyboardPanel: 叠加模式键盘面板（详见文档 160 §5.4）
                 KeyboardPanel(
                     state = ImeState(
                         keyboardType = KeyboardType.Pinyin,

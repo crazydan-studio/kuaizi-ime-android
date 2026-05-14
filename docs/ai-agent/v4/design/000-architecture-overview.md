@@ -74,7 +74,7 @@ Java 版本采用自定义消息驱动的 MVP 架构：
 ├─────────────────────────────────────────────────────────────────┤
 │                         UI Layer      ← :ime-ui 库               │
 │  Compose 缺省 UI：GestureInputPanel / KeyGridPanel / GestureFeedbackPanel    │
-│  CandidateListPanel / InputListPanel / EditTextBridge / KeyboardPanel      │
+│  CandidateListPanel / InputListPanel / EditTextBridge / KeyboardPanel / KeyboardScreen      │
 │  主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
