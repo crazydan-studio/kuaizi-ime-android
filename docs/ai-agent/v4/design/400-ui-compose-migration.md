@@ -42,14 +42,14 @@ IMEditor → InputMsg → IMEService → IMEditorView → View
 
 ```kotlin
 @Composable
-fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
+fun KeyboardPanel(viewModel: KeyboardViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     KeyboardTheme(themeType = state.config.ui.themeType) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // 候选项栏（浮动/固定）
             CandidateListPanel(
-                candidates = state.candidates,
+                state = state.candidates,
                 onCandidateSelected = { viewModel.handleIntent(ImeIntent.SelectCandidate(it)) },
             )
 
@@ -60,7 +60,7 @@ fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
             )
 
             // 键盘区域（三层面板组合，详见文档 150）
-            KeyboardPanel(
+            ThreeLayerKeyboardArea(
                 engine = viewModel.engine,
             )
 
@@ -79,6 +79,8 @@ fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
 }
 ```
 
+> **注意**：`KeyboardPanel` 是 UI 库对第三方应用开放的完整输入法 UI 组件，合并了原 `InputScreen` 的职责。其内部的键盘区域由三层面板（GestureInputPanel / GestureFeedbackPanel / KeyGridPanel）组合而成，详见文档 150。
+
 ### 3.2 ComposeView 桥接
 
 ```kotlin
@@ -94,7 +96,7 @@ class IMEService : InputMethodService() {
                 val viewModel: KeyboardViewModel = viewModel(
                     factory = KeyboardViewModelFactory(this@IMEService)
                 )
-                InputScreen(viewModel = viewModel)
+                KeyboardPanel(viewModel = viewModel)
             }
         }
     }
@@ -475,7 +477,7 @@ fun SettingsScreen(
 
 | Java UI 组件 | Compose 对应 | 改进说明 |
 |-------------|-------------|---------|
-| `MainboardView` | `InputScreen` 顶层组合 | 声明式布局 |
+| `MainboardView` | `KeyboardPanel` 完整输入法 UI | 声明式布局，合并原 InputScreen 职责 |
 | `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyGridPanel` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
 | `KeyboardViewLayoutManager` | Compose `Row`/`Column` + `Modifier.weight` | 移除自定义 LayoutManager |
 | `KeyboardViewGestureListener` | `Modifier.pointerInput` | Compose 手势 API |

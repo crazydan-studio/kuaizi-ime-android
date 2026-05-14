@@ -135,3 +135,4 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 - `FavoritesPanel`（使用 `FavoriteListPanel`）
 - `CandidatePager`（使用 `CandidateListPager`）
 - `ImeOutput.EditAction`（使用 `ImeOutput.PerformEdit`）
+- `InputScreen`（使用 `KeyboardPanel`，合并完整输入法 UI 职责）
