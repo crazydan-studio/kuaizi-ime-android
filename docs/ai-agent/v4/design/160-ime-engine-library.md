@@ -1327,7 +1327,7 @@ fun KeyboardPanel(
             // 输入栏
             if (showInputListPanel) {
                 InputListPanel(
-                    inputList = state.inputList,
+                    state = state.inputList,
                     onGapTapped = { index ->
                         engine.handleIntent(ImeIntent.MoveCursorTo(index))
                     },
@@ -2255,7 +2255,7 @@ fun MinimalInputScreen() {
 
         // 只用输入栏
         InputListPanel(
-            inputList = state.inputList,
+            state = state.inputList,
             onGapTapped = { index ->
                 engine.handleIntent(ImeIntent.MoveCursorTo(index))
             },

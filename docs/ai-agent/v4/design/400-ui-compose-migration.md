@@ -55,7 +55,7 @@ fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
 
             // 输入栏
             InputListPanel(
-                inputList = state.inputList,
+                state = state.inputList,
                 onGapTapped = { viewModel.handleIntent(ImeIntent.MoveCursorTo(it)) },
             )
 
@@ -245,7 +245,7 @@ fun CandidateItem(candidate: InputWord, onClick: () -> Unit) {
 ```kotlin
 @Composable
 fun InputListPanel(
-    inputList: InputListState,
+    state: InputListState,
     onGapTapped: (Int) -> Unit,
 ) {
     LazyRow(
@@ -255,11 +255,11 @@ fun InputListPanel(
             .background(inputListPanelBackgroundColor),
         contentPadding = PaddingValues(horizontal = 4.dp),
     ) {
-        itemsIndexed(inputList.inputs, key = { _, it -> it.id }) { index, item ->
+        itemsIndexed(state.inputs, key = { _, it -> it.id }) { index, item ->
             when (item) {
                 is InputItem.Char -> CharInputItem(item)
                 is InputItem.Gap -> GapInputItem(
-                    isCursor = index == inputList.gapIndex,
+                    isCursor = index == state.gapIndex,
                     onTap = { onGapTapped(index) },
                 )
                 is InputItem.MathExpr -> MathExprInputItem(item)

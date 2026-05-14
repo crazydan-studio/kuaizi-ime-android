@@ -1357,7 +1357,7 @@ fun InputScreen(viewModel: KeyboardViewModel = viewModel()) {
 
             // 输入栏
             InputListPanel(
-                inputList = state.inputList,
+                state = state.inputList,
                 onGapTapped = { viewModel.handleIntent(ImeIntent.MoveCursorTo(it)) },
             )
 
