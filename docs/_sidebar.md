@@ -12,6 +12,7 @@
     - [索引](ai-agent/v4/index.md)
     - 设计文档
       - [架构总览](ai-agent/v4/design/000-architecture-overview.md)
+      - [命名规范](ai-agent/v4/design/010-naming-conventions.md)
       - [键盘状态机设计](ai-agent/v4/design/100-keyboard-state-machine.md)
       - [输入面板三层分离](ai-agent/v4/design/150-input-key-panel-separation.md)
       - [IME 引擎库设计](ai-agent/v4/design/160-ime-engine-library.md)

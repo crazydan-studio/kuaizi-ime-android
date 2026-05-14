@@ -8,7 +8,8 @@
 
 | 编号 | 文档 | 简述 |
 |------|------|------|
-| 000 | [架构总览](000-architecture-overview.md) | v4 整体架构设计，包括分层、消息流、技术选型和与 Java 版本的架构对比 |
+| 000 | [架构总览](000-architecture-overview.md) | v4 整体架构设计，包括分层、数据流、核心设计决策和与 Java 版本的架构对比 |
+| 010 | [命名规范](010-naming-conventions.md) | 三层模块命名、UI 组件后缀、KeyGridPanel 子类命名、引擎 API 命名、已更名对照 |
 | 100 | [键盘状态机设计](100-keyboard-state-machine.md) | 键盘状态机重构，从继承链到组合模式，Sealed class 状态定义和转换规则 |
 | 150 | [输入面板、按键面板与反馈面板三层分离设计](150-input-key-panel-separation.md) | 输入手势、按键渲染与手势反馈三层分离：输入面板（透明手势层）接收手势识别为 InputGesture，按键面板纯展示（持续性状态渲染），反馈面板独立透明绘制（临时性手势反馈，支持多实例）；叠加布局模式；后续支持全屏输入模式 |
 | 160 | [IME 引擎库与 UI 库设计](160-ime-engine-library.md) | 三层库架构：引擎库 `:ime-engine`（纯 Kotlin，可独立使用）+ UI 库 `:ime-ui`（Compose 缺省 UI，对第三方应用开放）+ 应用模块 `:app`（IME 服务 + 设置）。引擎与 UI 完全分离，统一配置 `ImeConfig`（含 `EngineConfig` 引擎配置和 `UiConfig` UI 配置的明确隔离），DictProvider 接口支持替换内置 SQLite 实现，Feature 标记按需禁用收藏/剪贴板等功能；UI 库提供 EditorField、KeyboardPanel、InputHostView 等即插即用组件，第三方应用可直接使用缺省 UI 或自行替换；`:app` 直接使用 UI 库的 `KeyboardViewModel`，不继承也不扩展 |
@@ -30,7 +31,7 @@
 
 1. ~~**ImeConfig 与 Config 的职责边界**~~：✅ 已解决。`ImeEngineConfig` 重命名为 `ImeConfig`，同时包含引擎配置（`EngineConfig`）和 UI 配置（`UiConfig`），二者明确隔离。原 `:app` 模块的 `Config` data class 已合并到 `ImeConfig.UiConfig`，不再需要独立的 `Config` 和两套配置的同步逻辑
 2. ~~**ImeState.config 的实际类型**~~：✅ 已解决。`ImeState.config` 统一为 `ImeConfig`，包含完整的引擎配置和 UI 配置。UI 侧通过 `config.ui` 访问 UI 配置，引擎侧通过 `config.engine` 访问引擎配置
-3. ~~**字典数据库方案**~~：✅ 已决定。现阶段直接采用 Room 框架，后续视情况决定是否更换方案（文档 000 第 5.5 节、文档 300 第 3.2 节）
+3. ~~**字典数据库方案**~~：✅ 已决定。现阶段直接采用 Room 框架，后续视情况决定是否更换方案（文档 300 第 3.2 节）
 4. ~~**KeyboardViewModel 在 :app 模块中的继承方式**~~：✅ 已解决。`:app` 模块直接使用 UI 库的 `KeyboardViewModel`，不继承也不扩展。配置持久化和 InputConnection 桥接等平台特定职责由 `:app` 中的独立组件承担（文档 160 第 8.4 节）
 5. **GestureInputPanel 手势检测的性能**：GestureInputPanel 作为全屏透明层拦截所有触摸事件，在高频滑行输入时的性能表现需要在原型阶段验证（文档 000 第 7 节）
 6. **Compose 在 IME 环境中的性能**：Compose 在 InputMethodService 中的内存占用和渲染帧率需要在原型阶段验证，必要时降级为 View（文档 400 第 7 节）

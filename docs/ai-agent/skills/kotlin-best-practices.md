@@ -2,7 +2,7 @@
 
 本文档基于 Kotlin 2.3.20，说明 Kotlin 的最佳实践、推荐特性、避坑指南和不规范写法。
 
-> **说明**：本文档前半部分为通用 Kotlin 最佳实践，第 5、8 节涉及本项目的 Java → Kotlin 迁移对比。通用示例不绑定本项目领域对象，项目迁移示例则直接使用本项目的类名和设计。
+> **说明**：本文档为通用 Kotlin 最佳实践，所有示例使用领域无关的类名和场景，不绑定特定项目的领域对象。
 
 ---
 
@@ -12,14 +12,14 @@
 
 | 特性 | 说明 | 适用场景 |
 |------|------|----------|
-| **Sealed class / interface** | 替代枚举和继承体系，表达有限类型集合 | 消息类型、按键类型、输入类型、键盘状态 |
+| **Sealed class / interface** | 替代枚举和继承体系，表达有限类型集合 | 消息类型、状态类型、结果类型 |
 | **Data class** | 自动生成 equals/hashCode/toString/copy | 所有不可变数据模型 |
-| **Value class** | 零开销的类型包装，编译期类型安全 | 键码、配置键名、字典版本号等简单包装 |
+| **Value class** | 零开销的类型包装，编译期类型安全 | ID 包装、配置键名、版本号等简单包装 |
 | **Extension function** | 为已有类添加功能而不继承 | 工具方法、视图扩展 |
 | **Scope function**（let/run/apply/also/with）| 作用域限定和链式调用 | 对象初始化、空安全操作 |
 | **Coroutine + Flow** | 替代 CompletableFuture、Handler、RxJava | 异步操作、事件流、状态观察 |
-| **DSL builder** | 类型安全的构建器模式 | 消息构建、键表定义、配置构建 |
-| **Context parameters** | 替代隐式依赖传递和全局单例 | 字典访问、配置注入 |
+| **DSL builder** | 类型安全的构建器模式 | 消息构建、配置构建 |
+| **Context parameters** | 替代隐式依赖传递和全局单例 | 依赖注入、配置传递 |
 | **Name-based destructuring** | 2.3.20 新特性，基于名称的解构声明 | 数据类解构，避免位置错乱 |
 | **Inline function** | 消除 lambda 开销 | 高频调用的工具函数 |
 | **Contract** | 协助编译器进行空值和类型推断 | require/check 后的智能类型转换 |
@@ -32,7 +32,7 @@
 | **Companion object** | 容易沦为全局状态的容器 | 仅用于工厂方法和常量，不放可变状态 |
 | **Operator overloading** | 过度使用降低可读性 | 仅在语义明确时使用（如 `plus` 用于集合合并），不用于业务逻辑 |
 | **Delegated property** | `by lazy`、`by observable` 很有用，但自定义委托增加复杂度 | 优先使用标准委托 |
-| **Actual/Expect** | 多平台代码会增加维护成本 | 本项目仅 Android，不需要 KMP |
+| **Actual/Expect** | 多平台代码会增加维护成本 | 单平台项目不需要 KMP |
 
 ### ❌ 禁止使用的特性
 
@@ -285,21 +285,3 @@ val size = list?.size ?: 0 // 如果 list 逻辑上不可能为 null
 val result = try { compute() } catch (e: Exception) { null }
 result?.let { process(it) } // 吞掉了异常信息
 ```
-
----
-
-## 8. 与 Java 版本的关键差异
-
-| Java 版本 | Kotlin 版本改进 |
-|-----------|-----------------|
-| `Immutable` 基类 + Builder 缓存 | `data class` + `copy()`，编译器自动生成 equals/hashCode |
-| 枚举 `InputMsgType`（35+ 值） | `sealed class InputMsg` + 子类，可携带类型安全的数据 |
-| 枚举 `CtrlKey.Type`（25+ 值） | `sealed class CtrlKey` + 子类 |
-| `CompletableFuture` 异步 | `suspend` 函数 + `Flow` |
-| `Handler` 调度 | `CoroutineDispatcher` + `withContext` |
-| 自定义 `RecyclerView` + `LayoutManager` | Jetpack Compose `LazyRow`/`LazyVerticalGrid` |
-| 手动 `SharedPreferences` 读写 | `DataStore` + `Flow` |
-| 自定义 Builder 模式 | DSL builder 或 data class 命名参数 |
-| 接口 + 匿名实现 | Lambda / SAM 转换 |
-| `instanceof` + 强转 | `is` + 智能类型转换 |
-| 可变状态 + 手动同步 | `StateFlow` + 不可变数据类 |

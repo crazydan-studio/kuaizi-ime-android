@@ -368,14 +368,12 @@ enum class ImportStrategy {
 
 ### 3.4 Intent 扩展
 
-```kotlin
-sealed class ImeIntent {
-    // ... 已有 Intent ...
+用户数据导入导出新增以下 `ImeIntent` 子类（基础 ImeIntent 定义见文档 160 第 4 节）：
 
-    // 用户数据导入导出
-    data class ExportUserData(val uri: Uri) : ImeIntent()
-    data class ImportUserData(val uri: Uri, val strategy: ImportStrategy) : ImeIntent()
-}
+```kotlin
+// 新增于 ImeIntent
+data class ExportUserData(val uri: Uri) : ImeIntent()
+data class ImportUserData(val uri: Uri, val strategy: ImportStrategy) : ImeIntent()
 ```
 
 ---

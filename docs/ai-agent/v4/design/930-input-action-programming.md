@@ -532,11 +532,9 @@ fun FingerOverlay(
     }
 }
 
-class FingerOverlayState {
-    // 已合并到 GestureFeedbackState.fingerIndicator（文档 150 第 4.3 节）。
-    // InputActionPlayer 直接通过 feedbackState.setFingerIndicator() 驱动手指指示器，
-    // 不再需要独立的 FingerOverlayState。
-}
+// FingerOverlayState 已合并到 GestureFeedbackState.fingerIndicator（文档 150 第 4.3 节）。
+// InputActionPlayer 直接通过 feedbackState.setFingerIndicator() 驱动手指指示器，
+// GestureFeedbackPanel 在配置了 FeedbackElementType.FingerIndicator 时自动渲染。
 ```
 
 ### 4.3 滑行轨迹动画
@@ -1043,7 +1041,7 @@ fun ExerciseScreen(
             Box(modifier = Modifier.weight(1f)) {
                 KeyboardWithOverlay(
                     keyboardState = state.keyboardState,
-                    fingerOverlay = viewModel.fingerOverlayState,
+                    fingerOverlay = viewModel.feedbackState,
                     trailOverlay = viewModel.actionPlayer.trailPoints,
                 )
             }

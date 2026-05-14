@@ -99,25 +99,10 @@ enum class LogLevel(val priority: Int) {
 | debug | `VERBOSE` | 否 | 开发阶段需要全量日志 |
 | release | `WARN` | 是 | 仅记录警告和错误，用户可在设置中调低等级以协助排查问题 |
 
-Release 构建的日志等级作为配置项存储在 DataStore 中，与 `ImeConfig.UiConfig` 集成（详见文档 160 第 4.2 节）：
+Release 构建的日志等级作为配置项存储在 DataStore 中，与 `ImeConfig.UiConfig` 集成（完整定义见文档 160 第 4.2 节）：
 
-```kotlin
-data class ImeConfig(
-    // ...引擎配置 engine...
-    /** UI 配置 */
-    val ui: UiConfig = UiConfig(),
-) {
-    data class UiConfig(
-        // ...其他 UI 配置项...
-
-        /** 发布版本的日志等级。仅对 release 构建生效，debug 构建始终为 VERBOSE */
-        val logLevel: LogLevel = LogLevel.WARN,
-
-        /** 日志文件存放目录路径。null 表示使用缺省应用私有目录 */
-        val logStoragePath: String? = null,
-    )
-}
-```
+- `logLevel: LogLevel = LogLevel.WARN` — 发布版本的日志等级。仅对 release 构建生效，debug 构建始终为 VERBOSE
+- `logStoragePath: String? = null` — 日志文件存放目录路径。null 表示使用缺省应用私有目录
 
 ### 3.4 AppLog 门面
 
@@ -810,7 +795,7 @@ val LogLevel.displayName: String
 ```
 用户在设置中选择日志等级
     ↓
-ConfigRepository.updateConfig { it.copy(logLevel = newLevel) }
+ConfigRepository.updateConfig { it.copy(ui = it.ui.copy(logLevel = newLevel)) }
     ↓
 AppLog.updateLevel(newLevel)
     ↓

@@ -50,6 +50,7 @@ v4 版本的核心目标是将整个项目从 Java 迁移到 Kotlin，同时：
 |------|------|
 | [design/index.md](design/index.md) | 设计文档索引 |
 | [design/000-architecture-overview.md](design/000-architecture-overview.md) | 架构总览 |
+| [design/010-naming-conventions.md](design/010-naming-conventions.md) | 命名规范 |
 | [design/100-keyboard-state-machine.md](design/100-keyboard-state-machine.md) | 键盘状态机设计 |
 | [design/150-input-key-panel-separation.md](design/150-input-key-panel-separation.md) | 输入面板、按键面板与反馈面板三层分离设计 |
 | [design/160-ime-engine-library.md](design/160-ime-engine-library.md) | IME 引擎库与 UI 库设计 |

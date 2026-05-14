@@ -255,7 +255,7 @@ fun InputListPanel(
             .background(inputListPanelBackgroundColor),
         contentPadding = PaddingValues(horizontal = 4.dp),
     ) {
-        items indexed items = inputList.inputs, key = { it.id }  { index, item ->
+        itemsIndexed(inputList.inputs, key = { _, it -> it.id }) { index, item ->
             when (item) {
                 is InputItem.Char -> CharInputItem(item)
                 is InputItem.Gap -> GapInputItem(
@@ -489,7 +489,7 @@ fun SettingsScreen(
 | `FavoriteboardView` | `FavoritesScreen` | Compose |
 | `XPadView` + `XPainter` 系列 | `XPadView` + Compose `Canvas` | 统一绘制 API |
 | `ViewGestureDetector` | `Modifier.pointerInput` | 标准手势 API |
-| `ViewGestureTrailer` | `GestureTrailOverlay` + `Canvas` | Compose Canvas |
+| `ViewGestureTrailer` | `GestureFeedbackPanel`（TouchTrail 元素） | 三层分离设计，详见文档 150 |
 | `ShadowDrawable` / `HexagonDrawable` | Compose `drawBehind` | 声明式绘制 |
 | `AudioPlayer` | Compose `LocalHapticFeedback` + 音频 | 扩展触觉反馈 |
 | `DialogAlert` / `DialogConfirm` | Compose `AlertDialog` | 标准 Dialog |

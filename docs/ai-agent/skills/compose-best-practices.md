@@ -1,38 +1,31 @@
 # Jetpack Compose 最佳实践
 
-本文档基于 Jetpack Compose BOM 2026.04.01（Compose 1.8），说明 Compose 的最佳实践、推荐特性、避坑指南，以及在本项目 IME 场景中的适配要点。
+本文档基于 Jetpack Compose BOM 2026.04.01（Compose 1.8），说明 Compose 的最佳实践、推荐特性、避坑指南和性能优化建议。
 
-> **说明**：本文档前两节为通用 Compose 最佳实践，第三节起为项目 IME 架构相关的 Compose 模式。通用示例不绑定本项目领域对象，项目架构示例则直接使用本项目的类名和设计。
+> **说明**：本文档为通用 Compose 最佳实践，所有示例使用领域无关的类名和场景。项目特定的 IME 架构模式（MVI 状态管理、IMEService 桥接、键盘渲染等）属于架构设计范畴，不在技能文档中描述。
 
 ---
 
-## 1. Compose 在 IME 中的适用性评估
+## 1. Compose 适用性评估
 
 ### ✅ 高度适用的场景
 
 | 场景 | Compose 方案 | 优势 |
 |------|-------------|------|
 | **设置页面** | 标准 Compose 组件 | 声明式 UI、主题统一、代码简洁 |
-| **关于页面** | `AnnotatedString` + HTML 支持 | 替代 WebView 展示协议和更新日志 |
-| **候选项栏** | `LazyRow` + `autoSize` 文本 | 替代 FlexboxLayout，自动适配文本宽度 |
-| **候选字面板** | `LazyVerticalGrid` + 分页 | 替代自定义 RecyclerView |
-| **收藏/剪贴板列表** | `LazyColumn` + `SwipeToDismiss` | 标准化列表操作 |
-| **输入法引导页** | Compose Navigation + Pager | 声明式引导流程 |
-| **Emoji 面板** | `LazyVerticalGrid` + 分类 Tab | 替代自定义分页 RecyclerView |
-| **符号面板** | `LazyVerticalGrid` + 分组 | 统一的网格布局 |
+| **列表/网格** | `LazyRow`/`LazyColumn`/`LazyVerticalGrid` | 替代自定义 RecyclerView |
+| **标签/分类** | `ScrollableTabRow` + `HorizontalPager` | 标准化分页 |
 | **主题切换** | `isSystemInDarkTheme()` | 自动跟随系统主题 |
 | **按键反馈** | 扩展的触觉反馈 API | 丰富的按键触觉反馈类型 |
-| **练习系统** | Compose 交互组件 | 替代自定义 View 练习界面 |
 
 ### ⚠️ 需谨慎评估的场景
 
 | 场景 | 风险 | 建议 |
 |------|------|------|
-| **键盘主视图** | IME 的 `InputMethodService.onCreateInputView()` 需返回 `View`，Compose 需通过 `ComposeView` 桥接 | 使用 `ComposeView`，但需关注性能和内存 |
-| **按键绘制** | 高频重绘（每次按键），Compose 重组开销需控制 | 使用 `remember`、`derivedStateOf`、`key` 精确控制重组范围 |
-| **X-Pad 绘制** | Canvas 自定义绘制（六边形、路径），与 Compose Canvas 的桥接 | 使用 Compose `Canvas` + `drawBehind`/`drawWithContent` |
-| **手势轨迹** | 自定义手势检测和轨迹绘制 | 使用 Compose 手势 API + `drawBehind` |
-| **滑行输入** | 连续触摸事件处理，需要极低延迟 | `pointerInput` + `awaitPointerEventScope`，注意帧率 |
+| **高频重绘区域** | 重组开销需控制 | 使用 `remember`、`derivedStateOf`、`key` 精确控制重组范围 |
+| **自定义 Canvas 绘制** | 与 Compose Canvas 的桥接 | 使用 Compose `Canvas` + `drawBehind`/`drawWithContent` |
+| **自定义手势检测** | 需要极低延迟 | `pointerInput` + `awaitPointerEventScope`，注意帧率 |
+| **Service 中的 ComposeView** | 生命周期与普通 Activity 不同 | 注意内存管理和 Composition 策略 |
 
 ### ❌ 不适用 Compose 的场景
 
@@ -41,18 +34,15 @@
 | **极端性能要求的自定义绘制** | Compose 重组和布局有固有的帧预算开销 | 降级为传统 `View` + `Canvas` |
 | **需要像素级控制的自定义布局** | Compose 布局系统有固有约束 | 自定义 `Layout` 或降级为传统 `View` |
 
-> **核心原则**：IME 的键盘主视图是否使用 Compose 需在原型阶段进行性能验证。如果 Compose 能在目标设备上稳定达到 60fps 的按键响应，则全面采用；否则键盘区域降级为传统 View，其余 UI 使用 Compose。
-
 ---
 
 ## 2. Compose 1.8 新特性应用
 
 ### 2.1 文本自动缩放（TextAutoSize）— ★★★★★ 关键
 
-在按键标签、候选项等需要适应不同宽度和屏幕尺寸的文本场景中使用：
+在需要适应不同宽度和屏幕尺寸的文本场景中使用：
 
 ```kotlin
-// 按键标签自动缩放
 BasicText(
     text = item.label,
     maxLines = 1,
@@ -63,7 +53,7 @@ BasicText(
     ),
 )
 
-// 列表项文本自动缩放（带中间省略）
+// 带中间省略
 BasicText(
     text = item.description,
     maxLines = 1,
@@ -79,14 +69,14 @@ BasicText(
 ### 2.2 智能省略号 — ★★★★★ 关键
 
 ```kotlin
-// 中间省略，保留首尾（适用于路径、长名称等）
+// 中间省略，保留首尾
 Text(
     text = longText,
     overflow = TextOverflow.MiddleEllipsis,
     maxLines = 1,
 )
 
-// 开头省略，保留尾部（适用于文件路径等）
+// 开头省略，保留尾部
 Text(
     text = filePath,
     overflow = TextOverflow.StartEllipsis,
@@ -150,7 +140,6 @@ LazyColumn {
         GroupView(
             group = group,
             modifier = Modifier.onLayRectChanged { rect ->
-                // 仅当可见时加载数据
                 group.isVisible = rect.isVisible
             },
         )
@@ -187,120 +176,9 @@ Text(text = htmlContent)
 
 ---
 
-## 3. IME + Compose 架构模式
+## 3. 性能优化规范
 
-> **说明**：本节内容直接涉及本项目的架构设计，使用本项目的类名和设计概念。
-
-### 3.1 InputMethodService 与 Compose 的桥接
-
-```kotlin
-class IMEService : InputMethodService() {
-    private var composeView: ComposeView? = null
-
-    override fun onCreateInputView(): View {
-        return ComposeView(this).also { composeView = it }.apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                KeyboardTheme(themeType = ThemeType.FollowSystem) {
-                    InputHostView(engine = engine)
-                }
-            }
-        }
-    }
-}
-```
-
-### 3.2 MVI 状态管理
-
-> **注意**：以下为简化示例，完整定义见文档 000 第 3.3 节和文档 160 第 4 节。
-
-```kotlin
-// State: 不可变状态（完整定义见文档 160 第 8 节）
-data class ImeState(
-    val keyboardType: KeyboardType = KeyboardType.Pinyin,
-    val keyboardState: KeyboardState = KeyboardState.Idle,
-    val keyGrid: List<List<InputKey>> = emptyList(),
-    val inputList: InputListState = InputListState(),
-    val candidates: CandidateState = CandidateState(),
-    val clipboard: ClipboardState = ClipboardState(),
-    val favorites: FavoritesState = FavoritesState(),
-    val config: ImeConfig = ImeConfig(),
-)
-
-// Intent: 用户意图（完整定义见文档 160 第 4 节）
-sealed class ImeIntent {
-    data class KeyPressed(val key: InputKey, val gesture: KeyGesture) : ImeIntent()
-    data class CandidateSelected(val candidate: InputWord) : ImeIntent()
-    data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
-    data class EditAction(val action: EditorAction) : ImeIntent()
-    data class ConfigChanged(val config: ImeConfig) : ImeIntent()
-    data object CommitInput : ImeIntent()
-    // ... 更多 Intent 见文档 160
-}
-
-// ViewModel
-class KeyboardViewModel : ViewModel() {
-    private val _state = MutableStateFlow(ImeState())
-    val state: StateFlow<ImeState> = _state.asStateFlow()
-
-    fun handleIntent(intent: ImeIntent) {
-        _state.update { current ->
-            reduce(current, intent)
-        }
-    }
-}
-```
-
-### 3.3 Compose 中的键盘渲染
-
-> **注意**：v4 采用三层分离设计（详见文档 150），键盘 UI 分离为 GestureInputPanel（手势拦截层）、GestureFeedbackPanel（反馈绘制层）和 KeyGridPanel（按键渲染层）。KeyGridPanel 为纯渲染组件，不处理触摸事件。以下展示的是 StandardKeyGridPanel 的实现。
-
-```kotlin
-@Composable
-fun StandardKeyGridPanel(
-    keyGrid: List<List<InputKey>>,
-    keyboardState: KeyboardState,
-    onLayoutInfoChanged: (KeyGridPanelLayoutInfo) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val keyPositions = remember { mutableMapOf<InputKey, Rect>() }
-
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-    ) {
-        keyGrid.forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                row.forEach { key ->
-                    KeyView(
-                        key = key,
-                        isActive = isKeyActive(key, keyboardState),
-                        modifier = Modifier
-                            .weight(key.weight)
-                            .onGloballyPositioned { coordinates ->
-                                keyPositions[key] = coordinates.boundsInRoot()
-                                onLayoutInfoChanged(
-                                    KeyGridPanelLayoutInfo(
-                                        keyPositions = keyPositions.toMap(),
-                                    )
-                                )
-                            },
-                    )
-                }
-            }
-        }
-    }
-}
-```
-
----
-
-## 4. 性能优化规范
-
-### 4.1 重组控制
+### 3.1 重组控制
 
 ```kotlin
 // ✅ 推荐：使用 remember 和 derivedStateOf 减少重组
@@ -328,7 +206,7 @@ fun ItemList(items: List<Item>) {
 }
 ```
 
-### 4.2 列表项的稳定性
+### 3.2 列表项的稳定性
 
 ```kotlin
 // ✅ 推荐：使用 key 标识稳定的列表项
@@ -341,16 +219,16 @@ LazyVerticalGrid(
 }
 ```
 
-### 4.3 避免不必要的重组
+### 3.3 避免不必要的重组
 
 ```kotlin
-// ✅ 推荐：Lambda 不捕获可变状态
-GestureInputPanel(
+// ✅ 推荐：Lambda 不捕获频繁变化的 state
+GesturePanel(
     onGesture = { gesture -> viewModel.handleGesture(gesture) },
 )
 
 // ❌ 避免：Lambda 捕获频繁变化的 state
-GestureInputPanel(
+GesturePanel(
     onGesture = { gesture ->
         val current = state.value // 每次调用都读取 state
         process(gesture, current)
@@ -360,82 +238,9 @@ GestureInputPanel(
 
 ---
 
-## 5. 主题系统
+## 4. 手势处理
 
-> **说明**：本节内容直接涉及本项目的主题系统设计。
-
-### 5.1 主题定义
-
-> **注意**：以下为简化示例，完整主题系统设计见文档 500 第 4 节。v4 主题系统采用 `KeyboardColors` data class + `KeyboardThemes` 预置主题 + `KeyboardTheme` Composable 的三层结构，与 Material3 的 `MaterialTheme` 等系统命名区分。
-
-```kotlin
-data class KeyboardColors(
-    val keyBackground: Color,
-    val keyForeground: Color,
-    val keyPressedBackground: Color,
-    val keyActiveBackground: Color,
-    val keyDisabledBackground: Color,
-    val keyBorder: Color,
-    val candidatePanelBackground: Color,
-    val candidateChipBackground: Color,
-    val candidateChipForeground: Color,
-    val candidateChipActiveBackground: Color,
-    val inputListPanelBackground: Color,
-    val inputListPanelForeground: Color,
-    val inputListPanelCursorColor: Color,
-    val xPadBackground: Color,
-    val xPadZoneBorder: Color,
-    val xPadZoneForeground: Color,
-    val xPadActiveZoneBackground: Color,
-    val background: Color,
-    val foreground: Color,
-    val divider: Color,
-)
-
-object KeyboardThemes {
-    val Light = KeyboardColors(
-        keyBackground = Color(0xFFE8E8E8),
-        keyForeground = Color(0xFF333333),
-        // ...
-    )
-
-    val Night = KeyboardColors(
-        keyBackground = Color(0xFF333333),
-        keyForeground = Color(0xFFE8E8E8),
-        // ...
-    )
-}
-
-val LocalKeyboardColors = compositionLocalOf { KeyboardThemes.Light }
-```
-
-### 5.2 跟随系统主题
-
-```kotlin
-@Composable
-fun KeyboardTheme(
-    themeType: ThemeType = ThemeType.FollowSystem,
-    content: @Composable () -> Unit,
-) {
-    val isDark = when (themeType) {
-        ThemeType.Light -> false
-        ThemeType.Night -> true
-        ThemeType.FollowSystem -> isSystemInDarkTheme()
-    }
-
-    val colors = if (isDark) KeyboardThemes.Night else KeyboardThemes.Light
-
-    CompositionLocalProvider(LocalKeyboardColors provides colors) {
-        content()
-    }
-}
-```
-
----
-
-## 6. 手势处理
-
-### 6.1 点击/长按手势
+### 4.1 点击/长按手势
 
 ```kotlin
 // ✅ 推荐：使用 pointerInput 处理自定义手势
@@ -457,7 +262,7 @@ Modifier.pointerInput(key) {
 }
 ```
 
-### 6.2 滑行/拖拽手势
+### 4.2 滑行/拖拽手势
 
 ```kotlin
 Modifier.pointerInput(Unit) {
@@ -478,53 +283,34 @@ Modifier.pointerInput(Unit) {
 
 ---
 
-## 7. ComposeView 内存管理
+## 5. ComposeView 内存管理
 
-IME 中的 ComposeView 需要特别注意内存管理，因为 InputMethodService 的生命周期与普通 Activity 不同：
+在 Service 等非标准生命周期组件中使用 ComposeView 需要特别注意内存管理：
 
 ```kotlin
-class IMEService : InputMethodService() {
-    override fun onCreateInputView(): View {
-        return ComposeView(this).apply {
+class MyService : Service() {
+    private var composeView: ComposeView? = null
+
+    override fun onCreate(): View {
+        return ComposeView(this).also { composeView = it }.apply {
             // ✅ 关键：设置正确的 Composition 策略
             setViewCompositionStrategy(
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
             )
             setContent {
-                KeyboardTheme(themeType = ThemeType.FollowSystem) {
-                    InputHostView(engine = engine)
+                AppTheme {
+                    Content()
                 }
             }
         }
     }
+
+    override fun onDestroy() {
+        // ✅ 关键：清理 ComposeView 引用，避免内存泄漏
+        composeView = null
+        super.onDestroy()
+    }
 }
 ```
 
-> **注意**：如果 IME 在后台持有 ComposeView 引用，可能导致内存泄漏。确保在 `onDestroy()` 中清理引用。
-
----
-
-## 8. 替代方案对照表
-
-| Java 版本组件 | Compose 替代方案 |
-|--------------|-----------------|
-| `FlexboxLayout` | `LazyRow` + `FlowRow` |
-| `RecyclerView` + 自定义 `LayoutManager` | `LazyRow` / `LazyVerticalGrid` |
-| `RecyclerView.Adapter` + `ViewHolder` | `items()` + `@Composable` 函数 |
-| `ItemDecoration` | `Arrangement.spacedBy()` / `Modifier.padding()` |
-| `ItemAnimator` | `animateItemPlacement()` / `animateBounds()` |
-| `ViewPager` + `PagerAdapter` | `HorizontalPager` |
-| `TabLayout` + `ViewPager` | `ScrollableTabRow` + `HorizontalPager` |
-| `SharedPreferences` + `OnChangeListener` | `DataStore` + `Flow` |
-| `AlertDialog` | `AlertDialog` (Compose) |
-| `Toast` | `Snackbar` (Compose) |
-| `WebView` | `AnnotatedString.appendHtml()` |
-| `Canvas`（自定义绘制） | Compose `Canvas` / `drawBehind` |
-| `GestureDetector` | `Modifier.pointerInput` + `detectTapGestures` 等 |
-| `ValueAnimator` | `animate*AsState()` / `Animatable` |
-| `OnClickListener` | `Modifier.clickable` |
-| `OnLongClickListener` | `Modifier.combinedClickable` |
-| `OnTouchListener` | `Modifier.pointerInput` |
-| `View.setVisibility()` | 条件组合（`if (visible) { ... }`） |
-| `View.setEnabled()` | `Modifier.enabled()` |
-| `View.animate()` | `Modifier.animateContentSize()` / `animateBounds()` |
+> **注意**：如果 Service 在后台持有 ComposeView 引用，可能导致内存泄漏。确保在 `onDestroy()` 中清理引用。
