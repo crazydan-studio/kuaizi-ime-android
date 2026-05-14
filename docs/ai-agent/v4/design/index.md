@@ -12,7 +12,7 @@
 | 010 | [命名规范](010-naming-conventions.md) | 三层模块命名、UI 组件后缀、KeyGridPanel 子类命名、引擎 API 命名、已更名对照 |
 | 100 | [键盘状态机设计](100-keyboard-state-machine.md) | 键盘状态机重构，从继承链到组合模式，Sealed class 状态定义和转换规则 |
 | 150 | [输入面板、按键面板与反馈面板三层分离设计](150-input-key-panel-separation.md) | 输入手势、按键渲染与手势反馈三层分离：输入面板（透明手势层）接收手势识别为 InputGesture，按键面板纯展示（持续性状态渲染），反馈面板独立透明绘制（临时性手势反馈，支持多实例）；叠加布局模式；后续支持全屏输入模式 |
-| 160 | [IME 引擎库与 UI 库设计](160-ime-engine-library.md) | 三层库架构：引擎库 `:ime-engine`（纯 Kotlin，可独立使用）+ UI 库 `:ime-ui`（Compose 缺省 UI，对第三方应用开放）+ 应用模块 `:app`（IME 服务 + 设置）。引擎与 UI 完全分离，统一配置 `ImeConfig`（含 `EngineConfig` 引擎配置和 `UiConfig` UI 配置的明确隔离），DictProvider 接口支持替换内置 SQLite 实现，Feature 标记按需禁用收藏/剪贴板等功能；UI 库提供 EditorField、KeyboardPanel、InputHostView 等即插即用组件，第三方应用可直接使用缺省 UI 或自行替换；`:app` 直接使用 UI 库的 `KeyboardViewModel`，不继承也不扩展 |
+| 160 | [IME 引擎库与 UI 库设计](160-ime-engine-library.md) | 三层库架构：引擎库 `:ime-engine`（纯 Kotlin，可独立使用）+ UI 库 `:ime-ui`（Compose 缺省 UI，对第三方应用开放）+ 应用模块 `:app`（IME 服务 + 设置）。引擎与 UI 完全分离，统一配置 `ImeConfig`（含 `EngineConfig` 引擎配置和 `UiConfig` UI 配置的明确隔离），ImeIntent/ImeOutput/ImeState 完整定义，DictProvider 接口支持替换内置 SQLite 实现，Feature 标记按需禁用收藏/剪贴板等功能；UI 库提供 EditorField、KeyboardPanel、InputHostView 等即插即用组件，第三方应用可直接使用缺省 UI 或自行替换；`:app` 直接使用 UI 库的 `KeyboardViewModel`，不继承也不扩展 |
 | 200 | [输入列表重构设计](200-input-list-redesign.md) | InputList 重构，不可变数据模型、游标管理、线程安全改进 |
 | 300 | [字典系统重构设计](300-dict-system-redesign.md) | 字典系统重构，协程化、Room 数据库、升级策略 |
 | 400 | [UI Compose 迁移设计](400-ui-compose-migration.md) | UI 层从 View 到 Compose 的迁移方案、性能验证、IME 桥接 |

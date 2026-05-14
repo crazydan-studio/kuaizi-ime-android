@@ -512,6 +512,268 @@ data class EditorState(
 )
 ```
 
+### 4.4 ImeIntent
+
+用户意图的 sealed class 表达，替代 Java 版本的三套消息体系（UserKeyMsg 7 种、UserInputMsg 11 种、InputMsg 35+ 种）。v4 将所有用户操作统一为 `ImeIntent`，由 `ImeEngine.handleIntent()` 或 `ImeEngine.handleGesture()` 接收并处理。
+
+`InputGesture`（文档 150）是输入面板的输出，`ImeIntent` 是 ViewModel/引擎的输入。ViewModel 将 `InputGesture` 转换为 `ImeIntent`（转换逻辑见文档 150 第 4.2 节），这种两层转换使得同一手势可以根据当前键盘状态产生不同的 Intent，也使得不同手势可以产生相同的 Intent。
+
+```kotlin
+/**
+ * IME 用户意图。
+ *
+ * 所有用户操作统一表达为 ImeIntent，
+ * 由 ImeEngine.handleIntent() 接收并处理。
+ *
+ * ImeIntent 与 InputGesture（文档 150）的区别：
+ * - InputGesture 表达「用户做了什么手势」，属于输入面板的领域
+ * - ImeIntent 表达「系统应该做什么」，属于引擎的领域
+ *
+ * 引擎的 reduce 函数根据当前 ImeState 和 ImeIntent 计算新的 ImeState，
+ * 必要时产生 ImeOutput。
+ */
+sealed class ImeIntent {
+
+    // --- 按键意图（由 InputGesture 转换而来） ---
+
+    /**
+     * 按键按下（含点击、长按、滑行、翻转）。
+     *
+     * @param key 目标按键
+     * @param gesture 手势类型（Tap/LongPress/Swipe/Flip）
+     */
+    data class KeyPressed(
+        val key: InputKey,
+        val gesture: KeyGesture,
+    ) : ImeIntent()
+
+    /**
+     * 按键长按。
+     *
+     * @param key 目标按键
+     */
+    data class KeyLongPressed(
+        val key: InputKey,
+    ) : ImeIntent()
+
+    // --- 候选意图 ---
+
+    /**
+     * 候选项选择。
+     *
+     * @param candidate 被选中的候选字词
+     */
+    data class CandidateSelected(
+        val candidate: InputWord,
+    ) : ImeIntent()
+
+    /** 候选项翻页 */
+    data class CandidatePaged(
+        val direction: PageDirection,
+    ) : ImeIntent()
+
+    // --- 键盘切换 ---
+
+    /**
+     * 切换键盘类型。
+     *
+     * @param type 目标键盘类型
+     */
+    data class SwitchKeyboard(
+        val type: KeyboardType,
+    ) : ImeIntent()
+
+    // --- 输入列表意图 ---
+
+    /** 提交当前输入 */
+    data object CommitInput : ImeIntent()
+
+    /** 删除输入 */
+    data object DeleteInput : ImeIntent()
+
+    /** 清空输入 */
+    data object CleanInput : ImeIntent()
+
+    /**
+     * 光标移动到指定位置。
+     *
+     * 由 InputListPanel 中的间隙点击触发。
+     *
+     * @param index 目标位置索引
+     */
+    data class CursorMoveTo(
+        val index: Int,
+    ) : ImeIntent()
+
+    // --- 编辑操作意图 ---
+
+    /**
+     * 编辑操作（退格、全选、复制、粘贴、剪切、撤销、重做）。
+     *
+     * Intent 和 Output 对称使用同一 EditorAction 枚举：
+     * - ImeIntent.EditAction(EditorAction.Backspace) → 引擎处理删除
+     * - ImeOutput.EditAction(action = EditorAction.Backspace) → 桥接到编辑器执行删除
+     *
+     * @param action 编辑操作类型
+     */
+    data class EditAction(
+        val action: EditorAction,
+    ) : ImeIntent()
+
+    // --- X-Pad 意图（扩展，见文档 150/700） ---
+
+    /**
+     * X-Pad 路径选择。
+     *
+     * @param startZone 起始区域
+     * @param path 途经区域序列
+     */
+    data class XPadPathSelected(
+        val startZone: XPadZone,
+        val path: List<XPadZone>,
+    ) : ImeIntent()
+
+    // --- 剪贴板与收藏意图（扩展，见文档 600） ---
+
+    /** 粘贴剪贴板内容 */
+    data class ClipPasted(
+        val text: String,
+    ) : ImeIntent()
+
+    /** 收藏内容 */
+    data class FavoriteSaved(
+        val favorite: InputFavorite,
+    ) : ImeIntent()
+
+    // --- 配置意图 ---
+
+    /**
+     * 配置变更。
+     *
+     * 运行时配置修改通过此 Intent 驱动，
+     * 引擎更新 ImeConfig 后，UI 通过 ImeState.config 自动同步。
+     * 运行时修改优先于持久化配置（详见第 4.2 节）。
+     *
+     * @param config 新的配置
+     */
+    data class ConfigChanged(
+        val config: ImeConfig,
+    ) : ImeIntent()
+
+    // --- 数据导入导出意图（扩展，见文档 800） ---
+
+    /** 导出用户数据 */
+    data object ExportUserData : ImeIntent()
+
+    /** 导入用户数据 */
+    data class ImportUserData(
+        val filePath: String,
+    ) : ImeIntent()
+}
+
+/** 按键手势类型 */
+sealed class KeyGesture {
+    data object Tap : KeyGesture()
+    data object LongPress : KeyGesture()
+    data object Swipe : KeyGesture()
+    data class Flip(val direction: FlipDirection) : KeyGesture()
+}
+
+enum class PageDirection { Next, Previous }
+```
+
+### 4.5 ImeState 子状态类型
+
+`ImeState`（第 8.1 节）中引用的子状态类型定义如下。这些类型与 `ImeState` 一样是 `data class`，不可变，通过 `copy()` 模式创建新实例。
+
+```kotlin
+/**
+ * 输入列表状态。
+ *
+ * 描述输入栏中的字符序列和光标位置。
+ * 完整的输入列表重构设计见文档 200。
+ */
+data class InputListState(
+    /** 输入项列表（字符项和间隙项交替排列） */
+    val inputs: List<InputItem> = emptyList(),
+    /** 光标所在的间隙索引 */
+    val gapIndex: Int = 0,
+    /** 待确认的拼音串（如 "nihao"） */
+    val pendingSpell: String = "",
+)
+
+/**
+ * 输入项。
+ *
+ * 输入栏中的单个项，分为字符项和间隙项。
+ */
+sealed class InputItem {
+    abstract val id: String
+
+    /** 字符输入项 */
+    data class Char(
+        override val id: String,
+        val value: String,
+        val isCommitted: Boolean = false,
+    ) : InputItem()
+
+    /** 间隙项（光标位置） */
+    data class Gap(
+        override val id: String,
+    ) : InputItem()
+
+    /** 数学表达式输入项 */
+    data class MathExpr(
+        override val id: String,
+        val expression: String,
+    ) : InputItem()
+}
+
+/**
+ * 候选状态。
+ *
+ * 描述候选栏中的候选字词列表和分页信息。
+ */
+data class CandidateState(
+    /** 候选字词列表 */
+    val candidates: List<InputWord> = emptyList(),
+    /** 当前页码（从 0 开始） */
+    val pageIndex: Int = 0,
+    /** 每页数量 */
+    val pageSize: Int = 20,
+    /** 是否有更多候选 */
+    val hasMore: Boolean = false,
+)
+
+/**
+ * 剪贴板状态。
+ *
+ * 描述剪贴板的内容和提示信息。
+ * 仅在 Feature.Clipboard 启用时使用。
+ * 完整的剪贴板设计见文档 600。
+ */
+data class ClipboardState(
+    /** 当前剪贴板文本（null 表示无内容或未监听） */
+    val currentText: String? = null,
+    /** 是否显示剪贴板提示弹窗 */
+    val showTip: Boolean = false,
+)
+
+/**
+ * 收藏状态。
+ *
+ * 描述收藏列表的加载和展示信息。
+ * 仅在 Feature.Favorites 启用时使用。
+ * 完整的收藏设计见文档 600。
+ */
+data class FavoritesState(
+    /** 收藏列表 */
+    val favorites: List<InputFavorite> = emptyList(),
+    /** 是否正在加载 */
+    val isLoading: Boolean = false,
+)
+```
+
 ---
 
 ## 5. UI 库设计

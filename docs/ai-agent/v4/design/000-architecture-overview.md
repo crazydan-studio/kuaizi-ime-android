@@ -123,8 +123,8 @@ GestureInputPanel → InputGesture → ImeEngine.handleGesture()
                               GestureFeedbackState → GestureFeedbackPanel（视觉反馈）
 ```
 
-- **ImeIntent**：用户意图的 sealed class 表达，替代 Java 版本的三套消息体系（UserKeyMsg、UserInputMsg、InputMsg）。完整定义见文档 160 第 4 节
-- **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见文档 160 第 8 节
+- **ImeIntent**：用户意图的 sealed class 表达，替代 Java 版本的三套消息体系（UserKeyMsg、UserInputMsg、InputMsg）。完整定义见文档 160 第 4.4 节
+- **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见文档 160 第 8.1 节
 - **三层面板分离**：GestureInputPanel（手势拦截层）→ GestureFeedbackPanel（反馈绘制层）→ KeyGridPanel（按键渲染层）。完整设计见文档 150
 - **ImeOutput**：引擎输出 sealed class，桥接到 InputConnection 或 EditorField。完整定义见文档 160 第 4.3 节
 

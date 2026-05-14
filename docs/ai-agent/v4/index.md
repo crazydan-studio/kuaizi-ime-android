@@ -1,20 +1,6 @@
 # v4 版本文档索引
 
-本文档为筷字输入法 v4（Kotlin 重构版）的文档索引和核心工作说明。v4 版本基于 Kotlin 2.3.20 和 Jetpack Compose BOM 2026.04.01 对 Java 版本进行全面重构。
-
----
-
-## 版本信息
-
-| 属性 | 值 |
-|------|-----|
-| 版本号 | 4.0.0 |
-| versionCode | 400 |
-| 语言 | Kotlin 2.3.20 |
-| UI 框架 | Jetpack Compose (BOM 2026.04.01) |
-| 最低 SDK | 25 |
-| 目标 SDK | 35 |
-| 基于 | Java v3.1.1 (versionCode 311) |
+本文档为筷字输入法 v4（Kotlin 重构版）的文档索引和核心工作说明。v4 版本对 Java 版本进行全面重构，采用 Kotlin 2.3.20 + Jetpack Compose BOM 2026.04.01，目标 SDK 35，最低 SDK 25。
 
 ---
 
