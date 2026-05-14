@@ -11,6 +11,7 @@
   - v4 版本
     - [索引](ai-agent/v4/index.md)
     - 设计文档
+      - [索引](ai-agent/v4/design/index.md)
       - [架构总览](ai-agent/v4/design/000-architecture-overview.md)
       - [命名规范](ai-agent/v4/design/010-naming-conventions.md)
       - [键盘状态机设计](ai-agent/v4/design/100-keyboard-state-machine.md)
@@ -28,6 +29,7 @@
       - [配置界面改进](ai-agent/v4/design/920-config-ui-improvement.md)
       - [输入动作程序化](ai-agent/v4/design/930-input-action-programming.md)
     - 讨论记录
+      - [索引](ai-agent/v4/discussions/index.md)
       - [设计决策与文档评审](ai-agent/v4/discussions/001-design-decisions-and-doc-review.md)
       - [命名规范细化](ai-agent/v4/discussions/002-naming-convention-refinement.md)
     - 开发计划
