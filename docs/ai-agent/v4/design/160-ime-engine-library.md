@@ -259,7 +259,7 @@ class ImeEngine internal constructor(
             is ImeOutput.InsertPairedSymbols -> bridge.insertPairedSymbols(output.left, output.right)
             is ImeOutput.MoveCursor -> bridge.moveCursor(output.direction)
             is ImeOutput.SelectRange -> bridge.selectRange(output.direction)
-            is ImeOutput.EditAction -> bridge.performAction(output.action)
+            is ImeOutput.PerformEdit -> bridge.performAction(output.action)
         }
     }
 
@@ -501,7 +501,7 @@ sealed class ImeOutput {
         val direction: CursorDirection,
     ) : ImeOutput()
 
-    data class EditAction(
+    data class PerformEdit(
         override val timestamp: Long,
         val action: EditorAction,
     ) : ImeOutput()
@@ -749,7 +749,7 @@ sealed class ImeIntent {
      *
      * Intent 和 Output 对称使用同一 EditorAction 枚举：
      * - ImeIntent.PerformEdit(EditorAction.BACKSPACE) → 引擎处理删除
-     * - ImeOutput.EditAction(action = EditorAction.BACKSPACE) → 桥接到编辑器执行删除
+     * - ImeOutput.PerformEdit(action = EditorAction.BACKSPACE) → 桥接到编辑器执行删除
      *
      * @param action 编辑操作类型
      */
