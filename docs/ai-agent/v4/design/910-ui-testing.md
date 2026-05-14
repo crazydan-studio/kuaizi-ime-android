@@ -785,14 +785,14 @@ UI 测试方案与应用日志系统（文档 900）协同工作：
 ```kotlin
 // debug 源集：UI 测试与日志联动
 class DebugUITestOverlay(
-    private val appLog: AppLog,
+    private val imeLog: ImeLog,
 ) : UITestOverlay {
 
     override fun enable() {
         // UI 测试激活时降级日志等级
-        if (appLog.level > LogLevel.DEBUG) {
-            appLog.updateLevel(LogLevel.DEBUG)
-            appLog.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
+        if (imeLog.level > LogLevel.DEBUG) {
+            imeLog.updateLevel(LogLevel.DEBUG)
+            imeLog.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
         }
     }
 
@@ -801,7 +801,7 @@ class DebugUITestOverlay(
             activeTools.remove(tool)
         } else {
             activeTools.add(tool)
-            appLog.logger("UITest").debug { "激活工具: ${tool.displayName}" }
+            imeLog.logger("UITest").debug { "激活工具: ${tool.displayName}" }
         }
     }
 }

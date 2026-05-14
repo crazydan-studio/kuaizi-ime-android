@@ -195,7 +195,7 @@ Java 版本有三套消息体系（UserKeyMsg 7 种、UserInputMsg 11 种、Inpu
 | 数据库 | 手写 SQLiteOpenHelper | Room |
 | 依赖管理 | 手动构造 | 手动构造注入（同 Java，但更简洁） |
 | 测试 | 几乎无 | 全面单元测试 + 截图对比 + UI 测试工具 |
-| 日志 | Logger（仅 DEBUG 生效） | AppLog（分级+持久化+崩溃拦截+查看导出） |
+| 日志 | Logger（仅 DEBUG 生效） | ImeLog（分级+持久化+崩溃拦截+查看导出） |
 | UI 调试 | 无 | 内置 UI 测试工具（debug 构建，release 自动移除） |
 | 输出桥接 | 手动 when 分发（2处重复） | ImeOutputBridge 语义化桥接（1处分发） |
 | 输入练习 | ExerciseGuide（手动 Exercise 步骤） | InputActionPlayer + ExerciseScreen（release 可用的动作动画演示） |

@@ -27,7 +27,7 @@
 | （待创建） | （与计划同名） | ConfigRepository、ImeConfig 运行时优先、DataStore（对应设计 500） | 📋待编写 |
 | （待创建） | （与计划同名） | ClipboardProvider、FavoritesRepository、Feature 裁剪（对应设计 600） | 📋待编写 |
 | （待创建） | （与计划同名） | UserDataService、JSON 序列化、替换/合并、SAF（对应设计 800） | 📋待编写 |
-| （待创建） | （与计划同名） | AppLog 分级、持久化、崩溃拦截（对应设计 900） | 📋待编写 |
+| （待创建） | （与计划同名） | ImeLog 分级、持久化、崩溃拦截（对应设计 900） | 📋待编写 |
 | （待创建） | （与计划同名） | InputActionPlayer、脚本编译、回放（对应设计 930） | 📋待编写 |
 
 ---
