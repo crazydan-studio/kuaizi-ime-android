@@ -1,6 +1,8 @@
 # Kotlin 最佳实践
 
-本文档基于 Kotlin 2.3.20，说明在本项目中使用 Kotlin 的最佳实践、推荐特性、避坑指南和不规范写法。
+本文档基于 Kotlin 2.3.20，说明 Kotlin 的最佳实践、推荐特性、避坑指南和不规范写法。
+
+> **说明**：本文档前半部分为通用 Kotlin 最佳实践，第 5、8 节涉及本项目的 Java → Kotlin 迁移对比。通用示例不绑定本项目领域对象，项目迁移示例则直接使用本项目的类名和设计。
 
 ---
 
@@ -68,16 +70,16 @@ kotlin {
 
 ### 2.2 Context Parameters
 
-用于替代 Java 版本中通过构造参数或单例传递依赖的模式：
+用于替代通过构造参数或单例传递依赖的模式：
 
 ```kotlin
 // ✅ 推荐：context parameter 替代隐式依赖
-context(PinyinDict, ImeConfig)
-fun lookupCandidates(spell: String): List<InputWord> { ... }
+context(DataSource, AppConfig)
+fun queryItems(filter: String): List<Item> { ... }
 
 // ❌ 避免：全局单例
-object PinyinDictHolder {
-    val instance: PinyinDict get() = ...
+object DataSourceHolder {
+    val instance: DataSource get() = ...
 }
 ```
 
@@ -110,18 +112,18 @@ object PinyinDictHolder {
 
 ```kotlin
 // ✅ 正确：使用结构化并发
-class IMEditor(
+class DataProcessor(
     private val scope: CoroutineScope,
-    private val dict: PinyinDict,
+    private val repository: Repository,
 ) {
-    fun lookupCandidates(spell: String) = scope.launch {
-        val candidates = dict.lookupAsync(spell)
-        _state.update { it.copy(candidates = candidates) }
+    fun loadData(query: String) = scope.launch {
+        val result = repository.queryAsync(query)
+        _state.update { it.copy(items = result) }
     }
 }
 
 // ❌ 错误：使用 GlobalScope
-fun lookupCandidates(spell: String) = GlobalScope.launch { ... }
+fun loadData(query: String) = GlobalScope.launch { ... }
 
 // ❌ 错误：取消不处理的 Job
 val job = CoroutineScope(Dispatchers.IO).launch { ... }
@@ -132,14 +134,14 @@ val job = CoroutineScope(Dispatchers.IO).launch { ... }
 
 ```kotlin
 // ✅ 正确：冷流 + StateFlow 共享
-private val _inputState = MutableStateFlow(InputState())
-val inputState: StateFlow<InputState> = _inputState.asStateFlow()
+private val _uiState = MutableStateFlow(UiState())
+val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
 // ✅ 正确：callbackFlow 封装回调
-fun configChanges(): Flow<Config> = callbackFlow {
-    val listener = ConfigChangeListener { config -> trySend(config) }
-    config.addListener(listener)
-    awaitClose { config.removeListener(listener) }
+fun preferenceChanges(): Flow<AppConfig> = callbackFlow {
+    val listener = OnConfigChangedListener { config -> trySend(config) }
+    configStore.addListener(listener)
+    awaitClose { configStore.removeListener(listener) }
 }
 ```
 
@@ -151,50 +153,50 @@ fun configChanges(): Flow<Config> = callbackFlow {
 
 ```kotlin
 // ✅ 推荐：Sealed class 表达有限类型集合
-sealed class InputKey {
-    abstract val label: String
+sealed class UiEvent {
+    abstract val id: String
 
-    data class Char(
-        override val label: String,
-        val levels: List<String>,
-        val replacements: Map<String, String>,
-    ) : InputKey()
+    data class Click(
+        override val id: String,
+        val target: String,
+    ) : UiEvent()
 
-    data class Ctrl(
-        override val label: String,
-        val type: CtrlType,
-    ) : InputKey()
+    data class Swipe(
+        override val id: String,
+        val direction: Direction,
+        val distance: Float,
+    ) : UiEvent()
 
-    data class XPad(
-        override val label: String,
-        val zones: List<XPadZone>,
-    ) : InputKey()
+    data class LongPress(
+        override val id: String,
+        val target: String,
+    ) : UiEvent()
 }
 
 // ❌ 避免：深层继承 + 抽象类
-abstract class Key { ... }
-class CharKey : Key() { ... }
-class CtrlKey : Key() { ... }
+abstract class Event { ... }
+class ClickEvent : Event() { ... }
+class SwipeEvent : Event() { ... }
 ```
 
 ### Data class + copy 模式
 
 ```kotlin
 // ✅ 推荐：不可变数据 + copy 更新
-data class InputState(
-    val chars: List<CharInput> = emptyList(),
-    val cursorIndex: Int = 0,
-    val pending: CharInput? = null,
+data class ListState(
+    val items: List<Item> = emptyList(),
+    val selectedIndex: Int = 0,
+    val pendingItem: Item? = null,
 ) {
-    fun appendChar(char: CharInput): InputState =
-        copy(chars = chars + char, cursorIndex = chars.size + 1)
+    fun addItem(item: Item): ListState =
+        copy(items = items + item, selectedIndex = items.size)
 }
 
 // ❌ 避免：可变数据类
-data class MutableInputState(
-    var chars: MutableList<CharInput> = mutableListOf(),
-    var cursorIndex: Int = 0,
-    var pending: CharInput? = null,
+data class MutableListState(
+    var items: MutableList<Item> = mutableListOf(),
+    var selectedIndex: Int = 0,
+    var pendingItem: Item? = null,
 )
 ```
 
@@ -203,41 +205,41 @@ data class MutableInputState(
 ```kotlin
 // ✅ 推荐：Value class 提供编译期类型安全
 @JvmInline
-value class Spell(val value: String)
+value class EntityId(val value: String)
 @JvmInline
-value class ConfigKey(val name: String)
+value class PreferenceKey(val name: String)
 
 // ❌ 避免：Typealias 无类型安全
-typealias Spell = String
-typealias ConfigKey = String
+typealias EntityId = String
+typealias PreferenceKey = String
 ```
 
 ---
 
 ## 5. Builder 模式迁移
 
-Java 版本大量使用自定义 Builder 模式（如 `InputMsg.build(b -> ...)`、`CharKey.build(b -> ...)`），Kotlin 中应使用 DSL 风格或 data class：
+Java 版本大量使用自定义 Builder 模式，Kotlin 中应使用 DSL 风格或 data class：
 
 ```kotlin
 // ✅ 推荐：DSL 风格构建
-fun inputMsg(block: InputMsgBuilder.() -> Unit): InputMsg =
-    InputMsgBuilder().apply(block).build()
+fun config(block: ConfigBuilder.() -> Unit): Config =
+    ConfigBuilder().apply(block).build()
 
 // 使用
-val msg = inputMsg {
-    type = InputMsgType.InputCharsDoing
-    data = InputCharsData(chars = currentChars)
+val cfg = config {
+    name = "default"
+    options = Options(maxRetries = 3)
 }
 
 // ✅ 推荐：Data class + 命名参数（简单场景）
-data class InputMsg(
-    val type: InputMsgType,
-    val data: InputMsgData,
+data class Config(
+    val name: String,
+    val options: Options,
 )
 
-val msg = InputMsg(
-    type = InputMsgType.InputCharsDoing,
-    data = InputCharsData(chars = currentChars),
+val cfg = Config(
+    name = "default",
+    options = Options(maxRetries = 3),
 )
 ```
 
@@ -247,16 +249,16 @@ val msg = InputMsg(
 
 ```kotlin
 // ✅ 推荐：函数式链式操作
-val filtered = inputs
-    .filterIsInstance<CharInput>()
-    .map { it.text }
+val names = items
+    .filterIsInstance<ActiveItem>()
+    .map { it.name }
     .distinct()
 
 // ✅ 推荐：只读集合
-fun getKeys(): List<Key> = keyList.toList() // 防御性拷贝
+fun getItems(): List<Item> = itemList.toList() // 防御性拷贝
 
 // ❌ 避免：可变集合作为返回类型
-fun getKeys(): MutableList<Key> = keyList // 暴露内部可变状态
+fun getItems(): MutableList<Item> = itemList // 暴露内部可变状态
 ```
 
 ---
@@ -265,16 +267,16 @@ fun getKeys(): MutableList<Key> = keyList // 暴露内部可变状态
 
 ```kotlin
 // ✅ 推荐：require/check 断言
-fun lookupCandidate(spell: String): InputWord {
-    require(spell.isNotBlank()) { "Spell must not be blank" }
-    return dict[spell] ?: error("No candidate found for spell: $spell")
+fun findItem(id: String): Item {
+    require(id.isNotBlank()) { "ID must not be blank" }
+    return repository[id] ?: error("No item found for id: $id")
 }
 
 // ✅ 推荐：Elvis 运算符提供默认值
-val label = key.label ?: ""
+val name = item.name ?: ""
 
 // ✅ 推荐：!! 用于逻辑上不可能为 null 的场景（任其崩溃）
-val pending = state.pending!! // 如果逻辑上不可能为 null，用 !! 让它崩溃
+val selected = state.selectedItem!! // 如果逻辑上不可能为 null，用 !! 让它崩溃
 
 // ❌ 避免：不必要的 ?.
 val size = list?.size ?: 0 // 如果 list 逻辑上不可能为 null

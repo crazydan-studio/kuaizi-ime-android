@@ -45,6 +45,32 @@
 > [kuaizi-ime](https://github.com/crazydan-studio/kuaizi-ime)
 > 的子模块 `android` 克隆本项目：`git submodule update --init android`。
 
+### 本地开发
+
+本项目使用 Gradle 构建，需要 JDK 17+。在项目根目录下执行以下命令进行构建：
+
+```bash
+# Debug 构建
+cd code && ./gradlew assembleDebug
+
+# Release 构建
+./gradlew assembleRelease
+```
+
+### 文档预览
+
+项目文档使用 [Docsify](https://docsify.js.org/) 提供本地预览服务，无需安装额外依赖即可启动：
+
+```bash
+# 在项目根目录下执行
+bash tools/preview-docs.sh
+
+# 指定端口（默认 3000）
+bash tools/preview-docs.sh 8080
+```
+
+启动后浏览器访问 `http://localhost:3000` 即可浏览项目文档。
+
 ### 字/词典
 
 客户端默认自带的字典库和词典库由工具

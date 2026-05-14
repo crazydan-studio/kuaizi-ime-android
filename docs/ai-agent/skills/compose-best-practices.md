@@ -1,6 +1,8 @@
 # Jetpack Compose 最佳实践
 
-本文档基于 Jetpack Compose BOM 2026.04.01（Compose 1.8），说明在本 IME 项目中使用 Compose 的最佳实践、推荐特性、IME 场景适配和避坑指南。
+本文档基于 Jetpack Compose BOM 2026.04.01（Compose 1.8），说明 Compose 的最佳实践、推荐特性、避坑指南，以及在本项目 IME 场景中的适配要点。
+
+> **说明**：本文档前两节为通用 Compose 最佳实践，第三节起为项目 IME 架构相关的 Compose 模式。通用示例不绑定本项目领域对象，项目架构示例则直接使用本项目的类名和设计。
 
 ---
 
@@ -43,16 +45,16 @@
 
 ---
 
-## 2. Compose 1.8 新特性在 IME 中的应用
+## 2. Compose 1.8 新特性应用
 
 ### 2.1 文本自动缩放（TextAutoSize）— ★★★★★ 关键
 
-键盘按键标签和候选项文本必须适应不同的按键宽度和屏幕尺寸：
+在按键标签、候选项等需要适应不同宽度和屏幕尺寸的文本场景中使用：
 
 ```kotlin
 // 按键标签自动缩放
 BasicText(
-    text = key.label,
+    text = item.label,
     maxLines = 1,
     autoSize = TextAutoSize.StepBased(
         minFontSize = 10.sp,
@@ -61,9 +63,9 @@ BasicText(
     ),
 )
 
-// 候选项文本自动缩放
+// 列表项文本自动缩放（带中间省略）
 BasicText(
-    text = candidate.text,
+    text = item.description,
     maxLines = 1,
     autoSize = TextAutoSize.StepBased(
         minFontSize = 12.sp,
@@ -76,17 +78,15 @@ BasicText(
 
 ### 2.2 智能省略号 — ★★★★★ 关键
 
-候选项和剪贴板内容截断：
-
 ```kotlin
-// 候选项：中间省略，保留首尾
+// 中间省略，保留首尾（适用于路径、长名称等）
 Text(
-    text = longCandidateText,
+    text = longText,
     overflow = TextOverflow.MiddleEllipsis,
     maxLines = 1,
 )
 
-// 文件路径：开头省略，保留文件名
+// 开头省略，保留尾部（适用于文件路径等）
 Text(
     text = filePath,
     overflow = TextOverflow.StartEllipsis,
@@ -99,13 +99,13 @@ Text(
 ```kotlin
 val haptics = LocalHapticFeedback.current
 
-// 按键点击
+// 点击反馈
 haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
 
 // 长按触发
 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
 
-// 输入确认
+// 确认操作
 haptics.performHapticFeedback(HapticFeedbackType.Confirm)
 
 // 手势结束
@@ -114,7 +114,7 @@ haptics.performHapticFeedback(HapticFeedbackType.GestureEnd)
 
 ### 2.4 预测性动画（Predictive Animations）— ★★★★☆ 重要
 
-键盘模式切换动画：
+尺寸变化动画（如展开/折叠）：
 
 ```kotlin
 LookaheadScope {
@@ -123,34 +123,34 @@ LookaheadScope {
             .width(if (expanded) 180.dp else 110.dp)
             .animateBounds(lookaheadScope = this@LookaheadScope)
     ) {
-        // 键盘内容
+        // 内容
     }
 }
 ```
 
 ### 2.5 稳定的多焦点 API — ★★★★★ 关键
 
-IME 需要在输入区、工具栏、候选项之间管理焦点：
+在需要管理多个焦点区域的界面中使用：
 
 ```kotlin
 Column(Modifier.focusRestorer()) {
-    CandidatePanel(Modifier.onFocusChanged { /* ... */ })
-    KeyboardPanel(Modifier.onFocusChanged { /* ... */ })
+    SectionA(Modifier.onFocusChanged { /* ... */ })
+    SectionB(Modifier.onFocusChanged { /* ... */ })
     Toolbar(Modifier.onFocusChanged { /* ... */ })
 }
 ```
 
 ### 2.6 可见性追踪 — ★★★★☆ 重要
 
-优化 Emoji 分类的懒加载：
+优化分组列表的懒加载：
 
 ```kotlin
 LazyColumn {
-    items(emojiGroups) { group ->
-        EmojiGroupView(
+    items(groups) { group ->
+        GroupView(
             group = group,
             modifier = Modifier.onLayRectChanged { rect ->
-                // 仅当可见时加载 Emoji 数据
+                // 仅当可见时加载数据
                 group.isVisible = rect.isVisible
             },
         )
@@ -159,8 +159,6 @@ LazyColumn {
 ```
 
 ### 2.7 Autofill 语义 — ★★★★☆ 重要
-
-IME 的设置页面登录字段：
 
 ```kotlin
 TextField(
@@ -172,24 +170,17 @@ TextField(
 
 ### 2.8 可暂停组合 — ★★★★☆ 重要
 
-防止键盘布局切换时的卡顿：
-
-```kotlin
-// Compose 1.8 自动启用，无需额外配置
-// 在复杂的键盘切换场景中自动分发重组工作到多帧
-```
+Compose 1.8 自动启用，在复杂布局切换场景中自动分发重组工作到多帧，防止卡顿。
 
 ### 2.9 Lazy Layout 优化 — ★★★★☆ 重要
 
-Emoji 网格和候选字列表滚动优化，Compose 1.8 自动应用更智能的预取策略。
+Compose 1.8 自动应用更智能的预取策略，优化大列表和网格的滚动性能。
 
 ### 2.10 HTML AnnotatedString — ★★★☆☆ 有用
 
-协议和更新日志页面：
-
 ```kotlin
 val htmlContent = buildAnnotatedString {
-    appendHtml(agreementHtml)
+    appendHtml(htmlSource)
 }
 Text(text = htmlContent)
 ```
@@ -197,6 +188,8 @@ Text(text = htmlContent)
 ---
 
 ## 3. IME + Compose 架构模式
+
+> **说明**：本节内容直接涉及本项目的架构设计，使用本项目的类名和设计概念。
 
 ### 3.1 InputMethodService 与 Compose 的桥接
 
@@ -209,7 +202,7 @@ class IMEService : InputMethodService() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 KeyboardTheme(themeType = ThemeType.FollowSystem) {
-                    InputScreen()
+                    InputHostView(engine = engine)
                 }
             }
         }
@@ -239,13 +232,13 @@ sealed class ImeIntent {
     data class KeyPressed(val key: InputKey, val gesture: KeyGesture) : ImeIntent()
     data class CandidateSelected(val candidate: InputWord) : ImeIntent()
     data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
+    data class EditAction(val action: EditorAction) : ImeIntent()
     data class ConfigChanged(val config: ImeConfig) : ImeIntent()
     data object CommitInput : ImeIntent()
     // ... 更多 Intent 见文档 160
 }
 
 // ViewModel
-```
 class KeyboardViewModel : ViewModel() {
     private val _state = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()
@@ -260,7 +253,7 @@ class KeyboardViewModel : ViewModel() {
 
 ### 3.3 Compose 中的键盘渲染
 
-> **注意**：v4 采用三层分离设计（详见文档 150），键盘 UI 分离为 GestureInputPanel（手势拦截层）、GestureFeedbackPanel（反馈绘制层）和 KeyGridPanel（按键渲染层）。以下展示的是 KeyGridPanel 的纯渲染部分。
+> **注意**：v4 采用三层分离设计（详见文档 150），键盘 UI 分离为 GestureInputPanel（手势拦截层）、GestureFeedbackPanel（反馈绘制层）和 KeyGridPanel（按键渲染层）。KeyGridPanel 为纯渲染组件，不处理触摸事件。以下展示的是 StandardKeyGridPanel 的实现。
 
 ```kotlin
 @Composable
@@ -292,8 +285,6 @@ fun StandardKeyGridPanel(
                                 onLayoutInfoChanged(
                                     KeyGridPanelLayoutInfo(
                                         keyPositions = keyPositions.toMap(),
-                                        xPadLayoutInfo = null,
-                                        candidateLayoutInfo = null,
                                     )
                                 )
                             },
@@ -314,38 +305,38 @@ fun StandardKeyGridPanel(
 ```kotlin
 // ✅ 推荐：使用 remember 和 derivedStateOf 减少重组
 @Composable
-fun CandidatePanel(candidates: List<Candidate>) {
-    val displayCandidates = remember(candidates) {
-        candidates.take(MAX_VISIBLE)
+fun ItemList(items: List<Item>) {
+    val visibleItems = remember(items) {
+        items.take(MAX_VISIBLE)
     }
 
     LazyRow {
-        items(displayCandidates, key = { it.id }) { candidate ->
-            CandidateItem(candidate)
+        items(visibleItems, key = { it.id }) { item ->
+            ItemView(item)
         }
     }
 }
 
 // ❌ 避免：每次重组都做计算
 @Composable
-fun CandidatePanel(candidates: List<Candidate>) {
+fun ItemList(items: List<Item>) {
     LazyRow {
-        items(candidates.take(MAX_VISIBLE)) { candidate -> // 每次重组都创建新列表
-            CandidateItem(candidate)
+        items(items.take(MAX_VISIBLE)) { item -> // 每次重组都创建新列表
+            ItemView(item)
         }
     }
 }
 ```
 
-### 4.2 键盘按键的稳定性
+### 4.2 列表项的稳定性
 
 ```kotlin
 // ✅ 推荐：使用 key 标识稳定的列表项
 LazyVerticalGrid(
     columns = GridCells.Fixed(columnCount),
 ) {
-    items(items = keys, key = { it.stableId }) { key ->
-        KeyView(key = key)
+    items(items = items, key = { it.stableId }) { item ->
+        ItemView(item)
     }
 }
 ```
@@ -370,6 +361,8 @@ GestureInputPanel(
 ---
 
 ## 5. 主题系统
+
+> **说明**：本节内容直接涉及本项目的主题系统设计。
 
 ### 5.1 主题定义
 
@@ -442,42 +435,43 @@ fun KeyboardTheme(
 
 ## 6. 手势处理
 
-### 6.1 按键手势
+### 6.1 点击/长按手势
 
 ```kotlin
-// ✅ 推荐：使用 pointerInput 处理按键手势
+// ✅ 推荐：使用 pointerInput 处理自定义手势
 Modifier.pointerInput(key) {
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false)
-        // 触发按键按下反馈
-        onKeyPress()
+        // 按下反馈
+        onPressed()
 
         val up = waitForUpOrCancellation()
         if (up == null) {
             // 取消/移出
+            onCancelled()
         } else {
-            // 触发按键抬起
-            onKeyRelease()
+            // 抬起
+            onReleased()
         }
     }
 }
 ```
 
-### 6.2 滑行输入手势
+### 6.2 滑行/拖拽手势
 
 ```kotlin
 Modifier.pointerInput(Unit) {
     awaitEachGesture {
         val down = awaitFirstDown()
-        val startKey = findKeyAt(down.position)
+        val startPosition = down.position
 
-        val path = mutableListOf<Offset>(down.position)
+        val path = mutableListOf(startPosition)
         do {
             val event = awaitPointerEvent()
             path.addAll(event.changes.map { it.position })
         } while (event.changes.any { it.pressed })
 
-        onSwipePath(startKey, path)
+        onSwipePath(startPosition, path)
     }
 }
 ```
@@ -498,7 +492,7 @@ class IMEService : InputMethodService() {
             )
             setContent {
                 KeyboardTheme(themeType = ThemeType.FollowSystem) {
-                    InputScreen()
+                    InputHostView(engine = engine)
                 }
             }
         }
@@ -514,7 +508,7 @@ class IMEService : InputMethodService() {
 
 | Java 版本组件 | Compose 替代方案 |
 |--------------|-----------------|
-| `FlexboxLayout`（候选项） | `LazyRow` + `FlowRow` |
+| `FlexboxLayout` | `LazyRow` + `FlowRow` |
 | `RecyclerView` + 自定义 `LayoutManager` | `LazyRow` / `LazyVerticalGrid` |
 | `RecyclerView.Adapter` + `ViewHolder` | `items()` + `@Composable` 函数 |
 | `ItemDecoration` | `Arrangement.spacedBy()` / `Modifier.padding()` |
@@ -524,8 +518,8 @@ class IMEService : InputMethodService() {
 | `SharedPreferences` + `OnChangeListener` | `DataStore` + `Flow` |
 | `AlertDialog` | `AlertDialog` (Compose) |
 | `Toast` | `Snackbar` (Compose) |
-| `WebView`（协议页） | `AnnotatedString.appendHtml()` |
-| `Canvas`（X-Pad） | Compose `Canvas` / `drawBehind` |
+| `WebView` | `AnnotatedString.appendHtml()` |
+| `Canvas`（自定义绘制） | Compose `Canvas` / `drawBehind` |
 | `GestureDetector` | `Modifier.pointerInput` + `detectTapGestures` 等 |
 | `ValueAnimator` | `animate*AsState()` / `Animatable` |
 | `OnClickListener` | `Modifier.clickable` |
