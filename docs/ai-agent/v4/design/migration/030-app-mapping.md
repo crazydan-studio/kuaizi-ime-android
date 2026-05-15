@@ -169,8 +169,8 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 | `ImeSupportEditText` / `ImeEditText` / `EditorField` | `EditTextBridge` | 桥梁模式替代独立编辑框组件 |
 | `EditorHost` / `InputHostView` | （移除） | 替换为 ImeOutputBridge 接入示例 |
 | `EditorState` | （移除） | 撤销状态由 `BaseImeOutputBridge` 内部管理 |
-| `AppLog` / `AppLogger` | `ImeLog` / `ImeLogger` | Ime 前缀，划归 engine 模块 |
-| `LogExportActivity` | `LogExportScreen` | 页面以 Screen 为后缀，划归 app 模块 |
+| `AppLog` / `AppLogger` | `ImeLog` / `ImeLogger` | Ime 前缀，划归 engine 模块。核心基础设施详见 [070-日志系统](../engine/070-logging.md) |
+| `LogExportActivity` | `LogExportScreen` | 页面以 Screen 为后缀，划归 app 模块。Android 日志实现与 UI 详见 [020-日志系统](../app/020-logging.md) |
 | `CandidateState` | `CandidateListState` | 体现列表语义 |
 | `FavoritesState` | `FavoriteListState` | 体现列表语义；单数 Favorite + ListState |
 | `CandidatePanel` | `CandidateListPanel` | 体现列表语义 |

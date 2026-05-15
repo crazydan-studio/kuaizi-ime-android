@@ -149,6 +149,7 @@ function sidebarAiAgent() {
         { text: '040-X-Pad 核心', link: '/ai-agent/v4/design/engine/040-xpad-core' },
         { text: '050-输入动作程序化', link: '/ai-agent/v4/design/engine/050-input-action' },
         { text: '060-剪贴板与收藏', link: '/ai-agent/v4/design/engine/060-clipboard-and-favorites' },
+        { text: '070-日志系统', link: '/ai-agent/v4/design/engine/070-logging' },
       ],
     },
     {

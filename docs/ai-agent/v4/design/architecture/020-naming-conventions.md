@@ -96,7 +96,7 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 - `InputHostView`（使用 Bridge 接入示例，见 [030-三层模块划分](./030-module-division.md#_5-3-输出桥接机制)）
 - `ImeEditText` / `ImeSupportEditText`（使用 `EditTextBridge`）
 - `EditorState`（撤销状态由 BaseImeOutputBridge 内部管理）
-- `AppLog` / `AppLogger`（使用 `ImeLog` / `ImeLogger`）
+- `AppLog` / `AppLogger`（使用 `ImeLog` / `ImeLogger`，详见 [070-日志系统](../engine/070-logging.md)）
 - `LogExportActivity`（使用 `LogExportScreen`）
 - `CandidateState`（使用 `CandidateListState`）
 - `FavoritesState`（使用 `FavoriteListState`）

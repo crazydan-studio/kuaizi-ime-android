@@ -1,275 +1,109 @@
-# 应用日志系统设计
+# 日志系统
 
-v4 版本设计完整的应用内置日志系统，支持日志分级输出、崩溃拦截记录、应用内日志查看与导出、按构建类型区分日志等级、可配置日志存放位置。
+v4 版本的日志系统在应用层提供 Android 平台特有的日志实现和日志管理界面。核心日志基础设施（`ImeLog`、`ImeLogger`、`LogLevel`、`LogEntry`、`LogWriter` 接口、`LogStorage`、`FileLogWriter`）定义在 `:ime-engine` 引擎库中，是平台无关的纯 Kotlin 实现，详见 [070-日志系统](../engine/070-logging.md)。本模块（`:app`）负责引擎日志基础设施的初始化、Android 平台特有的日志输出（`LogcatWriter`）、崩溃拦截（`CrashInterceptor`），以及日志查看、导出、等级配置、存储路径配置等用户界面。
 
-```plantuml
-@file:../diagrams/app-logging.puml
-```
-
-**模块归属**：日志的业务模型（`ImeLog`、`ImeLogger`、`LogLevel`、`LogEntry`、`LogWriter`、`CrashInterceptor`、`LogStorage`、`FileLogWriter`、`LogcatWriter`）划归 `:ime-engine` 模块，作为引擎库的日志基础设施。日志相关的界面（`LogViewerScreen`、`LogExportScreen`、`LogLevelSetting`、`LogStoragePathSetting`、`LogViewerViewModel`）划归 `:app` 模块，属于应用层的诊断和配置功能。
+**模块归属**：Android 平台特有实现（`LogcatWriter`、`CrashInterceptor`、`ImeLog` 初始化）和日志相关的界面（`LogViewerScreen`、`LogExportScreen`、`LogLevelSetting`、`LogStoragePathSetting`、`LogViewerViewModel`）划归 `:app` 模块，属于应用层的平台集成和诊断功能。
 
 ---
 
 ## 1. 架构总览
 
+应用层在引擎日志基础设施之上，提供三个层面的扩展：平台集成层（初始化和平台特有 Writer）、崩溃防护层（CrashInterceptor）、用户界面层（查看、导出、配置）。这三层共同构成完整的 Android 日志体验。
+
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      调用层                                  │
-│  Domain / ViewModel / Data / Platform 各层通过 ImeLog 记录   │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    ImeLog (门面)                              │
-│  - 获取 Logger 实例                                          │
-│  - 全局配置（等级、存储路径）                                  │
-│  - 崩溃拦截安装                                              │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-              ┌────────┼────────┐
-              ▼        ▼        ▼
-┌──────────────┐ ┌────────────┐ ┌───────────────┐
-│ LogcatWriter │ │ FileWriter │ │ CrashInterceptor│
-│ (Logcat 输出) │ │(文件持久化) │ │ (异常拦截)     │
-└──────────────┘ └─────┬──────┘ └───────┬───────┘
-                       │                 │
-                       ▼                 ▼
-              ┌─────────────────────────────────┐
-              │      LogStorage                  │
-              │  - 日志文件管理（滚动、清理）      │
-              │  - 日志文件读取（查看、搜索、导出） │
-              └─────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                    用户界面层 [:app]                             │
+│  LogViewerScreen / LogExportScreen / LogLevelSetting           │
+│  LogStoragePathSetting / LogViewerViewModel                    │
+├───────────────────────────────────────────────────────────────┤
+│                    崩溃防护层 [:app]                             │
+│  CrashInterceptor → 安装 UncaughtExceptionHandler              │
+│  崩溃时直接写入 + flush + 委托系统处理                           │
+├───────────────────────────────────────────────────────────────┤
+│                    平台集成层 [:app]                             │
+│  ImeLog.init(level, writers) → 注入 LogcatWriter + FileLogWriter│
+│  路径解析 → Context.filesDir / SAF URI → File → LogStorage     │
+├───────────────────────────────────────────────────────────────┤
+│               引擎日志基础设施 [:ime-engine]                     │
+│  ImeLog / ImeLogger / LogLevel / LogEntry / LogWriter          │
+│  LogStorage / FileLogWriter                                    │
+└───────────────────────────────────────────────────────────────┘
 ```
+
+应用层不修改引擎的日志核心逻辑，仅通过 `ImeLog.init()` 注入平台特有的配置和 Writer，通过 `ImeLog.updateLevel()` 和 `LogStorage.updateDir()` 响应用户的运行时配置变更。这种分层确保了引擎库的平台无关性，同时为 Android 应用提供完整的日志能力。
 
 ---
 
-## 2. 日志等级
+## 2. 日志系统初始化
 
-```kotlin
-enum class LogLevel(val priority: Int) {
-    VERBOSE(2),
-    DEBUG(3),
-    INFO(4),
-    WARN(5),
-    ERROR(6);
-
-    companion object {
-        fun fromPriority(priority: Int): LogLevel =
-            entries.firstOrNull { it.priority == priority } ?: WARN
-    }
-}
-```
-
-**各构建类型缺省等级**：
-
-| 构建类型 | 缺省日志等级 | 可修改 | 说明 |
-|----------|-------------|--------|------|
-| debug | `VERBOSE` | 否 | 开发阶段需要全量日志 |
-| release | `WARN` | 是 | 仅记录警告和错误，用户可在设置中调低等级以协助排查问题 |
-
-Release 构建的日志等级作为配置项存储在 DataStore 中，与 `ImeConfig.UiConfig` 集成：
-- `logLevel: LogLevel = LogLevel.WARN` — 发布版本的日志等级。仅对 release 构建生效，debug 构建始终为 VERBOSE
-- `logStoragePath: String? = null` — 日志文件存放目录路径。null 表示使用缺省应用私有目录
-
----
-
-## 3. ImeLog 门面
+应用层负责在应用启动时初始化引擎日志基础设施，包括：根据构建类型确定初始日志等级、创建并注册平台特有的 `LogWriter`、解析日志存储路径。
 
 ```kotlin
 /**
- * 应用日志系统门面。
+ * 日志系统初始化。
  *
- * 初始化时根据构建类型设置缺省日志等级，并安装崩溃拦截器。
- * 所有日志操作通过 [logger] 获取的 [ImeLogger] 实例执行。
+ * 在 Application.onCreate() 或 IMEService.onCreate() 中调用。
+ * 根据 BuildConfig.DEBUG 确定初始日志等级，
+ * 创建并注册 LogcatWriter（仅 debug）和 FileLogWriter，
+ * 解析日志存储路径并创建 LogStorage。
  */
-object ImeLog {
-    private val writers = mutableListOf<LogWriter>()
-    private var crashInterceptor: CrashInterceptor? = null
+fun initLogging(context: Context, config: ImeConfig) {
+    val level = if (BuildConfig.DEBUG) LogLevel.VERBOSE
+                else config.ui.logLevel
 
-    /** 当前生效的日志等级 */
-    var level: LogLevel = if (BuildConfig.DEBUG) LogLevel.VERBOSE else LogLevel.WARN
-        private set
+    val logDir = resolveLogDir(context, config.ui.logStoragePath)
+    val storage = LogStorage(logDir)
 
-    fun init(context: Context, config: ImeConfig) {
-        // 设置日志等级
-        level = if (BuildConfig.DEBUG) LogLevel.VERBOSE else config.ui.logLevel
-
-        // 添加 Logcat 输出（仅 debug 构建）
+    val writers = buildList {
+        // Logcat 输出仅 debug 构建使用
         if (BuildConfig.DEBUG) {
-            writers += LogcatWriter()
+            add(LogcatWriter())
         }
-
-        // 添加文件输出
-        val storage = LogStorage(context, config.ui.logStoragePath)
-        writers += FileLogWriter(storage)
-
-        // 安装崩溃拦截器
-        crashInterceptor = CrashInterceptor(writers, storage)
-        crashInterceptor?.install()
+        // 文件持久化始终启用
+        add(FileLogWriter(storage))
     }
 
-    /** 更新日志等级（发布版本通过设置界面调用） */
-    fun updateLevel(newLevel: LogLevel) {
-        level = newLevel
-    }
+    ImeLog.init(level, writers)
 
-    /** 更新日志存储路径 */
-    fun updateStoragePath(path: String?) {
-        val fileWriter = writers.filterIsInstance<FileLogWriter>().firstOrNull()
-        fileWriter?.updateStoragePath(path)
-    }
-
-    /** 获取带标签的 Logger 实例 */
-    fun logger(tag: String): ImeLogger = ImeLogger(tag, this)
-
-    /** 获取带类名标签的 Logger 实例 */
-    fun logger(cls: Class<*>): ImeLogger = logger(cls.simpleName)
-
-    /** 内部：分发日志到所有 Writer */
-    internal fun dispatch(entry: LogEntry) {
-        if (entry.level.priority < level.priority) return
-
-        writers.forEach { writer ->
-            writer.write(entry)
-        }
-    }
-
-    /** 内部：刷新所有 Writer */
-    internal suspend fun flush() {
-        writers.forEach { it.flush() }
-    }
+    // 安装崩溃拦截器
+    CrashInterceptor(writers, storage).install()
 }
-```
 
----
-
-## 4. ImeLogger
-
-```kotlin
 /**
- * 带标签的日志记录器。
+ * 解析日志存储目录。
  *
- * 支持 Kotlin 惯用语法和树形日志块。
- * 使用 inline + lambda 避免在不满足日志等级时评估消息参数。
+ * 优先级：
+ * 1. 用户配置路径（通过 SAF 选择的 URI）→ 优先使用
+ * 2. 应用私有目录 {filesDir}/logs/ → 缺省路径
+ * 3. 配置路径无效 → 降级到缺省路径并记录警告日志
  */
-class ImeLogger(private val tag: String, private val imeLog: ImeLog) {
-
-    inline fun verbose(msg: () -> String) {
-        if (imeLog.level <= LogLevel.VERBOSE) {
-            imeLog.dispatch(LogEntry(LogLevel.VERBOSE, tag, msg()))
+private fun resolveLogDir(context: Context, customPath: String?): File {
+    if (customPath != null) {
+        val dir = File(customPath)
+        if (dir.isDirectory || dir.mkdirs()) {
+            return dir
         }
+        // 降级到缺省路径
+        ImeLog.logger("LogInit").warn { "配置的日志路径无效: $customPath，降级到缺省路径" }
     }
-
-    inline fun debug(msg: () -> String) {
-        if (imeLog.level <= LogLevel.DEBUG) {
-            imeLog.dispatch(LogEntry(LogLevel.DEBUG, tag, msg()))
-        }
-    }
-
-    inline fun info(msg: () -> String) {
-        if (imeLog.level <= LogLevel.INFO) {
-            imeLog.dispatch(LogEntry(LogLevel.INFO, tag, msg()))
-        }
-    }
-
-    inline fun warn(msg: () -> String) {
-        if (imeLog.level <= LogLevel.WARN) {
-            imeLog.dispatch(LogEntry(LogLevel.WARN, tag, msg()))
-        }
-    }
-
-    inline fun error(msg: () -> String) {
-        if (imeLog.level <= LogLevel.ERROR) {
-            imeLog.dispatch(LogEntry(LogLevel.ERROR, tag, msg()))
-        }
-    }
-
-    inline fun error(throwable: Throwable, msg: () -> String) {
-        if (imeLog.level <= LogLevel.ERROR) {
-            imeLog.dispatch(LogEntry(LogLevel.ERROR, tag, msg(), throwable))
-        }
-    }
-
-    /**
-     * 开始树形日志块。
-     *
-     * 在 [block] 执行期间，所有通过当前 logger 记录的日志
-     * 将作为此树形块的子节点输出，形成嵌套结构。
-     */
-    inline fun tree(title: String, block: () -> Unit) {
-        val treeWriter = TreeLogWriter(imeLog, tag, title)
-        treeWriter.begin()
-        try {
-            block()
-        } finally {
-            treeWriter.end()
-        }
-    }
+    return File(context.filesDir, "logs")
 }
 ```
 
-**使用示例**：
+初始化的关键设计决策是将所有 Android 平台依赖（`Context`、`BuildConfig.DEBUG`）集中在应用层处理，引擎库的 `ImeLog.init()` 只接收纯 Kotlin 参数（`LogLevel` 和 `List<LogWriter>`）。`resolveLogDir()` 方法将 Android 的 `Context.filesDir` 或 SAF URI 转换为纯 `File` 对象，传给引擎的 `LogStorage`，确保引擎不持有任何 Android 引用。
 
-```kotlin
-class PinyinKeyboard(private val dict: PinyinDict) {
-    private val log = ImeLog.logger(PinyinKeyboard::class)
-
-    fun handleInput(char: Char) {
-        log.tree("处理拼音输入: $char") {
-            log.debug { "查询拼音候选: $char" }
-            val candidates = dict.lookup(char.toString())
-            log.info { "找到 ${candidates.size} 个候选" }
-        }
-    }
-}
-```
+日志等级与 `ImeConfig.UiConfig` 集成，配置字段 `logLevel` 和 `logStoragePath` 由 `ConfigRepository` 管理。等级变更通过 `ImeLog.updateLevel()` 立即生效，无需重启应用。路径变更通过 `LogStorage.updateDir()` 切换写入目录。
 
 ---
 
-## 5. 日志条目（LogEntry）
-
-```kotlin
-/**
- * 单条日志记录，不可变。
- */
-data class LogEntry(
-    val level: LogLevel,
-    val tag: String,
-    val message: String,
-    val throwable: Throwable? = null,
-    val timestamp: Long = System.currentTimeMillis(),
-    val threadName: String = Thread.currentThread().name,
-    val threadId: Long = Thread.currentThread().id,
-) {
-    /** 格式化为可读字符串 */
-    fun format(): String {
-        val time = Instant.fromEpochMilliseconds(timestamp)
-            .toLocalDateTime(TimeZone.currentSystemDefault())
-            .format(DateTimeFormatter("yyyy-MM-dd HH:mm:ss.SSS"))
-        val throwableStr = throwable?.stackTraceToString()?.let { "\n$it" } ?: ""
-        return "$time [${level.name}] [$tag] [$threadName] $message$throwableStr"
-    }
-}
-```
-
----
-
-## 6. LogWriter 接口与实现
-
-### 6.1 LogWriter 接口
-
-```kotlin
-interface LogWriter {
-    fun write(entry: LogEntry)
-    suspend fun flush()
-}
-```
-
-### 6.2 LogcatWriter
+## 3. LogcatWriter
 
 ```kotlin
 /**
  * Logcat 输出。仅 debug 构建使用。
+ *
+ * 将 ImeLog 的日志条目映射到 Android Logcat 的对应方法，
+ * 在 Android Studio 的 Logcat 面板中实时查看。
  */
 class LogcatWriter : LogWriter {
     override fun write(entry: LogEntry) {
@@ -283,76 +117,25 @@ class LogcatWriter : LogWriter {
     }
 
     override suspend fun flush() {
-        // Logcat 无需刷新
+        // Logcat 无需刷新，日志即时输出
     }
 }
 ```
 
-### 6.3 FileLogWriter
+`LogcatWriter` 是 Android 平台特有的日志输出实现，将引擎的 `LogEntry` 映射到 `android.util.Log` 的对应方法。由于 `LogcatWriter` 依赖 Android 框架的 `android.util.Log` 类，它不能放在 `:ime-engine`（纯 Kotlin）中，必须放在 `:app` 模块。`LogcatWriter` 仅在 debug 构建中注册到 `ImeLog`，release 构建不包含此 Writer，确保发布版本不会向 Logcat 输出敏感信息。
 
-```kotlin
-/**
- * 文件日志输出。
- *
- * 使用协程 Channel 缓冲日志条目，独立协程批量写入文件，
- * 避免阻塞调用线程。文件按日期滚动，超过上限自动清理。
- */
-class FileLogWriter(private val storage: LogStorage) : LogWriter {
-    private val channel = Channel<LogEntry>(capacity = Channel.BUFFERED)
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val flushLatch = CompletableDeferred<Unit>()
-
-    init {
-        scope.launch {
-            val buffer = mutableListOf<LogEntry>()
-            while (true) {
-                // 收集一批日志（最多 100 条或等待 2 秒）
-                val entry = channel.receive()
-                buffer.add(entry)
-
-                while (buffer.size < 100) {
-                    val polled = channel.tryReceive().getOrNull() ?: break
-                    buffer.add(polled)
-                }
-
-                // 批量写入
-                storage.appendEntries(buffer)
-                buffer.clear()
-
-                // 检查是否需要刷新信号
-                if (channel.isEmpty) {
-                    flushLatch.complete(Unit)
-                }
-            }
-        }
-    }
-
-    override fun write(entry: LogEntry) {
-        channel.trySend(entry)
-    }
-
-    override suspend fun flush() {
-        while (!channel.isEmpty) {
-            delay(50)
-        }
-    }
-
-    fun updateStoragePath(path: String?) {
-        storage.updatePath(path)
-    }
-}
-```
+`LogcatWriter` 的 `flush()` 方法为空实现，因为 Android Logcat 是即时输出通道，不存在缓冲区。这与 `FileLogWriter` 的异步缓冲写入形成对比：`FileLogWriter` 通过 `Channel` 缓冲日志条目，需要 `flush()` 确保落盘；`LogcatWriter` 直接调用 `Log.v/d/i/w/e`，日志立即出现在 Logcat 面板中。
 
 ---
 
-## 7. CrashInterceptor
+## 4. CrashInterceptor
 
 ```kotlin
 /**
  * 崩溃拦截器。
  *
  * 安装为 UncaughtExceptionHandler，在应用崩溃时：
- * 1. 记录完整异常信息到日志文件（通过 FileLogWriter 直接写入）
+ * 1. 记录完整异常信息到日志文件（通过 LogStorage 直接写入）
  * 2. 刷新日志缓冲区，确保所有待写入日志落盘
  * 3. 调用原始 Handler 让系统正常处理崩溃（显示对话框、退出进程）
  */
@@ -403,128 +186,15 @@ class CrashInterceptor(
 | threadName | 崩溃线程名 |
 | threadId | 崩溃线程 ID |
 
----
+`CrashInterceptor` 是应用层的崩溃防护组件，安装为 JVM 的 `UncaughtExceptionHandler`。崩溃发生时，它绕过 `FileLogWriter` 的 `Channel` 缓冲，直接通过 `LogStorage.appendEntries()` 同步写入文件，确保崩溃信息不会丢失在缓冲区中。随后同步刷新所有 Writer 的缓冲区，将崩溃前尚未落盘的日志全部写入文件。最后调用系统默认的异常处理器，让 Android 系统正常处理崩溃（显示崩溃对话框、退出进程）。
 
-## 8. LogStorage
-
-```kotlin
-/**
- * 日志文件存储管理。
- *
- * 文件组织：
- *   {logDir}/
- *   ├── kuaizi_ime_2026-05-12.log   ← 当天日志
- *   ├── kuaizi_ime_2026-05-11.log   ← 前一天日志
- *   └── ...
- *
- * 文件滚动策略：每天一个文件，保留最近 7 天，单文件最大 5MB。
- * 存储路径可通过配置指定，缺省为应用私有目录下的 logs/ 子目录。
- */
-class LogStorage(
-    context: Context,
-    customPath: String? = null,
-) {
-    private var logDir: File = resolveLogDir(context, customPath)
-
-    companion object {
-        const val MAX_FILE_SIZE_BYTES = 5L * 1024 * 1024 // 5MB
-        const val MAX_RETENTION_DAYS = 7
-        const val FILE_NAME_PREFIX = "kuaizi_ime_"
-        const val FILE_NAME_SUFFIX = ".log"
-
-        private val dateFormat = DateTimeFormatter("yyyy-MM-dd")
-
-        private fun resolveLogDir(context: Context, customPath: String?): File {
-            if (customPath != null) {
-                val dir = File(customPath)
-                if (dir.isDirectory || dir.mkdirs()) {
-                    return dir
-                }
-            }
-            return File(context.filesDir, "logs")
-        }
-    }
-
-    fun appendEntries(entries: List<LogEntry>) {
-        val todayFile = todayFile()
-        // 检查文件大小，超过上限则滚动
-        if (todayFile.exists() && todayFile.length() > MAX_FILE_SIZE_BYTES) {
-            rotateFile(todayFile)
-        }
-
-        todayFile.appendText(entries.joinToString("\n") { it.format() } + "\n")
-        cleanupOldFiles()
-    }
-
-    fun readLogs(
-        date: LocalDate? = null,
-        levelFilter: LogLevel? = null,
-        keyword: String? = null,
-    ): List<LogEntry> {
-        val file = if (date != null) fileForDate(date) else todayFile()
-        if (!file.exists()) return emptyList()
-
-        return file.readLines()
-            .mapNotNull { parseLine(it) }
-            .filter { levelFilter == null || it.level.priority >= levelFilter.priority }
-            .filter { keyword == null || it.message.contains(keyword, ignoreCase = true) }
-    }
-
-    /** 导出指定日期范围的日志为单个文件 */
-    fun exportLogs(
-        destination: File,
-        fromDate: LocalDate,
-        toDate: LocalDate,
-    ) {
-        val lines = mutableListOf<String>()
-        var date = fromDate
-        while (date <= toDate) {
-            val file = fileForDate(date)
-            if (file.exists()) {
-                lines += "= ${file.name} ="
-                lines += file.readLines()
-                lines += ""
-            }
-            date = date.plusDays(1)
-        }
-        destination.writeText(lines.joinToString("\n"))
-    }
-
-    fun updatePath(customPath: String?) {
-        logDir = resolveLogDir(/* 需要 context */, customPath)
-    }
-
-    private fun todayFile(): File = fileForDate(Clock.System.todayIn(TimeZone.currentSystemDefault()))
-
-    private fun fileForDate(date: LocalDate): File =
-        File(logDir, "$FILE_NAME_PREFIX${dateFormat.format(date)}$FILE_NAME_SUFFIX")
-
-    private fun rotateFile(file: File) {
-        val rotated = File(file.parent, file.nameWithoutExtension + "_rotated_${System.currentTimeMillis()}.log")
-        file.renameTo(rotated)
-    }
-
-    private fun cleanupOldFiles() {
-        val cutoff = Clock.System.todayIn(TimeZone.currentSystemDefault())
-            .minusDays(MAX_RETENTION_DAYS.toLong())
-        logDir.listFiles()
-            ?.filter { it.name.startsWith(FILE_NAME_PREFIX) && it.name.endsWith(FILE_NAME_SUFFIX) }
-            ?.filter { extractDateFromFileName(it.name) < cutoff }
-            ?.forEach { it.delete() }
-    }
-
-    private fun extractDateFromFileName(name: String): LocalDate? = runCatching {
-        val dateStr = name.removePrefix(FILE_NAME_PREFIX).removeSuffix(FILE_NAME_SUFFIX)
-        LocalDate.parse(dateStr)
-    }.getOrNull()
-}
-```
+`CrashInterceptor` 虽然使用的是 JVM 标准的 `Thread.UncaughtExceptionHandler`（并非 Android 特有 API），但崩溃拦截只有在完整 Android 应用中才有意义——在纯 JVM 测试环境中不需要安装崩溃拦截器。因此 `CrashInterceptor` 划归 `:app` 模块，与 `LogcatWriter` 一起作为平台集成层组件。
 
 ---
 
-## 9. 日志查看界面
+## 5. 日志查看界面
 
-### 9.1 LogViewerScreen
+### 5.1 LogViewerScreen
 
 ```kotlin
 /**
@@ -586,7 +256,9 @@ private fun LogEntryItem(entry: LogEntry) {
 }
 ```
 
-### 9.2 LogViewerViewModel
+`LogViewerScreen` 是应用内置的日志浏览界面，使用 `LazyColumn` 渲染日志条目列表，支持按等级过滤和关键词搜索。不同日志等级使用不同颜色标识，使得在查看大量日志时可以快速区分信息类型：灰色表示 VERBOSE（最详细的追踪信息）、蓝色表示 DEBUG（开发期调试信息）、绿色表示 INFO（关键业务节点）、橙色表示 WARN（可恢复的异常情况）、红色表示 ERROR（不可恢复错误）。日志条目使用等宽字体显示，确保时间戳和标签列对齐，便于快速浏览和定位问题。
+
+### 5.2 LogViewerViewModel
 
 ```kotlin
 class LogViewerViewModel(private val storage: LogStorage) : ViewModel() {
@@ -626,9 +298,11 @@ data class LogViewerState(
 )
 ```
 
+`LogViewerViewModel` 管理日志浏览界面的状态，使用 `StateFlow` 驱动 UI 更新。日志读取操作在 `Dispatchers.IO` 上执行，避免阻塞主线程。过滤条件变更时自动刷新日志列表。`LogStorage.readLogs()` 方法支持按等级和关键词过滤，`LogViewerViewModel` 将用户的选择传递给 `LogStorage`，获取过滤后的日志条目列表。
+
 ---
 
-## 10. 日志导出
+## 6. 日志导出
 
 日志导出与用户数据导入导出功能中的导出机制协同：
 
@@ -660,11 +334,13 @@ class LogExportScreen : ComponentActivity() {
 | 用户数据 | JSON | 输入频率、收藏、配置 |
 | 诊断日志 | TXT | 指定日期范围的日志文件 |
 
+日志导出使用 Android 的 Activity Result API `CreateDocument` 合约，让用户通过系统文件选择器指定保存位置。导出文件为纯文本格式，包含指定日期范围内所有日志文件的内容，每个文件以文件名作为分隔标识。默认文件名包含日期范围，便于识别导出的日志涵盖的时间段。导出操作委托给引擎的 `LogStorage.exportLogs()` 方法执行，应用层只负责文件选择和 URI 处理。
+
 ---
 
-## 11. 日志等级管理
+## 7. 日志等级管理
 
-### 11.1 等级切换界面
+### 7.1 等级切换界面
 
 ```kotlin
 @Composable
@@ -737,7 +413,7 @@ val LogLevel.displayName: String
     }
 ```
 
-### 11.2 等级变更流程
+### 7.2 等级变更流程
 
 ```
 用户在设置中选择日志等级
@@ -751,11 +427,13 @@ ImeLog.updateLevel(newLevel)
 
 等级变更立即生效，不需要重启应用。DataStore 异步持久化确保配置在应用重启后恢复。
 
+Debug 构建的日志等级固定为 `VERBOSE`，界面上显示当前等级但不允许修改，这确保开发阶段始终有完整的日志输出。Release 构建允许用户通过设置页面调整日志等级，典型的使用场景是用户遇到问题后，在设置中将等级从 `WARN` 调低到 `DEBUG`，复现问题后导出日志发送给开发者排查。等级变更通过 `ConfigRepository` 持久化到 DataStore，同时通过 `ImeLog.updateLevel()` 立即更新运行时等级，两条路径并行确保即时生效和持久恢复。
+
 ---
 
-## 12. 日志存储路径配置
+## 8. 日志存储路径配置
 
-### 12.1 路径选择
+### 8.1 路径选择
 
 ```kotlin
 @Composable
@@ -792,42 +470,50 @@ fun LogStoragePathSetting(
 }
 ```
 
-### 12.2 路径解析优先级
+### 8.2 路径解析优先级
 
 1. 用户配置路径（通过 SAF 选择的 URI）→ 优先使用
 2. 应用私有目录 `{filesDir}/logs/` → 缺省路径
 3. 配置路径无效（目录不存在且无法创建）→ 降级到缺省路径并记录警告日志
 
+日志存储路径通过 Android SAF（Storage Access Framework）的 `OpenDocumentTree` 合约让用户选择目录，应用获取持久化 URI 权限后，将 URI 路径存入 `ImeConfig.UiConfig.logStoragePath`。路径变更时，应用层同时更新 `ConfigRepository` 的持久化配置和 `LogStorage.updateDir()` 的运行时目录，确保后续日志写入新路径。缺省路径为应用私有目录下的 `logs/` 子目录，无需用户配置即可使用，但日志文件在应用卸载后会被系统清除。用户选择外部存储路径后，日志文件在应用卸载后仍可保留，便于问题排查和数据迁移。
+
 ---
 
-## 13. 各层日志使用规范
+## 9. 与 UI 测试的协作
 
-### 13.1 层级与标签约定
+UI 测试方案与应用日志系统协同工作，详见 [030-UI 测试方案](030-ui-testing.md)：
 
-| 层 | 标签前缀 | 典型内容 |
-|----|----------|----------|
-| Platform | `IME#` | InputConnection 操作、生命周期、窗口状态 |
-| ViewModel | `VM#` | Intent 处理、状态转换、协程异常 |
-| Domain | `KB#` / `IL#` / `Dict#` | 键盘状态机、输入列表操作、字典查询 |
-| Data | `DB#` / `DS#` | 数据库操作、DataStore 读写 |
-| 日志系统 | `Crash` | 未捕获异常 |
-
-### 13.2 日志等级使用指南
-
-| 等级 | 使用场景 | 示例 |
-|------|----------|------|
-| VERBOSE | 细粒度流程追踪 | 键盘状态机每次转换、RecyclerView 绑定 |
-| DEBUG | 开发期调试信息 | 候选词查询结果、按键事件参数 |
-| INFO | 关键业务节点 | 输入提交、键盘切换、字典加载完成 |
-| WARN | 可恢复的异常情况 | 字典查询超时降级、配置项缺失使用默认值 |
-| ERROR | 不可恢复错误 | 数据库损坏、InputConnection 丢失、崩溃异常 |
-
-### 13.3 性能注意事项
+| 协作点 | 说明 |
+|--------|------|
+| 组件信息 → 日志记录 | 「组件信息查看」工具可将选中组件的调试信息以 INFO 等级写入日志 |
+| 重组追踪 → 日志记录 | 重组超过阈值的组件自动记录 WARN 日志，便于后续排查 |
+| 布局异常 → 日志警告 | 检测到布局溢出（组件尺寸超出父容器）时自动记录 WARN 日志 |
+| 日志等级联动 | UI 测试工具激活时，自动将日志等级降至 DEBUG 以获取更完整信息 |
 
 ```kotlin
-// ✅ 推荐：使用 inline + lambda 延迟求值
-log.debug { "查询结果: ${candidates.map { it.text }.joinToString()}" }
+// debug 源集：UI 测试与日志联动
+class DebugUITestOverlay(
+    private val imeLog: ImeLog,
+) : UITestOverlay {
 
-// ❌ 禁止：直接拼接字符串（即使不满足等级也会执行拼接）
-log.debug("查询结果: ${candidates.map { it.text }.joinToString()}")
+    override fun enable() {
+        // UI 测试激活时降级日志等级
+        if (imeLog.level > LogLevel.DEBUG) {
+            imeLog.updateLevel(LogLevel.DEBUG)
+            imeLog.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
+        }
+    }
+
+    override fun toggle(tool: UITestTool) {
+        if (tool in activeTools) {
+            activeTools.remove(tool)
+        } else {
+            activeTools.add(tool)
+            imeLog.logger("UITest").debug { "激活工具: ${tool.displayName}" }
+        }
+    }
+}
 ```
+
+UI 测试覆盖层在 debug 构建中激活时，自动将日志等级降至 `DEBUG`，确保开发者在调试 UI 问题时能够获取更完整的日志信息。组件信息查看、重组追踪等工具产生的日志使用 `ImeLogger` 的标准 API 写入，遵循统一的标签和等级约定，便于在日志查看界面中筛选和检索。

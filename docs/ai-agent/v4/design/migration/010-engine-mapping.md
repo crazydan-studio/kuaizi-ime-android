@@ -21,7 +21,7 @@ Java 版本采用自定义消息驱动的 MVP 架构，v4 采用 MVI + StateFlow
 | 数据库 | 手写 SQLiteOpenHelper | Room | 类型安全、编译期检查、官方推荐 |
 | 依赖管理 | 手动构造 | 手动构造注入（同 Java，但更简洁） | 项目规模适中，手动注入足够 |
 | 输出桥接 | 手动 when 分发（2 处重复） | ImeOutputBridge 语义化桥接（1 处分发） | 消除重复，桥梁实现者无需理解 ImeOutput 类型体系 |
-| 日志 | Logger（仅 DEBUG 生效） | ImeLog（分级 + 持久化 + 崩溃拦截 + 查看导出） | release 也可用 |
+| 日志 | Logger（仅 DEBUG 生效） | ImeLog（分级 + 持久化 + 崩溃拦截 + 查看导出） | release 也可用。核心基础设施在 :ime-engine，Android 特有实现在 :app |
 
 **历史原因**：Java 版本的 MVP + 手动消息路由虽然实现了单向数据流，但三套消息体系（共 53+ 种消息类型）导致理解成本高、分发易出错。IMEService 职责过重，既是消息路由器又负责 InputConnection 操作和生命周期管理。v4 将消息路由职责内化到引擎的 `reduce()` 函数，通过 StateFlow 自动传播状态变更，消除了手动分发。
 
