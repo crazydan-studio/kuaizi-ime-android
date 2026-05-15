@@ -22,13 +22,14 @@
 
 | 文档 | 简述 |
 |------|------|
-| [010-键盘状态机](engine/010-state-machine.md) | KeyboardState sealed class、状态转换规则、Keyboard 组合模式、InputKey 体系、StateHistory 有界历史栈 |
-| [020-输入列表](engine/020-input-list.md) | InputListState 不可变数据模型、InputItem/InputWord/InputCompletion、线程安全、撤销机制、游标管理 |
-| [030-字典系统](engine/030-dict-system.md) | DictRepository + Room 数据库、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree、HmmModel + ViterbiDecoder |
-| [040-X-Pad 核心](engine/040-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout、X-Pad 状态集成 |
-| [050-输入动作程序化](engine/050-input-action.md) | InputAction sealed class、ActionScript、ActionScriptCompiler、坐标无关设计 |
-| [060-剪贴板与收藏](engine/060-clipboard-and-favorites.md) | ClipboardService、FavoriteService、InputClip/InputFavorite 数据模型 |
-| [070-日志系统](engine/070-logging.md) | ImeLog 门面、ImeLogger、LogLevel、LogEntry、LogWriter 接口、LogStorage 文件存储、FileLogWriter 异步写入 |
+| [010-引擎库设计总览](engine/010-engine-overview.md) | 模块定位与设计目标、核心 class 关系图、公开 API 概览（ImeEngine/ImeConfig/ImeOutput/ImeIntent/ImeState） |
+| [020-键盘状态机](engine/020-state-machine.md) | KeyboardState sealed class、状态转换规则、Keyboard 组合模式、InputKey 体系、StateHistory 有界历史栈 |
+| [030-输入列表](engine/030-input-list.md) | InputListState 不可变数据模型、InputItem/InputWord/InputCompletion、线程安全、撤销机制、游标管理 |
+| [040-字典系统](engine/040-dict-system.md) | DictRepository + Room 数据库、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree、HmmModel + ViterbiDecoder |
+| [050-X-Pad 核心](engine/050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout、X-Pad 状态集成 |
+| [060-输入动作程序化](engine/060-input-action.md) | InputAction sealed class、ActionScript、ActionScriptCompiler、坐标无关设计 |
+| [070-剪贴板与收藏](engine/070-clipboard-and-favorites.md) | ClipboardService、FavoriteService、InputClip/InputFavorite 数据模型 |
+| [080-日志系统](engine/080-logging.md) | ImeLog 门面、ImeLogger、LogLevel、LogEntry、LogWriter 接口、LogStorage 文件存储、FileLogWriter 异步写入 |
 
 ---
 
@@ -38,11 +39,12 @@
 
 | 文档 | 简述 |
 |------|------|
-| [010-三层面板分离](ui/010-panel-separation.md) | GestureInputPanel/KeyGridPanel/GestureFeedbackPanel 三层分离、InputGesture/GestureFeedbackState 数据模型、KeyboardPanel/KeyboardScreen 集成组件 |
-| [020-Compose 迁移](ui/020-compose-migration.md) | KeyboardPanel/KeyboardScreen Compose 实现、X-Pad Compose、滑行手势处理、性能验证 |
-| [030-输入动作播放器](ui/030-input-action-player.md) | InputActionPlayer、KeyPositionResolver、动画引擎（FingerOverlay/SwipeTrailOverlay/KeyHighlightOverlay）、ExerciseScreen |
-| [040-配置 UI 组件](ui/040-config-ui.md) | KeyboardPreview、ThemeSelector、HandModeToggle、QuickSettingsPopup |
-| [050-KeyboardViewModel](ui/050-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 管理，与 :app 集成方式 |
+| [010-UI 库设计总览](ui/010-ui-library-overview.md) | UI 库设计目标（缺省实现、可替换、可组合、可定制）、组件清单、组件层次关系、与引擎库的依赖关系 |
+| [020-三层面板分离](ui/020-panel-separation.md) | GestureInputPanel/KeyGridPanel/GestureFeedbackPanel 三层分离、InputGesture/GestureFeedbackState 数据模型、KeyboardPanel/KeyboardScreen 集成组件 |
+| [030-Compose 迁移](ui/030-compose-migration.md) | KeyboardPanel/KeyboardScreen Compose 实现、X-Pad Compose、滑行手势处理、性能验证 |
+| [040-输入动作播放器](ui/040-input-action-player.md) | InputActionPlayer、KeyPositionResolver、动画引擎（FingerOverlay/SwipeTrailOverlay/KeyHighlightOverlay）、ExerciseScreen |
+| [050-配置 UI 组件](ui/050-config-ui.md) | KeyboardPreview、ThemeSelector、HandModeToggle、QuickSettingsPopup |
+| [060-KeyboardViewModel](ui/060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 管理，与 :app 集成方式 |
 
 ---
 

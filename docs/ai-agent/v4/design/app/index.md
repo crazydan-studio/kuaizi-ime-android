@@ -1,6 +1,6 @@
 # :app 模块设计文档
 
-本目录包含 `:app` 模块的所有设计文档，涵盖配置管理、日志系统（初始化集成与 UI）、UI 测试方案和用户数据导入导出等核心设计。核心日志基础设施和工具类（ImeLog、ImeLogger、LogLevel、LogEntry、LogWriter、LogStorage、FileLogWriter、LogcatWriter、CrashInterceptor）设计在 `:ime-engine` 引擎库中，详见 [070-日志系统](../engine/070-logging.md)。
+本目录包含 `:app` 模块的所有设计文档，涵盖配置管理、日志系统（初始化集成与 UI）、UI 测试方案和用户数据导入导出等核心设计。核心日志基础设施和工具类（ImeLog、ImeLogger、LogLevel、LogEntry、LogWriter、LogStorage、FileLogWriter、LogcatWriter、CrashInterceptor）设计在 `:ime-engine` 引擎库中，详见 [080-日志系统](../engine/080-logging.md)。
 
 ## 文档索引
 

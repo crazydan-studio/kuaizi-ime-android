@@ -1,6 +1,6 @@
 # 日志系统
 
-v4 版本的日志系统在应用层提供引擎日志基础设施的初始化集成和日志管理界面。核心日志基础设施（`ImeLog`、`ImeLogger`、`LogLevel`、`LogEntry`、`LogWriter` 接口、`LogStorage`、`FileLogWriter`）和直接可用的工具类（`LogcatWriter`、`CrashInterceptor`）定义在 `:ime-engine` 引擎库中，详见 [070-日志系统](../engine/070-logging.md)。本模块（`:app`）负责引擎日志基础设施的初始化集成，以及日志查看、导出、等级配置、存储路径配置等用户界面。
+v4 版本的日志系统在应用层提供引擎日志基础设施的初始化集成和日志管理界面。核心日志基础设施（`ImeLog`、`ImeLogger`、`LogLevel`、`LogEntry`、`LogWriter` 接口、`LogStorage`、`FileLogWriter`）和直接可用的工具类（`LogcatWriter`、`CrashInterceptor`）定义在 `:ime-engine` 引擎库中，详见 [080-日志系统](../engine/080-logging.md)。本模块（`:app`）负责引擎日志基础设施的初始化集成，以及日志查看、导出、等级配置、存储路径配置等用户界面。
 
 **模块归属**：应用层负责日志系统的初始化集成（使用引擎提供的 `LogcatWriter` 和 `CrashInterceptor` 工具类），以及日志相关的界面（`LogViewerScreen`、`LogExportScreen`、`LogLevelSetting`、`LogStoragePathSetting`、`LogViewerViewModel`）。日志核心基础设施和工具类划归 `:ime-engine` 模块。
 

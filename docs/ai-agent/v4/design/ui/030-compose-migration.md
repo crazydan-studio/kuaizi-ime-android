@@ -10,7 +10,7 @@ v4 版本将键盘 UI 迁移到 Jetpack Compose，利用其声明式范式简化
 
 ### 1.1 KeyboardPanel（叠加模式）
 
-> `KeyboardViewModel` 的完整设计见 [050-KeyboardViewModel](050-keyboard-view-model.md)。以下仅展示集成组件与 ViewModel 的交互方式。
+> `KeyboardViewModel` 的完整设计见 [060-KeyboardViewModel](060-keyboard-view-model.md)。以下仅展示集成组件与 ViewModel 的交互方式。
 
 ```kotlin
 @Composable
@@ -78,7 +78,7 @@ fun KeyboardPanel(viewModel: KeyboardViewModel) {
 
 ### 1.2 ComposeView 桥接
 
-`:app` 模块的 `IMEService` 负责创建引擎、挂载桥梁、注入 ViewModel。完整设计见 [050-KeyboardViewModel](050-keyboard-view-model.md) §4。
+`:app` 模块的 `IMEService` 负责创建引擎、挂载桥梁、注入 ViewModel。完整设计见 [060-KeyboardViewModel](060-keyboard-view-model.md) §4。
 
 ```kotlin
 class IMEService : InputMethodService() {

@@ -66,17 +66,17 @@ GestureInputPanel → InputGesture → KeyboardViewModel.handleGesture()
                               GestureFeedbackState → GestureFeedbackPanel（视觉反馈）
 ```
 
-- **KeyboardViewModel**：UI 层协调中心，将 InputGesture 转换为 ImeIntent，暴露 `StateFlow<ImeState>` 供 Compose 订阅。完整设计见 [050-KeyboardViewModel](../ui/050-keyboard-view-model.md)
-- **ImeIntent**：用户意图的 sealed class 表达。完整定义见 [080-公开 API](../engine/080-public-api.md)
-- **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见 [080-公开 API](../engine/080-public-api.md)
+- **KeyboardViewModel**：UI 层协调中心，将 InputGesture 转换为 ImeIntent，暴露 `StateFlow<ImeState>` 供 Compose 订阅。完整设计见 [060-KeyboardViewModel](../ui/060-keyboard-view-model.md)
+- **ImeIntent**：用户意图的 sealed class 表达。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)
+- **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)
 - **三层面板分离**：GestureInputPanel（手势拦截层）→ GestureFeedbackPanel（反馈绘制层）→ KeyGridPanel（按键渲染层）。完整设计见文档 150
-- **ImeOutput**：引擎输出 sealed class，通过 ImeOutputBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [080-公开 API](../engine/080-public-api.md)，桥接机制见 [090-输出桥接机制](../engine/090-output-bridge.md)
+- **ImeOutput**：引擎输出 sealed class，通过 ImeOutputBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)，桥接机制见 [090-输出桥接机制](../engine/090-output-bridge.md)
 
 ---
 
 ## 3 键盘组合模式
 
-`Keyboard` sealed class + 独立共享组件（`KeyAudioPlayer`、`InputListOperator`、`KeyHandler`、`KeyboardStateMachine`、`CandidateListPager`）。完整设计见 [010-键盘状态机](../engine/010-state-machine.md)。
+`Keyboard` sealed class + 独立共享组件（`KeyAudioPlayer`、`InputListOperator`、`KeyHandler`、`KeyboardStateMachine`、`CandidateListPager`）。完整设计见 [020-键盘状态机](../engine/020-state-machine.md)。
 
 ---
 
@@ -134,4 +134,4 @@ GestureInputPanel → InputGesture → KeyboardViewModel.handleGesture()
 | X-Pad Canvas 绘制 | 视觉不一致 | 逐步迁移，与 Java 版本对比截图验证 |
 | UI 测试工具在 release 中的残留 | 包体积增大、信息泄露 | Source Set 隔离 + Lint 规则 + CI 检查，三重保障 |
 | 输入练习动画的包体积 | APK 增大 | Compose Canvas 即时绘制，无额外图片资源；预置脚本控制在 50KB 以内 |
-| 日志系统性能影响 | I/O 阻塞主线程 | Channel 缓冲 + 独立协程批量写入，不阻塞调用线程（详见 [070-日志系统](./engine/070-logging.md)） |
+| 日志系统性能影响 | I/O 阻塞主线程 | Channel 缓冲 + 独立协程批量写入，不阻塞调用线程（详见 [080-日志系统](./engine/080-logging.md)） |

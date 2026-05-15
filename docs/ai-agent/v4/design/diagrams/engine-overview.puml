@@ -1,0 +1,185 @@
+@startuml engine-overview
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam componentFontSize 14
+skinparam packageFontSize 15
+skinparam classFontSize 14
+skinparam classAttributeFontSize 12
+
+title :ime-engine 核心类关系图\nCore Class Relationship Diagram
+
+' ─── Public API (契约层) ──────────────────────────────────────────
+
+package "公开 API（契约层）" as api #FFF3E0 {
+
+    class ImeEngine <<核心入口点>> {
+        - config: ImeConfig
+        - dictProvider: ImeDictProvider
+        - stateMachine: KeyboardStateMachine
+        - inputListOp: InputListOperator
+        - featureRegistry: FeatureRegistry
+        - _state: MutableStateFlow<ImeState>
+        - _outputBridge: ImeOutputBridge?
+        + state: StateFlow<ImeState>
+        + handleIntent(intent: ImeIntent)
+        + updateConfig(block: (ImeConfig) -> ImeConfig)
+        + attachOutputBridge(bridge: ImeOutputBridge)
+        + detachOutputBridge()
+        + companion.create(config, dictProvider): ImeEngine
+    }
+
+    class ImeConfig <<统一配置>> {
+        + engine: EngineConfig
+        + ui: UiConfig
+        + runtimeOverrides: Set<ConfigField>
+    }
+
+    class ImeIntent <<sealed>> {
+        + PressKey(key, gesture)
+        + LongPressKey(key)
+        + SelectCandidate(candidate)
+        + PageCandidate(direction)
+        + SwitchKeyboard(type)
+        + CommitInput
+        + DeleteInput
+        + CleanInput
+        + MoveCursorTo(index)
+        + PerformEdit(action)
+        + SelectXPadPath(startZone, path)
+        + PasteClip(text)
+        + SaveFavorite(favorite)
+        + UpdateConfig(config)
+        + ExportUserData
+        + ImportUserData(filePath)
+    }
+
+    class ImeOutput <<sealed>> {
+        + CommitText(text, replacements)
+        + RevokeCommit()
+        + InsertPairedSymbols(left, right)
+        + MoveCursor(direction)
+        + SelectRange(direction)
+        + PerformEdit(action)
+    }
+
+    class ImeOutputBridge <<interface>> {
+        + commitText(text, replacements?)
+        + revokeCommit()
+        + insertPairedSymbols(left, right)
+        + moveCursor(direction)
+        + selectRange(direction)
+        + performAction(action)
+        + getText(): CharSequence
+        + getSelection(): TextRange
+    }
+
+    class BaseImeOutputBridge <<abstract>> {
+        # revertion: SelectionSnapshot?
+        # resetRevertion()
+        # recordRevertion(...)
+        + revokeCommit()
+        # onRevokeCommit(snapshot)
+        # doNormalCommitText(text)
+        # doReplaceableCommitText(text, replacements)
+    }
+}
+
+' ─── State 子状态类型 ──────────────────────────────────────────
+
+package "状态类型" as state #E8F5E9 {
+
+    class ImeState <<状态根>> {
+        + keyboardState: KeyboardState
+        + inputList: InputListState
+        + candidates: CandidateListState
+        + clipboard: ClipboardState
+        + favorites: FavoriteListState
+        + config: ImeConfig
+    }
+
+    class InputListState {
+        + inputs: List<InputItem>
+        + gapIndex: Int
+        + pendingSpell: String
+    }
+
+    class CandidateListState {
+        + candidates: List<InputWord>
+        + pageIndex: Int
+        + pageSize: Int
+        + hasMore: Boolean
+    }
+
+    class ClipboardState {
+        + currentText: String?
+        + showTip: Boolean
+    }
+
+    class FavoriteListState {
+        + favorites: List<InputFavorite>
+        + isLoading: Boolean
+    }
+}
+
+' ─── 内部组件 ──────────────────────────────────────────────────
+
+package "内部组件" as internal #E3F2FD {
+
+    class KeyboardStateMachine {
+        - _state: KeyboardState
+        - stateHistory: ArrayDeque<KeyboardState>
+        + transition(transition): List<ImeIntent>
+        + backToPrevious()
+    }
+
+    class InputListOperator {
+        + apply(intent, list): InputListState
+    }
+
+    class FeatureRegistry {
+        + isEnabled(feature): Boolean
+    }
+
+    class ImeDictProvider <<interface>> {
+        + query(spell): List<InputWord>
+    }
+
+    class ImeSqliteDictProvider {
+        - dictRepository: DictRepository
+    }
+}
+
+' ─── 关系 ──────────────────────────────────────────────────────
+
+ImeEngine *-- ImeConfig : "持有配置"
+ImeEngine *-- ImeState : "持有状态\nStateFlow"
+ImeEngine *-- KeyboardStateMachine : "内部组合"
+ImeEngine *-- InputListOperator : "内部组合"
+ImeEngine *-- FeatureRegistry : "内部组合"
+ImeEngine o-- ImeOutputBridge : "可选挂载"
+
+ImeEngine ..> ImeIntent : "接收"
+ImeEngine ..> ImeOutput : "产生"
+ImeEngine ..> ImeDictProvider : "依赖"
+
+BaseImeOutputBridge ..|> ImeOutputBridge : "实现"
+ImeSqliteDictProvider ..|> ImeDictProvider : "实现"
+
+ImeState *-- InputListState
+ImeState *-- CandidateListState
+ImeState *-- ClipboardState
+ImeState *-- FavoriteListState
+ImeState *-- ImeConfig
+
+' ─── 图例 ──────────────────────────────────────────────────────
+
+legend right
+  |= 颜色 |= 含义 |
+  |<#FFF3E0>| 公开 API（契约层）|
+  |<#E8F5E9>| 状态类型 |
+  |<#E3F2FD>| 内部组件 |
+endlegend
+
+@enduml
