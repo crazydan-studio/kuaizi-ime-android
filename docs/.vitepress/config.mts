@@ -10,7 +10,6 @@ export default defineConfig({
   markdown: {
     lineNumbers: true,
 
-    // 代码语法高亮：Shiki 内置支持 java / kotlin / js / bash / md 等
     theme: {
       light: 'github-light',
       dark: 'one-dark-pro',
@@ -35,7 +34,11 @@ export default defineConfig({
       {
         text: 'v4 版本',
         items: [
-          { text: '设计文档', link: '/ai-agent/v4/design/' },
+          { text: '架构设计', link: '/ai-agent/v4/design/architecture/' },
+          { text: '引擎模块', link: '/ai-agent/v4/design/engine/' },
+          { text: 'UI 模块', link: '/ai-agent/v4/design/ui/' },
+          { text: '应用模块', link: '/ai-agent/v4/design/app/' },
+          { text: 'Java 迁移对照', link: '/ai-agent/v4/design/migration/' },
           { text: '讨论记录', link: '/ai-agent/v4/discussions/' },
           { text: '开发计划', link: '/ai-agent/v4/plans/' },
           { text: '测试', link: '/ai-agent/v4/tests/' },
@@ -82,11 +85,13 @@ export default defineConfig({
   // ---------- 构建 ----------
   srcExclude: ['_sidebar.md'],
 
+  // 忽略死链接检查（PlantUML .puml 文件由 vitepress-plugin-diagrams 在运行时处理）
+  ignoreDeadLinks: true,
+
   vite: {
     plugins: [],
   },
 
-  // ---------- GitHub Pages 兼容 ----------
   cleanUrls: true,
 })
 
@@ -122,28 +127,57 @@ function sidebarAiAgent() {
       items: [{ text: '索引', link: '/ai-agent/v4/' }],
     },
     {
-      text: 'v4 设计文档',
+      text: '架构设计',
       collapsed: false,
       items: [
-        { text: '索引', link: '/ai-agent/v4/design/' },
-        { text: '架构总览', link: '/ai-agent/v4/design/000-architecture-overview' },
-        { text: '设计缺失项分析', link: '/ai-agent/v4/design/020-design-gap-analysis' },
-        { text: '命名规范', link: '/ai-agent/v4/design/010-naming-conventions' },
-        { text: '键盘状态机设计', link: '/ai-agent/v4/design/100-keyboard-state-machine' },
-        { text: '输入面板三层分离', link: '/ai-agent/v4/design/150-input-key-panel-separation' },
-        { text: '三层模块划分', link: '/ai-agent/v4/design/160-three-layer-module-division' },
-        { text: '模块 Class 组织结构', link: '/ai-agent/v4/design/170-module-class-organization' },
-        { text: '输入列表重构', link: '/ai-agent/v4/design/200-input-list-redesign' },
-        { text: '字典系统重构', link: '/ai-agent/v4/design/300-dict-system-redesign' },
-        { text: 'UI Compose 迁移', link: '/ai-agent/v4/design/400-ui-compose-migration' },
-        { text: '配置与设置', link: '/ai-agent/v4/design/500-config-and-settings' },
-        { text: '剪贴板与收藏', link: '/ai-agent/v4/design/600-clipboard-and-favorites' },
-        { text: 'X-Pad 重构', link: '/ai-agent/v4/design/700-xpad-redesign' },
-        { text: '用户数据导入导出', link: '/ai-agent/v4/design/800-user-data-import-export' },
-        { text: '应用日志系统', link: '/ai-agent/v4/design/900-app-logging' },
-        { text: 'UI 测试方案', link: '/ai-agent/v4/design/910-ui-testing' },
-        { text: '配置界面改进', link: '/ai-agent/v4/design/920-config-ui-improvement' },
-        { text: '输入动作程序化', link: '/ai-agent/v4/design/930-input-action-programming' },
+        { text: '架构总览', link: '/ai-agent/v4/design/architecture/overview' },
+        { text: '命名规范', link: '/ai-agent/v4/design/architecture/naming-conventions' },
+        { text: '三层模块划分', link: '/ai-agent/v4/design/architecture/module-division' },
+      ],
+    },
+    {
+      text: ':ime-engine 引擎模块',
+      collapsed: false,
+      items: [
+        { text: '索引', link: '/ai-agent/v4/design/engine/' },
+        { text: '键盘状态机', link: '/ai-agent/v4/design/engine/state-machine' },
+        { text: '输入列表', link: '/ai-agent/v4/design/engine/input-list' },
+        { text: '字典系统', link: '/ai-agent/v4/design/engine/dict-system' },
+        { text: 'X-Pad 核心', link: '/ai-agent/v4/design/engine/xpad-core' },
+        { text: '输入动作程序化', link: '/ai-agent/v4/design/engine/input-action' },
+        { text: '剪贴板与收藏', link: '/ai-agent/v4/design/engine/clipboard-and-favorites' },
+      ],
+    },
+    {
+      text: ':ime-ui UI 模块',
+      collapsed: false,
+      items: [
+        { text: '索引', link: '/ai-agent/v4/design/ui/' },
+        { text: '三层面板分离', link: '/ai-agent/v4/design/ui/panel-separation' },
+        { text: 'Compose 迁移', link: '/ai-agent/v4/design/ui/compose-migration' },
+        { text: '输入动作播放器', link: '/ai-agent/v4/design/ui/input-action-player' },
+        { text: '配置 UI 组件', link: '/ai-agent/v4/design/ui/config-ui' },
+      ],
+    },
+    {
+      text: ':app 应用模块',
+      collapsed: false,
+      items: [
+        { text: '索引', link: '/ai-agent/v4/design/app/' },
+        { text: '配置与设置', link: '/ai-agent/v4/design/app/config' },
+        { text: '日志系统', link: '/ai-agent/v4/design/app/logging' },
+        { text: 'UI 测试方案', link: '/ai-agent/v4/design/app/ui-testing' },
+        { text: '用户数据导入导出', link: '/ai-agent/v4/design/app/user-data' },
+      ],
+    },
+    {
+      text: 'Java 迁移对照',
+      collapsed: true,
+      items: [
+        { text: '索引', link: '/ai-agent/v4/design/migration/' },
+        { text: '引擎模块迁移', link: '/ai-agent/v4/design/migration/engine-mapping' },
+        { text: 'UI 模块迁移', link: '/ai-agent/v4/design/migration/ui-mapping' },
+        { text: '应用模块迁移', link: '/ai-agent/v4/design/migration/app-mapping' },
       ],
     },
     {

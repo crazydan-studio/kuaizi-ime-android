@@ -1,6 +1,4 @@
-# 150 — 输入面板、按键面板与反馈面板三层分离设计
-
-## 1. 概述
+# 面板三层分离设计
 
 v4 版本将键盘 UI 分离为三个独立层：**输入面板**（Gesture Input Panel）负责接收用户手势并识别为输入意图，**按键面板**（Key Panel）负责按键的渲染、布局和状态展示，**反馈面板**（Feedback Panel）负责手势视觉反馈的绘制。三者通过 `InputGesture`、`GestureFeedbackState` 和 `ImeState` 解耦，互不直接依赖。
 
@@ -8,48 +6,12 @@ v4 版本将键盘 UI 分离为三个独立层：**输入面板**（Gesture Inpu
 
 这种三层分离架构的核心价值在于：每一层都可以独立地改变位置、大小和组合方式，而不影响其他层的功能。输入面板可以独立于按键面板的位置工作，反馈面板可以独立地跟随任意面板布局，为后续版本中支持多种输入-按键-反馈布局模式奠定基础。当前版本仅实现最基本的布局模式：三层面板以透明层形式叠加。
 
----
-
-## 2. Java 版本输入、按键与反馈的耦合分析
-
-### 2.1 当前架构
-
-Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高度耦合在 `KeyboardView` 及其相关组件中：
-
-```
-KeyboardView (RecyclerView)
-  ├── KeyboardViewLayoutManager        ← 六边形网格布局
-  ├── KeyboardViewAdapter              ← 按键 ViewHolder 管理
-  ├── KeyboardViewGestureListener      ← 手势检测 + 按键查找 + 消息生成
-  ├── KeyboardViewKeyAnimator          ← 按键动画（状态反馈）
-  └── RecyclerViewGestureTrailer       ← 滑行轨迹绘制（ItemDecoration，反馈）
-```
-
-`XPadView` 同样将绘制、手势和反馈合为一体：
-
-```
-XPadView (自定义 View)
-  ├── onDraw()                         ← 六边形绘制 + 区域高亮（状态反馈）
-  ├── onTouchEvent()                   ← 手势检测 + 区域查找
-  └── XPadState                        ← 状态管理 → 触发重绘（反馈）
-```
-
-### 2.2 问题分析
-
-| 问题 | 说明 |
-|------|------|
-| **手势检测与按键坐标绑定** | `KeyboardViewGestureListener` 通过 `findVisibleKeyViewHolderUnderLoose()` 查找触摸点下的 ViewHolder，手势检测依赖按键的实际布局位置，无法在外部独立的手势层完成 |
-| **手势反馈与按键面板绑定** | `RecyclerViewGestureTrailer` 作为 `ItemDecoration` 绑定在 `KeyboardView` 上，轨迹绘制依赖按键面板的 Canvas，无法在按键面板之外绘制反馈 |
-| **按键状态反馈与按键渲染混合** | `KeyboardViewKeyAnimator` 既负责按键的常规渲染又负责按下/激活等状态动画，视觉反馈逻辑无法脱离按键面板 |
-| **X-Pad 手势、反馈与绘制不可分** | `XPadView.onTouchEvent()` 既检测手势区域又触发绘制更新（包括区域高亮），手势逻辑和反馈逻辑无法脱离 XPad 的绘制区域 |
-| **无法支持分离布局** | 输入手势、按键渲染和视觉反馈在同一组件中，无法将输入区域、按键区域和反馈区域放置在不同位置 |
-| **无法独立控制反馈** | 反馈的显隐、样式、位置与按键面板的生命周期绑定，无法在不影响按键渲染的情况下控制反馈 |
+> 架构图参考：@file:../diagrams/ui-panel-separation.puml
+> 键盘面板组合图参考：@file:../diagrams/ui-keyboard-panel.puml
 
 ---
 
-## 3. v4 三层分离设计
-
-### 3.1 核心思想
+## 1. 三层分离核心思想
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -96,7 +58,7 @@ XPadView (自定义 View)
 
 按键面板根据 `KeyboardState` 渲染按键的**持续性视觉状态**（如按下态、激活态、禁用态、候选选中态），这些状态是由 ViewModel 的 reduce 结果驱动的确定性渲染。反馈面板绘制**临时性手势视觉反馈**（如滑行轨迹、按键高亮光圈、X-Pad 路径高亮、手指指示器），这些反馈跟随用户手指实时变化，在手势结束后消失。这种分离确保了按键面板的重组仅由状态变更驱动，而高频的手势反馈更新不会触发按键面板的重组。
 
-### 3.2 布局模式
+### 1.1 布局模式
 
 三层面板的相对位置关系由 `LayoutMode` 定义，叠加模式由 `KeyboardPanel` 实现，全屏模式由 `KeyboardScreen` 实现。`KeyboardPanel` 和 `KeyboardScreen` 均为完整的输入法组件，包含候选栏、输入栏、工具栏和键盘区域，二者只是形式和交互上存在差异：
 
@@ -118,7 +80,6 @@ sealed class LayoutMode {
      *
      * 输入面板在最上层，确保触摸事件优先到达手势检测层。
      * 反馈面板在中间层绘制视觉反馈，输入面板完全透明不遮挡反馈。
-     * 这是与 Java 版本行为一致的默认模式。
      */
     data object Overlay : LayoutMode()
 
@@ -141,9 +102,9 @@ sealed class LayoutMode {
 
 ---
 
-## 4. 数据模型
+## 2. 数据模型
 
-### 4.1 InputGesture
+### 2.1 InputGesture
 
 输入面板识别手势后，输出 `InputGesture` 而非直接操作按键。`InputGesture` 是坐标无关的逻辑手势描述：
 
@@ -227,7 +188,7 @@ sealed class InputGesture {
 enum class FlipDirection { Left, Right, Up, Down }
 ```
 
-### 4.2 InputGesture 与 ImeIntent 的关系
+### 2.2 InputGesture 与 ImeIntent 的关系
 
 `InputGesture` 是输入面板的输出，`ImeIntent` 是 ViewModel 的输入。ViewModel 将 `InputGesture` 转换为 `ImeIntent`：
 
@@ -251,7 +212,7 @@ fun handleGesture(gesture: InputGesture) {
 - `ImeIntent` 表达「系统应该做什么」，属于 ViewModel 的领域
 - 分离使得同一手势可以产生不同的 Intent（取决于当前键盘状态），也使得不同手势可以产生相同的 Intent
 
-### 4.3 GestureFeedbackState
+### 2.3 GestureFeedbackState
 
 反馈面板的状态由输入面板的手势事件和 ViewModel 的键盘状态共同驱动，独立于任何面板：
 
@@ -310,7 +271,7 @@ class GestureFeedbackState {
     /**
      * 手指指示器状态（用于程序化输入动画）。
      *
-     * 由 InputActionPlayer（文档 930）驱动，
+     * 由 InputActionPlayer（详见输入动作程序化文档）驱动，
      * 独立于用户真实手势。当程序化输入播放时，
      * 手指指示器的状态会覆盖用户真实手势的反馈。
      */
@@ -376,9 +337,7 @@ data class FingerIndicatorState(
 
 ---
 
-## 5. 输入面板设计
-
-### 5.1 GestureInputPanel
+## 3. 输入面板设计（GestureInputPanel）
 
 输入面板仅负责手势捕获，不绘制任何视觉反馈：
 
@@ -416,7 +375,7 @@ fun GestureInputPanel(
 }
 ```
 
-### 5.2 手势检测层
+### 3.1 手势检测层
 
 ```kotlin
 /**
@@ -478,7 +437,7 @@ fun GestureDetectorLayer(
 }
 ```
 
-### 5.3 标准按键手势处理
+### 3.2 标准按键手势处理
 
 ```kotlin
 /**
@@ -568,7 +527,7 @@ private suspend fun PointerInputScope.handleStandardGesture(
 }
 ```
 
-### 5.4 X-Pad 手势处理
+### 3.3 X-Pad 手势处理
 
 ```kotlin
 /**
@@ -625,9 +584,9 @@ private suspend fun PointerInputScope.handleXPadGesture(
 
 ---
 
-## 6. 反馈面板设计
+## 4. 反馈面板设计（GestureFeedbackPanel）
 
-### 6.1 核心概念
+### 4.1 核心概念
 
 反馈面板是独立于输入面板和按键面板的透明绘制层，职责是渲染所有手势相关的临时视觉反馈。关键设计要点：
 
@@ -636,7 +595,7 @@ private suspend fun PointerInputScope.handleXPadGesture(
 3. **配置性**：每个反馈面板实例通过 `FeedbackElements` 配置其绘制的反馈类型，从而在不同布局模式下灵活分配反馈到对应区域
 4. **状态驱动**：反馈面板从 `GestureFeedbackState` 读取数据，不直接与输入面板或按键面板交互
 
-### 6.2 反馈元素类型
+### 4.2 反馈元素类型
 
 ```kotlin
 /**
@@ -694,7 +653,7 @@ enum class FeedbackElementType {
 }
 ```
 
-### 6.3 GestureFeedbackPanel
+### 4.3 GestureFeedbackPanel
 
 ```kotlin
 /**
@@ -754,7 +713,7 @@ fun GestureFeedbackPanel(
 }
 ```
 
-### 6.4 反馈绘制实现
+### 4.4 反馈绘制实现
 
 ```kotlin
 // --- GestureFeedbackPanel 内的绘制辅助方法 ---
@@ -916,7 +875,7 @@ private fun midpoint(a: Offset, b: Offset): Offset =
     Offset((a.x + b.x) / 2, (a.y + b.y) / 2)
 ```
 
-### 6.5 反馈面板的多实例配置
+### 4.5 反馈面板的多实例配置
 
 不同的布局模式下，反馈面板实例的配置不同。通过 `GestureFeedbackPanelSet` 封装当前布局模式下的反馈面板组合：
 
@@ -967,9 +926,7 @@ sealed class GestureFeedbackPanelSet {
 
 ---
 
-## 7. 按键面板设计
-
-### 7.1 KeyGridPanel
+## 5. 按键面板设计（KeyGridPanel）
 
 按键面板与之前设计相同，纯展示层，不处理触摸事件，也不绘制手势反馈：
 
@@ -1007,7 +964,7 @@ fun KeyGridPanel(
 }
 ```
 
-### 7.2 StandardKeyGridPanel
+### 5.1 StandardKeyGridPanel
 
 ```kotlin
 /**
@@ -1060,7 +1017,7 @@ fun StandardKeyGridPanel(
 }
 ```
 
-### 7.3 KeyView（无触摸处理，无手势反馈）
+### 5.2 KeyView（无触摸处理，无手势反馈）
 
 按键面板中的 `KeyView` 不处理触摸事件，也不绘制手势反馈，只负责按键的常规状态渲染：
 
@@ -1096,679 +1053,3 @@ fun KeyView(
     }
 }
 ```
-
-### 7.4 KeyGridPanelLayoutInfo
-
-```kotlin
-/**
- * 按键面板布局信息。
- *
- * 由按键面板通过 Compose 布局系统收集，提供给输入面板和反馈面板。
- * 每次 Compose 重组后自动更新，确保与实际渲染位置一致。
- * 反馈面板需要此信息将按键的语义标识映射到屏幕坐标，
- * 以便在正确的位置绘制按键高亮和路径。
- */
-data class KeyGridPanelLayoutInfo(
-    /** 各按键在屏幕上的矩形区域 */
-    val keyPositions: Map<InputKey, Rect>,
-    /** X-Pad 布局信息（仅 X-Pad 模式时非空） */
-    val xPadLayoutInfo: XPadLayoutInfo?,
-    /** 候选栏布局信息 */
-    val candidateLayoutInfo: CandidateLayoutInfo?,
-) {
-    /**
-     * 查找指定坐标处的按键。
-     *
-     * @param position 屏幕坐标
-     * @return 该位置上的按键，若无可点击按键则返回 null
-     */
-    fun findKeyAt(position: Offset): InputKey? {
-        return keyPositions.entries.find { (_, rect) ->
-            rect.contains(position)
-        }?.key
-    }
-
-    /**
-     * 查找指定坐标处的 X-Pad 区域。
-     */
-    fun findXPadZoneAt(position: Offset): XPadZone? {
-        return xPadLayoutInfo?.findZoneAt(position)
-    }
-}
-
-/**
- * X-Pad 布局信息。
- */
-data class XPadLayoutInfo(
-    val grid: HexGrid,
-    val zones: List<XPadZone>,
-    val bounds: Rect,
-) {
-    fun findZoneAt(position: Offset): XPadZone? {
-        if (!bounds.contains(position)) return null
-        val axial = grid.pixelToAxial(position)
-        return zones.find { it.axial == axial }
-    }
-}
-
-/**
- * 候选栏布局信息。
- */
-data class CandidateLayoutInfo(
-    val candidatePositions: List<Rect>,
-) {
-    fun findCandidateAt(position: Offset): Int? {
-        return candidatePositions.indexOfFirst { it.contains(position) }
-            .takeIf { it >= 0 }
-    }
-}
-```
-
----
-
-## 8. 组合布局
-
-### 8.1 叠加模式（KeyboardPanel）
-
-叠加模式下，`KeyboardPanel` 是完整的输入法组件，包含候选栏、输入栏、工具栏和三层面板叠加区域。三层面板直接在 `KeyboardPanel` 中叠加（无中间包装层），由 `KeyboardPanel` 直接组合。底层按键渲染、中层反馈绘制、顶层手势拦截，三层面板完全重叠：
-
-```kotlin
-// KeyboardPanel 内部的完整结构（详见文档 160 §5.4）
-@Composable
-fun KeyboardPanel(
-    engine: ImeEngine,
-    modifier: Modifier = Modifier,
-) {
-    val state by engine.state.collectAsStateWithLifecycle()
-    val feedbackState = remember { GestureFeedbackState() }
-    var keyPanelLayout by remember { mutableStateOf(KeyGridPanelLayoutInfo()) }
-
-    KeyboardTheme(themeType = state.config.ui.themeType) {
-        Column(modifier = modifier) {
-            // 候选栏
-            CandidateListPanel(
-                state = state.candidates,
-                onCandidateSelected = { candidate ->
-                    engine.handleIntent(ImeIntent.SelectCandidate(candidate))
-                },
-            )
-
-            // 输入栏
-            InputListPanel(
-                state = state.inputList,
-                onGapTapped = { index ->
-                    engine.handleIntent(ImeIntent.MoveCursorTo(index))
-                },
-            )
-
-            // 三层面板叠加区域
-            Box {
-                // 底层：按键面板（纯展示）
-                KeyGridPanel(
-                    keyboardType = state.keyboardType,
-                    keyGrid = state.keyGrid,
-                    keyboardState = state.keyboardState,
-                    onLayoutInfoChanged = { keyPanelLayout = it },
-                )
-
-                // 中层：反馈面板（透明视觉反馈层）
-                GestureFeedbackPanel(
-                    elements = GestureFeedbackPanelSet.OverlaySet.allElements,
-                    feedbackState = feedbackState,
-                    keyPanelLayout = keyPanelLayout,
-                )
-
-                // 顶层：输入面板（透明手势层，最上层确保触摸优先到达）
-                GestureInputPanel(
-                    keyPanelLayout = keyPanelLayout,
-                    keyboardType = state.keyboardType,
-                    feedbackState = feedbackState,
-                    onGesture = { engine.handleGesture(it) },
-                )
-            }
-
-            // 工具栏
-            Toolbar(
-                keyboardType = state.keyboardType,
-                config = state.config,
-                onSwitchKeyboard = { engine.handleIntent(ImeIntent.SwitchKeyboard(it)) },
-            )
-        }
-    }
-}
-```
-
-### 8.2 全屏分离模式（KeyboardScreen）
-
-全屏分离模式由 `KeyboardScreen` 实现，它是完整的输入法组件，包含候选栏、输入栏、工具栏和分离布局的键盘区域。输入面板和按键面板不再重叠，反馈面板的多实例分别叠加在各自区域（输入面板始终在最上层拦截触摸）：
-
-```kotlin
-// KeyboardScreen 的三层面板分离结构（详见文档 160 §5.4b）
-@Composable
-fun KeyboardScreen(
-    engine: ImeEngine,
-    modifier: Modifier = Modifier,
-    inputPanelRatio: Float = 0.5f,
-) {
-    val state by engine.state.collectAsStateWithLifecycle()
-    val feedbackState = remember { GestureFeedbackState() }
-    var keyPanelLayout by remember { mutableStateOf(KeyGridPanelLayoutInfo()) }
-
-    KeyboardTheme(themeType = state.config.ui.themeType) {
-        Column(modifier = modifier.fillMaxSize()) {
-            // 上半区：按键区域
-            Box(modifier = Modifier.fillMaxWidth().weight(1f - inputPanelRatio)) {
-                // 底层：按键侧反馈面板（按键高亮、按键路径、X-Pad 高亮）
-                GestureFeedbackPanel(
-                    elements = GestureFeedbackPanelSet.FullScreenSet.keySideElements,
-                    feedbackState = feedbackState,
-                    keyPanelLayout = keyPanelLayout,
-                )
-                // 顶层：按键面板
-                KeyGridPanel(
-                    keyboardType = state.keyboardType,
-                    keyGrid = state.keyGrid,
-                    keyboardState = state.keyboardState,
-                    onLayoutInfoChanged = { keyPanelLayout = it },
-                )
-                // 注意：按键区域不需要输入面板，触摸由下半区的输入面板统一处理
-            }
-
-            // 下半区：输入区域
-            Box(modifier = Modifier.fillMaxWidth().weight(inputPanelRatio)) {
-                // 底层：输入侧反馈面板（触摸轨迹、手指指示器）
-                GestureFeedbackPanel(
-                    elements = GestureFeedbackPanelSet.FullScreenSet.inputSideElements,
-                    feedbackState = feedbackState,
-                    keyPanelLayout = keyPanelLayout,
-                )
-
-                // 顶层：输入面板（最上层拦截触摸）
-                GestureInputPanel(
-                    keyPanelLayout = keyPanelLayout,
-                    keyboardType = state.keyboardType,
-                    feedbackState = feedbackState,
-                    onGesture = { engine.handleGesture(it) },
-                )
-            }
-
-            // 候选栏 + 输入栏 + 工具栏
-            CandidateListPanel(...)
-            InputListPanel(...)
-            Toolbar(...)
-        }
-    }
-}
-```
-
-### 8.3 分离模式下的坐标映射
-
-全屏分离模式需要处理反馈面板中触摸轨迹的坐标映射。在叠加模式下，触摸轨迹的坐标与按键面板坐标一致。在分离模式下，输入面板的触摸坐标需要映射到按键面板的坐标空间：
-
-```kotlin
-sealed class LayoutMode {
-    data object Overlay : LayoutMode() {
-        // 叠加模式：无需映射
-        // 反馈面板直接使用 GestureFeedbackState 中的坐标
-    }
-
-    data class FullScreen(
-        val inputPanelRatio: Float = 0.5f,
-    ) : LayoutMode() {
-        /**
-         * 将输入面板坐标系下的触摸轨迹映射到按键面板坐标系。
-         *
-         * 在分离模式下，反馈面板的按键侧实例需要将触摸轨迹
-         * 从输入面板的坐标空间映射到按键面板的坐标空间，
-         * 以便在按键面板上正确绘制轨迹。
-         */
-        fun mapTrailToKeyGridPanel(
-            trail: List<Offset>,
-            inputPanelBounds: Rect,
-            keyPanelBounds: Rect,
-        ): List<Offset> {
-            return trail.map { point ->
-                Offset(
-                    x = (point.x / inputPanelBounds.width) * keyPanelBounds.width,
-                    y = (point.y / inputPanelBounds.height) * keyPanelBounds.height,
-                )
-            }
-        }
-    }
-}
-```
-
-### 8.4 KeyboardPanel / KeyboardScreen 集成
-
-`KeyboardPanel` 和 `KeyboardScreen` 均为完整的输入法组件，包含候选栏、输入栏、工具栏和键盘区域，二者只是形式和交互上存在差异。叠加模式由 `KeyboardPanel` 实现，三层面板直接叠加，无中间包装层；全屏模式由 `KeyboardScreen` 实现，手势输入面板与按键面板分离。详见文档 160 第 5.4/5.4b 节。
-
-**叠加模式（KeyboardPanel）**：
-
-```kotlin
-@Composable
-fun KeyboardPanel(
-    engine: ImeEngine,
-    modifier: Modifier = Modifier,
-) {
-    val state by engine.state.collectAsStateWithLifecycle()
-    val feedbackState = remember { GestureFeedbackState() }
-    var keyPanelLayout by remember { mutableStateOf(KeyGridPanelLayoutInfo()) }
-
-    KeyboardTheme(themeType = state.config.ui.themeType) {
-        Column(modifier = modifier) {
-            // 候选栏
-            CandidateListPanel(
-                state = state.candidates,
-                onCandidateSelected = { candidate ->
-                    engine.handleIntent(ImeIntent.SelectCandidate(candidate))
-                },
-            )
-
-            // 输入栏
-            InputListPanel(
-                state = state.inputList,
-                onGapTapped = { index ->
-                    engine.handleIntent(ImeIntent.MoveCursorTo(index))
-                },
-            )
-
-            // 三层面板叠加区域
-            Box {
-                // 底层：按键面板
-                KeyGridPanel(
-                    keyboardType = state.keyboardType,
-                    keyGrid = state.keyGrid,
-                    keyboardState = state.keyboardState,
-                    onLayoutInfoChanged = { keyPanelLayout = it },
-                )
-
-                // 中层：反馈面板（叠加模式：单个实例绘制所有反馈）
-                GestureFeedbackPanel(
-                    elements = GestureFeedbackPanelSet.OverlaySet.allElements,
-                    feedbackState = feedbackState,
-                    keyPanelLayout = keyPanelLayout,
-                )
-
-                // 顶层：输入面板
-                GestureInputPanel(
-                    keyPanelLayout = keyPanelLayout,
-                    keyboardType = state.keyboardType,
-                    feedbackState = feedbackState,
-                    onGesture = { engine.handleGesture(it) },
-                )
-            }
-
-            // 工具栏
-            Toolbar(
-                keyboardType = state.keyboardType,
-                config = state.config,
-                onSwitchKeyboard = { engine.handleIntent(ImeIntent.SwitchKeyboard(it)) },
-            )
-        }
-    }
-}
-```
-
-**全屏模式（KeyboardScreen）**：
-
-```kotlin
-@Composable
-fun KeyboardScreen(
-    engine: ImeEngine,
-    modifier: Modifier = Modifier,
-    inputPanelRatio: Float = 0.5f,
-) {
-    val state by engine.state.collectAsStateWithLifecycle()
-    val feedbackState = remember { GestureFeedbackState() }
-    var keyPanelLayout by remember { mutableStateOf(KeyGridPanelLayoutInfo()) }
-
-    KeyboardTheme(themeType = state.config.ui.themeType) {
-        Column(modifier = modifier.fillMaxSize()) {
-            // 上半区：按键区域
-            Box(modifier = Modifier.fillMaxWidth().weight(1f - inputPanelRatio)) {
-                // 底层：反馈面板（按键侧）
-                GestureFeedbackPanel(
-                    elements = GestureFeedbackPanelSet.FullScreenSet.keySideElements,
-                    feedbackState = feedbackState,
-                    keyPanelLayout = keyPanelLayout,
-                )
-                // 顶层：按键面板
-                KeyGridPanel(
-                    keyboardType = state.keyboardType,
-                    keyGrid = state.keyGrid,
-                    keyboardState = state.keyboardState,
-                    onLayoutInfoChanged = { keyPanelLayout = it },
-                )
-            }
-
-            // 下半区：输入区域
-            Box(modifier = Modifier.fillMaxWidth().weight(inputPanelRatio)) {
-                // 底层：反馈面板（输入侧）
-                GestureFeedbackPanel(
-                    elements = GestureFeedbackPanelSet.FullScreenSet.inputSideElements,
-                    feedbackState = feedbackState,
-                    keyPanelLayout = keyPanelLayout,
-                )
-                // 顶层：输入面板
-                GestureInputPanel(
-                    keyPanelLayout = keyPanelLayout,
-                    keyboardType = state.keyboardType,
-                    feedbackState = feedbackState,
-                    onGesture = { engine.handleGesture(it) },
-                )
-            }
-
-            // 候选栏 + 输入栏 + 工具栏
-            CandidateListPanel(...)
-            InputListPanel(...)
-            Toolbar(...)
-        }
-    }
-}
-```
-
----
-
-## 9. 与坐标无关输入动作程序化的协作
-
-文档 930 的 `KeyPositionResolver` 与本文档的 `KeyGridPanelLayoutInfo` 和 `GestureFeedbackState` 协作：
-
-### 9.1 KeyGridPanelPositionResolver
-
-复用按键面板的布局信息，供输入动作程序化系统在回放时动态查询按键位置：
-
-```kotlin
-/**
- * 基于 KeyGridPanelLayoutInfo 实现的坐标解析器。
- *
- * 复用按键面板的布局信息，供输入动作程序化系统在回放时
- * 动态查询按键位置。
- */
-class KeyGridPanelPositionResolver(
-    private val layoutProvider: () -> KeyGridPanelLayoutInfo,
-) : KeyPositionResolver {
-
-    override fun resolve(key: InputKey): Offset? {
-        val layout = layoutProvider()
-        return layout.keyPositions[key]?.center
-    }
-
-    override fun resolveCandidatePosition(index: Int): Offset? {
-        val layout = layoutProvider()
-        return layout.candidateLayoutInfo?.candidatePositions?.getOrNull(index)?.center
-    }
-}
-```
-
-### 9.2 InputActionPlayer 与 GestureFeedbackState 的协作
-
-程序化输入动画的 `InputActionPlayer` 通过 `GestureFeedbackState` 驱动反馈面板，与真实用户手势共享同一套反馈状态和反馈面板：
-
-```kotlin
-/**
- * InputActionPlayer 通过 GestureFeedbackState 驱动反馈面板。
- *
- * 当程序化输入播放时，播放器更新 GestureFeedbackState 的
- * fingerIndicator、keyPath 等状态，反馈面板自动响应。
- * 这意味着程序化输入动画的视觉反馈与用户真实手势的视觉反馈
- * 使用相同的反馈面板实例，无需额外配置。
- */
-class InputActionPlayer(
-    private val viewModel: KeyboardViewModel,
-    private val feedbackState: GestureFeedbackState,
-    private val positionResolver: KeyPositionResolver,
-    private val scope: CoroutineScope,
-) {
-    // ... 播放逻辑 ...
-
-    private fun executeAction(action: InputAction) {
-        when (action) {
-            is InputAction.KeyDown -> {
-                val position = positionResolver.resolve(action.key) ?: return
-                // 通过 feedbackState 驱动反馈面板
-                feedbackState.setFingerIndicator(
-                    FingerIndicatorState(position = position, pressed = true)
-                )
-                feedbackState.setPressedKeys(setOf(action.key))
-                viewModel.handleIntent(ImeIntent.PressKey(action.key, KeyGesture.Tap))
-            }
-            is InputAction.SwipeTo -> {
-                val fromPosition = positionResolver.resolve(action.fromKey) ?: return
-                val toPosition = positionResolver.resolve(action.toKey) ?: return
-
-                // 更新手指指示器位置和按键路径
-                feedbackState.setKeyPath(listOf(action.fromKey, action.toKey))
-                feedbackState.setPressedKeys(setOf(action.toKey))
-
-                // 沿贝塞尔曲线动画移动手指指示器
-                val path = SwipePathInterpolator.interpolate(fromPosition, toPosition)
-                scope.launch {
-                    animateFingerAlongPath(path, action.duration)
-                }
-                viewModel.handleIntent(ImeIntent.PressKey(action.toKey, KeyGesture.Swipe))
-            }
-            is InputAction.KeyUp -> {
-                val position = positionResolver.resolve(action.key)
-                if (position != null) {
-                    feedbackState.setFingerIndicator(
-                        FingerIndicatorState(position = position, pressed = false)
-                    )
-                }
-                feedbackState.clearPressedKeys()
-            }
-            // ... 其他动作 ...
-        }
-    }
-
-    private suspend fun animateFingerAlongPath(path: List<Offset>, durationMs: Long) {
-        if (path.size < 2) return
-        val stepDuration = durationMs / (path.size - 1)
-        for (i in 1 until path.size) {
-            val animatable = Animatable(0f)
-            animatable.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(durationMillis = stepDuration.toInt()),
-            ) {
-                val from = path[i - 1]
-                val to = path[i]
-                feedbackState.setFingerIndicator(
-                    FingerIndicatorState(
-                        position = Offset(
-                            from.x + (to.x - from.x) * value,
-                            from.y + (to.y - from.y) * value,
-                        ),
-                        pressed = true,
-                    )
-                )
-            }
-        }
-    }
-}
-```
-
-这样，输入动作程序化系统与三层面板分离架构共享同一套 `GestureFeedbackState` 和 `GestureFeedbackPanel`，无需维护独立的视觉反馈逻辑。
-
----
-
-## 10. X-Pad 的特殊处理
-
-### 10.1 三层面板在 X-Pad 模式下的分工
-
-Java 版本中 `XPadView` 自行处理触摸事件和手势检测。三层分离后，X-Pad 的各职责明确分配到三个面板：
-
-| 职责 | Java 版本（XPadView 内） | v4（三层分离后） |
-|------|--------------------------|-----------------|
-| 六边形绘制 | XPadView.onDraw() | KeyGridPanel XPadKeyContent |
-| 区域计算 | XPadView.findBlockAt() | KeyGridPanelLayoutInfo.findXPadZoneAt() |
-| 触摸检测 | XPadView.onTouchEvent() | GestureInputPanel GestureDetectorLayer |
-| 路径追踪 | XPadState.BlockData | InputGesture.XPadZonePath |
-| 区域高亮 | XPadView.onDraw()（状态驱动） | GestureFeedbackPanel.drawXPadPathHighlight() |
-| 触摸轨迹 | 无（X-Pad 不绘制轨迹） | GestureFeedbackPanel.drawTouchTrail() |
-| 状态更新 | XPadView → IMEditor | InputGesture → ViewModel → State → KeyGridPanel |
-
-### 10.2 X-Pad 按键面板渲染
-
-X-Pad 作为按键面板的一种渲染模式，仍使用 Compose Canvas 绘制六边形网格，但不处理触摸，也不绘制手势高亮：
-
-```kotlin
-/**
- * X-Pad 按键内容（按键面板内）。
- *
- * 仅绘制六边形网格的静态布局和标签，
- * 不绘制手势反馈（如区域高亮、路径），
- * 不处理触摸事件。
- * 手势高亮由 GestureFeedbackPanel 的 XPadPathHighlight 元素绘制，
- * 触摸检测由 GestureInputPanel 的 handleXPadGesture 负责。
- */
-@Composable
-fun XPadKeyContent(
-    key: InputKey.XPad,
-    modifier: Modifier = Modifier,
-) {
-    Box(modifier = modifier.fillMaxSize()) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            // 绘制六边形网格和区域标签（静态布局）
-            // 不绘制任何手势反馈
-        }
-    }
-}
-```
-
-### 10.3 X-Pad 反馈面板绘制
-
-X-Pad 模式的手势高亮由反馈面板负责，与标准按键模式的反馈绘制复用同一个 `GestureFeedbackPanel` 实例（叠加模式下）：
-
-- `FeedbackElementType.XPadPathHighlight`：高亮手势经过的六边形区域
-- `FeedbackElementType.TouchTrail`：绘制手指在 X-Pad 上的移动轨迹
-- `FeedbackElementType.KeyHighlight`：当前按下的 X-Pad 区域的额外高亮（如果需要）
-
----
-
-## 11. 三层面板的数据流总结
-
-```
-用户手指
-   │
-   ▼
-┌──────────────────────────────────┐
-│         GestureInputPanel               │
-│  拦截触摸 → 识别手势              │
-│  输出: InputGesture → ViewModel  │
-│  更新: GestureFeedbackState      │
-└──────┬───────────────┬───────────┘
-       │               │
-       ▼               ▼
-┌──────────────┐  ┌──────────────────────┐
-│   ViewModel  │  │  GestureFeedbackState │
-│  reduce()    │  │  (独立反馈状态)        │
-│  → ImeState  │  │  - touchTrailPoints  │
-└──────┬───────┘  │  - pressedKeys       │
-       │          │  - keyPath           │
-       │          │  - xPadPath          │
-       │          │  - fingerIndicator   │
-       │          └──────────┬───────────┘
-       │                     │
-       ▼                     ▼
-┌──────────────┐    ┌──────────────────┐
-│   KeyGridPanel   │    │  GestureFeedbackPanel   │
-│  按键渲染    │    │  反馈绘制         │
-│  ImeState → │    │  FeedbackState → │
-│  重组        │    │  Canvas 绘制      │
-└──────────────┘    └──────────────────┘
-```
-
-**关键数据流路径**：
-
-1. **手势 → 逻辑**：`GestureInputPanel → InputGesture → ViewModel → ImeIntent → reduce() → ImeState`
-2. **手势 → 反馈**：`GestureInputPanel → GestureFeedbackState → GestureFeedbackPanel → Canvas 绘制`
-3. **状态 → 渲染**：`ImeState → KeyGridPanel → Compose 重组`
-4. **程序化输入 → 反馈**：`InputActionPlayer → GestureFeedbackState → GestureFeedbackPanel → Canvas 绘制`
-
-路径 2 和路径 3 的分离是三层架构的核心优势：高频的手势反馈更新通过路径 2 直接驱动反馈面板，不触发按键面板的重组；按键面板只在 ImeState 变更时重组，重组频率远低于手势反馈。
-
----
-
-## 12. 后续扩展
-
-### 12.1 全屏输入模式（后续版本）
-
-叠加模式是基础，全屏输入模式是重要扩展方向。在全屏输入模式下，输入面板和按键面板不再重叠，反馈面板的多实例分别叠加在各区域（输入面板始终在最上层拦截触摸）：
-
-```
-┌─────────────────────────────┐
-│     按键区域（上半区）          │
-│     ┌───────────────────┐    │
-│     │  GestureFeedbackPanel     │    │  ← 按键侧反馈（高亮、路径）
-│     │  (keySideElements) │    │  ← 上层
-│     ├───────────────────┤    │
-│     │  KeyGridPanel          │    │  ← 按键渲染，下层
-│     │  Q  W  E  R  T     │    │
-│     │  A  S  D  F  G     │    │
-│     │  Z  X  C  V  B     │    │
-│     └───────────────────┘    │
-│                              │
-├──────────────────────────────┤
-│     输入区域（下半区）         │
-│     ┌───────────────────┐    │
-│     │  GestureInputPanel        │    │  ← 手势拦截，最上层
-│     ├───────────────────┤    │
-│     │  GestureFeedbackPanel     │    │  ← 输入侧反馈（轨迹、指示器）
-│     │  (inputSideElements)│   │  ← 下层
-│     └───────────────────┘    │
-└──────────────────────────────┘
-```
-
-由于三层面板已经分离，全屏模式只需要：
-1. 新增 `LayoutMode.FullScreen` 定义
-2. 新增 `GestureFeedbackPanelSet.FullScreenSet` 配置
-3. 修改 `KeyboardPanel` 的组合逻辑（不再叠加，改为上下布局），或使用 `KeyboardScreen`（全屏模式，同样是完整输入法组件）
-4. 输入面板的按键查找增加坐标映射（输入面板坐标 → 按键面板坐标）
-5. 反馈面板的触摸轨迹增加坐标映射（输入面板坐标 → 按键面板坐标，供按键侧反馈面板使用）
-
-当前版本不实现全屏模式，但架构预留了所有扩展点。
-
-### 12.2 反馈样式自定义
-
-后续版本可在配置系统中添加反馈样式选项，如轨迹颜色、轨迹宽度、高亮透明度、手指指示器大小等。这些配置项通过 `GestureFeedbackState` 传递给 `GestureFeedbackPanel`，不影响输入面板和按键面板。
-
-### 12.3 多点触控反馈
-
-当前设计假设单点触控。如果后续支持多点触控（如双手输入），`GestureFeedbackState` 需要扩展为支持多指轨迹和多个手指指示器。反馈面板的多实例能力天然支持多点触控——不同手指的反馈可以分配到不同的反馈面板实例。
-
----
-
-## 13. Java 功能完整对照
-
-| Java 组件 | v4 三层分离后对应 | 说明 |
-|-----------|-----------------|------|
-| `KeyboardViewGestureListener` | `GestureInputPanel.GestureDetectorLayer` | 手势检测从按键面板移至输入面板 |
-| `KeyboardView`（触摸事件） | `GestureInputPanel`（透明手势层） | 触摸事件接收者分离 |
-| `KeyboardView`（按键渲染） | `KeyGridPanel`（纯展示层） | 按键渲染独立，无触摸处理 |
-| `KeyboardView`（按键状态动画） | `KeyGridPanel`（KeyboardState 驱动） | 持续性状态渲染保留在按键面板 |
-| `RecyclerViewGestureTrailer` | `GestureFeedbackPanel.drawTouchTrail()` | 轨迹绘制从 ItemDecoration 移至独立反馈面板 |
-| `KeyboardViewKeyAnimator`（临时高亮） | `GestureFeedbackPanel.drawKeyHighlights()` | 临时性手势高亮移至反馈面板 |
-| `XPadView.onTouchEvent()` | `GestureInputPanel.handleXPadGesture()` | X-Pad 手势由输入面板统一处理 |
-| `XPadView.onDraw()`（静态布局） | `KeyGridPanel.XPadKeyContent` | X-Pad 静态绘制保留在按键面板 |
-| `XPadView.onDraw()`（区域高亮） | `GestureFeedbackPanel.drawXPadPathHighlight()` | X-Pad 手势高亮移至反馈面板 |
-| `findVisibleKeyViewHolderUnderLoose()` | `KeyGridPanelLayoutInfo.findKeyAt()` | 按键查找改为查询布局信息 |
-| `XPadView.findBlockAt()` | `KeyGridPanelLayoutInfo.findXPadZoneAt()` | X-Pad 区域查找改为查询布局信息 |
-| `KeyViewHolder.touchDown/Up()` | `KeyboardState` 驱动 + `GestureFeedbackPanel` | 状态驱动 + 独立反馈 |
-| N/A | `InputGesture` | 新增：逻辑手势抽象层 |
-| N/A | `KeyGridPanelLayoutInfo` | 新增：按键面板布局信息暴露 |
-| N/A | `GestureFeedbackState` | 新增：独立反馈状态，解耦反馈与面板 |
-| N/A | `GestureFeedbackPanel` | 新增：独立反馈面板，支持多实例 |
-| N/A | `FeedbackElementType` | 新增：反馈元素类型，配置反馈面板实例职责 |
-| N/A | `GestureFeedbackPanelSet` | 新增：反馈面板配置集，按布局模式分配反馈 |
-
----
-
-## 14. 与其他系统的协作
-
-| 协作系统 | 协作方式 |
-|----------|----------|
-| 键盘状态机（100） | `InputGesture` 经 ViewModel 转换为 `ImeIntent`，驱动状态机；状态变更更新 `KeyboardState`，按键面板据此重组；反馈面板不消费 `KeyboardState` |
-| UI Compose 迁移（400） | `KeyboardPanel` 为完整输入法组件（合并原 KeyboardArea + 候选栏 + 输入栏 + 工具栏）；`KeyView` 移除 `combinedClickable` 和手势反馈逻辑 |
-| X-Pad 重构（700） | X-Pad 的手势检测从 `XPadView` 移至输入面板，静态绘制保留在按键面板，区域高亮移至反馈面板 |
-| 输入动作程序化（930） | `KeyGridPanelPositionResolver` 复用 `KeyGridPanelLayoutInfo`，共享按键位置查询；`InputActionPlayer` 通过 `GestureFeedbackState` 驱动反馈面板，与真实手势共享反馈基础设施 |
-| 配置系统（500） | `LayoutMode` 和 `GestureFeedbackPanelSet` 可作为配置项持久化（当前仅有 Overlay）；反馈样式配置（颜色、宽度等）可扩展 |
-| 配置界面改进（920） | 后续版本可在设置中提供布局模式切换入口和反馈样式自定义入口 |

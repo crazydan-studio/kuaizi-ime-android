@@ -1,0 +1,122 @@
+# 架构总览
+
+## 1 分层架构
+
+v4 采用三层库架构：引擎库（`:ime-engine`）、UI 库（`:ime-ui`）、应用模块（`:app`），自底向上分为五层：
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Platform Layer  ← :app 模块               │
+│  IMEService (薄壳) → InputConnection 桥接 → ComposeView 桥接     │
+│  配置持久化（DataStore）+ 设置页面 + 引导页面                     │
+├─────────────────────────────────────────────────────────────────┤
+│                      ViewModel Layer   ← :app 模块               │
+│  KeyboardViewModel（来自 :ime-ui）+ 配置持久化（独立）+ ImeOutputBridge 桥接    │
+├─────────────────────────────────────────────────────────────────┤
+│                         UI Layer      ← :ime-ui 库               │
+│  Compose 缺省 UI：GestureInputPanel / KeyGridPanel / GestureFeedbackPanel    │
+│  CandidateListPanel / InputListPanel / EditTextBridge / KeyboardPanel / KeyboardScreen      │
+│  (KeyboardPanel / KeyboardScreen 均为完整输入法组件：候选栏+输入栏+工具栏+键盘区域)             │
+│  主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
+│  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
+├─────────────────────────────────────────────────────────────────┤
+│                       Domain Layer     ← :ime-engine 库          │
+│  ImeEngine / Keyboard / InputList / Inputboard / Favoriteboard  │
+│  ImeOutputBridge / BaseImeOutputBridge                          │
+│  (纯 Kotlin，不依赖 Android 框架，可独立作为库被外部程序引入)       │
+├─────────────────────────────────────────────────────────────────┤
+│                        Data Layer      ← :ime-engine 库          │
+│  ImeDictProvider 接口 + ImeSqliteDictProvider 内置实现                  │
+│  PinyinDict / UserInputDataDict / UserInputFavoriteDict          │
+│  (数据库层可替换；配置通过 ImeConfig 代码设置，引擎/UI 配置明确隔离)    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+> **PlantUML 图**：[architecture.puml](../diagrams/architecture.puml)
+
+> **注意**：三层库架构的详细设计见 [module-division.md](./module-division.md)。v4 采用三层库架构：引擎库（`:ime-engine`，纯 Kotlin，Domain Layer + Data Layer）、UI 库（`:ime-ui`，Compose 缺省 UI，UI Layer）、应用模块（`:app`，Platform Layer + ViewModel Layer + 配置持久化 + 设置页面）。第三方应用可以引入 `:ime-engine` + `:ime-ui` 获得完整的输入法能力与缺省 UI，也可以仅引入 `:ime-engine` 自行实现 UI。
+
+---
+
+## 2 MVI 数据流
+
+v4 采用 MVI（Model-View-Intent）架构，核心数据流如下：
+
+```
+GestureInputPanel → InputGesture → ImeEngine.handleGesture()
+                                      ↓
+                                 ImeEngine.reduce()
+                                      ↓
+                              StateFlow<ImeState> → KeyGridPanel（纯渲染）
+                              StateFlow<ImeState> → CandidateListPanel
+                              StateFlow<ImeState> → InputListPanel
+                                      ↓
+                              GestureFeedbackState → GestureFeedbackPanel（视觉反馈）
+```
+
+- **ImeIntent**：用户意图的 sealed class 表达。完整定义见 [module-division.md](./module-division.md#_4-4-imeintent)
+- **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见 [module-division.md](./module-division.md#_4-5-imestate-子状态类型)
+- **三层面板分离**：GestureInputPanel（手势拦截层）→ GestureFeedbackPanel（反馈绘制层）→ KeyGridPanel（按键渲染层）。完整设计见文档 150
+- **ImeOutput**：引擎输出 sealed class，通过 ImeOutputBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [module-division.md](./module-division.md#_4-3-imeoutput)
+
+---
+
+## 3 键盘组合模式
+
+`Keyboard` sealed class + 独立共享组件（`KeyAudioPlayer`、`InputListOperator`、`KeyHandler`、`KeyboardStateMachine`、`CandidateListPager`）。完整设计见 [engine/state-machine.md](../engine/state-machine.md)。
+
+---
+
+## 4 数据流
+
+### 4.1 按键输入完整流程
+
+```
+1. 用户按键
+   ↓
+2. Compose 手势检测 → 生成 ImeIntent.PressKey
+   ↓
+3. KeyboardViewModel.handleIntent(intent)
+   ↓
+4. reduce(state, intent)
+   ├─ 更新 keyboardState（状态机转换）
+   ├─ 查询 PinyinDict（协程）
+   ├─ 更新 candidates
+   └─ 更新 inputList
+   ↓
+5. _state.update { newState }
+   ↓
+6. Compose 订阅 StateFlow → 重组 UI
+   ↓
+7. 候选项、按键状态、输入栏自动更新
+```
+
+### 4.2 输入提交流程
+
+```
+1. 用户点击提交
+   ↓
+2. ImeIntent.CommitInput
+   ↓
+3. reduce 提取 inputList 的文本
+   ↓
+4. 通过 ImeOutputBridge.commitText() 提交到编辑器
+   ↓
+5. 重置 inputList 和 candidates；引擎通过 dispatchToTarget() 自动分发到已挂载的 ImeOutputBridge
+   ↓
+6. 状态更新 → UI 自动刷新
+```
+
+---
+
+## 5 风险与缓解
+
+| 风险 | 影响 | 缓解措施 |
+|------|------|----------|
+| Compose 在 IME 中的性能 | 键盘响应延迟 | 原型阶段性能验证，必要时降级为 View |
+| 状态机迁移的复杂度 | 功能缺失 | 先写测试验证 Java 行为，再迁移 |
+| 字典数据库迁移 | 数据丢失 | 保留升级路径，测试所有迁移场景 |
+| X-Pad Canvas 绘制 | 视觉不一致 | 逐步迁移，与 Java 版本对比截图验证 |
+| UI 测试工具在 release 中的残留 | 包体积增大、信息泄露 | Source Set 隔离 + Lint 规则 + CI 检查，三重保障 |
+| 输入练习动画的包体积 | APK 增大 | Compose Canvas 即时绘制，无额外图片资源；预置脚本控制在 50KB 以内 |
+| 日志系统性能影响 | I/O 阻塞主线程 | Channel 缓冲 + 独立协程批量写入，不阻塞调用线程 |

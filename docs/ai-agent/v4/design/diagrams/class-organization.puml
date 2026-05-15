@@ -1,0 +1,330 @@
+@startuml class-organization
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 12
+skinparam classFontSize 12
+skinparam packageFontSize 14
+
+title 筷子输入法 - 模块类组织\nModule Class Organization
+
+' ═══════════════════════════════════════════════════════════════════
+' :ime-engine
+' ═══════════════════════════════════════════════════════════════════
+
+package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
+
+    package "api/\n公共API" as engine_api #FFE0B2 {
+        interface ImeEngine {
+            + reduce(intent: ImeIntent): ImeState
+            + state: StateFlow<ImeState>
+            + init(config: ImeConfig)
+            + dispose()
+        }
+        interface ImeDictProvider {
+            + query(pinyin: String): List<Candidate>
+            + queryPrefix(prefix: String): List<Candidate>
+            + recordInput(pinyin: String, word: String)
+        }
+        class ImeConfig {
+            + maxCandidates: Int
+            + enableHmm: Boolean
+            + enableUserDict: Boolean
+            + hmmOrder: Int
+        }
+        class ImeState {
+            + keyboardState: KeyboardState
+            + inputBuffer: String
+            + candidates: List<Candidate>
+            + committedText: String
+            + composingRange: TextRange
+        }
+        class ImeIntent {
+            + type: IntentType
+            + payload: Any?
+        }
+    }
+
+    package "domain/\n领域逻辑" as engine_domain #FFCC80 {
+        class KeyboardStateMachine {
+            + transition(state: KeyboardState, event: KeyboardEvent): KeyboardState
+            + isValidTransition(from, to): Boolean
+        }
+        class KeyboardState <<enum>> {
+            Idle
+            PinyinInput
+            CandidateSelection
+            CommitOptionChoosing
+            EditorEditing
+            SymbolChoosing
+            EmojiChoosing
+        }
+        class KeyboardEvent <<sealed>> {
+            PressKey
+            SelectCandidate
+            CommitInput
+            CancelCommit
+            ExternalFocusChange
+        }
+        class IntentReducer {
+            + reduce(state: ImeState, intent: ImeIntent): ImeState
+        }
+    }
+
+    package "dict/\n词典系统" as engine_dict #FFB74D {
+        class DictRepository {
+            + queryWords(pinyin: String): List<Candidate>
+            + queryPhrases(pinyin: String): List<Candidate>
+            + recordInput(pinyin: String, word: String)
+        }
+        class ImeSqliteDictProvider {
+            - repository: DictRepository
+            - trie: PinyinCharsTree
+            - hmm: HmmModel
+        }
+        class PinyinCharsTree {
+            + insert(pinyin: String, word: String)
+            + searchPrefix(prefix: String): List<String>
+        }
+        class HmmModel {
+            + getTransitionProb(from, to): Double
+            + train(transitions: List)
+        }
+        class ViterbiDecoder {
+            + decode(model: HmmModel, obs: List): List
+        }
+        class ImeDatabase <<Room>> {
+            + pinyinWordDao(): PinyinWordDao
+            + pinyinPhraseDao(): PinyinPhraseDao
+            + userInputDao(): UserInputDao
+            + favoriteDao(): FavoriteDao
+            + hmmTransitionDao(): HmmTransitionDao
+        }
+    }
+
+    package "input/\n输入处理" as engine_input #FFA726 {
+        class GestureRecognizer {
+            + recognize(touchPoints: List): InputGesture?
+            + reset()
+        }
+        class InputGesture <<sealed>> {
+            Tap
+            Swipe
+            LongPress
+            SlideInput
+        }
+        class PinyinParser {
+            + parse(rawInput: String): List<PinyinSegment>
+            + split(pinyin: String): List<String>
+        }
+        class PinyinSegment {
+            + pinyin: String
+            + tone: Tone?
+            + position: IntRange
+        }
+    }
+
+    package "logging/\n日志" as engine_logging #FF9800 {
+        class ImeLog <<Facade>> {
+            + {static} v(tag, msg)
+            + {static} d(tag, msg)
+            + {static} i(tag, msg)
+            + {static} w(tag, msg)
+            + {static} e(tag, msg)
+        }
+        class ImeLogger {
+            - writers: List<LogWriter>
+            + log(level, tag, msg)
+        }
+        class LogWriter <<interface>> {
+            + write(entry: LogEntry)
+            + flush()
+        }
+    }
+}
+
+' ═══════════════════════════════════════════════════════════════════
+' :ime-ui
+' ═══════════════════════════════════════════════════════════════════
+
+package ":ime-ui\nUI层" as ime_ui #E8F5E9 {
+
+    package "theme/\n主题" as ui_theme #C8E6C9 {
+        class ImeTheme {
+            + colors: ImeColors
+            + typography: ImeTypography
+            + shapes: ImeShapes
+        }
+        class ImeColors {
+            + background: Color
+            + keyBackground: Color
+            + keyForeground: Color
+            + accentColor: Color
+            + candidateHighlight: Color
+        }
+        class DarkImeColors
+        class LightImeColors
+    }
+
+    package "keyboard/\n键盘" as ui_keyboard #A5D6A7 {
+        class KeyboardPanel {
+            + viewModel: KeyboardViewModel
+            + overlayMode: Boolean
+        }
+        class KeyboardScreen {
+            + viewModel: KeyboardViewModel
+        }
+        class KeyGridPanel {
+            + layout: KeyboardLayout
+            + onKeyPress: (KeyAction) -> Unit
+        }
+        class KeyComponent {
+            + key: KeyDef
+            + pressed: Boolean
+            + onPressed: () -> Unit
+        }
+        class KeyboardLayout {
+            + rows: List<LayoutRow>
+            + mode: LayoutMode
+        }
+        class LayoutMode <<enum>> {
+            Qwerty
+            T9
+            Number
+            Symbol
+        }
+    }
+
+    package "candidate/\n候选词" as ui_candidate #81C784 {
+        class CandidateListPanel {
+            + candidates: List<Candidate>
+            + onSelected: (Candidate) -> Unit
+        }
+        class CandidateItem {
+            + candidate: Candidate
+            + highlighted: Boolean
+        }
+    }
+
+    package "input/\n输入" as ui_input #66BB6A {
+        class InputListPanel {
+            + inputBuffer: String
+            + onBufferClicked: (Int) -> Unit
+        }
+        class GestureInputPanel {
+            + onGesture: (InputGesture) -> Unit
+        }
+        class GestureFeedbackPanel {
+            + feedbackLine: GestureLine?
+        }
+    }
+
+    package "panel/\n面板" as ui_panel #4CAF50 {
+        class Toolbar {
+            + actions: List<ToolbarAction>
+            + onAction: (ToolbarAction) -> Unit
+        }
+        class ToolbarAction <<sealed>> {
+            SwitchLayout
+            OpenSettings
+            ToggleFavorite
+            OpenClipboard
+        }
+    }
+
+    package "favorite/\n收藏" as ui_favorite #43A047 {
+        class FavoritePanel {
+            + favorites: List<Favorite>
+            + onSelected: (Favorite) -> Unit
+            + onRemoved: (Favorite) -> Unit
+        }
+    }
+
+    package "clipboard/\n剪贴板" as ui_clipboard #388E3C {
+        class ClipboardPanel {
+            + clips: List<ClipItem>
+            + onPaste: (ClipItem) -> Unit
+        }
+    }
+
+    package "practice/\n练习" as ui_practice #2E7D32 {
+        class PracticeScreen {
+            + targetText: String
+            + inputText: String
+            + accuracy: Float
+        }
+    }
+
+    package "integration/\n集成" as ui_integration #1B5E20 {
+        class KeyboardViewModel {
+            + engine: ImeEngine
+            + inputBridge: InputConnectionBridge
+            + state: StateFlow<ImeState>
+            + processIntent(intent: ImeIntent)
+        }
+    }
+}
+
+' ═══════════════════════════════════════════════════════════════════
+' :app
+' ═══════════════════════════════════════════════════════════════════
+
+package ":app\n平台层 + ViewModel层" as app #E3F2FD {
+
+    class IMEService <<Android Service>> {
+        + onCreate()
+        + onDestroy()
+        + onCreateInputView(): View
+        + onStartInput(info: EditorInfo)
+        + onBindInput()
+    }
+
+    class InputConnectionBridge {
+        + commitText(text: String)
+        + deleteBeforeCursor(len: Int)
+        + sendKeyEvent(event: KeyEvent)
+        + getExtractedText(): ExtractedText
+        + setComposingText(text: String, cursor: Int)
+    }
+
+    class ConfigRepository {
+        + config: StateFlow<ImeConfig>
+        + updateConfig(update: (ImeConfig) -> ImeConfig)
+        + syncFromDisk()
+    }
+
+    class SettingsScreen {
+        + configState: StateFlow<ImeConfig>
+        + onToggleHmm()
+        + onToggleUserDict()
+        + onChangeMaxCandidates()
+        + onExportLogs()
+    }
+
+    class MainActivity {
+        + onCreate(savedInstanceState: Bundle?)
+        + navigateToSettings()
+        + navigateToPractice()
+    }
+
+    class ImeApplication {
+        + onCreate()
+        + initLogging()
+        + initConfig()
+    }
+}
+
+' ═══════════════════════════════════════════════════════════════════
+' Cross-module Dependencies
+' ═══════════════════════════════════════════════════════════════════
+
+app ..> ime_ui : "依赖"
+app ..> ime_engine : "依赖"
+ime_ui ..> ime_engine : "依赖"
+
+KeyboardViewModel --> ImeEngine : "使用"
+IMEService --> KeyboardViewModel : "创建"
+IMEService --> InputConnectionBridge : "持有"
+SettingsScreen --> ConfigRepository : "观察"
+
+@enduml

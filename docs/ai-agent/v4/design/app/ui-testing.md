@@ -1,40 +1,12 @@
-# 910 — UI 测试方案设计
+# UI 测试方案设计
 
-## 1. 概述
-
-v4 版本设计应用内置的 UI 测试方案，用于在开发和测试阶段快速定位 UI 渲染、组件布局等问题。该方案的核心约束是：**发布版本构建时自动移除所有 UI 测试支持代码和依赖**，确保发布 APK 不包含任何调试专用代码、资源或依赖，从而避免包体积膨胀、性能损耗和信息泄露。Java 版本没有任何 UI 测试工具，v4 从零建设。
+v4 版本设计应用内置的 UI 测试方案，用于在开发和测试阶段快速定位 UI 渲染、组件布局等问题。核心约束是：**发布版本构建时自动移除所有 UI 测试支持代码和依赖**，确保发布 APK 不包含任何调试专用代码、资源或依赖。
 
 ---
 
-## 2. 需求分析
+## 1. 构建配置：Release 自动移除
 
-### 2.1 核心需求
-
-| 需求 | 说明 |
-|------|------|
-| 布局边界可视化 | 显示 Compose 组件的边界线，快速定位布局溢出、重叠、间距异常 |
-| 组件信息查看 | 点击任意组件查看其尺寸、位置、Modifier 链、重组次数等调试信息 |
-| 颜色拾取 | 在键盘界面拾取任意像素颜色值，用于主题调试 |
-| 栅格对齐参考线 | 显示栅格线和安全区域，验证键盘布局的对齐和间距一致性 |
-| 重组追踪 | 标记频繁重组的组件，辅助性能优化 |
-| Release 自动移除 | 所有 UI 测试代码、依赖和资源在 release 构建中完全不存在 |
-
-### 2.2 使用场景
-
-| 场景 | 使用的测试工具 | 说明 |
-|------|---------------|------|
-| 键盘按键布局不齐 | 布局边界 + 栅格参考线 | 可视化按键实际边界，对齐栅格 |
-| 候选栏文字溢出 | 布局边界 + 组件信息 | 查看文字实际渲染宽度和容器宽度 |
-| 主题颜色不正确 | 颜色拾取 | 精确读取屏幕像素颜色值 |
-| 输入法窗口尺寸异常 | 组件信息 + 栅格参考线 | 查看 IME Window 实际尺寸和安全区域 |
-| Compose 重组导致卡顿 | 重组追踪 | 找出频繁重组的组件并优化 |
-| 键盘高度在不同设备不一致 | 组件信息 | 查看各组件实际测量尺寸 |
-
----
-
-## 3. 构建配置：Release 自动移除
-
-### 3.1 方案：Source Set 隔离
+### 1.1 Source Set 隔离
 
 将所有 UI 测试代码放入独立的 `debug` 源集，release 构建不包含该源集，从而在编译阶段彻底移除：
 
@@ -70,7 +42,7 @@ dependencies {
 }
 ```
 
-### 3.2 运行时入口控制
+### 1.2 运行时入口控制
 
 通过 `main` 源集中的接口定义 UI 测试能力，`debug` 源集中的实现类提供具体功能：
 
@@ -130,7 +102,7 @@ class DebugUITestOverlay : UITestOverlay {
 internal fun UITestOverlay.Companion.createImpl(): UITestOverlay = DebugUITestOverlay()
 ```
 
-### 3.3 编译期完全移除验证
+### 1.3 编译期完全移除验证
 
 通过 ProGuard/R8 规则确保 release 构建中不残留任何 UI 测试类：
 
@@ -151,9 +123,9 @@ fi
 
 ---
 
-## 4. UI 测试工具设计
+## 2. UI 测试工具设计
 
-### 4.1 布局边界可视化
+### 2.1 布局边界可视化
 
 在 Compose 组件周围绘制边界线和间距标注，类似 Android View 系统的「显示布局边界」开发者选项，但更精细——支持按组件类型选择显示范围，并标注具体尺寸数值。
 
@@ -167,7 +139,6 @@ fun LayoutBoundsOverlay(
         content()
 
         if (UITestState.current.isToolActive(UITestTool.LayoutBounds)) {
-            // 通过 Modifier.layout 附加测量信息
             LayoutBoundsCanvas(
                 modifier = Modifier.fillMaxSize(),
             )
@@ -208,7 +179,7 @@ private fun DrawScope.drawBounds(info: LayoutInfo) {
 
 **Compose LayoutInfo 方案**：利用 Compose 的 `LayoutInfo` 树获取所有组件的测量信息。通过 `View.getRootView()` 拿到根 View，遍历其 ComposeView 子节点，从 `LayoutInfo` 获取组件树结构。相比自定义 Modifier 侵入方案，这种方式不需要修改任何业务 Composable。
 
-### 4.2 组件信息查看
+### 2.2 组件信息查看
 
 点击任意 UI 组件，显示该组件的详细信息面板：
 
@@ -271,7 +242,7 @@ data class ComponentDebugInfo(
 └──────────────────────────────────┘
 ```
 
-### 4.3 颜色拾取
+### 2.3 颜色拾取
 
 在键盘界面上拾取任意像素的颜色值：
 
@@ -311,48 +282,9 @@ fun ColorPickerOverlay(
         }
     }
 }
-
-@Composable
-private fun ColorInfoPopup(color: Color, onDismiss: () -> Unit) {
-    Card(
-        modifier = Modifier.padding(16.dp),
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .background(color)
-                        .border(1.dp, Color.Black),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(
-                        text = "HEX: ${colorToHex(color)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
-                    )
-                    Text(
-                        text = "RGB: ${colorToRgb(color)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
-                    )
-                }
-            }
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                TextButton(onClick = { copyToClipboard(colorToHex(color)) }) {
-                    Text("复制 HEX")
-                }
-                TextButton(onClick = onDismiss) {
-                    Text("关闭")
-                }
-            }
-        }
-    }
-}
 ```
 
-### 4.4 栅格对齐参考线
+### 2.4 栅格对齐参考线
 
 显示栅格线、间距参考和安全区域，验证键盘布局的对齐精度：
 
@@ -405,7 +337,7 @@ fun GridGuidesOverlay(
 }
 ```
 
-### 4.5 重组追踪
+### 2.5 重组追踪
 
 利用 Compose Compiler 的重组追踪能力，标记频繁重组的组件：
 
@@ -443,7 +375,7 @@ fun RecompositionOverlay(
 }
 ```
 
-Compose 自 1.3.0 起提供 `ComposeCompilerReport`，可在编译期生成重组报告。运行时可通过 `Modifier.recomposeHighlighter()` 实验性 API 追踪重组：
+自定义重组追踪 Modifier：
 
 ```kotlin
 // debug 源集：自定义重组追踪 Modifier
@@ -474,9 +406,7 @@ object RecompositionTracker {
 
 ---
 
-## 5. UI 测试工具栏
-
-### 5.1 浮动工具栏
+## 3. UITestToolbar
 
 所有 UI 测试工具通过一个可拖动的浮动工具栏切换：
 
@@ -548,7 +478,7 @@ val UITestTool.displayName: String
     }
 ```
 
-### 5.2 集成入口
+### 3.1 集成入口
 
 在 `IMEService` 的 ComposeView 层次中，debug 构建额外包裹 UI 测试覆盖层：
 
@@ -583,9 +513,9 @@ fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
 
 ---
 
-## 6. Compose 编译器报告集成
+## 4. Compose 编译器报告集成
 
-### 6.1 编译期重组报告
+### 4.1 编译期重组报告
 
 Compose Compiler 支持在编译时生成重组分析报告，帮助开发者识别不稳定的参数和不必要的重组。在 debug 构建中启用：
 
@@ -604,7 +534,7 @@ android {
 }
 ```
 
-### 6.2 报告分析
+### 4.2 报告分析
 
 编译完成后，通过脚本解析报告中的问题项：
 
@@ -616,13 +546,11 @@ android {
 
 ---
 
-## 7. 截图对比测试
+## 5. 截图对比测试
 
-### 7.1 设计
+### 5.1 框架选型
 
 截图对比测试（Screenshot Testing）用于验证 UI 在代码变更后不会出现意外视觉变化。使用 Paparazzi 或 Roborazzi 框架，在 JVM/设备上渲染 Compose 组件并截图，与基准截图进行像素级对比。
-
-**框架选型**：
 
 | 框架 | 优势 | 劣势 |
 |------|------|------|
@@ -631,7 +559,7 @@ android {
 
 推荐 **Paparazzi**：速度更快，且对 Compose 支持日趋完善。
 
-### 7.2 测试组织
+### 5.2 测试组织
 
 ```
 code/app/src/test/
@@ -650,7 +578,7 @@ code/app/src/test/
             └── NightThemeScreenshotTest.kt
 ```
 
-### 7.3 示例测试
+### 5.3 示例测试
 
 ```kotlin
 class PinyinKeyboardScreenshotTest {
@@ -661,7 +589,6 @@ class PinyinKeyboardScreenshotTest {
     fun pinyinKeyboardIdle() {
         paparazzi.snapshot {
             KeyboardTheme(themeType = ThemeType.Light) {
-                // KeyboardPanel: 叠加模式完整输入法组件（详见文档 160 §5.4）
                 KeyboardPanel(
                     state = ImeState(
                         keyboardType = KeyboardType.Pinyin,
@@ -693,7 +620,7 @@ class PinyinKeyboardScreenshotTest {
 }
 ```
 
-### 7.4 CI 集成
+### 5.4 CI 集成
 
 截图对比测试在 CI 流水线中作为独立阶段执行，检测到差异时上传对比图作为 Artifacts：
 
@@ -707,9 +634,9 @@ class PinyinKeyboardScreenshotTest {
 
 ---
 
-## 8. 构建保证机制
+## 6. 构建保证机制
 
-### 8.1 依赖隔离
+### 6.1 依赖隔离
 
 | 依赖 | 作用 | 构建类型 |
 |------|------|----------|
@@ -717,7 +644,7 @@ class PinyinKeyboardScreenshotTest {
 | `app.cash.paparazzi:paparazzi` | 截图对比测试 | `testImplementation` |
 | UI 测试工具代码 | 布局边界、组件信息、颜色拾取等 | `debug` 源集 |
 
-### 8.2 代码隔离检查清单
+### 6.2 代码隔离检查清单
 
 | 检查项 | 方法 |
 |--------|------|
@@ -727,7 +654,7 @@ class PinyinKeyboardScreenshotTest {
 | main 源集无 UI 测试引用 | 代码审查 + Lint 规则 |
 | release R8 移除所有调试代码 | ProGuard 规则 + APK 反编译验证 |
 
-### 8.3 Lint 规则
+### 6.3 Lint 规则
 
 自定义 Lint 规则，防止在 `main` 源集中意外引用 `debug` 源集的类：
 
@@ -772,9 +699,9 @@ class UITestReferenceDetector : Detector(), Detector.UastScanner {
 
 ---
 
-## 9. 与日志系统的协作
+## 7. 与日志系统的协作
 
-UI 测试方案与应用日志系统（文档 900）协同工作：
+UI 测试方案与应用日志系统协同工作：
 
 | 协作点 | 说明 |
 |--------|------|
@@ -807,18 +734,3 @@ class DebugUITestOverlay(
     }
 }
 ```
-
----
-
-## 10. 与 Java 版本对照
-
-| Java 版本 | v4 版本 | 改进说明 |
-|-----------|---------|---------|
-| 无 UI 测试工具 | 5 种内置 UI 测试工具 | 全新建设 |
-| 无布局可视化 | 布局边界 + 栅格参考线 | Compose LayoutInfo 树驱动 |
-| 无组件调试 | 组件信息查看 | 点击查看尺寸、Modifier、重组次数 |
-| 无颜色调试 | 颜色拾取 | 放大镜 + HEX/RGB 值显示 |
-| 无重组追踪 | 重组追踪 + 编译期报告 | Compose Compiler 原生支持 |
-| 无截图测试 | Paparazzi 截图对比 | CI 自动化视觉回归检测 |
-| 无 Release 移除机制 | Source Set 隔离 + Lint 规则 + CI 检查 | 多重保障确保发布包干净 |
-| 无构建隔离 | debug/release 源集分离 | 编译期移除，非运行时判断 |

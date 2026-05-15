@@ -1,83 +1,10 @@
-# 800 — 用户数据导入导出设计
+# 用户数据导入导出设计
 
-## 1. 概述
-
-v4 版本新增用户数据的导入与导出功能，允许用户将输入历史、收藏列表等个人数据导出为文件备份，以及从文件中导入恢复。这是 Java 版本不具备的新增功能，目的是保护用户数据安全，方便换机迁移和灾难恢复。
+v4 版本新增用户数据的导入与导出功能，允许用户将输入历史、收藏列表等个人数据导出为文件备份，以及从文件中导入恢复。目的是保护用户数据安全，方便换机迁移和灾难恢复。
 
 ---
 
-## 2. 功能需求
-
-### 2.1 导出功能
-
-- 将用户数据导出为单个文件
-- 导出内容包括：
-  - 用户输入频率数据（`user_input_data` 表）
-  - 收藏列表（`user_input_favorite` 表）
-  - 应用配置（DataStore 中的配置项）
-- 导出文件格式为 JSON，便于人工检视和跨版本兼容
-- 导出文件存储到用户指定的位置（通过系统文件选择器）
-- 导出文件名格式：`kuaizi_ime_backup_{YYYYMMDD_HHmmss}.json`
-
-### 2.2 导入功能
-
-- 从用户选择的文件中导入数据
-- 导入前校验文件格式和版本兼容性
-- 导入策略选择：
-  - **替换**：清除现有数据后导入（默认）
-  - **合并**：将导入数据与现有数据合并，相同条目取较高频率/较新时间
-- 导入完成后提示导入结果摘要（导入条数、跳过条数、冲突条数）
-- 导入失败时自动回滚，不破坏现有数据
-
-### 2.3 导出文件格式
-
-```json
-{
-  "version": 1,
-  "app_version": "4.0.0",
-  "exported_at": "2026-05-12T10:30:00+08:00",
-  "data": {
-    "user_input": [
-      { "text": "你好", "type": "pinyin", "freq": 42, "last_used": 1715472000000 },
-      { "text": "hello", "type": "latin", "freq": 15, "last_used": 1715471000000 }
-    ],
-    "favorites": [
-      { "text": "example@email.com", "type": "Email", "usage_count": 3, "created_at": 1715470000000 }
-    ],
-    "config": {
-      "engine": {
-        "hand_mode": "Right"
-      },
-      "ui": {
-        "theme_type": "FollowSystem",
-        "x_pad_enabled": true,
-        "candidate_variant_first_enabled": false,
-        "user_input_data_enabled": true,
-        "audio_feedback_enabled": true,
-        "key_animation_enabled": true,
-        "candidates_paging_audio_enabled": true,
-        "key_popup_tips_enabled": true,
-        "gesture_slipping_trail_enabled": true,
-        "clip_popup_tips_enabled": true,
-        "clip_popup_tips_timeout": 15
-      }
-    }
-  }
-}
-```
-
-> **设计说明**：
-> - `version` 为数据格式版本号，便于后续格式变更时做兼容处理
-> - `app_version` 记录导出时的应用版本，用于排查兼容性问题
-> - 拼音字典数据（`pinyin_word`、`pinyin_phrase`、`hmm_data`）为内置数据，不纳入导出范围
-> - `config` 中的字段结构对应 `ImeConfig` 的嵌套结构（`engine` 和 `ui` 两个子对象），仅导出与默认值不同的配置项；日志与诊断、输入练习演示相关字段为 v4 新增
-> - 导入时，备份文件中不存在的可选字段使用 `null` 默认值，不影响现有配置
-
----
-
-## 3. 架构设计
-
-### 3.1 UserDataService
+## 1. UserDataService
 
 ```kotlin
 /**
@@ -260,7 +187,11 @@ class UserDataService(
 }
 ```
 
-### 3.2 数据模型
+---
+
+## 2. 数据模型
+
+### 2.1 UserBackup / BackupData
 
 ```kotlin
 @Serializable
@@ -342,7 +273,55 @@ data class UiConfigBackupEntry(
 )
 ```
 
-### 3.3 结果类型
+### 2.2 导出文件格式
+
+导出文件格式为 JSON，便于人工检视和跨版本兼容：
+
+```json
+{
+  "version": 1,
+  "app_version": "4.0.0",
+  "exported_at": "2026-05-12T10:30:00+08:00",
+  "data": {
+    "user_input": [
+      { "text": "你好", "type": "pinyin", "freq": 42, "last_used": 1715472000000 },
+      { "text": "hello", "type": "latin", "freq": 15, "last_used": 1715471000000 }
+    ],
+    "favorites": [
+      { "text": "example@email.com", "type": "Email", "usage_count": 3, "created_at": 1715470000000 }
+    ],
+    "config": {
+      "engine": {
+        "hand_mode": "Right"
+      },
+      "ui": {
+        "theme_type": "FollowSystem",
+        "x_pad_enabled": true,
+        "candidate_variant_first_enabled": false,
+        "user_input_data_enabled": true,
+        "audio_feedback_enabled": true,
+        "key_animation_enabled": true,
+        "candidates_paging_audio_enabled": true,
+        "key_popup_tips_enabled": true,
+        "gesture_slipping_trail_enabled": true,
+        "clip_popup_tips_enabled": true,
+        "clip_popup_tips_timeout": 15
+      }
+    }
+  }
+}
+```
+
+> **设计说明**：
+> - `version` 为数据格式版本号，便于后续格式变更时做兼容处理
+> - `app_version` 记录导出时的应用版本，用于排查兼容性问题
+> - 拼音字典数据为内置数据，不纳入导出范围
+> - `config` 中的字段结构对应 `ImeConfig` 的嵌套结构（`engine` 和 `ui` 两个子对象），仅导出与默认值不同的配置项
+> - 导入时，备份文件中不存在的可选字段使用 `null` 默认值，不影响现有配置
+
+---
+
+## 3. 结果类型
 
 ```kotlin
 sealed class ExportResult {
@@ -364,16 +343,6 @@ enum class ImportStrategy {
     Replace,  // 替换：清除现有数据后导入
     Merge,    // 合并：与现有数据合并
 }
-```
-
-### 3.4 Intent 扩展
-
-用户数据导入导出新增以下 `ImeIntent` 子类（基础 ImeIntent 定义见文档 160 第 4 节）：
-
-```kotlin
-// 新增于 ImeIntent
-data class ExportUserData(val uri: Uri) : ImeIntent()
-data class ImportUserData(val uri: Uri, val strategy: ImportStrategy) : ImeIntent()
 ```
 
 ---
@@ -489,12 +458,12 @@ fun ImportStrategyDialog(
 
 ---
 
-## 6. 与 Java 版本的差异
+## 6. Intent 扩展
 
-| 维度 | Java v3 | Kotlin v4 |
-|------|---------|-----------|
-| 数据导出 | ❌ 不支持 | ✅ 支持 JSON 格式导出 |
-| 数据导入 | ❌ 不支持 | ✅ 支持替换/合并两种导入策略 |
-| 换机迁移 | 手动复制数据库文件 | 系统文件选择器导出/导入 |
-| 数据备份 | 无 | 用户可随时导出备份 |
-| 导入回滚 | 无 | 导入失败自动回滚 |
+用户数据导入导出新增以下 `ImeIntent` 子类：
+
+```kotlin
+// 新增于 ImeIntent
+data class ExportUserData(val uri: Uri) : ImeIntent()
+data class ImportUserData(val uri: Uri, val strategy: ImportStrategy) : ImeIntent()
+```

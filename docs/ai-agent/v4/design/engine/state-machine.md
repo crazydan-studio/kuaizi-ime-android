@@ -1,54 +1,14 @@
-# 100 — 键盘状态机设计
+# 键盘状态机
+
+> PlantUML 状态图：[@file:../diagrams/engine-state-machine.puml](../diagrams/engine-state-machine.puml)
 
 ## 1. 概述
 
-键盘状态机是筷字输入法的核心逻辑，管理键盘在不同输入模式下的状态转换。Java 版本通过深层继承链和 `State` 链表实现状态机，v4 版本将其重构为基于 Sealed class 的显式状态定义和组合模式的状态处理器。
+键盘状态机是筷字输入法的核心逻辑，管理键盘在不同输入模式下的状态转换。基于 Sealed class 的显式状态定义和组合模式的状态处理器，提供编译期状态合法性检查和集中化的转换规则。
 
 ---
 
-## 2. Java 版本状态机分析
-
-### 2.1 当前状态类型
-
-Java 版本在 `core/keyboard/state/` 中定义了 10 种状态数据类：
-
-| 状态 | 说明 |
-|------|------|
-| `InputCharsSlipStateData` | 滑行输入状态（level0/1/2 按键，下一字符集） |
-| `InputCharsFlipStateData` | 翻转输入状态（起始字符） |
-| `PagingStateData` | 候选分页状态 |
-| `PinyinCandidateChooseStateData` | 拼音候选选择状态 |
-| `PinyinCandidateFilterStateData` | 拼音候选过滤状态 |
-| `PinyinCandidateAdvanceFilterStateData` | 拼音高级过滤状态（部首、声调） |
-| `EmojiChooseStateData` | Emoji 分组选择状态 |
-| `SymbolChooseStateData` | 符号分组选择状态 |
-| `EditorEditStateData` | 编辑器状态（光标/选择） |
-| `InputListCommitOptionChooseStateData` | 提交选项状态 |
-
-### 2.2 当前状态链
-
-`State` 类使用链表结构（`previous` 指针）维护状态历史：
-
-```java
-class State {
-    State previous;
-    StateData data;
-}
-```
-
-### 2.3 问题分析
-
-1. **状态类型分散**：10 个独立的状态数据类，缺乏统一的类型约束
-2. **状态转换隐式**：状态转换逻辑分散在 `BaseKeyboard` 的各个方法中，没有集中定义转换规则
-3. **状态链的 `previous` 指针容易导致内存泄漏**：长链持有所有历史状态
-4. **非法状态转换无保护**：任何状态都可以转换到任何其他状态，缺乏编译期检查
-5. **状态恢复逻辑复杂**：通过 `previous` 链回退状态，容易出错
-
----
-
-## 3. v4 状态机设计
-
-### 3.1 Sealed class 状态定义
+## 2. KeyboardState 定义
 
 ```kotlin
 sealed class KeyboardState {
@@ -110,10 +70,29 @@ sealed class KeyboardState {
 }
 ```
 
-### 3.2 状态转换规则
+### 状态层次一览
+
+| 顶层状态 | 子状态 | 说明 |
+|----------|--------|------|
+| `Idle` | — | 空闲 |
+| `PinyinInput` | `Waiting` | 等待输入 |
+| | `Slipping` | 滑行输入中 |
+| | `Flipping` | 翻转输入中 |
+| | `XPadding` | X-Pad 输入中 |
+| `CandidateSelection` | `Choosing` | 候选选择 |
+| | `Filtering` | 候选过滤 |
+| | `AdvanceFiltering` | 高级过滤（部首/声调） |
+| `CommitOptionChoosing` | — | 提交选项 |
+| `EditorEditing` | `CursorMoving` | 光标移动 |
+| | `TextSelecting` | 文本选择 |
+| `SymbolChoosing` | — | 符号选择 |
+| `EmojiChoosing` | — | Emoji 选择 |
+
+---
+
+## 3. 状态转换规则
 
 ```kotlin
-// 状态转换定义，明确哪些转换是合法的
 sealed class KeyboardTransition {
     // 拼音输入转换
     data class StartPinyinInput(val char: Char) : KeyboardTransition()
@@ -147,9 +126,11 @@ sealed class KeyboardTransition {
 }
 ```
 
-### 3.3 状态处理器
+---
 
-替代 Java 版本的深层继承链，使用组合模式：
+## 4. KeyboardStateMachine
+
+使用组合模式实现状态处理器：
 
 ```kotlin
 class KeyboardStateMachine(
@@ -187,7 +168,9 @@ class KeyboardStateMachine(
 }
 ```
 
-### 3.4 键盘类型与状态的关系
+---
+
+## 5. 键盘类型与初始状态
 
 ```kotlin
 enum class KeyboardType {
@@ -202,7 +185,6 @@ enum class KeyboardType {
     CommitOption, // 提交选项键盘：CommitOptionChoosing
 }
 
-// 每种键盘类型对应其合法的初始状态和状态范围
 val KeyboardType.initialState: KeyboardState
     get() = when (this) {
         KeyboardType.Pinyin -> KeyboardState.PinyinInput.Waiting(null)
@@ -219,9 +201,9 @@ val KeyboardType.initialState: KeyboardState
 
 ---
 
-## 4. 键盘组合模式设计
+## 6. Keyboard 组合模式
 
-### 4.1 键盘接口
+### 6.1 键盘接口
 
 ```kotlin
 sealed class Keyboard {
@@ -237,7 +219,7 @@ data class KeyboardResult(
 )
 ```
 
-### 4.2 各键盘实现
+### 6.2 各键盘实现
 
 ```kotlin
 class PinyinKeyboard(
@@ -259,37 +241,20 @@ class PinyinKeyboard(
 }
 ```
 
-### 4.3 共享组件提取
+### 6.3 共享组件
 
-| Java BaseKeyboard 中的共享行为 | Kotlin 独立组件 |
-|-------------------------------|-----------------|
-| `playKeyAudio()` | `KeyAudioPlayer.play(keyType)` |
-| `updateInputList()` | `InputListOperator.apply(intent, list)` |
-| `fireInputMsg()` | StateFlow 自动传播，不需要手动触发 |
-| `evaluateInputWordKeys()` | `CandidateQuery.query(dict, spell)` |
-| `evaluatePinyinCandidates()` | `PinyinCandidateEvaluator.evaluate(dict, input)` |
-| `evaluateLatinCompletion()` | `LatinCompletionEvaluator.evaluate(dict, input)` |
+| 共享行为 | 独立组件 |
+|----------|----------|
+| 按键音效播放 | `KeyAudioPlayer.play(keyType)` |
+| 输入列表更新 | `InputListOperator.apply(intent, list)` |
+| 状态变更传播 | StateFlow 自动传播 |
+| 候选查询 | `CandidateQuery.query(dict, spell)` |
+| 拼音候选评估 | `PinyinCandidateEvaluator.evaluate(dict, input)` |
+| 拉丁补全评估 | `LatinCompletionEvaluator.evaluate(dict, input)` |
 
 ---
 
-## 5. 按键类型体系
-
-### 5.1 Sealed class 替代枚举
-
-Java 版本的按键类型继承体系：
-
-```java
-abstract class Key { ... }
-abstract class TypedKey<T> extends Key { ... }
-class CharKey extends TypedKey<String> { ... }
-class CtrlKey extends TypedKey<CtrlKey.Type> { ... }  // CtrlKey.Type 是 25+ 值的枚举
-class InputWordKey extends TypedKey<InputWord> { ... }
-class MathOpKey extends TypedKey<MathOpKey.Op> { ... }
-class SymbolKey extends Key { ... }
-class XPadKey extends Key { ... }
-```
-
-v4 版本：
+## 7. InputKey 体系
 
 ```kotlin
 sealed class InputKey {
@@ -305,17 +270,14 @@ sealed class InputKey {
         val replacements: List<String> = emptyList(),
         override val weight: Float = 1f,
     ) : InputKey() {
-        /** 是否有可替换的候选 */
         val hasReplacements: Boolean get() = replacements.size > 1
 
-        /** 获取下一个替换文本，若无可替换则返回当前文本 */
         fun nextReplacement(current: String): String {
             if (replacements.size <= 1) return current
             val index = replacements.indexOf(current)
             return if (index >= 0) replacements[(index + 1) % replacements.size] else replacements[0]
         }
 
-        /** 当前文本是否可被替换 */
         fun canReplace(current: String): Boolean = replacements.size > 1 && current in replacements
     }
 
@@ -404,7 +366,7 @@ sealed class InputKey {
 }
 ```
 
-### 5.2 按键生成器
+### 按键生成器
 
 ```kotlin
 interface KeyTableGenerator {
@@ -421,11 +383,7 @@ data class KeyTableContext(
 
 ---
 
-## 6. 状态历史与回退
-
-### 6.1 有界历史栈
-
-Java 版本使用链表维护状态历史，可能无限增长。v4 使用有界栈：
+## 8. StateHistory 有界历史栈
 
 ```kotlin
 class StateHistory(maxSize: Int = 10) {
@@ -444,31 +402,8 @@ class StateHistory(maxSize: Int = 10) {
 }
 ```
 
-### 6.2 回退策略
+### 回退策略
 
 - 键盘切换时清空历史栈（不同键盘类型之间无回退关系）
 - 同一键盘内的子状态回退通过 `pop()` 实现
 - 撤销（Revoke）不依赖状态历史，而是依赖 InputList 的撤销栈
-
----
-
-## 7. Java 版本功能完整对照
-
-| Java 键盘类型 | Java 状态 | v4 对应 | 备注 |
-|-------------|----------|---------|------|
-| PinyinKeyboard | InputChars_Input_Wait | PinyinInput.Waiting | 直接对应 |
-| PinyinKeyboard | InputChars_Slip_Doing | PinyinInput.Slipping | 直接对应 |
-| PinyinKeyboard | InputChars_Flip_Doing | PinyinInput.Flipping | 直接对应 |
-| PinyinKeyboard | InputChars_XPad_Doing | PinyinInput.XPadding | 直接对应 |
-| PinyinCandidateKeyboard | Candidate_Choose | CandidateSelection.Choosing | 直接对应 |
-| PinyinCandidateKeyboard | Candidate_Filter_Basic | CandidateSelection.Filtering | 直接对应 |
-| PinyinCandidateKeyboard | Candidate_Filter_Advance | CandidateSelection.AdvanceFiltering | 直接对应 |
-| InputListCommitOptionKeyboard | Commit_Option_Choose | CommitOptionChoosing | 直接对应 |
-| EditorEditKeyboard | Editor_Edit_Cursor | EditorEditing.CursorMoving | 直接对应 |
-| EditorEditKeyboard | Editor_Edit_Selection | EditorEditing.TextSelecting | 直接对应 |
-| SymbolKeyboard | Symbol_Choose | SymbolChoosing | 直接对应 |
-| EmojiKeyboard | Emoji_Choose | EmojiChoosing | 直接对应 |
-| LatinKeyboard | InputChars_Slip/XPad | PinyinInput.Slipping/XPadding | 拉丁键盘可复用拼音的滑行/X-Pad 模式 |
-| NumberKeyboard | 无子状态 | Idle | 直接对应 |
-| MathKeyboard | 无子状态 | Idle | 直接对应 |
-| EditorKeyboard | 无子状态 | Idle | 直接对应 |

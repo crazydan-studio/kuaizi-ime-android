@@ -1,0 +1,87 @@
+@startuml architecture
+!theme plain
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam componentFontSize 14
+skinparam packageFontSize 15
+
+title 筷子输入法 - 三层架构总览\nKuaizi IME - Three-Layer Architecture Overview
+
+' ─── Module Definitions ────────────────────────────────────────────
+
+package ":app\n平台层 + ViewModel层\nPlatform + ViewModel Layer" as app #E3F2FD {
+    component [IMEService\n输入法服务] as IMEService
+    component [KeyboardViewModel\n键盘视图模型] as KVM
+    component [ConfigRepository\n配置仓库] as ConfigRepo
+    component [InputConnectionBridge\n输入连接桥] as ICB
+    component [SettingsScreen\n设置界面] as Settings
+}
+
+package ":ime-ui\nUI层\nUI Layer" as ui #E8F5E9 {
+    component [KeyboardPanel\n键盘面板] as KP
+    component [CandidateListPanel\n候选词面板] as CLP
+    component [KeyGridPanel\n按键网格面板] as KGP
+    component [GestureInputPanel\n手势输入面板] as GIP
+    component [Theme\n主题系统] as Theme
+    component [Compose UI\n组合式UI] as ComposeUI
+}
+
+package ":ime-engine\n领域层 + 数据层\nDomain + Data Layer" as engine #FFF3E0 {
+    package "领域层 Domain" as domain {
+        component [ImeEngine\n输入法引擎] as ImeEngine
+        component [KeyboardStateMachine\n键盘状态机] as KSM
+        component [ImeState\n输入法状态] as ImeState
+        component [ImeIntent\n输入法意图] as ImeIntent
+    }
+    package "数据层 Data" as data {
+        component [DictRepository\n词典仓库] as DictRepo
+        component [ImeDictProvider\n词典提供者] as DictProvider
+        component [HmmModel\n隐马尔可夫模型] as Hmm
+    }
+    note right of engine : 无Android依赖\nPure Kotlin
+}
+
+' ─── Module Dependencies ───────────────────────────────────────────
+
+app --> ui : "依赖"
+app --> engine : "依赖"
+ui --> engine : "依赖"
+
+' ─── MVI Data Flow ─────────────────────────────────────────────────
+
+package "MVI 数据流\nMVI Data Flow" as mvi #F3E5F5 {
+    usecase "用户输入\nUser Input" as UserInput
+    usecase "ImeIntent\n意图" as Intent
+    usecase "ImeEngine.reduce()\n状态归约" as Reduce
+    usecase "StateFlow<ImeState>\n状态流" as StateFlow
+    usecase "Compose UI\n界面渲染" as Render
+
+    UserInput --> Intent : "1. 转换"
+    Intent --> Reduce : "2. 处理"
+    Reduce --> StateFlow : "3. 发射"
+    StateFlow --> Render : "4. 订阅"
+
+    note bottom of Reduce
+        纯函数状态归约
+        Pure function state reduction
+    end note
+}
+
+' ─── Detailed Data Flow ────────────────────────────────────────────
+
+ImeIntent ..> ImeEngine : "Intent"
+ImeEngine --> ImeState : "reduce()"
+ImeState --> ComposeUI : "StateFlow"
+ImeEngine --> KSM : "状态驱动"
+ImeEngine --> DictRepo : "词典查询"
+
+KVM --> ImeEngine : "持有引用"
+IMEService --> KVM : "创建"
+ICB --> KVM : "提交文本"
+KP --> ComposeUI : "渲染"
+CLP --> ComposeUI : "候选词"
+KGP --> ComposeUI : "按键"
+
+@enduml

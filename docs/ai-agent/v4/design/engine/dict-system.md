@@ -1,52 +1,14 @@
-# 300 — 字典系统重构设计
+# 字典系统
+
+> PlantUML 类图：[@file:../diagrams/engine-dict-system.puml](../diagrams/engine-dict-system.puml)
 
 ## 1. 概述
 
-字典系统是筷字输入法的核心数据层，负责拼音字词查询、用户输入历史记录、收藏管理以及数据库版本升级。Java 版本使用手写 SQLiteOpenHelper 和异步单例模式管理字典，v4 版本将其重构为基于 Room 的类型安全数据库访问层，配合协程实现异步操作。
+字典系统是筷字输入法的核心数据层，负责拼音字词查询、用户输入历史记录、收藏管理以及数据库版本升级。基于 Room 的类型安全数据库访问层，配合协程实现异步操作。
 
 ---
 
-## 2. Java 版本字典系统分析
-
-### 2.1 架构
-
-```
-IMEditorDict (单例，异步开关)
-├── PinyinDict (拼音字典)
-│   ├── PinyinCharsTree (拼音字符树)
-│   ├── HMM (隐马尔可夫模型)
-│   │   └── Viterbi (维特比算法)
-│   ├── PinyinDBHelper (拼音字库 DB)
-│   └── HmmDBHelper (HMM 数据 DB)
-├── UserInputDataDict (用户输入历史)
-│   └── UserInputDataDBHelper (用户输入数据 DB)
-└── UserInputFavoriteDict (用户收藏)
-    └── UserInputFavoriteDBHelper (用户收藏 DB)
-```
-
-### 2.2 数据库结构
-
-| 数据库 | 表 | 用途 |
-|--------|-----|------|
-| pinyin_word | words (spell, text, freq, variant, tone) | 拼音字库 |
-| pinyin_phrase | phrases (spells, text, freq) | 拼音词库 |
-| user_input_data | user_inputs (text, type, freq, last_used) | 用户输入频率 |
-| user_input_favorite | favorites (text, type, usage_count, created_at) | 用户收藏 |
-| hmm_data | hmm_* (状态转移概率表) | HMM 词组预测 |
-
-### 2.3 问题分析
-
-1. **手写 SQL 无编译期检查**：SQL 语句以字符串形式嵌入代码，拼写错误只能在运行时发现
-2. **单例模式的线程安全**：`IMEditorDict` 的异步打开/关闭使用 `CompletableFuture`，逻辑复杂
-3. **数据库升级分散**：`From_v0`、`From_v2_to_v3`、`From_v3_to_v4` 分散在不同类中
-4. **无类型安全**：数据库查询结果以 `Cursor` 形式返回，需要手动读取列值
-5. **HMM 实现粗糙**：`Hmm` 和 `Viterbi` 是简单的 Java 实现，未优化性能
-
----
-
-## 3. v4 字典系统设计
-
-### 3.1 整体架构
+## 2. 整体架构
 
 ```
 DictRepository (仓库，协程化)
@@ -60,15 +22,42 @@ DictRepository (仓库，协程化)
     └── FavoriteDao (Room DAO)
 ```
 
-### 3.2 数据库方案
+---
 
-**选择 Room**，理由：
-1. 项目仅 Android 平台，Room 是 Android 官方推荐
-2. 已有手写 SQL 逻辑，Room 的迁移路径更直接
-3. Room 提供 LiveData/Flow 集成，适合响应式架构
-4. 编译期 SQL 检查，避免运行时 SQL 错误
+## 3. ImeDatabase 与 Entity
 
-### 3.3 Entity 定义
+### 3.1 数据库定义
+
+```kotlin
+@Database(
+    entities = [
+        PinyinWordEntity::class,
+        PinyinPhraseEntity::class,
+        UserInputEntity::class,
+        FavoriteEntity::class,
+        HmmTransitionEntity::class,
+    ],
+    version = 4,
+    exportSchema = true,
+)
+abstract class ImeDatabase : RoomDatabase() {
+    abstract fun pinyinWordDao(): PinyinWordDao
+    abstract fun pinyinPhraseDao(): PinyinPhraseDao
+    abstract fun userInputDao(): UserInputDao
+    abstract fun favoriteDao(): FavoriteDao
+    abstract fun hmmDao(): HmmDao
+
+    companion object {
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // v3 → v4 的升级逻辑
+            }
+        }
+    }
+}
+```
+
+### 3.2 Entity 定义
 
 ```kotlin
 // 拼音字
@@ -121,7 +110,9 @@ data class HmmTransitionEntity(
 )
 ```
 
-### 3.4 DAO 定义
+---
+
+## 4. DAO 接口
 
 ```kotlin
 @Dao
@@ -185,7 +176,9 @@ interface FavoriteDao {
 }
 ```
 
-### 3.5 Repository 层
+---
+
+## 5. DictRepository
 
 > **注意**：`DictRepository` 是引擎库内部基于 Room 的字典访问实现，属于 `:ime-engine` 模块的内部组件。引擎库对外暴露的公共接口是 `ImeDictProvider`（详见文档 160 第 6 节），`DictRepository` 是 `ImeDictProvider` 的内部实现细节——`ImeSqliteDictProvider` 内部委托 `DictRepository` 完成实际的数据库操作。第三方应用可通过实现 `ImeDictProvider` 接口替换整个字典层，而无需了解 `DictRepository` 的存在。
 
@@ -232,43 +225,37 @@ class DictRepository(
 
 ---
 
-## 4. 数据库升级策略
-
-### 4.1 Room Migration
+## 6. ImeDictProvider / ImeSqliteDictProvider
 
 ```kotlin
-@Database(
-    entities = [
-        PinyinWordEntity::class,
-        PinyinPhraseEntity::class,
-        UserInputEntity::class,
-        FavoriteEntity::class,
-        HmmTransitionEntity::class,
-    ],
-    version = 4,
-    exportSchema = true,
-)
-abstract class ImeDatabase : RoomDatabase() {
-    abstract fun pinyinWordDao(): PinyinWordDao
-    abstract fun pinyinPhraseDao(): PinyinPhraseDao
-    abstract fun userInputDao(): UserInputDao
-    abstract fun favoriteDao(): FavoriteDao
-    abstract fun hmmDao(): HmmDao
+interface ImeDictProvider {
+    fun query(pinyin: String): List<Candidate>
+    fun queryPrefix(prefix: String): List<Candidate>
+    fun recordInput(pinyin: String, word: String)
+}
 
-    companion object {
-        val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // v3 → v4 的升级逻辑
-                // 保留 Java 版本的升级逻辑
-            }
-        }
-    }
+class ImeSqliteDictProvider(
+    private val dictRepository: DictRepository,
+    private val pinyinCharsTree: PinyinCharsTree,
+    private val hmmModel: HmmModel,
+) : ImeDictProvider {
+    override fun query(pinyin: String): List<Candidate> { ... }
+    override fun queryPrefix(prefix: String): List<Candidate> { ... }
+    override fun recordInput(pinyin: String, word: String) { ... }
 }
 ```
 
-### 4.2 预构建字典
+**查询流程**：
+1. PinyinCharsTree 前缀匹配获取候选
+2. HmmModel 计算转移概率排序
+3. ViterbiDecoder 解码最优路径
+4. 合并用户词频和收藏权重
 
-Java 版本将拼音字典（pinyin_word_dict.db、pinyin_phrase_dict.db）打包在 raw 资源中，首次安装时复制到应用数据目录。v4 版本改为以 assets 形式组织，放在 `assets/dict/` 目录中，并使用 Room 的 `createFromAsset()` 简化数据库初始化：
+---
+
+## 7. 预构建字典
+
+以 assets 形式组织，放在 `assets/dict/` 目录中，使用 Room 的 `createFromAsset()` 简化数据库初始化：
 
 **assets 目录结构**：
 
@@ -290,24 +277,9 @@ fun createDatabase(context: Context): ImeDatabase {
 }
 ```
 
-> **设计说明**：使用 `createFromAsset()` 替代手动复制 raw 资源的方式，Room 会在首次打开数据库时自动从 assets 中复制字典文件，大幅简化初始化逻辑。
-
 ---
 
-## 5. PinyinCharsTree 重构
-
-### 5.1 Java 版本
-
-```java
-class PinyinCharsTree {
-    Map<Character, PinyinCharsTree> children;
-    List<CharKey> keys;
-}
-```
-
-这是一个用于导航拼音字符的 Trie 结构。
-
-### 5.2 v4 版本
+## 8. PinyinCharsTree 前缀树
 
 ```kotlin
 data class PinyinCharsTree(
@@ -343,15 +315,7 @@ data class PinyinCharsTree(
 
 ---
 
-## 6. HMM + Viterbi 重构
-
-### 6.1 改进点
-
-Java 版本的 HMM 和 Viterbi 实现是纯 Java 的简单实现。v4 版本的改进：
-
-1. **类型安全**：使用 value class 封装状态和观察值
-2. **协程化**：大规模计算在 `Dispatchers.Default` 上执行
-3. **不可变数据**：转移矩阵和发射矩阵使用不可变 Map
+## 9. HmmModel + ViterbiDecoder
 
 ```kotlin
 @JvmInline
@@ -372,29 +336,11 @@ class ViterbiDecoder(private val model: HmmModel) {
     suspend fun decode(observations: List<HmmObservation>): List<HmmState> =
         withContext(Dispatchers.Default) {
             // Viterbi 算法实现
-            // ...
         }
 }
 ```
 
----
-
-## 7. Java 功能完整对照
-
-| Java 字典功能 | v4 对应 | 改进说明 |
-|-------------|---------|---------|
-| `IMEditorDict` 单例 | `DictRepository` + Room | 移除单例，依赖注入 |
-| `IMEditorDict.openAsync()` | Room 自动管理 | Room 处理数据库连接 |
-| `IMEditorDict.close()` | Room 自动管理 | 生命周期绑定 |
-| `PinyinDict.findWords()` | `PinyinWordDao.lookupBySpell()` | 类型安全，编译期检查 |
-| `PinyinDict.findPhrases()` | `PinyinPhraseDao.lookupBySpells()` | 类型安全 |
-| `PinyinCharsTree` | 不可变 `PinyinCharsTree` | 线程安全 |
-| `Hmm` + `Viterbi` | `HmmModel` + `ViterbiDecoder` | 类型安全，协程化 |
-| `UserInputDataDict.record()` | `UserInputDao.incrementFrequency()` | Room DAO |
-| `UserInputDataDict.findCompletions()` | `UserInputDao.getCompletions()` | Room DAO |
-| `UserInputFavoriteDict` | `FavoriteDao` + Flow | 响应式查询 |
-| `From_v0/v2_v3/v3_v4` 升级 | Room Migration | 标准化迁移 |
-| `Emojis` 枚举 | `EmojiGroups` data class | 不依赖 DB |
-| `SymbolGroup` + `Symbol` | `SymbolGroup` data class | 不依赖 DB |
-| `DictDBType` 枚举 | Room Database 类 | 移除，Room 管理 DB 类型 |
-| raw 字典复制 | `createFromAsset("dict/...")` | assets/dict 组织，Room 自动复制 |
+**设计要点**：
+- 类型安全：使用 value class 封装状态和观察值
+- 协程化：大规模计算在 `Dispatchers.Default` 上执行
+- 不可变数据：转移矩阵和发射矩阵使用不可变 Map

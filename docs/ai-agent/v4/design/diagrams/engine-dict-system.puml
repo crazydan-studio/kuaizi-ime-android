@@ -1,0 +1,184 @@
+@startuml engine-dict-system
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam classFontSize 13
+skinparam packageFontSize 14
+
+title 筷子输入法 - 词典系统\nDictionary System
+
+' ─── Repository Layer ──────────────────────────────────────────────
+
+class DictRepository <<Repository>> {
+    + queryWords(pinyin: String): List<Candidate>
+    + queryPhrases(pinyin: String): List<Candidate>
+    + recordInput(pinyin: String, word: String)
+    + addFavorite(word: String)
+    + removeFavorite(word: String)
+    + getFavorites(): List<Favorite>
+}
+
+' ─── DAO Layer ─────────────────────────────────────────────────────
+
+class PinyinWordDao <<DAO>> {
+    + queryByPinyin(pinyin: String): List<PinyinWord>
+    + queryByPrefix(prefix: String): List<PinyinWord>
+    + insert(word: PinyinWord)
+}
+
+class PinyinPhraseDao <<DAO>> {
+    + queryByPinyin(pinyin: String): List<PinyinPhrase>
+    + queryByPrefix(prefix: String): List<PinyinPhrase>
+    + insert(phrase: PinyinPhrase)
+}
+
+class UserInputDao <<DAO>> {
+    + queryRecent(limit: Int): List<UserInput>
+    + recordInput(pinyin: String, word: String)
+    + incrementFrequency(pinyin: String, word: String)
+}
+
+class FavoriteDao <<DAO>> {
+    + getAll(): List<Favorite>
+    + add(word: String)
+    + remove(word: String)
+    + isFavorite(word: String): Boolean
+}
+
+class HmmTransitionDao <<DAO>> {
+    + getTransitions(from: String): List<HmmTransition>
+    + recordTransition(from: String, to: String)
+    + getTransitionProb(from: String, to: String): Double
+}
+
+' ─── Database ──────────────────────────────────────────────────────
+
+class ImeDatabase <<Room Database>> {
+    + pinyinWordDao(): PinyinWordDao
+    + pinyinPhraseDao(): PinyinPhraseDao
+    + userInputDao(): UserInputDao
+    + favoriteDao(): FavoriteDao
+    + hmmTransitionDao(): HmmTransitionDao
+}
+
+' ─── Provider Interface & Implementation ───────────────────────────
+
+interface ImeDictProvider <<接口>> {
+    + query(pinyin: String): List<Candidate>
+    + queryPrefix(prefix: String): List<Candidate>
+    + recordInput(pinyin: String, word: String)
+}
+
+class ImeSqliteDictProvider <<实现>> {
+    - dictRepository: DictRepository
+    - pinyinCharsTree: PinyinCharsTree
+    - hmmModel: HmmModel
+    + query(pinyin: String): List<Candidate>
+    + queryPrefix(prefix: String): List<Candidate>
+    + recordInput(pinyin: String, word: String)
+}
+
+' ─── Prefix Matching ───────────────────────────────────────────────
+
+class PinyinCharsTree <<前缀树>> {
+    - root: TreeNode
+    + insert(pinyin: String, word: String)
+    + searchPrefix(prefix: String): List<String>
+    + containsExact(pinyin: String): Boolean
+}
+
+class TreeNode {
+    + children: Map<Char, TreeNode>
+    + values: List<String>
+    + isEndOfWord: Boolean
+}
+
+' ─── HMM + Viterbi ────────────────────────────────────────────────
+
+class HmmModel <<隐马尔可夫模型>> {
+    - transitionProbs: Map<String, Map<String, Double>>
+    - emissionProbs: Map<String, Map<String, Double>>
+    + getTransitionProb(from: String, to: String): Double
+    + getEmissionProb(state: String, obs: String): Double
+    + train(transitions: List<Pair<String, String>>)
+}
+
+class ViterbiDecoder <<维特比解码器>> {
+    + decode(model: HmmModel, observations: List<String>): List<String>
+    - computePathProbs(model, obs): Map
+    - backtrace(backpointers): List<String>
+}
+
+' ─── Data Classes ──────────────────────────────────────────────────
+
+class Candidate <<数据类>> {
+    + text: String
+    + pinyin: String
+    + frequency: Int
+    + source: CandidateSource
+}
+
+class PinyinWord <<实体>> {
+    + pinyin: String
+    + word: String
+    + frequency: Int
+}
+
+class PinyinPhrase <<实体>> {
+    + pinyin: String
+    + phrase: String
+    + frequency: Int
+}
+
+' ─── Relationships ─────────────────────────────────────────────────
+
+DictRepository --> PinyinWordDao : "查询单字\nquery words"
+DictRepository --> PinyinPhraseDao : "查询词组\nquery phrases"
+DictRepository --> UserInputDao : "记录输入\nrecord input"
+DictRepository --> FavoriteDao : "收藏管理\nfavorites"
+DictRepository --> HmmTransitionDao : "转移概率\ntransitions"
+
+ImeDatabase --> PinyinWordDao : "提供\nprovides"
+ImeDatabase --> PinyinPhraseDao : "提供\nprovides"
+ImeDatabase --> UserInputDao : "提供\nprovides"
+ImeDatabase --> FavoriteDao : "提供\nprovides"
+ImeDatabase --> HmmTransitionDao : "提供\nprovides"
+
+ImeDictProvider <|.. ImeSqliteDictProvider : "实现\nimplements"
+ImeSqliteDictProvider --> DictRepository : "依赖"
+ImeSqliteDictProvider --> PinyinCharsTree : "前缀匹配\nprefix matching"
+ImeSqliteDictProvider --> HmmModel : "候选预测\nprediction"
+
+PinyinCharsTree *-- TreeNode : "组成"
+
+HmmModel <-- ViterbiDecoder : "使用模型\nuses model"
+
+HmmModel --> HmmTransitionDao : "加载转移数据\nload transitions"
+
+Candidate --> PinyinWord : "源自"
+Candidate --> PinyinPhrase : "源自"
+
+' ─── Notes ─────────────────────────────────────────────────────────
+
+note right of ImeSqliteDictProvider
+    查询流程：
+    1. PinyinCharsTree 前缀匹配获取候选
+    2. HmmModel 计算转移概率排序
+    3. ViterbiDecoder 解码最优路径
+    4. 合并用户词频和收藏权重
+    
+    Query flow:
+    1. Prefix match via PinyinCharsTree
+    2. Rank by HmmModel transition probs
+    3. Decode optimal path via ViterbiDecoder
+    4. Merge user frequency & favorite weights
+end note
+
+note left of PinyinCharsTree
+    前缀匹配树
+    支持 T9/九宫格 拼音前缀查询
+    O(m) 查询复杂度, m=前缀长度
+end note
+
+@enduml

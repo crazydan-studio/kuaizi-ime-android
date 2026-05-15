@@ -1,0 +1,92 @@
+@startuml engine-state-machine
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam stateFontSize 13
+
+title 筷子输入法 - 键盘状态机\nKeyboard State Machine
+
+' ─── Controller ────────────────────────────────────────────────────
+
+state "KeyboardStateMachine\n键盘状态机控制器" as KSM #E8EAF6 {
+    state "currentState : KeyboardState\ncurrentContext : StateContext" as context
+}
+
+' ─── States ────────────────────────────────────────────────────────
+
+state "Idle\n空闲" as Idle #E8F5E9
+state "PinyinInput\n拼音输入" as PinyinInput #E3F2FD
+state "CandidateSelection\n候选词选择" as CandidateSelection #FFF3E0
+state "CommitOptionChoosing\n提交选项" as CommitOptionChoosing #FCE4EC
+state "EditorEditing\n编辑器编辑" as EditorEditing #F3E5F5
+state "SymbolChoosing\n符号选择" as SymbolChoosing #E0F7FA
+state "EmojiChoosing\n表情选择" as EmojiChoosing #FFF9C4
+
+' ─── Idle Transitions ──────────────────────────────────────────────
+
+Idle --> PinyinInput : PressKey.Char\n按下字母键
+Idle --> EditorEditing : PressKey.Editor\n按下编辑键
+Idle --> SymbolChoosing : PressKey.Symbol\n按下符号键
+Idle --> EmojiChoosing : PressKey.Emoji\n按下表情键
+
+' ─── PinyinInput Transitions ──────────────────────────────────────
+
+PinyinInput --> CandidateSelection : Dict results available\n词典返回结果
+PinyinInput --> Idle : PressKey.Backspace (buffer empty)\n退格键清空缓冲
+PinyinInput --> CommitOptionChoosing : PressKey.Enter / LongPress\n回车/长按
+PinyinInput --> Idle : CommitInput\n直接提交输入
+
+' ─── CandidateSelection Transitions ───────────────────────────────
+
+CandidateSelection --> Idle : SelectCandidate\n选择候选词
+CandidateSelection --> Idle : CommitInput\n提交输入
+CandidateSelection --> PinyinInput : PressKey.Char\n继续输入
+CandidateSelection --> Idle : PressKey.Backspace (no candidates)\n退格无候选词
+CandidateSelection --> PinyinInput : PressKey.Backspace\n退格回退
+
+' ─── CommitOptionChoosing Transitions ─────────────────────────────
+
+CommitOptionChoosing --> Idle : SelectCommitOption\n选择提交选项
+CommitOptionChoosing --> PinyinInput : CancelCommit\n取消提交
+CommitOptionChoosing --> Idle : CommitRawPinyin\n提交原始拼音
+
+' ─── EditorEditing Transitions ────────────────────────────────────
+
+EditorEditing --> Idle : PressKey.Back / Done\n返回/完成
+EditorEditing --> Idle : CommitEdit\n提交编辑
+
+' ─── SymbolChoosing Transitions ───────────────────────────────────
+
+SymbolChoosing --> Idle : SelectSymbol\n选择符号
+SymbolChoosing --> Idle : PressKey.Back\n返回键
+
+' ─── EmojiChoosing Transitions ────────────────────────────────────
+
+EmojiChoosing --> Idle : SelectEmoji\n选择表情
+EmojiChoosing --> Idle : PressKey.Back\n返回键
+
+' ─── Legend ────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 状态分类 |
+    |<#E8F5E9>| 空闲 Idle |
+    |<#E3F2FD>| 拼音输入 Pinyin |
+    |<#FFF3E0>| 候选词 Candidate |
+    |<#FCE4EC>| 提交选项 Commit |
+    |<#F3E5F5>| 编辑器 Editor |
+    |<#E0F7FA>| 符号 Symbol |
+    |<#FFF9C4>| 表情 Emoji |
+endlegend
+
+note bottom of KSM
+    KeyboardStateMachine 是唯一的状态控制器，
+    所有状态转换都通过 transition(event) 方法触发。
+    状态转换是纯函数，无副作用。
+    
+    KeyboardStateMachine is the sole state controller.
+    All transitions are triggered via transition(event).
+    State transitions are pure functions, side-effect free.
+end note
+
+@enduml
