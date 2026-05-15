@@ -4,25 +4,16 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 DOCS_DIR="$PROJECT_DIR/docs"
-PORT="${1:-3000}"
+PORT="${1:-5173}"
 
-# Check for pnpm or npm
-if command -v pnpm &>/dev/null; then
-  NPM_CMD="pnpm"
-elif command -v npm &>/dev/null; then
-  NPM_CMD="npm"
-else
-  echo "Error: Neither pnpm nor npm found. Please install Node.js first."
-  exit 1
-fi
-
-echo "Starting documentation preview server..."
-echo "  Directory: $DOCS_DIR"
-echo "  Port: $PORT"
-echo "  Package manager: $NPM_CMD"
+echo "=== 筷字输入法 — 文档预览服务 ==="
+echo "  目录: $DOCS_DIR"
+echo "  端口: $PORT"
+echo "  包管理器: pnpm"
 echo "  URL: http://localhost:$PORT"
 echo ""
-echo "Press Ctrl+C to stop the server."
+echo "按 Ctrl+C 停止服务。"
 echo ""
 
-npx docsify-cli serve "$DOCS_DIR" --port "$PORT"
+cd "$DOCS_DIR"
+pnpm dev --port "$PORT"

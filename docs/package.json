@@ -1,0 +1,16 @@
+{
+  "name": "kuaizi-ime-docs",
+  "version": "1.0.0",
+  "description": "筷字输入法在线文档",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-diagrams": "^1.3.1"
+  }
+}
