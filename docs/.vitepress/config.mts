@@ -133,9 +133,9 @@ function sidebarAiAgent() {
       text: '架构设计',
       collapsed: false,
       items: [
-        { text: '架构总览', link: '/ai-agent/v4/design/architecture/overview' },
-        { text: '命名规范', link: '/ai-agent/v4/design/architecture/naming-conventions' },
-        { text: '三层模块划分', link: '/ai-agent/v4/design/architecture/module-division' },
+        { text: '010-架构总览', link: '/ai-agent/v4/design/architecture/010-overview' },
+        { text: '020-命名规范', link: '/ai-agent/v4/design/architecture/020-naming-conventions' },
+        { text: '030-三层模块划分', link: '/ai-agent/v4/design/architecture/030-module-division' },
       ],
     },
     {
@@ -143,12 +143,12 @@ function sidebarAiAgent() {
       collapsed: false,
       items: [
         { text: '索引', link: '/ai-agent/v4/design/engine/' },
-        { text: '键盘状态机', link: '/ai-agent/v4/design/engine/state-machine' },
-        { text: '输入列表', link: '/ai-agent/v4/design/engine/input-list' },
-        { text: '字典系统', link: '/ai-agent/v4/design/engine/dict-system' },
-        { text: 'X-Pad 核心', link: '/ai-agent/v4/design/engine/xpad-core' },
-        { text: '输入动作程序化', link: '/ai-agent/v4/design/engine/input-action' },
-        { text: '剪贴板与收藏', link: '/ai-agent/v4/design/engine/clipboard-and-favorites' },
+        { text: '010-键盘状态机', link: '/ai-agent/v4/design/engine/010-state-machine' },
+        { text: '020-输入列表', link: '/ai-agent/v4/design/engine/020-input-list' },
+        { text: '030-字典系统', link: '/ai-agent/v4/design/engine/030-dict-system' },
+        { text: '040-X-Pad 核心', link: '/ai-agent/v4/design/engine/040-xpad-core' },
+        { text: '050-输入动作程序化', link: '/ai-agent/v4/design/engine/050-input-action' },
+        { text: '060-剪贴板与收藏', link: '/ai-agent/v4/design/engine/060-clipboard-and-favorites' },
       ],
     },
     {
@@ -156,10 +156,10 @@ function sidebarAiAgent() {
       collapsed: false,
       items: [
         { text: '索引', link: '/ai-agent/v4/design/ui/' },
-        { text: '三层面板分离', link: '/ai-agent/v4/design/ui/panel-separation' },
-        { text: 'Compose 迁移', link: '/ai-agent/v4/design/ui/compose-migration' },
-        { text: '输入动作播放器', link: '/ai-agent/v4/design/ui/input-action-player' },
-        { text: '配置 UI 组件', link: '/ai-agent/v4/design/ui/config-ui' },
+        { text: '010-三层面板分离', link: '/ai-agent/v4/design/ui/010-panel-separation' },
+        { text: '020-Compose 迁移', link: '/ai-agent/v4/design/ui/020-compose-migration' },
+        { text: '030-输入动作播放器', link: '/ai-agent/v4/design/ui/030-input-action-player' },
+        { text: '040-配置 UI 组件', link: '/ai-agent/v4/design/ui/040-config-ui' },
       ],
     },
     {
@@ -167,10 +167,10 @@ function sidebarAiAgent() {
       collapsed: false,
       items: [
         { text: '索引', link: '/ai-agent/v4/design/app/' },
-        { text: '配置与设置', link: '/ai-agent/v4/design/app/config' },
-        { text: '日志系统', link: '/ai-agent/v4/design/app/logging' },
-        { text: 'UI 测试方案', link: '/ai-agent/v4/design/app/ui-testing' },
-        { text: '用户数据导入导出', link: '/ai-agent/v4/design/app/user-data' },
+        { text: '010-配置与设置', link: '/ai-agent/v4/design/app/010-config' },
+        { text: '020-日志系统', link: '/ai-agent/v4/design/app/020-logging' },
+        { text: '030-UI 测试方案', link: '/ai-agent/v4/design/app/030-ui-testing' },
+        { text: '040-用户数据导入导出', link: '/ai-agent/v4/design/app/040-user-data' },
       ],
     },
     {
@@ -178,9 +178,9 @@ function sidebarAiAgent() {
       collapsed: true,
       items: [
         { text: '索引', link: '/ai-agent/v4/design/migration/' },
-        { text: '引擎模块迁移', link: '/ai-agent/v4/design/migration/engine-mapping' },
-        { text: 'UI 模块迁移', link: '/ai-agent/v4/design/migration/ui-mapping' },
-        { text: '应用模块迁移', link: '/ai-agent/v4/design/migration/app-mapping' },
+        { text: '010-引擎模块迁移', link: '/ai-agent/v4/design/migration/010-engine-mapping' },
+        { text: '020-UI 模块迁移', link: '/ai-agent/v4/design/migration/020-ui-mapping' },
+        { text: '030-应用模块迁移', link: '/ai-agent/v4/design/migration/030-app-mapping' },
       ],
     },
     {

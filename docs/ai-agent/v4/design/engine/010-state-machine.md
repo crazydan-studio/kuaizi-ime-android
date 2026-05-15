@@ -1,6 +1,8 @@
 # 键盘状态机
 
-> PlantUML 状态图：[@file:../diagrams/engine-state-machine.puml](../diagrams/engine-state-machine.puml)
+```plantuml
+@file:../diagrams/engine-state-machine.puml
+```
 
 ## 1. 概述
 

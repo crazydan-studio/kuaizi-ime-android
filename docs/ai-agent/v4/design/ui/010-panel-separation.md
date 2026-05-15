@@ -6,8 +6,13 @@ v4 版本将键盘 UI 分离为三个独立层：**输入面板**（Gesture Inpu
 
 这种三层分离架构的核心价值在于：每一层都可以独立地改变位置、大小和组合方式，而不影响其他层的功能。输入面板可以独立于按键面板的位置工作，反馈面板可以独立地跟随任意面板布局，为后续版本中支持多种输入-按键-反馈布局模式奠定基础。当前版本仅实现最基本的布局模式：三层面板以透明层形式叠加。
 
-> 架构图参考：@file:../diagrams/ui-panel-separation.puml
-> 键盘面板组合图参考：@file:../diagrams/ui-keyboard-panel.puml
+```plantuml
+@file:../diagrams/ui-panel-separation.puml
+```
+
+```plantuml
+@file:../diagrams/ui-keyboard-panel.puml
+```
 
 ---
 

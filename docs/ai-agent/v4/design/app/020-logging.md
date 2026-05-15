@@ -2,7 +2,9 @@
 
 v4 版本设计完整的应用内置日志系统，支持日志分级输出、崩溃拦截记录、应用内日志查看与导出、按构建类型区分日志等级、可配置日志存放位置。
 
-> 架构图参考：@file:../diagrams/app-logging.puml
+```plantuml
+@file:../diagrams/app-logging.puml
+```
 
 **模块归属**：日志的业务模型（`ImeLog`、`ImeLogger`、`LogLevel`、`LogEntry`、`LogWriter`、`CrashInterceptor`、`LogStorage`、`FileLogWriter`、`LogcatWriter`）划归 `:ime-engine` 模块，作为引擎库的日志基础设施。日志相关的界面（`LogViewerScreen`、`LogExportScreen`、`LogLevelSetting`、`LogStoragePathSetting`、`LogViewerViewModel`）划归 `:app` 模块，属于应用层的诊断和配置功能。
 

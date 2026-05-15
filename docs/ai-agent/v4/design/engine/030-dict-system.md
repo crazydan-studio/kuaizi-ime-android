@@ -1,6 +1,8 @@
 # 字典系统
 
-> PlantUML 类图：[@file:../diagrams/engine-dict-system.puml](../diagrams/engine-dict-system.puml)
+```plantuml
+@file:../diagrams/engine-dict-system.puml
+```
 
 ## 1. 概述
 
