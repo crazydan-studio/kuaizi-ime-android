@@ -1,0 +1,189 @@
+@startuml engine-output-bridge
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam classFontSize 13
+skinparam packageFontSize 14
+
+title 筷子输入法 - 输出桥接模式\nOutput Bridge Pattern
+
+' ─── ImeOutput Sealed Class ────────────────────────────────────────
+
+package "ImeOutput (sealed)\n引擎编辑输出\n[:ime-engine]" as output #FFF3E0 {
+
+    class ImeOutput <<sealed>> {
+        + timestamp: Long
+        --
+        + CommitText(text, replacements?)
+        + RevokeCommit()
+        + InsertPairedSymbols(left, right)
+        + MoveCursor(direction)
+        + SelectRange(direction)
+        + PerformEdit(action)
+    }
+}
+
+' ─── Single Dispatch Point ─────────────────────────────────────────
+
+package "单一分发点\n[:ime-engine]" as dispatch #F3E5F5 {
+
+    class ImeEngine <<核心入口点>> #FFF3E0 {
+        - _outputBridge: ImeOutputBridge?
+        + attachOutputBridge(bridge)
+        + detachOutputBridge()
+        ..
+        dispatchToTarget(output: ImeOutput) {
+          when(output) {
+            is CommitText -> bridge.commitText(...)
+            is RevokeCommit -> bridge.revokeCommit()
+            is InsertPairedSymbols -> bridge.insertPairedSymbols(...)
+            is MoveCursor -> bridge.moveCursor(...)
+            is SelectRange -> bridge.selectRange(...)
+            is PerformEdit -> bridge.performAction(...)
+          }
+        }
+    }
+}
+
+' ─── Bridge Interface & Base ───────────────────────────────────────
+
+package "桥接接口与基类\n[:ime-engine/api/]" as bridge_api #FFE0B2 {
+
+    interface ImeOutputBridge <<接口>> {
+        + commitText(text, replacements?)
+        + revokeCommit()
+        + insertPairedSymbols(left, right)
+        + moveCursor(direction)
+        + selectRange(direction)
+        + performAction(action)
+        + getText(): CharSequence
+        + getSelection(): TextRange
+    }
+
+    abstract class BaseImeOutputBridge <<抽象基类>> {
+        # revertion: SelectionSnapshot?
+        # resetRevertion()
+        # recordRevertion(before, after)
+        + revokeCommit() : 消费快照
+        # onRevokeCommit(snapshot) : 子类实现
+        + commitText(text, replacements?) : 模板方法
+        # doNormalCommitText(text) : 子类实现
+        # doReplaceableCommitText(text, replacements) : 子类实现
+    }
+
+    note right of BaseImeOutputBridge
+        撤销机制（单快照设计）：
+        • 仅支持撤销最近一次可撤回输入
+        • 新的可撤回输入覆盖旧快照
+        • revokeCommit() 消费快照后清空
+        • 成对符号 / 有副作用动作 → 清空快照
+
+        Revertion mechanism (single snapshot):
+        • Only undo the last revocable input
+        • New revocable input overwrites old snapshot
+        • revokeCommit() consumes and clears
+        • Paired symbols / side-effect actions → clear snapshot
+    end note
+}
+
+' ─── Implementations ───────────────────────────────────────────────
+
+package "InputConnectionBridge\n系统输入连接\n[:app]" as app_impl #E3F2FD {
+
+    class InputConnectionBridge {
+        - targetSupplier: () -> InputConnection?
+        - lastInputConnection: InputConnection?
+        + doNormalCommitText(text) : ic.commitText
+        + doReplaceableCommitText(text, replacements) : 替换轮换
+        + insertPairedSymbols(left, right) : 包裹选区/插入对
+        + moveCursor(direction) : InputConnection API
+        + performAction(action) : performContextMenuAction
+        + getText() : ExtractedText
+        + getSelection() : cursorSelStart/End
+        # onRevokeCommit(snapshot) : 恢复文本与选区
+    }
+
+    note right of InputConnectionBridge
+        面向 Android InputConnection
+        由 IMEService 创建并持有
+        使用 supplier 获取当前 InputConnection
+        自动检测连接变更并重置撤销
+    end note
+}
+
+package "EditTextBridge\nEditText 桥接\n[:ime-ui]" as ui_impl #E8F5E9 {
+
+    class EditTextBridge {
+        - targetSupplier: () -> EditText?
+        - lastEditor: EditText?
+        + doNormalCommitText(text) : Editable.replace
+        + doReplaceableCommitText(text, replacements) : 替换轮换
+        + insertPairedSymbols(left, right) : 包裹选区/插入对
+        + moveCursor(direction) : EditText 选区 API
+        + performAction(action) : EditText 操作
+        + getText() : Editable
+        + getSelection() : selectionStart/End
+        # onRevokeCommit(snapshot) : 恢复文本与选区
+    }
+
+    note right of EditTextBridge
+        面向 Android EditText
+        由 :ime-ui 提供
+        适用于应用内嵌入场景
+        直接操作 Editable 文本
+    end note
+}
+
+package "自定义 Bridge\n第三方扩展\n[:第三方]" as custom_impl #F3E5F5 {
+
+    class CustomBridge <<示例>> {
+        例如：Web 编辑器桥接
+        例如：游戏引擎文本输入桥接
+        例如：终端模拟器桥接
+    }
+
+    note right of CustomBridge
+        简单场景：直接实现 ImeOutputBridge
+        需撤销：继承 BaseImeOutputBridge
+        无需理解 ImeOutput 类型体系
+    end note
+}
+
+' ─── Relationships ─────────────────────────────────────────────────
+
+ImeEngine --> ImeOutput : "reduce 产生"
+ImeEngine o-- ImeOutputBridge : "可选挂载"
+BaseImeOutputBridge ..|> ImeOutputBridge : "实现"
+InputConnectionBridge ..|> BaseImeOutputBridge : "实现\n(:app)"
+EditTextBridge ..|> BaseImeOutputBridge : "实现\n(:ime-ui)"
+CustomBridge ..|> ImeOutputBridge : "实现\n(:第三方)"
+
+' ─── Flow Diagram ──────────────────────────────────────────────────
+
+package "输出分发流程\nDispatch Flow" as flow #E0F7FA {
+    usecase "ImeEngine\nreduce() 产生 ImeOutput" as step1
+    usecase "dispatchToTarget()\nwhen(ImeOutput) 分发\n（仅此一处）" as step2
+    usecase "ImeOutputBridge\n语义方法调用" as step3
+    usecase "InputConnectionBridge\nAndroid InputConnection" as step4a
+    usecase "EditTextBridge\nAndroid EditText" as step4b
+    usecase "CustomBridge\n第三方实现" as step4c
+
+    step1 --> step2 : "ImeOutput"
+    step2 --> step3 : "语义方法\ncommitText / revokeCommit / ..."
+    step3 --> step4a : "[:app]"
+    step3 --> step4b : "[:ime-ui]"
+    step3 --> step4c : "[:第三方]"
+}
+
+' ─── Legend ─────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#FFF3E0>| :ime-engine 定义 |
+    |<#E3F2FD>| :app 实现 |
+    |<#E8F5E9>| :ime-ui 实现 |
+    |<#F3E5F5>| 第三方扩展 |
+endlegend
+
+@enduml

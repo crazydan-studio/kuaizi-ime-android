@@ -1,0 +1,214 @@
+@startuml engine-logging
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam classFontSize 13
+skinparam packageFontSize 14
+
+title 筷子输入法 - 日志系统\nLogging System
+
+' ─── Facade ────────────────────────────────────────────────────────
+
+class ImeLog <<门面 Facade\nKotlin object>> #E3F2FD {
+    - writers: MutableList<LogWriter>
+    + level: LogLevel
+    + {static} init(level: LogLevel, writers: List<LogWriter>)
+    + {static} updateLevel(newLevel: LogLevel)
+    + {static} logger(tag: String): ImeLogger
+    + {static} logger(cls: Class<*>): ImeLogger
+    + {static} dispatch(entry: LogEntry)
+    + {static} flush()
+}
+
+note right of ImeLog
+    全局静态入口，平台无关。
+    init() 不接受 Context，
+    由应用层注入等级和 Writer 列表。
+
+    Global static entry, platform-agnostic.
+    init() accepts no Context;
+    level and writers injected by app layer.
+end note
+
+' ─── Logger Core ───────────────────────────────────────────────────
+
+class ImeLogger <<带标签记录器>> #E8F5E9 {
+    - tag: String
+    - imeLog: ImeLog
+    + verbose(msg: () -> String)
+    + debug(msg: () -> String)
+    + info(msg: () -> String)
+    + warn(msg: () -> String)
+    + error(msg: () -> String)
+    + error(throwable: Throwable, msg: () -> String)
+    + tree(title: String, block: () -> Unit)
+}
+
+note right of ImeLogger
+    inline + lambda 延迟求值：
+    日志等级不满足时 lambda 不执行，
+    避免字符串拼接开销。
+
+    tree() 支持树形日志块。
+end note
+
+' ─── Log Level ─────────────────────────────────────────────────────
+
+enum LogLevel #E0F7FA {
+    VERBOSE = 2
+    DEBUG = 3
+    INFO = 4
+    WARN = 5
+    ERROR = 6
+}
+
+' ─── Log Entry ─────────────────────────────────────────────────────
+
+class LogEntry <<不可变数据类>> {
+    + level: LogLevel
+    + tag: String
+    + message: String
+    + throwable: Throwable?
+    + timestamp: Long
+    + threadName: String
+    + threadId: Long
+    + format(): String
+}
+
+' ─── LogWriter Interface ───────────────────────────────────────────
+
+interface LogWriter <<接口>> {
+    + write(entry: LogEntry)
+    + flush()
+}
+
+' ─── LogBlock ──────────────────────────────────────────────────────
+
+class LogBlock <<树形日志块>> {
+    + title: String
+    + entries: MutableList<LogEntry>
+    + children: MutableList<LogBlock>
+    + begin()
+    + end()
+}
+
+note right of LogBlock
+    树形结构，支持嵌套：
+    ┌ 处理拼音输入
+    │  ├ 查询拼音候选
+    │  └ 找到 5 个候选
+    └ 完成
+end note
+
+' ─── LogStorage ────────────────────────────────────────────────────
+
+class LogStorage <<文件管理\n纯 Kotlin>> #F3E5F5 {
+    - logDir: File
+    + appendEntries(entries: List<LogEntry>)
+    + readLogs(date?, levelFilter?, keyword?): List<LogEntry>
+    + exportLogs(destination, fromDate, toDate)
+    + updateDir(logDir: File)
+    --
+    文件滚动：每天一个，最大 5MB
+    保留策略：最近 7 天
+    命名格式：kuaizi_ime_YYYY-MM-DD.log
+}
+
+' ─── FileLogWriter ─────────────────────────────────────────────────
+
+class FileLogWriter <<Writer\n异步批量写入>> #FFF3E0 {
+    - storage: LogStorage
+    - channel: Channel<LogEntry>
+    - scope: CoroutineScope
+    + write(entry: LogEntry) : trySend
+    + flush() : 等待 channel 清空
+}
+
+note right of FileLogWriter
+    Channel 缓冲 + 独立协程：
+    1. trySend() 非阻塞发送
+    2. 独立协程批量收集（最多 100 条）
+    3. 一次性写入文件
+    不阻塞调用线程。
+end note
+
+' ─── LogcatWriter ──────────────────────────────────────────────────
+
+class LogcatWriter <<Writer\nAndroid Logcat>> #FFF3E0 {
+    + write(entry: LogEntry) : Log.v/d/i/w/e
+    + flush() : 空实现（即时输出）
+}
+
+note right of LogcatWriter
+    位于 :ime-engine 的 Android 特定源集
+    (src/androidMain/kotlin)
+    将 LogEntry 映射到 android.util.Log
+    仅在 debug 构建中注册
+end note
+
+' ─── CrashInterceptor ─────────────────────────────────────────────
+
+class CrashInterceptor <<拦截器\nJVM 标准 API>> #FCE4EC {
+    - writers: List<LogWriter>
+    - storage: LogStorage
+    - defaultHandler: UncaughtExceptionHandler?
+    + install()
+    - handleCrash(thread, throwable)
+}
+
+note right of CrashInterceptor
+    位于纯 Kotlin 公共源集
+    (Thread.UncaughtExceptionHandler 是 JVM 标准 API)
+
+    崩溃时：
+    1. 绕过 Channel 直接写入 LogStorage
+    2. 同步刷新所有 Writer
+    3. 委托系统默认处理器
+end note
+
+' ─── Relationships ─────────────────────────────────────────────────
+
+ImeLog --> ImeLogger : "创建\nlogger(tag)"
+ImeLog --> LogWriter : "分发\ndispatch → writers"
+ImeLogger --> ImeLog : "委托\nimeLog.dispatch()"
+ImeLog --> LogLevel : "过滤\nlevel 过滤"
+
+LogWriter <|.. FileLogWriter : "实现\nimplements"
+LogWriter <|.. LogcatWriter : "实现\nimplements"
+
+FileLogWriter --> LogStorage : "写入\nwrites to"
+CrashInterceptor --> LogStorage : "崩溃时直接写入"
+CrashInterceptor --> LogWriter : "崩溃时 flush"
+
+LogEntry --> LogLevel : "包含\ncontains"
+ImeLogger --> LogBlock : "创建\ntree()"
+
+' ─── Log Flow ──────────────────────────────────────────────────────
+
+package "日志流程\nLog Flow" as logflow #FFF9C4 {
+    usecase "ImeLogger.debug { msg }" as entry
+    usecase "ImeLog.dispatch(entry)" as dispatch
+    usecase "LogcatWriter\n控制台输出" as logcat
+    usecase "FileLogWriter\nChannel 缓冲" as file
+    usecase "LogStorage\n文件管理" as storage
+
+    entry --> dispatch : "1. 等级检查"
+    dispatch --> logcat : "2. write"
+    dispatch --> file : "2. trySend"
+    file --> storage : "3. 批量写入"
+}
+
+' ─── Legend ─────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#E3F2FD>| 门面 Facade |
+    |<#E8F5E9>| Logger 核心 |
+    |<#FFF3E0>| Writer 实现 |
+    |<#F3E5F5>| 文件存储管理 |
+    |<#FCE4EC>| 崩溃拦截 |
+    |<#E0F7FA>| 日志等级 |
+endlegend
+
+@enduml

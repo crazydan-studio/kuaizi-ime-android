@@ -1,0 +1,136 @@
+@startuml ui-component-hierarchy
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+
+title 筷子输入法 - UI 组件层次关系\nUI Component Hierarchy
+
+' ─── ViewModel 层 ──────────────────────────────────────────────────
+
+package "ViewModel 层" as vm_layer #F3E5F5 {
+
+    rectangle "KeyboardViewModel\n键盘视图模型" as KVM #F3E5F5 {
+        note as kvm_note
+            • 持有 ImeEngine 引用
+            • 暴露 StateFlow<ImeState>
+            • InputGesture → ImeIntent 转换
+            • GestureFeedbackState 管理
+            • updateConfig() 运行时配置
+            • 不持有 InputConnectionBridge
+        end note
+    }
+}
+
+' ─── 集成组件 ──────────────────────────────────────────────────────
+
+package "集成组件\n一站式解决方案" as integration #E3F2FD {
+
+    rectangle "KeyboardPanel\n叠加模式完整输入法" as KP #E3F2FD {
+        note as kp_note
+            候选栏 + 输入栏 + 工具栏
+            + 三层面板叠加 (GestureInput + Feedback + KeyGrid)
+        end note
+    }
+
+    rectangle "KeyboardScreen\n全屏模式完整输入法" as KS #E3F2FD {
+        note as ks_note
+            候选栏 + 输入栏 + 工具栏
+            + 手势面板与按键面板分离布局
+        end note
+    }
+}
+
+' ─── 面板组件 ──────────────────────────────────────────────────────
+
+package "面板组件\n可独立使用" as panel #E8F5E9 {
+
+    rectangle "GestureInputPanel\n透明手势拦截层" as GIP #C8E6C9 {
+        note as gip_note
+            顶层，捕获所有触摸
+            不绘制任何视觉反馈
+            输出 InputGesture
+        end note
+    }
+
+    rectangle "GestureFeedbackPanel\n透明反馈绘制层" as GFP #C8E6C9 {
+        note as gfp_note
+            多实例 + FeedbackElementType 配置
+            TouchTrail / KeyHighlight / KeyPath
+            XPadPathHighlight / FingerIndicator
+        end note
+    }
+
+    rectangle "KeyGridPanel\n按键渲染层" as KGP #C8E6C9 {
+        note as kgp_note
+            底层，纯展示
+            StandardKeyGridPanel / EmojiKeyGridPanel 等
+            通过 onLayoutInfoChanged 提供布局
+        end note
+    }
+
+    rectangle "CandidateListPanel\n候选栏" as CLP #A5D6A7
+    rectangle "InputListPanel\n输入栏" as ILP #A5D6A7
+    rectangle "FavoriteListPanel\n收藏面板" as FLP #A5D6A7
+    rectangle "XPadView\nX-Pad 六边形面板" as XPV #A5D6A7
+    rectangle "ActionPlayerPanel\n播放控制面板" as APP #A5D6A7
+}
+
+' ─── 原子组件 ──────────────────────────────────────────────────────
+
+package "原子组件\n最小粒度" as atom #FFF3E0 {
+
+    rectangle "KeyView\n按键渲染（纯展示）" as KV #FFE0B2
+    rectangle "CandidateItem\n候选项" as CI #FFE0B2
+    rectangle "CharInputItem / GapInputItem\n输入栏字符/间隙" as CII #FFE0B2
+    rectangle "ClipTipPopup\n剪贴板提示弹窗" as CTP #FFE0B2
+    rectangle "FavoriteItem\n收藏项（含滑动删除）" as FI #FFE0B2
+    rectangle "FingerOverlay\n手指指示器" as FO #FFE0B2
+}
+
+' ─── 主题系统 ──────────────────────────────────────────────────────
+
+package "主题系统" as theme #E8F5E9 {
+
+    rectangle "KeyboardColors\n颜色定义" as KC #C8E6C9
+    rectangle "KeyboardThemes\n预置主题 (Light/Night)" as KTs #C8E6C9
+    rectangle "KeyboardTheme\n主题 Composable" as KT #C8E6C9
+    rectangle "LocalKeyboardColors\nCompositionLocal" as LKC #C8E6C9
+}
+
+' ─── Composition Relationships ─────────────────────────────────────
+
+KVM --> KP : "viewModel 参数"
+KVM --> KS : "viewModel 参数"
+
+KP *-- CLP : "包含"
+KP *-- ILP : "包含"
+KP *-- GIP : "包含 (Box 顶层)"
+KP *-- GFP : "包含 (Box 中层)"
+KP *-- KGP : "包含 (Box 底层)"
+
+KS *-- CLP : "包含"
+KS *-- ILP : "包含"
+KS *-- GIP : "包含 (独立区域)"
+KS *-- GFP : "包含 (多实例)"
+KS *-- KGP : "包含 (独立区域)"
+
+KGP *-- KV : "组合"
+CLP *-- CI : "组合"
+ILP *-- CII : "组合"
+
+KT --> KC : "使用"
+KT --> KTs : "提供"
+LKC --> KC : "传递"
+
+' ─── Legend ─────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 层次 |
+    |<#F3E5F5>| ViewModel 层 |
+    |<#E3F2FD>| 集成组件 |
+    |<#E8F5E9>| 面板组件 |
+    |<#FFF3E0>| 原子组件 |
+endlegend
+
+@enduml

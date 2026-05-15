@@ -11,34 +11,41 @@ title 筷子输入法 - 三层架构总览\nKuaizi IME - Three-Layer Architectur
 
 ' ─── Module Definitions ────────────────────────────────────────────
 
-package ":app\n平台层 + ViewModel层\nPlatform + ViewModel Layer" as app #E3F2FD {
+package ":app\n平台层 Platform Layer" as app #E3F2FD {
     component [IMEService\n输入法服务] as IMEService
-    component [KeyboardViewModel\n键盘视图模型] as KVM
-    component [ConfigRepository\n配置仓库] as ConfigRepo
     component [InputConnectionBridge\n输入连接桥] as ICB
+    component [ConfigRepository\n配置仓库 (DataStore)] as ConfigRepo
     component [SettingsScreen\n设置界面] as Settings
+    component [LogViewerScreen / LogExportScreen\n日志界面] as LogUI
 }
 
-package ":ime-ui\nUI层\nUI Layer" as ui #E8F5E9 {
-    component [KeyboardPanel\n键盘面板] as KP
-    component [CandidateListPanel\n候选词面板] as CLP
-    component [KeyGridPanel\n按键网格面板] as KGP
+package ":ime-ui\nUI层 + ViewModel层\nUI + ViewModel Layer" as ui #E8F5E9 {
+    component [KeyboardViewModel\n键盘视图模型] as KVM
+    component [KeyboardPanel / KeyboardScreen\n键盘面板] as KP
     component [GestureInputPanel\n手势输入面板] as GIP
-    component [Theme\n主题系统] as Theme
-    component [Compose UI\n组合式UI] as ComposeUI
+    component [GestureFeedbackPanel\n手势反馈面板] as GFP
+    component [KeyGridPanel\n按键网格面板] as KGP
+    component [CandidateListPanel\n候选词面板] as CLP
+    component [InputListPanel\n输入栏面板] as ILP
+    component [EditTextBridge\nEditText 桥接] as ETB
+    component [KeyboardColors / KeyboardTheme\n主题系统] as Theme
 }
 
 package ":ime-engine\n领域层 + 数据层\nDomain + Data Layer" as engine #FFF3E0 {
-    package "领域层 Domain" as domain {
+    package "公开 API（契约层）" as api #FFE0B2 {
         component [ImeEngine\n输入法引擎] as ImeEngine
-        component [KeyboardStateMachine\n键盘状态机] as KSM
-        component [ImeState\n输入法状态] as ImeState
+        component [ImeConfig\n统一配置] as ImeConfig
         component [ImeIntent\n输入法意图] as ImeIntent
+        component [ImeOutput\n引擎输出] as ImeOutput
+        component [ImeOutputBridge\n输出桥接接口] as ImeOutputBridge
+        component [BaseImeOutputBridge\n输出桥接基类] as BaseImeOutputBridge
     }
-    package "数据层 Data" as data {
-        component [DictRepository\n词典仓库] as DictRepo
-        component [ImeDictProvider\n词典提供者] as DictProvider
-        component [HmmModel\n隐马尔可夫模型] as Hmm
+    package "内部组件" as internal #FFCC80 {
+        component [KeyboardStateMachine\n键盘状态机] as KSM
+        component [InputListOperator\n输入列表操作器] as ILO
+        component [FeatureRegistry\n功能注册表] as FR
+        component [ImeDictProvider\n词典提供者接口] as DictProvider
+        component [ImeSqliteDictProvider\nSQLite 词典实现] as SqlDictProvider
     }
     note right of engine : 无Android依赖\nPure Kotlin
 }
@@ -49,39 +56,55 @@ app --> ui : "依赖"
 app --> engine : "依赖"
 ui --> engine : "依赖"
 
+' ─── Key Ownership Relationships ───────────────────────────────────
+
+IMEService --> ImeEngine : "创建 (ImeEngine.create)"
+IMEService --> ICB : "创建并持有"
+ICB ..> BaseImeOutputBridge : "实现"
+ETB ..> BaseImeOutputBridge : "实现"
+ImeEngine o-- ImeOutputBridge : "可选挂载\nattachOutputBridge()"
+IMEService --> KVM : "通过 Factory 创建\nKeyboardViewModel.Factory(engine)"
+
+KVM --> ImeEngine : "持有引用\n(不持有 InputConnectionBridge)"
+KVM --> ImeIntent : "gestureToIntent() 转换"
+ImeEngine --> KSM : "状态驱动"
+ImeEngine --> DictProvider : "词典查询"
+
 ' ─── MVI Data Flow ─────────────────────────────────────────────────
 
 package "MVI 数据流\nMVI Data Flow" as mvi #F3E5F5 {
-    usecase "用户输入\nUser Input" as UserInput
+    usecase "GestureInputPanel\n手势输入" as UserInput
+    usecase "InputGesture\n输入手势" as Gesture
+    usecase "KeyboardViewModel.handleGesture()\ngestureToIntent() 转换" as Convert
     usecase "ImeIntent\n意图" as Intent
-    usecase "ImeEngine.reduce()\n状态归约" as Reduce
+    usecase "ImeEngine.handleIntent()\nreduce() 状态归约" as Reduce
     usecase "StateFlow<ImeState>\n状态流" as StateFlow
     usecase "Compose UI\n界面渲染" as Render
+    usecase "GestureFeedbackState\n手势反馈" as Feedback
 
-    UserInput --> Intent : "1. 转换"
-    Intent --> Reduce : "2. 处理"
-    Reduce --> StateFlow : "3. 发射"
-    StateFlow --> Render : "4. 订阅"
+    UserInput --> Gesture : "1. 识别"
+    Gesture --> Convert : "2. 传递"
+    Convert --> Intent : "3. 转换"
+    Intent --> Reduce : "4. 处理"
+    Reduce --> StateFlow : "5. 发射"
+    StateFlow --> Render : "6. 订阅\nKeyGridPanel / CandidateListPanel / InputListPanel"
+    Gesture --> Feedback : "并行\n视觉反馈"
+    Feedback --> Render : "GestureFeedbackPanel"
 
     note bottom of Reduce
         纯函数状态归约
-        Pure function state reduction
+        ImeOutput → dispatchToTarget() → ImeOutputBridge
     end note
 }
 
-' ─── Detailed Data Flow ────────────────────────────────────────────
+' ─── Legend ─────────────────────────────────────────────────────────
 
-ImeIntent ..> ImeEngine : "Intent"
-ImeEngine --> ImeState : "reduce()"
-ImeState --> ComposeUI : "StateFlow"
-ImeEngine --> KSM : "状态驱动"
-ImeEngine --> DictRepo : "词典查询"
-
-KVM --> ImeEngine : "持有引用"
-IMEService --> KVM : "创建"
-ICB --> KVM : "提交文本"
-KP --> ComposeUI : "渲染"
-CLP --> ComposeUI : "候选词"
-KGP --> ComposeUI : "按键"
+legend right
+    |= 颜色 |= 含义 |
+    |<#E3F2FD>| :app 平台层 |
+    |<#E8F5E9>| :ime-ui UI+ViewModel层 |
+    |<#FFF3E0>| :ime-engine 领域+数据层 |
+    |<#F3E5F5>| 架构/跨切面 |
+endlegend
 
 @enduml

@@ -13,44 +13,39 @@ package "KeyboardPanel\n键盘面板容器" as KPContainer #E3F2FD {
 
     package "CandidateListPanel\n候选词面板" as CLP #E8F5E9 {
         class CandidateListPanel {
-            + candidates: StateFlow<List<Candidate>>
-            + onCandidateSelected: (Candidate) -> Unit
-            + scrollState: ScrollState
+            + state: CandidateListState
+            + onCandidateSelected: (InputWord) -> Unit
         }
     }
 
     package "InputListPanel\n输入缓冲面板" as ILP #E8F5E9 {
         class InputListPanel {
-            + inputBuffer: StateFlow<String>
-            + composingRange: TextRange
-            + onBufferClicked: (Int) -> Unit
+            + state: InputListState
+            + onGapTapped: (Int) -> Unit
         }
     }
 
-    package "Toolbar\n工具栏" as TB #E8F5E9 {
-        class Toolbar {
-            + onAction: (ToolbarAction) -> Unit
-            + actions: List<ToolbarAction>
-            + isExpanded: StateFlow<Boolean>
-        }
-    }
-
-    package "GestureInputBox\n手势输入盒" as GIB #FFF3E0 {
+    package "GestureInputBox\n手势输入盒 (Box 层叠)" as GIB #FFF3E0 {
         together {
             class KeyGridPanel <<底层 bottom>> #BBDEFB {
-                + keyLayout: KeyboardLayout
-                + onKeyPress: (KeyAction) -> Unit
-                + highlightKey: StateFlow<KeyPos?>
+                + keyboardType / keyGrid / keyboardState
+                + onLayoutInfoChanged: (KeyGridPanelLayoutInfo) -> Unit
+                + 纯展示，不处理触摸
+                + 不绘制手势反馈
             }
             class GestureFeedbackPanel <<中层 middle>> #C8E6C9 {
-                + feedbackLine: StateFlow<GestureLine?>
-                + feedbackText: StateFlow<String?>
-                + showFeedback: StateFlow<Boolean>
+                + elements: Set<FeedbackElementType>
+                + feedbackState: GestureFeedbackState
+                + keyPanelLayout: KeyGridPanelLayoutInfo
+                + 多实例 + FeedbackElementType 配置
+                + 不处理触摸事件
             }
             class GestureInputPanel <<顶层 top>> #FFCCBC {
+                + keyPanelLayout: KeyGridPanelLayoutInfo
+                + keyboardType: KeyboardType
+                + feedbackState: GestureFeedbackState
                 + onGesture: (InputGesture) -> Unit
-                + gestureDetector: GestureRecognizer
-                + isActive: StateFlow<Boolean>
+                + 透明手势拦截层，不绘制任何视觉反馈
             }
         }
     }
@@ -59,12 +54,80 @@ package "KeyboardPanel\n键盘面板容器" as KPContainer #E3F2FD {
 ' ─── Layer Ordering ────────────────────────────────────────────────
 
 package "层级顺序\nLayer Order (z-index)" as layers #F3E5F5 {
-    rectangle "← 顶层 (Top)\nGestureInputPanel\n手势输入面板\n捕获所有触摸事件" as layer3 #FFCCBC
-    rectangle "← 中层 (Middle)\nGestureFeedbackPanel\n手势反馈面板\n显示滑行路径和提示" as layer2 #C8E6C9
-    rectangle "← 底层 (Bottom)\nKeyGridPanel\n按键网格面板\n显示按键布局" as layer1 #BBDEFB
+    rectangle "← 顶层 (Top)\nGestureInputPanel\n透明手势拦截层\n捕获所有触摸事件，不绘制视觉反馈" as layer3 #FFCCBC
+    rectangle "← 中层 (Middle)\nGestureFeedbackPanel\n透明反馈绘制层\n支持多实例，FeedbackElementType 配置" as layer2 #C8E6C9
+    rectangle "← 底层 (Bottom)\nKeyGridPanel\n按键渲染层\n纯展示，ImeState 驱动渲染" as layer1 #BBDEFB
 
     layer3 -down-> layer2 : "覆盖\noverlays"
     layer2 -down-> layer1 : "覆盖\noverlays"
+}
+
+' ─── Data Model: InputGesture ──────────────────────────────────────
+
+package "InputGesture (sealed)\n输入手势" as gesture_model #FFF3E0 {
+    class InputGesture <<sealed>> {
+        + timestamp: Long
+        --
+        + Tap(key, tick)
+        + LongPress(key)
+        + Swipe(startKey, endKey, visitedKeys, duration)
+        + Flip(startKey, direction)
+        + XPadZonePath(startZone, path)
+        + CandidateTap(candidateIndex)
+    }
+    enum FlipDirection {
+        Left / Right / Up / Down
+    }
+}
+
+' ─── Data Model: GestureFeedbackState ─────────────────────────────
+
+package "GestureFeedbackState\n手势反馈状态" as feedback_model #E8F5E9 {
+    class GestureFeedbackState {
+        + touchTrailPoints: StateFlow<List<Offset>>
+        + pressedKeys: StateFlow<Set<InputKey>>
+        + keyPath: StateFlow<List<InputKey>>
+        + xPadPath: StateFlow<List<XPadZone>>
+        + fingerIndicator: StateFlow<FingerIndicatorState?>
+        --
+        + addTouchTrailPoint(offset)
+        + setPressedKeys(keys) / clearPressedKeys()
+        + setKeyPath(keys) / clearKeyPath()
+        + setXPadPath(zones) / clearXPadPath()
+        + setFingerIndicator(state?)
+        + clearAll() : 手势结束清除
+    }
+
+    class FingerIndicatorState {
+        + position: Offset
+        + pressed: Boolean
+        + visible: Boolean
+    }
+}
+
+' ─── FeedbackElementType ──────────────────────────────────────────
+
+package "FeedbackElementType\n反馈元素类型" as feedback_type #C8E6C9 {
+    enum FeedbackElementType {
+        TouchTrail : 触摸轨迹
+        KeyHighlight : 按键高亮
+        KeyPath : 按键间路径
+        XPadPathHighlight : X-Pad 路径高亮
+        FingerIndicator : 手指指示器
+    }
+}
+
+' ─── GestureFeedbackPanelSet ──────────────────────────────────────
+
+package "GestureFeedbackPanelSet\n反馈面板配置集" as panel_set #A5D6A7 {
+    class GestureFeedbackPanelSet <<sealed>> {
+        + OverlaySet : 叠加模式
+          → allElements (全部)
+        --
+        + FullScreenSet : 全屏模式
+          → inputSideElements (TouchTrail + FingerIndicator)
+          → keySideElements (KeyHighlight + KeyPath + XPadPathHighlight)
+    }
 }
 
 ' ─── Data Flow ─────────────────────────────────────────────────────
@@ -72,23 +135,27 @@ package "层级顺序\nLayer Order (z-index)" as layers #F3E5F5 {
 package "数据流\nData Flow" as dataflow #E0F7FA {
     usecase "InputGesture\n输入手势" as gesture
     usecase "GestureInputPanel\n手势输入面板" as gip
+    usecase "KeyboardViewModel\n视图模型" as kvm
     usecase "ImeEngine.reduce()\n引擎归约" as reduce
     usecase "StateFlow<ImeState>\n状态流" as stateflow
     usecase "KeyGridPanel\n按键面板" as kgp
     usecase "CandidateListPanel\n候选词面板" as clp_flow
+    usecase "GestureFeedbackState\n反馈状态" as gfs
 
     gesture --> gip : "1. 触摸事件\n向上流动 flows UP"
-    gip --> reduce : "2. ImeIntent"
-    reduce --> stateflow : "3. 新状态"
-    stateflow --> kgp : "4. 更新高亮\n向下流动 flows DOWN"
-    stateflow --> clp_flow : "4. 更新候选词\n向下流动 flows DOWN"
+    gip --> kvm : "2. onGesture"
+    gip --> gfs : "2. 驱动反馈\n（并行）"
+    kvm --> reduce : "3. ImeIntent"
+    reduce --> stateflow : "4. 新状态"
+    stateflow --> kgp : "5. 更新按键\n向下流动 flows DOWN"
+    stateflow --> clp_flow : "5. 更新候选词\n向下流动 flows DOWN"
+    gfs --> kgp : "5. 视觉反馈\nGestureFeedbackPanel 渲染"
 }
 
 ' ─── Composition ───────────────────────────────────────────────────
 
 KeyboardPanel *-- CandidateListPanel : "包含"
 KeyboardPanel *-- InputListPanel : "包含"
-KeyboardPanel *-- Toolbar : "包含"
 KeyboardPanel *-- KeyGridPanel : "包含"
 KeyboardPanel *-- GestureFeedbackPanel : "包含"
 KeyboardPanel *-- GestureInputPanel : "包含"
@@ -98,16 +165,24 @@ KeyboardPanel *-- GestureInputPanel : "包含"
 note right of GIB
     Box 布局层叠关系：
     ┌──────────────────────┐
-    │  GestureInputPanel   │ ← 透明, 捕获触摸
+    │  GestureInputPanel   │ ← 透明，捕获触摸，不绘制
     ├──────────────────────┤
-    │  GestureFeedbackPanel│ ← 半透明, 显示路径
+    │  GestureFeedbackPanel│ ← 透明，绘制路径/高亮
     ├──────────────────────┤
-    │  KeyGridPanel        │ ← 不透明, 按键布局
+    │  KeyGridPanel        │ ← 不透明，按键布局
     └──────────────────────┘
-    
+
     GestureInputPanel 使用 pointerInput
     拦截所有触摸事件，识别手势后
-    透传单点击给 KeyGridPanel
+    同步更新 GestureFeedbackState
+end note
+
+note bottom of GestureFeedbackPanel
+    多实例配置：
+    • 叠加模式 (OverlaySet)：1 个实例绘制全部
+    • 全屏模式 (FullScreenSet)：2 个实例
+      - 输入侧：TouchTrail + FingerIndicator
+      - 按键侧：KeyHighlight + KeyPath + XPadPathHighlight
 end note
 
 @enduml

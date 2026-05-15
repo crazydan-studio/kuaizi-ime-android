@@ -1,0 +1,127 @@
+@startuml app-viewmodel-boundary
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam componentFontSize 14
+skinparam packageFontSize 15
+
+title 筷子输入法 - :app 与 :ime-ui 职责边界\nApp / ViewModel Module Boundary
+
+' ─── :app 模块 ────────────────────────────────────────────────────
+
+package ":app 模块\n平台层 Platform Layer" as app #E3F2FD {
+
+    component "IMEService\n输入法服务" as IMEService #BBDEFB {
+        note as ime_note
+            • 创建 ImeEngine
+              (ImeSqliteDictProvider + ImeConfig)
+            • 创建 InputConnectionBridge
+              → engine.attachOutputBridge()
+            • 创建 KeyboardViewModel.Factory(engine)
+            • 管理 Engine / Bridge 生命周期
+            • ComposeView.setContent {
+                KeyboardPanel(viewModel) }
+        end note
+    }
+
+    component "ConfigRepository\n配置仓库 (DataStore)" as ConfigRepo #BBDEFB {
+        note as config_note
+            • DataStore 持久化 / 恢复 ImeConfig
+            • config: StateFlow<ImeConfig>
+            • updateConfig(update)
+            • syncFromDisk()
+        end note
+    }
+
+    component "SettingsScreen\n设置界面" as Settings #90CAF9
+}
+
+' ─── :ime-ui 模块 ─────────────────────────────────────────────────
+
+package ":ime-ui 模块\nUI + ViewModel 层" as ui #E8F5E9 {
+
+    component "KeyboardViewModel\n键盘视图模型" as KVM #C8E6C9 {
+        note as kvm_note
+            • 持有 ImeEngine 引用
+            • 暴露 StateFlow<ImeState>
+            • handleGesture(InputGesture) → ImeIntent → engine
+            • handleIntent(ImeIntent) → engine
+            • 管理 GestureFeedbackState
+            • updateConfig() → engine.updateConfig()
+            ---
+            ✗ 不持有 InputConnectionBridge
+            ✗ 不创建 ImeEngine
+            ✗ 不做配置持久化
+        end note
+    }
+
+    component "KeyboardPanel / KeyboardScreen\n集成组件" as KP #A5D6A7 {
+        note as kp_note
+            • 订阅 viewModel.state
+            • 通过 viewModel 发送操作
+            • viewModel 为必填参数（无默认值）
+        end note
+    }
+
+    component "ExerciseScreen\n练习界面" as ES #A5D6A7 {
+        note as es_note
+            • 复用同一个 KeyboardViewModel
+            • ExerciseViewModel 仅管理练习特有状态
+            • InputActionPlayer 程序化驱动
+        end note
+    }
+}
+
+' ─── :ime-engine 模块 ─────────────────────────────────────────────
+
+package ":ime-engine 模块\n领域层 + 数据层" as engine #FFF3E0 {
+
+    component "ImeEngine\n输入法引擎" as ImeEngine #FFE0B2
+    component "ImeOutputBridge\n输出桥接接口" as Bridge #FFE0B2
+    component "InputConnectionBridge\n系统输入连接桥" as ICB_ref #FFE0B2
+}
+
+' ─── Cross-boundary Relationships ─────────────────────────────────
+
+IMEService --> ImeEngine : "创建\nImeEngine.create()"
+IMEService --> ICB_ref : "创建"
+ICB_ref ..> Bridge : "实现"
+ImeEngine o-- Bridge : "挂载\nattachOutputBridge()"
+IMEService --> KVM : "通过 Factory 注入\nKeyboardViewModel.Factory(engine)"
+
+KVM --> ImeEngine : "持有引用\nhandleIntent / updateConfig"
+KP --> KVM : "订阅 state\n发送 handleGesture/handleIntent"
+ES --> KVM : "订阅 state\nInputActionPlayer 驱动"
+
+Settings --> ConfigRepo : "观察"
+ConfigRepo --> ImeEngine : "恢复配置\n(通过 viewModel.updateConfig)"
+
+' ─── Boundary Marker ──────────────────────────────────────────────
+
+note across app
+    **:app 职责**
+    • 创建和销毁 ImeEngine
+    • 创建和管理 InputConnectionBridge
+    • 配置持久化 (DataStore)
+    • 系统 IME 服务生命周期
+end note
+
+note across ui
+    **:ime-ui 职责**
+    • UI 协调 (InputGesture → ImeIntent)
+    • 状态订阅与渲染
+    • 运行时配置修改 (不持久化)
+    • 手势反馈状态管理
+end note
+
+' ─── Legend ─────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#E3F2FD>| :app 平台层 |
+    |<#E8F5E9>| :ime-ui UI+ViewModel层 |
+    |<#FFF3E0>| :ime-engine 层 |
+endlegend
+
+@enduml

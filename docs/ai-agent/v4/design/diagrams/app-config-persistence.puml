@@ -1,0 +1,132 @@
+@startuml app-config-persistence
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam componentFontSize 14
+skinparam packageFontSize 15
+
+title 筷子输入法 - 配置持久化协作\nConfig Persistence Collaboration
+
+' ─── 持久化路径 ────────────────────────────────────────────────────
+
+package "持久化路径（SettingsScreen）" as persist #E3F2FD {
+
+    component "SettingsScreen\n设置界面\n(:app)" as Settings #BBDEFB
+
+    component "ConfigRepository\n配置仓库\n(:app)" as ConfigRepo #BBDEFB {
+        note as cr_note
+            1. DataStore 写入
+            2. viewModel.updateConfig()
+            ---
+            两个操作必须同时执行：
+            • 持久化到 DataStore（重启后恢复）
+            • 修改运行时配置（立即生效）
+        end note
+    }
+
+    database "DataStore\n持久化存储" as DataStore #90CAF9
+
+    Settings --> ConfigRepo : "onConfigChanged"
+    ConfigRepo --> DataStore : "1. 写入\n持久化"
+}
+
+' ─── 运行时路径 ────────────────────────────────────────────────────
+
+package "运行时路径（QuickSettingsPopup）" as runtime #E8F5E9 {
+
+    component "KeyboardPanel\n键盘面板\n(:ime-ui)" as KP #C8E6C9
+
+    component "KeyboardViewModel\n视图模型\n(:ime-ui)" as KVM #C8E6C9 {
+        note as kvm_note
+            updateConfig(transform)
+            ↓
+            engine.updateConfig(transform)
+            ↓
+            ImeState.config 自动更新
+            ↓
+            Compose 自动重组
+            ---
+            ✗ 不做持久化
+        end note
+    }
+
+    KP --> KVM : "onConfigChanged\n(QuickSettingsPopup)"
+}
+
+' ─── 引擎层 ────────────────────────────────────────────────────────
+
+package "引擎层" as engine_layer #FFF3E0 {
+
+    component "ImeEngine\n输入法引擎\n(:ime-engine)" as ImeEngine #FFE0B2 {
+        note as engine_note
+            updateConfig(block)
+            ↓
+            _state.update { it.copy(config = block(it.config)) }
+            ↓
+            StateFlow<ImeState> 发射新状态
+        end note
+    }
+
+    component "ImeState\n输入法状态" as ImeState #FFE0B2 {
+        note as state_note
+            config: ImeConfig
+            (含 engine + ui 配置)
+            ---
+            通过 StateFlow 自动同步到 UI
+        end note
+    }
+}
+
+' ─── Data Flow ─────────────────────────────────────────────────────
+
+ConfigRepo --> KVM : "2. viewModel.updateConfig()\n运行时生效"
+KVM --> ImeEngine : "engine.updateConfig(transform)"
+ImeEngine --> ImeState : "_state.update"
+ImeState --> KP : "StateFlow → collectAsState\nUI 自动重组"
+
+' ─── Startup Recovery ──────────────────────────────────────────────
+
+package "启动恢复" as startup #F3E5F5 {
+
+    component "IMEService\n(:app)" as IMEService #E1BEE7
+
+    note as startup_note
+        应用启动时：
+        1. ConfigRepository.syncFromDisk()
+           → 从 DataStore 读取持久化配置
+        2. ImeEngine.create(config = restoredConfig)
+           → 使用恢复的配置创建引擎
+        3. 运行时优先原则：
+           runtimeOverrides 中的字段
+           在持久化同步时被跳过
+    end note
+
+    IMEService --> ConfigRepo : "启动时读取"
+    IMEService --> ImeEngine : "create(config = restored)"
+}
+
+' ─── Two Paths Summary ─────────────────────────────────────────────
+
+package "配置变更两条路径" as summary #FFF9C4 {
+
+    rectangle "路径1: 运行时修改\nQuickSettingsPopup" as path1 #E8F5E9
+    rectangle "路径2: 持久化修改\nSettingsScreen" as path2 #E3F2FD
+
+    rectangle "共同终点\nviewModel.updateConfig()\n→ engine.updateConfig()\n→ ImeState 自动同步" as common #FFF3E0
+
+    path1 --> common : "仅运行时"
+    path2 --> common : "运行时 + DataStore"
+}
+
+' ─── Legend ─────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#E3F2FD>| :app 平台层（含持久化）|
+    |<#E8F5E9>| :ime-ui UI层（仅运行时）|
+    |<#FFF3E0>| :ime-engine 层 |
+    |<#F3E5F5>| 启动恢复 |
+endlegend
+
+@enduml

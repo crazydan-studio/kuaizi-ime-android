@@ -10,83 +10,130 @@ title 筷子输入法 - 键盘状态机\nKeyboard State Machine
 ' ─── Controller ────────────────────────────────────────────────────
 
 state "KeyboardStateMachine\n键盘状态机控制器" as KSM #E8EAF6 {
-    state "currentState : KeyboardState\ncurrentContext : StateContext" as context
+    state "currentState : KeyboardState\nstateHistory : ArrayDeque<KeyboardState>" as context
 }
 
-' ─── States ────────────────────────────────────────────────────────
+' ─── Top-level States ──────────────────────────────────────────────
 
 state "Idle\n空闲" as Idle #E8F5E9
-state "PinyinInput\n拼音输入" as PinyinInput #E3F2FD
-state "CandidateSelection\n候选词选择" as CandidateSelection #FFF3E0
-state "CommitOptionChoosing\n提交选项" as CommitOptionChoosing #FCE4EC
-state "EditorEditing\n编辑器编辑" as EditorEditing #F3E5F5
-state "SymbolChoosing\n符号选择" as SymbolChoosing #E0F7FA
-state "EmojiChoosing\n表情选择" as EmojiChoosing #FFF9C4
+
+state "PinyinInput\n拼音输入" as PinyinInput #E3F2FD {
+    state "Waiting\n等待输入\npending: CharInput?" as PinyinWaiting #BBDEFB
+    state "Slipping\n滑行输入\nstartKey + levels + nextChars" as PinyinSlipping #90CAF9
+    state "Flipping\n翻转输入\nstartChar + candidates" as PinyinFlipping #64B5F6
+    state "XPadding\nX-Pad 输入\nzones + currentSpell" as PinyinXPadding #42A5F5
+}
+
+state "CandidateSelection\n候选选择" as CandidateSelection #FFF3E0 {
+    state "Choosing\n候选选择\ncandidates + pageIndex + pageSize" as CandidateChoosing #FFE0B2
+    state "Filtering\n候选过滤\nspell + filtered" as CandidateFiltering #FFCC80
+    state "AdvanceFiltering\n高级过滤\nradical? + tone? + filtered" as CandidateAdvanceFiltering #FFB74D
+}
+
+state "CommitOptionChoosing\n提交选项\noptions: List<CommitOption>" as CommitOptionChoosing #FCE4EC
+
+state "EditorEditing\n编辑器编辑" as EditorEditing #F3E5F5 {
+    state "CursorMoving\n光标移动\nposition: Int" as EditorCursorMoving #E1BEE7
+    state "TextSelecting\n文本选择\nstart + end" as EditorTextSelecting #CE93D8
+}
+
+state "SymbolChoosing\n符号选择\ngroupId?" as SymbolChoosing #E0F7FA
+
+state "EmojiChoosing\n表情选择\ngroupId?" as EmojiChoosing #FFF9C4
 
 ' ─── Idle Transitions ──────────────────────────────────────────────
 
-Idle --> PinyinInput : PressKey.Char\n按下字母键
-Idle --> EditorEditing : PressKey.Editor\n按下编辑键
-Idle --> SymbolChoosing : PressKey.Symbol\n按下符号键
-Idle --> EmojiChoosing : PressKey.Emoji\n按下表情键
+Idle --> PinyinWaiting : StartPinyinInput(char)\n按下字母键
+Idle --> EditorCursorMoving : StartCursorMoving(position)\n按下编辑键
+Idle --> EditorTextSelecting : StartTextSelecting(start, end)
+Idle --> SymbolChoosing : ShowSymbolGroup(groupId?)\n按下符号键
+Idle --> EmojiChoosing : ShowEmojiGroup(groupId?)\n按下表情键
 
-' ─── PinyinInput Transitions ──────────────────────────────────────
+' ─── PinyinInput Sub-state Transitions ─────────────────────────────
 
-PinyinInput --> CandidateSelection : Dict results available\n词典返回结果
-PinyinInput --> Idle : PressKey.Backspace (buffer empty)\n退格键清空缓冲
-PinyinInput --> CommitOptionChoosing : PressKey.Enter / LongPress\n回车/长按
-PinyinInput --> Idle : CommitInput\n直接提交输入
+PinyinWaiting --> PinyinSlipping : StartSlipping(startKey)\n滑行开始
+PinyinWaiting --> PinyinFlipping : StartFlipping(startChar)\n翻转开始
+PinyinWaiting --> PinyinXPadding : StartXPadding(zones)\nX-Pad 开始
 
-' ─── CandidateSelection Transitions ───────────────────────────────
+PinyinSlipping --> PinyinWaiting : SlipCharSelected(char)\n滑行选择字符
+PinyinSlipping --> CandidateChoosing : ShowCandidates(candidates)\n词典返回结果
 
-CandidateSelection --> Idle : SelectCandidate\n选择候选词
-CandidateSelection --> Idle : CommitInput\n提交输入
-CandidateSelection --> PinyinInput : PressKey.Char\n继续输入
-CandidateSelection --> Idle : PressKey.Backspace (no candidates)\n退格无候选词
-CandidateSelection --> PinyinInput : PressKey.Backspace\n退格回退
+PinyinFlipping --> PinyinWaiting : FlipCharSelected(char)\n翻转选择字符
+PinyinFlipping --> CandidateChoosing : ShowCandidates(candidates)\n词典返回结果
+
+PinyinXPadding --> PinyinWaiting : XPadZoneSelected(zone)\nX-Pad 区域选择
+PinyinXPadding --> CandidateChoosing : ShowCandidates(candidates)\n词典返回结果
+
+' ─── CandidateSelection Sub-state Transitions ─────────────────────
+
+CandidateChoosing --> CandidateFiltering : FilterCandidates(spell)\n输入过滤拼音
+CandidateChoosing --> CandidateAdvanceFiltering : AdvanceFilterCandidates(radical?, tone?)\n高级过滤
+CandidateChoosing --> Idle : SelectCandidate / CommitInput\n选择候选或提交
+
+CandidateFiltering --> CandidateChoosing : ShowCandidates(candidates)\n重新展示
+CandidateFiltering --> CandidateAdvanceFiltering : AdvanceFilterCandidates(radical?, tone?)\n高级过滤
+CandidateFiltering --> Idle : SelectCandidate / CommitInput
+
+CandidateAdvanceFiltering --> CandidateChoosing : ShowCandidates(candidates)\n重新展示
+CandidateAdvanceFiltering --> CandidateFiltering : FilterCandidates(spell)\n拼音过滤
+CandidateAdvanceFiltering --> Idle : SelectCandidate / CommitInput
+
+' ─── CandidateSelection → PinyinInput ─────────────────────────────
+
+CandidateChoosing --> PinyinWaiting : PressKey.Char\n继续输入
+CandidateChoosing --> PinyinWaiting : BackToPrevious\n退格回退
 
 ' ─── CommitOptionChoosing Transitions ─────────────────────────────
 
+PinyinWaiting --> CommitOptionChoosing : ShowCommitOptions(options)\n长按/回车
+
 CommitOptionChoosing --> Idle : SelectCommitOption\n选择提交选项
-CommitOptionChoosing --> PinyinInput : CancelCommit\n取消提交
+CommitOptionChoosing --> PinyinWaiting : BackToPrevious\n取消提交
 CommitOptionChoosing --> Idle : CommitRawPinyin\n提交原始拼音
 
 ' ─── EditorEditing Transitions ────────────────────────────────────
 
-EditorEditing --> Idle : PressKey.Back / Done\n返回/完成
-EditorEditing --> Idle : CommitEdit\n提交编辑
+EditorCursorMoving --> Idle : ReturnToIdle / Done\n返回/完成
+EditorTextSelecting --> Idle : ReturnToIdle / Done\n返回/完成
 
 ' ─── SymbolChoosing Transitions ───────────────────────────────────
 
-SymbolChoosing --> Idle : SelectSymbol\n选择符号
-SymbolChoosing --> Idle : PressKey.Back\n返回键
+SymbolChoosing --> Idle : ReturnToIdle\n选择符号或返回
+SymbolChoosing --> SymbolChoosing : ShowSymbolGroup(groupId)\n切换分组
 
 ' ─── EmojiChoosing Transitions ────────────────────────────────────
 
-EmojiChoosing --> Idle : SelectEmoji\n选择表情
-EmojiChoosing --> Idle : PressKey.Back\n返回键
+EmojiChoosing --> Idle : ReturnToIdle\n选择表情或返回
+EmojiChoosing --> EmojiChoosing : ShowEmojiGroup(groupId)\n切换分组
+
+' ─── Common Return ────────────────────────────────────────────────
+
+PinyinWaiting --> Idle : ReturnToIdle\n清空缓冲
+CandidateChoosing --> Idle : ReturnToIdle\n退格无候选
 
 ' ─── Legend ────────────────────────────────────────────────────────
 
 legend right
     |= 颜色 |= 状态分类 |
     |<#E8F5E9>| 空闲 Idle |
-    |<#E3F2FD>| 拼音输入 Pinyin |
-    |<#FFF3E0>| 候选词 Candidate |
-    |<#FCE4EC>| 提交选项 Commit |
-    |<#F3E5F5>| 编辑器 Editor |
-    |<#E0F7FA>| 符号 Symbol |
-    |<#FFF9C4>| 表情 Emoji |
+    |<#E3F2FD>| 拼音输入 PinyinInput |
+    |<#FFF3E0>| 候选选择 CandidateSelection |
+    |<#FCE4EC>| 提交选项 CommitOptionChoosing |
+    |<#F3E5F5>| 编辑器 EditorEditing |
+    |<#E0F7FA>| 符号 SymbolChoosing |
+    |<#FFF9C4>| 表情 EmojiChoosing |
 endlegend
 
 note bottom of KSM
     KeyboardStateMachine 是唯一的状态控制器，
-    所有状态转换都通过 transition(event) 方法触发。
-    状态转换是纯函数，无副作用。
-    
+    所有状态转换都通过 transition(KeyboardTransition) 方法触发。
+    状态转换返回 List<ImeIntent> 作为副作用。
+    状态历史栈支持 backToPrevious() 回退。
+
     KeyboardStateMachine is the sole state controller.
-    All transitions are triggered via transition(event).
-    State transitions are pure functions, side-effect free.
+    All transitions triggered via transition(KeyboardTransition).
+    Transitions return List<ImeIntent> as side effects.
+    State history stack supports backToPrevious().
 end note
 
 @enduml

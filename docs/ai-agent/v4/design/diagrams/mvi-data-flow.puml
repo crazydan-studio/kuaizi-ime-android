@@ -1,0 +1,166 @@
+@startuml mvi-data-flow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam activityFontSize 13
+
+title 筷子输入法 - MVI 完整数据流\nComplete MVI Data Flow
+
+' ─── 主数据流：用户手势 → UI 渲染 ─────────────────────────────────
+
+package "主数据流：用户手势 → UI 渲染" as main_flow #F3E5F5 {
+
+    actor "用户\nUser" as user #E8F5E9
+
+    rectangle "GestureInputPanel\n手势输入面板\n(:ime-ui)" as GIP #E8F5E9 {
+        note as gip_note
+            透明手势拦截层
+            pointerInput { detectGesture }
+        end note
+    }
+
+    rectangle "InputGesture\n输入手势 (sealed)" as IG #FFF3E0 {
+        note as ig_note
+            Tap / LongPress / Swipe
+            Flip / XPadZonePath / CandidateTap
+        end note
+    }
+
+    rectangle "KeyboardViewModel\n.handleGesture()\n(:ime-ui)" as KVM #E8F5E9 {
+        note as kvm_note
+            gestureToIntent() 转换
+            InputGesture → ImeIntent
+        end note
+    }
+
+    rectangle "ImeIntent\n输入法意图 (sealed)" as II #FFF3E0 {
+        note as ii_note
+            PressKey / SelectCandidate
+            SwitchKeyboard / CommitInput
+            SelectXPadPath / UpdateConfig ...
+        end note
+    }
+
+    rectangle "ImeEngine\n.handleIntent()\n(:ime-engine)" as IE #FFF3E0 {
+        note as ie_note
+            reduce(state, intent)
+            纯函数状态归约
+        end note
+    }
+
+    rectangle "StateFlow<ImeState>\n状态流" as SF #F3E5F5 {
+        note as sf_note
+            keyboardState / inputList
+            candidates / clipboard
+            favorites / config
+        end note
+    }
+
+    rectangle "Compose UI\n界面渲染\n(:ime-ui)" as UI #E8F5E9 {
+        rectangle "KeyGridPanel\n按键渲染" as KGP #C8E6C9
+        rectangle "CandidateListPanel\n候选词" as CLP #C8E6C9
+        rectangle "InputListPanel\n输入栏" as ILP #C8E6C9
+    }
+
+    user --> GIP : "触摸"
+    GIP --> IG : "1. 识别手势"
+    IG --> KVM : "2. onGesture"
+    KVM --> II : "3. gestureToIntent()"
+    II --> IE : "4. handleIntent()"
+    IE --> SF : "5. _state.update"
+    SF --> KGP : "6. collectAsState"
+    SF --> CLP : "6. collectAsState"
+    SF --> ILP : "6. collectAsState"
+}
+
+' ─── 输出流：ImeOutput → 桥梁 ────────────────────────────────────
+
+package "输出流：ImeOutput → 编辑器" as output_flow #E3F2FD {
+
+    rectangle "ImeOutput\n引擎输出 (sealed)" as IO #FFF3E0 {
+        note as io_note
+            CommitText / RevokeCommit
+            InsertPairedSymbols / MoveCursor
+            SelectRange / PerformEdit
+        end note
+    }
+
+    rectangle "ImeEngine\n.dispatchToTarget()\nwhen(ImeOutput) 分发" as Dispatch #FFF3E0
+
+    rectangle "ImeOutputBridge\n输出桥接接口\n(:ime-engine)" as Bridge #FFF3E0
+
+    rectangle "InputConnectionBridge\n(:app)" as ICB #E3F2FD {
+        note as icb_note
+            Android InputConnection
+            系统输入法场景
+        end note
+    }
+
+    rectangle "EditTextBridge\n(:ime-ui)" as ETB #E8F5E9 {
+        note as etb_note
+            EditText
+            应用内嵌入场景
+        end note
+    }
+
+    rectangle "自定义 Bridge\n(:第三方)" as Custom #F3E5F5
+
+    IE --> IO : "reduce 产生输出"
+    IO --> Dispatch : "dispatchToTarget()"
+    Dispatch --> Bridge : "语义方法调用"
+    Bridge --> ICB : "实现"
+    Bridge --> ETB : "实现"
+    Bridge --> Custom : "实现"
+}
+
+' ─── 反馈流：GestureFeedbackState ──────────────────────────────────
+
+package "反馈流：手势视觉反馈" as feedback_flow #E8F5E9 {
+
+    rectangle "InputGesture\n手势事件" as IG2 #FFF3E0
+
+    rectangle "GestureFeedbackState\n反馈状态" as GFS #E8F5E9 {
+        note as gfs_note
+            touchTrailPoints / pressedKeys
+            keyPath / xPadPath
+            fingerIndicator
+        end note
+    }
+
+    rectangle "GestureFeedbackPanel\n手势反馈面板\n(:ime-ui)" as GFP #E8F5E9 {
+        note as gfp_note
+            透明绘制层
+            多实例 + FeedbackElementType 配置
+        end note
+    }
+
+    IG2 --> GFS : "GestureInputPanel 驱动"
+    GFS --> GFP : "collectAsState 渲染"
+}
+
+' ─── 程序化输入流 ─────────────────────────────────────────────────
+
+package "程序化输入流：InputActionPlayer" as program_flow #FFF9C4 {
+
+    rectangle "ActionScript\n输入脚本" as AS #FFF3E0
+    rectangle "InputActionPlayer\n播放器" as IAP #E8F5E9
+    rectangle "KeyboardViewModel\n.handleIntent()" as KVM2 #E8F5E9
+
+    AS --> IAP : "执行"
+    IAP --> KVM2 : "viewModel.handleIntent(ImeIntent)"
+    IAP --> GFS : "feedbackState.setFingerIndicator"
+}
+
+' ─── Legend ─────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#E8F5E9>| :ime-ui 层 |
+    |<#FFF3E0>| :ime-engine 层 |
+    |<#E3F2FD>| :app 层 |
+    |<#F3E5F5>| 跨切面/架构 |
+    |<#FFF9C4>| 程序化输入 |
+endlegend
+
+@enduml

@@ -6,15 +6,8 @@ v4 采用 `ImeOutputBridge` 桥接模式。引擎内部仅执行一次 `when(Ime
 
 ## 1 架构总览
 
-```
-ImeOutput → ImeEngine.dispatchToTarget() → when分发（仅此一处）
-                                                ↓
-                                        ImeOutputBridge 接口 [:ime-engine]
-                                         ┌─────────┼──────────┐
-                                         ↓         ↓          ↓
-                               InputConnection  TextEditor  任意第三方
-                               Bridge           Bridge      Bridge
-                               [:app]           [:ime-ui]   [:第三方]
+```plantuml
+@file:../diagrams/engine-output-bridge.puml
 ```
 
 模块职责：
