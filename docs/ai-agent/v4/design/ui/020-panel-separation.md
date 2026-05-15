@@ -72,7 +72,7 @@ v4 版本将键盘 UI 分离为三个独立层：**输入面板**（Gesture Inpu
  * 输入面板、按键面板与反馈面板的布局模式。
  *
  * 定义三者的空间关系和尺寸分配。
- * 叠加模式由 KeyboardPanel 实现，全屏模式由 KeyboardScreen 实现（详见文档 160 §5.4/§5.4b）。
+ * 叠加模式由 KeyboardPanel 实现，全屏模式由 KeyboardScreen 实现（详见 [010-UI 库设计总览](010-ui-library-overview.md) §2.3）。
  */
 sealed class LayoutMode {
     /**

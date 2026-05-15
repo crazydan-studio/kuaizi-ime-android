@@ -65,7 +65,7 @@
 | `FavoriteboardView` | `FavoritesScreen` | Compose |
 | `XPadView` + `XPainter` 系列 | `XPadView` + Compose `Canvas` | 统一绘制 API，移除 XPainter 体系 |
 | `ViewGestureDetector` | `Modifier.pointerInput` | 标准手势 API |
-| `ViewGestureTrailer` | `GestureFeedbackPanel`（TouchTrail 元素） | 三层分离设计（详见文档 150） |
+| `ViewGestureTrailer` | `GestureFeedbackPanel`（TouchTrail 元素） | 三层分离设计（详见 [020-面板三层分离设计](../ui/020-panel-separation.md)） |
 | `ShadowDrawable` / `HexagonDrawable` | Compose `drawBehind` | 声明式绘制 |
 | `AudioPlayer` | Compose `LocalHapticFeedback` + 音频 | 扩展触觉反馈 |
 | `DialogAlert` / `DialogConfirm` | Compose `AlertDialog` | 标准 Dialog |
@@ -83,7 +83,7 @@
 | UI 更新 | `IMEditor` → `InputMsg` → `IMEService` → `IMEditorView` → View 手动更新 | `ImeEngine.state: StateFlow<ImeState>` → Compose 自动重组 |
 | 操作方式 | 命令式：`setVisibility()`、`setText()`、`setAdapter()` | 声明式：状态驱动自动重组 |
 
-**历史原因**：Java 版本使用传统 View 系统（自定义 View、RecyclerView、FlexboxLayout 等），每次 UI 更新都需要手动分发 InputMsg 并更新对应的 View。命令式操作大量 `setVisibility()`、`setText()`、`setAdapter()` 等，代码冗余且易出错。`KeyboardView` 作为自定义 RecyclerView 内嵌了 LayoutManager、Adapter、GestureListener 和 KeyAnimator，职责高度耦合。13 种 ViewHolder 代码量约 1500 行。v4 通过 Compose 声明式 UI 消除了手动更新逻辑，通过三层面板分离（文档 150）解耦了手势检测、按键渲染和视觉反馈。
+**历史原因**：Java 版本使用传统 View 系统（自定义 View、RecyclerView、FlexboxLayout 等），每次 UI 更新都需要手动分发 InputMsg 并更新对应的 View。命令式操作大量 `setVisibility()`、`setText()`、`setAdapter()` 等，代码冗余且易出错。`KeyboardView` 作为自定义 RecyclerView 内嵌了 LayoutManager、Adapter、GestureListener 和 KeyAnimator，职责高度耦合。13 种 ViewHolder 代码量约 1500 行。v4 通过 Compose 声明式 UI 消除了手动更新逻辑，通过三层面板分离（[020-面板三层分离设计](../ui/020-panel-separation.md)）解耦了手势检测、按键渲染和视觉反馈。
 
 ---
 

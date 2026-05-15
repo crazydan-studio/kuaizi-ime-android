@@ -92,8 +92,8 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 - `onKeyPress`（使用 `handleGesture` / `handleIntent`）
 - `disable*` / `enable*` 前缀配置字段（使用 `*Enabled` 后缀）
 - `EditorField`（使用 `EditTextBridge`）
-- `EditorHost`（使用 Bridge 接入示例，见 [030-三层模块划分](./030-module-division.md#_5-3-输出桥接机制)）
-- `InputHostView`（使用 Bridge 接入示例，见 [030-三层模块划分](./030-module-division.md#_5-3-输出桥接机制)）
+- `EditorHost`（使用 Bridge 接入示例，见 [030-三层模块划分](../engine/090-output-bridge.md)）
+- `InputHostView`（使用 Bridge 接入示例，见 [030-三层模块划分](../engine/090-output-bridge.md)）
 - `ImeEditText` / `ImeSupportEditText`（使用 `EditTextBridge`）
 - `EditorState`（撤销状态由 BaseImeOutputBridge 内部管理）
 - `AppLog` / `AppLogger`（使用 `ImeLog` / `ImeLogger`，详见 [080-日志系统](../engine/080-logging.md)）
