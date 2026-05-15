@@ -11,3 +11,4 @@
 | [030-输入动作播放器](030-input-action-player.md) | KeyPositionResolver、InputActionPlayer、PlaybackState、FingerOverlay/SwipeTrailOverlay/KeyHighlightOverlay、ActionScriptLoader、ExerciseScreen |
 | [040-配置界面](040-config-ui.md) | KeyboardPreview 组件、ThemeSelector、HandModeToggle、QuickSettingsPopup 等配置相关 UI 组件 |
 | [050-KeyboardViewModel](050-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，暴露 `StateFlow<ImeState>`，InputGesture→ImeIntent 转换，GestureFeedbackState 管理，与 :app 模块的集成方式 |
+| [060-UI 库设计总览](060-ui-library-overview.md) | UI 库设计目标（缺省实现、可替换、可组合、可定制）、组件清单（原子/面板/集成/ViewModel/主题）、组件层次关系、与引擎库的依赖关系 |

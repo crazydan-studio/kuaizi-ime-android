@@ -67,10 +67,10 @@ GestureInputPanel → InputGesture → KeyboardViewModel.handleGesture()
 ```
 
 - **KeyboardViewModel**：UI 层协调中心，将 InputGesture 转换为 ImeIntent，暴露 `StateFlow<ImeState>` 供 Compose 订阅。完整设计见 [050-KeyboardViewModel](../ui/050-keyboard-view-model.md)
-- **ImeIntent**：用户意图的 sealed class 表达。完整定义见 [030-三层模块划分](./030-module-division.md#_4-4-imeintent)
-- **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见 [030-三层模块划分](./030-module-division.md#_4-5-imestate-子状态类型)
+- **ImeIntent**：用户意图的 sealed class 表达。完整定义见 [080-公开 API](../engine/080-public-api.md)
+- **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见 [080-公开 API](../engine/080-public-api.md)
 - **三层面板分离**：GestureInputPanel（手势拦截层）→ GestureFeedbackPanel（反馈绘制层）→ KeyGridPanel（按键渲染层）。完整设计见文档 150
-- **ImeOutput**：引擎输出 sealed class，通过 ImeOutputBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [030-三层模块划分](./030-module-division.md#_4-3-imeoutput)
+- **ImeOutput**：引擎输出 sealed class，通过 ImeOutputBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [080-公开 API](../engine/080-public-api.md)，桥接机制见 [090-输出桥接机制](../engine/090-output-bridge.md)
 
 ---
 

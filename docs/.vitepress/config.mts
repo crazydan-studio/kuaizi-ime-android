@@ -150,6 +150,8 @@ function sidebarAiAgent() {
         { text: '050-输入动作程序化', link: '/ai-agent/v4/design/engine/050-input-action' },
         { text: '060-剪贴板与收藏', link: '/ai-agent/v4/design/engine/060-clipboard-and-favorites' },
         { text: '070-日志系统', link: '/ai-agent/v4/design/engine/070-logging' },
+        { text: '080-公开 API', link: '/ai-agent/v4/design/engine/080-public-api' },
+        { text: '090-输出桥接机制', link: '/ai-agent/v4/design/engine/090-output-bridge' },
       ],
     },
     {
@@ -161,6 +163,8 @@ function sidebarAiAgent() {
         { text: '020-Compose 迁移', link: '/ai-agent/v4/design/ui/020-compose-migration' },
         { text: '030-输入动作播放器', link: '/ai-agent/v4/design/ui/030-input-action-player' },
         { text: '040-配置 UI 组件', link: '/ai-agent/v4/design/ui/040-config-ui' },
+        { text: '050-KeyboardViewModel', link: '/ai-agent/v4/design/ui/050-keyboard-view-model' },
+        { text: '060-UI 库设计总览', link: '/ai-agent/v4/design/ui/060-ui-library-overview' },
       ],
     },
     {

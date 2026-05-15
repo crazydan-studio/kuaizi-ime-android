@@ -12,4 +12,6 @@
 | [040-X-Pad 核心](040-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout 区域定义、KeyboardState.PinyinInput.XPadding 状态集成 |
 | [050-输入动作程序化](050-input-action.md) | InputAction sealed class、ActionScript、InputMethod 枚举、PinyinSegment、ActionScriptCompiler 脚本编译器 |
 | [060-剪贴板与收藏](060-clipboard-and-favorites.md) | ClipboardService 剪贴板监听与类型检测、FavoriteService 收藏管理、InputClip/InputFavorite 数据模型 |
-| [070-日志系统](070-logging.md) | ImeLog 门面、ImeLogger 带标签记录器、LogLevel 枚举、LogEntry 不可变条目、LogWriter 接口、LogStorage 文件存储管理、FileLogWriter 异步文件写入 |
+| [070-日志系统](070-logging.md) | ImeLog 门面、ImeLogger 带标签记录器、LogLevel 枚举、LogEntry 不可变条目、LogWriter 接口、LogStorage 文件存储管理、FileLogWriter 异步文件写入、LogcatWriter Android Logcat 输出、CrashInterceptor 崩溃拦截 |
+| [080-公开 API](080-public-api.md) | ImeEngine 核心入口点、ImeConfig 统一配置、ImeOutput 编辑输出、ImeIntent 用户意图、ImeState 子状态类型 |
+| [090-输出桥接机制](090-output-bridge.md) | ImeOutputBridge 桥接模式、BaseImeOutputBridge 抽象类、InputConnectionBridge 系统输入连接、EditTextBridge EditText 桥接 |
