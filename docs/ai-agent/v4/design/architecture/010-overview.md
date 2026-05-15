@@ -66,7 +66,7 @@ GestureInputPanel → InputGesture → KeyboardViewModel.handleGesture()
                               GestureFeedbackState → GestureFeedbackPanel（视觉反馈）
 ```
 
-- **KeyboardViewModel**：UI 层协调中心，将 InputGesture 转换为 ImeIntent，暴露 StateFlow<ImeState> 供 Compose 订阅。完整设计见 [050-KeyboardViewModel](../ui/050-keyboard-view-model.md)
+- **KeyboardViewModel**：UI 层协调中心，将 InputGesture 转换为 ImeIntent，暴露 `StateFlow<ImeState>` 供 Compose 订阅。完整设计见 [050-KeyboardViewModel](../ui/050-keyboard-view-model.md)
 - **ImeIntent**：用户意图的 sealed class 表达。完整定义见 [030-三层模块划分](./030-module-division.md#_4-4-imeintent)
 - **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见 [030-三层模块划分](./030-module-division.md#_4-5-imestate-子状态类型)
 - **三层面板分离**：GestureInputPanel（手势拦截层）→ GestureFeedbackPanel（反馈绘制层）→ KeyGridPanel（按键渲染层）。完整设计见文档 150
