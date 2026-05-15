@@ -23,7 +23,10 @@ export default defineConfig({
     // PlantUML / Mermaid 等图表（由 vitepress-plugin-diagrams 提供）
     config(md) {
       configureDiagramsPlugin(md, {
-        diagramsDir: 'docs/public/diagrams',
+        // 必须为 .vitepress 所在根目录下的 public 目录中的子目录，
+        // 且该子目录必须在服务启动前已存在，否则，vitepress 将不会加载该目录内的静态文件
+        diagramsDir: 'public/diagrams',
+        // 必须为相对于 .vitepress 所在根目录下的 public 目录的路径
         publicPath: '/diagrams',
       })
     },
@@ -88,9 +91,6 @@ export default defineConfig({
   },
 
   // ---------- 构建 ----------
-  // 忽略死链接检查（PlantUML .puml 文件由 vitepress-plugin-diagrams 在运行时处理）
-  ignoreDeadLinks: true,
-
   vite: {
     plugins: [],
   },

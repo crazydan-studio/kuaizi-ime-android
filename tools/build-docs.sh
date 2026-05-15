@@ -18,7 +18,7 @@ usage() {
 }
 
 cd "$DOCS_DIR"
-pnpm install
+pnpm install || exit $?
 
 case "$ACTION" in
   build)

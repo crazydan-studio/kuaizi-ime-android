@@ -1,13 +1,16 @@
 import DefaultTheme from 'vitepress/theme'
 import type { EnhanceAppContext } from 'vitepress'
 
+import ImageViewerP from '@miletorix/vitepress-image-viewer'
+import '@miletorix/vitepress-image-viewer/style.css'
+
 import './styles.css'
 
 export default {
   extends: DefaultTheme,
 
   enhanceApp({ app }: EnhanceAppContext) {
-    // 可在此注册全局组件
+    ImageViewerP(app)
   },
 
   setup() {
