@@ -84,7 +84,7 @@ data class CandidateLayoutInfo(
  * 输入动作播放器，坐标无关。
  *
  * 接收坐标无关的 ActionScript，按时间轴依次执行动作：
- * - 将 InputAction 转换为 ImeIntent 发送到 ViewModel
+ * - 将 InputAction 转换为 ImeIntent 通过 KeyboardViewModel 发送到引擎
  * - 通过 KeyPositionResolver 在回放时动态解析按键坐标
  * - 同步驱动动画覆盖层（手指指示器、轨迹、高亮）
  * - 提供播放控制接口

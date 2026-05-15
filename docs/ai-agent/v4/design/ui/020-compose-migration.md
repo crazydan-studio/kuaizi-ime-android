@@ -10,11 +10,13 @@ v4 版本将键盘 UI 迁移到 Jetpack Compose，利用其声明式范式简化
 
 ### 1.1 KeyboardPanel（叠加模式）
 
+> `KeyboardViewModel` 的完整设计见 [050-KeyboardViewModel](050-keyboard-view-model.md)。以下仅展示集成组件与 ViewModel 的交互方式。
+
 ```kotlin
 @Composable
-fun KeyboardPanel(viewModel: KeyboardViewModel = viewModel()) {
+fun KeyboardPanel(viewModel: KeyboardViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val feedbackState = remember { GestureFeedbackState() }
+    val feedbackState = viewModel.feedbackState
     var keyPanelLayout by remember { mutableStateOf(KeyGridPanelLayoutInfo()) }
 
     KeyboardTheme(themeType = state.config.ui.themeType) {
@@ -76,20 +78,36 @@ fun KeyboardPanel(viewModel: KeyboardViewModel = viewModel()) {
 
 ### 1.2 ComposeView 桥接
 
+`:app` 模块的 `IMEService` 负责创建引擎、挂载桥梁、注入 ViewModel。完整设计见 [050-KeyboardViewModel](050-keyboard-view-model.md) §4。
+
 ```kotlin
 class IMEService : InputMethodService() {
+    private var engine: ImeEngine? = null
+    private var bridge: InputConnectionBridge? = null
     private var composeView: ComposeView? = null
 
+    override fun onCreate() {
+        super.onCreate()
+        // 创建引擎
+        engine = ImeEngine.create(
+            config = ImeConfig(),
+            dictProvider = ImeSqliteDictProvider(this),
+        )
+        // 创建并挂载输出桥梁（与 ViewModel 无关）
+        bridge = InputConnectionBridge { currentInputConnection }
+        engine?.attachOutputBridge(bridge!!)
+    }
+
     override fun onCreateInputView(): View {
+        val engine = this.engine ?: error("Engine not initialized")
         return ComposeView(this).also { composeView = it }.apply {
             setViewCompositionStrategy(
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
             )
             setContent {
                 val viewModel: KeyboardViewModel = viewModel(
-                    factory = KeyboardViewModelFactory(this@IMEService)
+                    factory = KeyboardViewModel.Factory(engine)
                 )
-                val state by viewModel.state.collectAsStateWithLifecycle()
                 // KeyboardPanel 已包含候选栏 + 输入栏 + 工具栏 + 三层面板叠加
                 KeyboardPanel(viewModel = viewModel)
             }
@@ -97,6 +115,10 @@ class IMEService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        // 断开桥梁并销毁引擎
+        engine?.detachOutputBridge()
+        engine = null
+        bridge = null
         composeView?.disposeComposition()
         composeView = null
         super.onDestroy()

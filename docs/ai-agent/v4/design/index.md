@@ -33,7 +33,7 @@
 
 ## `:ime-ui` UI 模块
 
-基于 Compose 的缺省 UI 实现，对第三方应用开放。
+基于 Compose 的缺省 UI 实现 + KeyboardViewModel，对第三方应用开放。
 
 | 文档 | 简述 |
 |------|------|
@@ -41,12 +41,13 @@
 | [020-Compose 迁移](ui/020-compose-migration.md) | KeyboardPanel/KeyboardScreen Compose 实现、X-Pad Compose、滑行手势处理、性能验证 |
 | [030-输入动作播放器](ui/030-input-action-player.md) | InputActionPlayer、KeyPositionResolver、动画引擎（FingerOverlay/SwipeTrailOverlay/KeyHighlightOverlay）、ExerciseScreen |
 | [040-配置 UI 组件](ui/040-config-ui.md) | KeyboardPreview、ThemeSelector、HandModeToggle、QuickSettingsPopup |
+| [050-KeyboardViewModel](ui/050-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 管理，与 :app 集成方式 |
 
 ---
 
 ## `:app` 应用模块
 
-系统 IME 服务壳、配置持久化、设置界面。
+系统 IME 服务壳（创建引擎、管理 InputConnectionBridge）、配置持久化、设置界面。
 
 | 文档 | 简述 |
 |------|------|
