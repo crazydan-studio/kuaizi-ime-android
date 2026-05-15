@@ -1,10 +1,15 @@
 import { defineConfig } from 'vitepress'
 import { configureDiagramsPlugin } from 'vitepress-plugin-diagrams'
 
+const logo = 'https://raw.githubusercontent.com/crazydan-studio/kuaizi-ime/refs/heads/master/logo.svg'
+
 export default defineConfig({
   lang: 'zh-CN',
   title: '筷字输入法',
   description: '筷字输入法（Kuaizi IME）项目文档',
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: logo }]
+  ],
 
   // ---------- Markdown ----------
   markdown: {
@@ -26,7 +31,7 @@ export default defineConfig({
 
   // ---------- 主题 ----------
   themeConfig: {
-    logo: null,
+    logo,
 
     nav: [
       { text: '首页', link: '/' },
@@ -83,8 +88,6 @@ export default defineConfig({
   },
 
   // ---------- 构建 ----------
-  srcExclude: ['_sidebar.md'],
-
   // 忽略死链接检查（PlantUML .puml 文件由 vitepress-plugin-diagrams 在运行时处理）
   ignoreDeadLinks: true,
 

@@ -16,4 +16,5 @@ echo "按 Ctrl+C 停止服务。"
 echo ""
 
 cd "$DOCS_DIR"
+pnpm install
 pnpm dev --port "$PORT"

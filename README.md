@@ -48,17 +48,17 @@ cd code && ./gradlew assembleDebug
 
 ### 文档预览
 
-项目文档使用 [Docsify](https://docsify.js.org/) 提供本地预览服务，无需安装额外依赖即可启动：
+项目文档使用 [VitePress](https://vitepress.dev/) 提供本地预览服务：
 
 ```bash
 # 在项目根目录下执行
 bash tools/preview-docs.sh
 
-# 指定端口（默认 3000）
-bash tools/preview-docs.sh 8080
+# 指定端口（默认 5173）
+bash tools/preview-docs.sh 37883
 ```
 
-启动后浏览器访问 `http://localhost:3000` 即可浏览项目文档。
+启动后浏览器访问 `http://localhost:37883` 即可浏览项目文档。
 
 ### 字/词典
 

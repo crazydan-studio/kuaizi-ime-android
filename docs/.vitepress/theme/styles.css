@@ -9,3 +9,20 @@
 .vp-code .line-numbers {
   opacity: 0.5;
 }
+
+/* Limit the height of all code blocks and add a vertical scrollbar */
+.vp-doc div[class*='language-'] {
+  max-height: 40rem; /* Adjust height as needed */
+  overflow-y: auto;
+}
+
+/* Ensure the code content inside doesn't conflict */
+.vp-doc div[class*='language-'] pre {
+  margin: 0;
+}
+
+.vp-doc div[class*='language-'] pre .line {
+  white-space: pre-wrap;       /* CSS3 */
+  word-break: break-all;      /* Optional: breaks long words */
+  word-wrap: break-word;      /* Internet Explorer 5.5-7 */
+}
