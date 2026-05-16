@@ -85,7 +85,6 @@ package "InputConnectionBridge\n系统输入连接\n[:app]" as app_impl #E3F2FD 
 
     class InputConnectionBridge {
         - targetSupplier: () -> InputConnection?
-        - lastInputConnection: InputConnection?
         + doNormalCommitText(text) : ic.commitText
         + doReplaceableCommitText(text, replacements) : 替换轮换
         + insertPairedSymbols(left, right) : 包裹选区/插入对
@@ -100,7 +99,7 @@ package "InputConnectionBridge\n系统输入连接\n[:app]" as app_impl #E3F2FD 
         面向 Android InputConnection
         由 IMEService 创建并持有
         使用 supplier 获取当前 InputConnection
-        自动检测连接变更并重置撤销
+        不检测也不处理目标变更
     end note
 }
 
@@ -108,7 +107,6 @@ package "EditTextBridge\nEditText 桥接\n[:ime-ui]" as ui_impl #E8F5E9 {
 
     class EditTextBridge {
         - targetSupplier: () -> EditText?
-        - lastEditor: EditText?
         + doNormalCommitText(text) : Editable.replace
         + doReplaceableCommitText(text, replacements) : 替换轮换
         + insertPairedSymbols(left, right) : 包裹选区/插入对
