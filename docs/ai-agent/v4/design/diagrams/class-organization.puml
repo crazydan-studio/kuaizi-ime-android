@@ -134,7 +134,7 @@ package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
         }
         class ImeLogger <<带标签记录器>> {
             - tag: String
-            - logFacade: ImeLog
+            - log: ImeLog
             + verbose(msg: () -> String)
             + debug(msg: () -> String)
             + info(msg: () -> String)

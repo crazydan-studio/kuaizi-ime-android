@@ -127,41 +127,41 @@ interface LogWriter {
  * 支持 Kotlin 惯用语法和树形日志块。
  * 使用 inline + lambda 避免在不满足日志等级时评估消息参数。
  */
-class ImeLogger(private val tag: String, private val logFacade: ImeLog) {
+class ImeLogger(private val tag: String, private val log: ImeLog) {
 
     inline fun verbose(msg: () -> String) {
-        if (logFacade.level <= LogLevel.VERBOSE) {
-            logFacade.dispatch(LogEntry(LogLevel.VERBOSE, tag, msg()))
+        if (log.level <= LogLevel.VERBOSE) {
+            log.dispatch(LogEntry(LogLevel.VERBOSE, tag, msg()))
         }
     }
 
     inline fun debug(msg: () -> String) {
-        if (logFacade.level <= LogLevel.DEBUG) {
-            logFacade.dispatch(LogEntry(LogLevel.DEBUG, tag, msg()))
+        if (log.level <= LogLevel.DEBUG) {
+            log.dispatch(LogEntry(LogLevel.DEBUG, tag, msg()))
         }
     }
 
     inline fun info(msg: () -> String) {
-        if (logFacade.level <= LogLevel.INFO) {
-            logFacade.dispatch(LogEntry(LogLevel.INFO, tag, msg()))
+        if (log.level <= LogLevel.INFO) {
+            log.dispatch(LogEntry(LogLevel.INFO, tag, msg()))
         }
     }
 
     inline fun warn(msg: () -> String) {
-        if (logFacade.level <= LogLevel.WARN) {
-            logFacade.dispatch(LogEntry(LogLevel.WARN, tag, msg()))
+        if (log.level <= LogLevel.WARN) {
+            log.dispatch(LogEntry(LogLevel.WARN, tag, msg()))
         }
     }
 
     inline fun error(msg: () -> String) {
-        if (logFacade.level <= LogLevel.ERROR) {
-            logFacade.dispatch(LogEntry(LogLevel.ERROR, tag, msg()))
+        if (log.level <= LogLevel.ERROR) {
+            log.dispatch(LogEntry(LogLevel.ERROR, tag, msg()))
         }
     }
 
     inline fun error(throwable: Throwable, msg: () -> String) {
-        if (logFacade.level <= LogLevel.ERROR) {
-            logFacade.dispatch(LogEntry(LogLevel.ERROR, tag, msg(), throwable))
+        if (log.level <= LogLevel.ERROR) {
+            log.dispatch(LogEntry(LogLevel.ERROR, tag, msg(), throwable))
         }
     }
 
@@ -172,7 +172,7 @@ class ImeLogger(private val tag: String, private val logFacade: ImeLog) {
      * 将作为此树形块的子节点输出，形成嵌套结构。
      */
     inline fun tree(title: String, block: () -> Unit) {
-        val treeWriter = TreeLogWriter(logFacade, tag, title)
+        val treeWriter = TreeLogWriter(log, tag, title)
         treeWriter.begin()
         try {
             block()
@@ -187,13 +187,13 @@ class ImeLogger(private val tag: String, private val logFacade: ImeLog) {
 
 ```kotlin
 class PinyinKeyboard(private val dict: PinyinDict) {
-    private val log = ImeLog.logger(PinyinKeyboard::class)
+    private val logger = ImeLog.logger(PinyinKeyboard::class)
 
     fun handleInput(char: Char) {
-        log.tree("处理拼音输入: $char") {
-            log.debug { "查询拼音候选: $char" }
+        logger.tree("处理拼音输入: $char") {
+            logger.debug { "查询拼音候选: $char" }
             val candidates = dict.lookup(char.toString())
-            log.info { "找到 ${candidates.size} 个候选" }
+            logger.info { "找到 ${candidates.size} 个候选" }
         }
     }
 }
@@ -506,10 +506,10 @@ class FileLogWriter(private val storage: LogStorage) : LogWriter {
 
 ```kotlin
 // ✅ 推荐：使用 inline + lambda 延迟求值
-log.debug { "查询结果: ${candidates.map { it.text }.joinToString()}" }
+logger.debug { "查询结果: ${candidates.map { it.text }.joinToString()}" }
 
 // ❌ 禁止：直接拼接字符串（即使不满足等级也会执行拼接）
-log.debug("查询结果: ${candidates.map { it.text }.joinToString()}")
+logger.debug("查询结果: ${candidates.map { it.text }.joinToString()}")
 ```
 
 所有 `ImeLogger` 方法使用 `inline` + `lambda` 延迟求值模式。当日志等级不满足时，`lambda` 不会执行，避免了字符串拼接、对象格式化等不必要的计算开销。在频繁调用的路径（如按键处理、状态机转换）中，应特别注意使用 `lambda` 形式，避免在日志等级为 WARN 的 release 构建中产生隐藏的性能损耗。
