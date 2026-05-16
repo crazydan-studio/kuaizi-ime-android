@@ -1,4 +1,5 @@
 @startuml engine-output-bridge
+allowmixing
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false
@@ -33,16 +34,7 @@ package "单一分发点\n[:ime-engine]" as dispatch #F3E5F5 {
         + attachOutputBridge(bridge)
         + detachOutputBridge()
         ..
-        dispatchToTarget(output: ImeOutput) {
-          when(output) {
-            is CommitText -> bridge.commitText(...)
-            is RevokeCommit -> bridge.revokeCommit()
-            is InsertPairedSymbols -> bridge.insertPairedSymbols(...)
-            is MoveCursor -> bridge.moveCursor(...)
-            is SelectRange -> bridge.selectRange(...)
-            is PerformEdit -> bridge.performAction(...)
-          }
-        }
+        dispatchToTarget(output: ImeOutput) : {\n  when(output) {\n    is CommitText -> bridge.commitText(...)\n    is RevokeCommit -> bridge.revokeCommit()\n    is InsertPairedSymbols -> bridge.insertPairedSymbols(...)\n    is MoveCursor -> bridge.moveCursor(...)\n    is SelectRange -> bridge.selectRange(...)\n    is PerformEdit -> bridge.performAction(...)\n  }\n}
     }
 }
 

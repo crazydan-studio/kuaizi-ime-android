@@ -1,4 +1,5 @@
 @startuml engine-logging
+allowmixing
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false

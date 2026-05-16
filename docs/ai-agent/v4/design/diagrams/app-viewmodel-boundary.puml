@@ -99,7 +99,7 @@ ConfigRepo --> ImeEngine : "恢复配置\n(通过 viewModel.updateConfig)"
 
 ' ─── Boundary Marker ──────────────────────────────────────────────
 
-note across app
+note bottom of app
     **:app 职责**
     • 创建和销毁 ImeEngine
     • 创建和管理 InputConnectionBridge
@@ -107,7 +107,7 @@ note across app
     • 系统 IME 服务生命周期
 end note
 
-note across ui
+note bottom of ui
     **:ime-ui 职责**
     • UI 协调 (InputGesture → ImeIntent)
     • 状态订阅与渲染
