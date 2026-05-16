@@ -561,7 +561,7 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         }
 
         // Note: 第二个参数必须为 1，
-        // 若设置为0，则浏览器页面的输入框的光标位置不会移动到插入文本之后，
+        // 若设置为 0，则浏览器页面的输入框的光标位置不会移动到插入文本之后，
         // 而若设置为文本长度，则某些 app 会将光标移动两倍文本长度
         ic.commitText(text, 1);
     }

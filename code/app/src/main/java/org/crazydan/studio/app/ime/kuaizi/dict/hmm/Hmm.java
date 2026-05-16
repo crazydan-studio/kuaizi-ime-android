@@ -47,7 +47,7 @@ public class Hmm {
      * 计算含出现次数的短语中的汉字（状态）间转移概率
      *
      * @param phraseCountMap
-     *         结构为 <code>{'字1,字2,...': 出现次数}</code>
+     *         结构为 <code>{'字 1,字 2,...': 出现次数}</code>
      */
     public static Hmm calcTransProb(Map<String, Integer> phraseCountMap) {
         Hmm hmm = new Hmm();

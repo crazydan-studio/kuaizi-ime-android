@@ -100,24 +100,24 @@ public class Favoriteboard {
      */
     private static final Pattern REGEX_EMAIL = Pattern.compile("^.*?([\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}).*$",
                                                                Pattern.DOTALL | Pattern.MULTILINE);
-    /** 匹配：18位新版（带校验码） */
+    /** 匹配：18 位新版（带校验码） */
     private static final Pattern REGEX_ID_CARD = Pattern.compile(
             "^.*?([1-9]\\d{5}(18|19|20)\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])\\d{3}[\\dXx]).*$",
             Pattern.DOTALL | Pattern.MULTILINE);
     /**
      * 匹配：
-     * - Visa（13或16位）
-     * - MasterCard（16位）
-     * - American Express（15位）
-     * - 银联卡（16-19位）
-     * - Discover（16-19位）
+     * - Visa（13 或 16 位）
+     * - MasterCard（16 位）
+     * - American Express（15 位）
+     * - 银联卡（16-19 位）
+     * - Discover（16-19 位）
      */
     private static final Pattern REGEX_CREDIT_CARD = Pattern.compile(
             "^.*?((4\\d{12,15})|(5[1-5]\\d{14})|(3[47]\\d{13})|(62\\d{14,17})|(6(?:011|5[0-9]{2})\\d{12,15})).*$",
             Pattern.DOTALL | Pattern.MULTILINE);
     /**
      * 匹配：
-     * - 广东省深圳市南山区科技园路123号 A 栋8层 1902 室
+     * - 广东省深圳市南山区科技园路 123 号 A 栋 8 层 1902 室
      */
     private static final Pattern REGEX_ADDRESS = Pattern.compile(
             "^.*?([\\u4e00-\\u9fa5]{2,8}(省|自治区|特别行政区)[\\u4e00-\\u9fa5]{2,8}(市|自治州)[\\u4e00-\\u9fa5]{2,8}([区县市])[\\u4e00-\\u9fa5\\w\\-\\s号路街巷弄]+(号)?[\\u4e00-\\u9fa5\\w\\-\\s栋幢单元楼层室房]*).*$",
