@@ -13,7 +13,7 @@ v4 采用 `ImeOutputBridge` 桥接模式。引擎内部仅执行一次 `when(Ime
 模块职责：
 
 ```
-:ime-engine/api/  → ImeOutputBridge 接口 + BaseImeOutputBridge 抽象类
+:ime-engine/core/  → ImeOutputBridge 接口 + BaseImeOutputBridge 抽象类
 :ime-ui/          → EditTextBridge
 :app/             → InputConnectionBridge 实现 ImeOutputBridge
                     IMEService 不再手动收集 output

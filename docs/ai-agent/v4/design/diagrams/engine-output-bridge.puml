@@ -40,7 +40,7 @@ package "单一分发点\n[:ime-engine]" as dispatch #F3E5F5 {
 
 ' ─── Bridge Interface & Base ───────────────────────────────────────
 
-package "桥接接口与基类\n[:ime-engine/api/]" as bridge_api #FFE0B2 {
+package "桥接接口与基类\n[:ime-engine/core/]" as bridge_core #FFE0B2 {
 
     interface ImeOutputBridge <<接口>> {
         + commitText(text, replacements?)
