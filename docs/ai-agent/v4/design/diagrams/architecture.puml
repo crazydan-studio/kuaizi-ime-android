@@ -32,7 +32,7 @@ package ":ime-ui\nUI层 + ViewModel层\nUI + ViewModel Layer" as ui #E8F5E9 {
 }
 
 package ":ime-engine\n领域层 + 数据层\nDomain + Data Layer" as engine #FFF3E0 {
-    package "公开 API（契约层）" as api #FFE0B2 {
+    package "核心模型" as api #FFE0B2 {
         component [ImeEngine\n输入法引擎] as ImeEngine
         component [ImeConfig\n统一配置] as ImeConfig
         component [ImeIntent\n输入法意图] as ImeIntent
@@ -47,7 +47,7 @@ package ":ime-engine\n领域层 + 数据层\nDomain + Data Layer" as engine #FFF
         component [ImeDictProvider\n词典提供者接口] as DictProvider
         component [ImeSqliteDictProvider\nSQLite 词典实现] as SqlDictProvider
     }
-    note right of engine : 无Android依赖\nPure Kotlin
+    note right of engine : 逻辑层与UI/应用分离\n第三方可定制UI与交互
 }
 
 ' ─── Module Dependencies ───────────────────────────────────────────
@@ -65,7 +65,7 @@ ETB ..> BaseImeOutputBridge : "实现"
 ImeEngine o-- ImeOutputBridge : "可选挂载\nattachOutputBridge()"
 IMEService --> KVM : "通过 Factory 创建\nKeyboardViewModel.Factory(engine)"
 
-KVM --> ImeEngine : "持有引用\n(不持有 InputConnectionBridge)"
+KVM --> ImeEngine : "持有引用"
 KVM --> ImeIntent : "gestureToIntent() 转换"
 ImeEngine --> KSM : "状态驱动"
 ImeEngine --> DictProvider : "词典查询"

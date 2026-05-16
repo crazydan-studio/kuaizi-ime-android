@@ -18,11 +18,11 @@
 
 ## `:ime-engine` 引擎模块
 
-纯 Kotlin 库，不依赖 Android 框架，提供核心输入引擎能力。
+引擎库，逻辑层与UI/应用分离，提供核心输入引擎能力。
 
 | 文档 | 简述 |
 |------|------|
-| [010-引擎库设计总览](engine/010-engine-overview.md) | 模块定位与设计目标、核心 class 关系图、公开 API 概览（ImeEngine/ImeConfig/ImeOutput/ImeIntent/ImeState） |
+| [010-引擎库设计总览](engine/010-engine-overview.md) | 模块定位与设计目标、核心 class 关系图、核心模型概览（ImeEngine/ImeConfig/ImeOutput/ImeIntent/ImeState） |
 | [020-键盘状态机](engine/020-state-machine.md) | KeyboardState sealed class、状态转换规则、Keyboard 组合模式、InputKey 体系、StateHistory 有界历史栈 |
 | [030-输入列表](engine/030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion、线程安全、撤销机制、游标管理 |
 | [040-字典系统](engine/040-dict-system.md) | DictRepository + Room 数据库、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree、HmmModel + ViterbiDecoder |

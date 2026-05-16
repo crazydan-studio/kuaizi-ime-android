@@ -14,7 +14,7 @@ title 筷子输入法 - 模块类组织\nModule Class Organization
 
 package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
 
-    package "api/\n公共API" as engine_api #FFE0B2 {
+    package "core/\n核心模型" as engine_api #FFE0B2 {
         class ImeEngine <<核心入口点>> {
             - config: ImeConfig
             - dictProvider: ImeDictProvider
@@ -228,7 +228,6 @@ package ":ime-ui\nUI层 + ViewModel层" as ime_ui #E8F5E9 {
             + handleIntent(intent: ImeIntent)
             + updateConfig(transform: (ImeConfig) -> ImeConfig)
         }
-        note right of KeyboardViewModel : 不持有 InputConnectionBridge
     }
 
     package "integration/\n集成组件" as ui_integration #A5D6A7 {

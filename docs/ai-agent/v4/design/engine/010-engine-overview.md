@@ -1,6 +1,6 @@
 # 引擎库设计总览
 
-`ime-engine` 是筷字输入法的纯 Kotlin 引擎库，提供核心 IME 引擎能力，不依赖任何 Android UI 框架（字典 I/O 除外）。引擎库的设计目标是作为独立可复用的输入法引擎，供第三方应用以库的形式引入，获得完整的输入法能力——拼音输入、滑行输入、X-Pad 连续输入、候选选择、输入列表管理、撤销重做等——而无需依赖系统 IME 服务或任何 UI 框架。
+`ime-engine` 是筷字输入法的引擎库，提供核心 IME 引擎能力。引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等。第三方应用只需引入 `:ime-engine` 即可获得完整的输入法能力——拼音输入、滑行输入、X-Pad 连续输入、候选选择、输入列表管理、撤销重做等——无需依赖系统 IME 服务或任何 UI 框架。
 
 ---
 
@@ -8,13 +8,13 @@
 
 | 定位 | 说明 |
 |------|------|
-| **纯 Kotlin** | 不依赖 Android 框架（字典 I/O 除外），可在任意 Kotlin 环境中使用 |
+| **逻辑与UI分离** | 引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等 |
 | **MVI 驱动** | 通过 `StateFlow<ImeState>` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeOutput` 输出编辑指令 |
 | **可嵌入** | 第三方应用只需引入 `:ime-engine` 即可获得完整输入法能力，无需系统 IME 服务 |
 | **可扩展** | 字典接口与实现分离（`ImeDictProvider`），输出桥接可自定义（`ImeOutputBridge`），功能可裁剪（`Feature`） |
 | **Fail Fast** | 非法操作（如禁用收藏后调用收藏功能）立即抛出异常而非静默忽略 |
 
-引擎库的「纯 Kotlin」定位意味着它可以在非 Android 环境中独立使用——例如 JVM 服务端的文本预处理、自动化测试环境中的模拟输入等场景。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来彻底消除 Android 依赖。
+引擎库的「逻辑与UI分离」定位意味着第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能，也可以仅引入 `:ime-engine` 自行实现视图层和交互逻辑。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来消除 Android 依赖。
 
 「MVI 驱动」定位是引擎与 UI 完全分离的技术基础。引擎不依赖任何 UI 框架，所有状态变更通过 `StateFlow` 暴露，所有用户操作通过 `ImeIntent` 接收，所有编辑指令通过 `ImeOutputBridge` 输出。这种单向数据流使得引擎可以被任意 UI 框架（Compose、View、Web、游戏引擎等）消费，而不需要引擎感知 UI 的存在。
 
@@ -28,15 +28,15 @@
 
 上图展示了引擎库的核心类关系，按职责分为三层：
 
-- **公开 API（契约层）**（橙色）：`ImeEngine`、`ImeConfig`、`ImeIntent`、`ImeOutput`、`ImeOutputBridge` 构成引擎库与外部模块之间的契约。第三方应用和 `:ime-ui` 库仅依赖这些公开类型，不依赖引擎内部实现
+- **核心模型**（橙色）：`ImeEngine`、`ImeConfig`、`ImeIntent`、`ImeOutput`、`ImeOutputBridge` 构成引擎库的核心模型，是输入法业务逻辑的基石。第三方应用和 `:ime-ui` 库仅依赖这些核心类型，不依赖引擎内部实现
 - **状态类型**（绿色）：`ImeState` 及其子状态类型（`InputList`、`CandidateList`、`Clipboard`、`FavoriteList`），均为不可变 `data class`，通过 `StateFlow` 自动传播到 UI
 - **内部组件**（蓝色）：`KeyboardStateMachine`、`InputListOperator`、`FeatureRegistry`、`ImeDictProvider` 等，由 `ImeEngine` 内部组合使用，不对外暴露
 
 ---
 
-## 3 公开 API 概览
+## 3 核心模型概览
 
-引擎库对外暴露的公开 API 构成了 `:ime-engine` 与 `:ime-ui`、`:app` 之间的核心契约，也是第三方应用使用引擎库的唯一接口。
+引擎库的核心模型构成了 `:ime-engine` 与 `:ime-ui`、`:app` 之间的核心契约，也是第三方应用使用引擎库的主要接口。引擎的主要职能是输入法的业务逻辑——状态机驱动、字典查询、候选排序、输入管理等——而非单纯暴露 API。
 
 ### 3.1 ImeEngine
 

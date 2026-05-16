@@ -10,9 +10,9 @@ skinparam classAttributeFontSize 12
 
 title :ime-engine 核心类关系图\nCore Class Relationship Diagram
 
-' ─── Public API (契约层) ──────────────────────────────────────────
+' ─── Core Model ──────────────────────────────────────────
 
-package "公开 API（契约层）" as api #FFF3E0 {
+package "核心模型" as api #FFF3E0 {
 
     class ImeEngine <<核心入口点>> {
         - config: ImeConfig
@@ -177,7 +177,7 @@ ImeState *-- ImeConfig
 
 legend right
   |= 颜色 |= 含义 |
-  |<#FFF3E0>| 公开 API（契约层）|
+  |<#FFF3E0>| 核心模型 |
   |<#E8F5E9>| 状态类型 |
   |<#E3F2FD>| 内部组件 |
 endlegend
