@@ -124,7 +124,7 @@ note bottom of KSFull
     - GestureFeedbackPanel 双实例 (FullScreenSet)
       - 输入侧：TouchTrail + FingerIndicator
       - 按键侧：KeyHighlight + KeyPath + XPadPathHighlight
-    - 适用于横屏/平板场景
+    - 适用于横屏 / 平板场景
     - 占据更大屏幕区域
 end note
 

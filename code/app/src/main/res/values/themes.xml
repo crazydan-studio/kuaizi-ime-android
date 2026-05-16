@@ -275,7 +275,7 @@
         <!-- ActionBar 中的导航图标颜色 -->
         <item name="colorControlNormal">?attr/app_actionbar_fg_color</item>
 
-        <!-- 统一窗口背景: https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-3911267
+        <!-- 统一窗口背景：https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-3911267
         Note: API 25 不支持该方式
         -->
         <item name="android:windowBackground">?attr/app_bg_color</item>
@@ -301,7 +301,7 @@
         <!-- ActionBar 中的导航图标颜色 -->
         <item name="colorControlNormal">?attr/app_actionbar_fg_color</item>
 
-        <!-- 统一窗口背景: https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-3911267
+        <!-- 统一窗口背景：https://stackoverflow.com/questions/39112632/changing-background-color-in-a-activity#answer-3911267
         Note: API 25 不支持该方式
         -->
         <item name="android:windowBackground">?attr/app_bg_color</item>

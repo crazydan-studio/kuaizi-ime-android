@@ -59,7 +59,7 @@ public enum ConfigKey {
     /** 禁用滑屏轨迹 */
     disable_gesture_slipping_trail(Boolean.class, false),
 
-    /** 启用候选字变体优先：主要针对拼音字的繁/简体 */
+    /** 启用候选字变体优先：主要针对拼音字的繁 / 简体 */
     enable_candidate_variant_first(Boolean.class, false),
     /** 启用 X 输入面板 */
     enable_x_input_pad(Boolean.class, false),

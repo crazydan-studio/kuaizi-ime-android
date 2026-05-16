@@ -85,7 +85,7 @@ CandidateChoosing --> PinyinWaiting : BackToPrevious\n退格回退
 
 ' ─── CommitOptionChoosing Transitions ─────────────────────────────
 
-PinyinWaiting --> CommitOptionChoosing : LoadCommitOptions(options)\n长按/回车
+PinyinWaiting --> CommitOptionChoosing : LoadCommitOptions(options)\n长按 / 回车
 
 CommitOptionChoosing --> Idle : SelectCommitOption\n选择提交选项
 CommitOptionChoosing --> PinyinWaiting : BackToPrevious\n取消提交
@@ -93,8 +93,8 @@ CommitOptionChoosing --> Idle : CommitRawPinyin\n提交原始拼音
 
 ' ─── EditorEditing Transitions ────────────────────────────────────
 
-EditorCursorMoving --> Idle : ReturnToIdle / Done\n返回/完成
-EditorTextSelecting --> Idle : ReturnToIdle / Done\n返回/完成
+EditorCursorMoving --> Idle : ReturnToIdle / Done\n返回 / 完成
+EditorTextSelecting --> Idle : ReturnToIdle / Done\n返回 / 完成
 
 ' ─── SymbolChoosing Transitions ───────────────────────────────────
 

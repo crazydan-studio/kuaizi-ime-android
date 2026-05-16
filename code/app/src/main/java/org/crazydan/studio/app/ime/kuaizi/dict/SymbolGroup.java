@@ -26,7 +26,7 @@ import java.util.Arrays;
  * @date 2023-08-28
  */
 public enum SymbolGroup {
-    /** 汉语标点符号: https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
+    /** 汉语标点符号：https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
     han("中文", new Object[] {
             //
             "，", "。", "？", "！", "：", "；", "、", "…", "～", "—", "·",
@@ -53,7 +53,7 @@ public enum SymbolGroup {
             //
             "﹀", "︹", "︺", "︽", "︾", "︻", "︼", "ˆ", "ˇ",
             }),
-    /** 拉丁文标点符号: https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
+    /** 拉丁文标点符号：https://zh.wikipedia.org/wiki/%E6%A0%87%E7%82%B9%E7%AC%A6%E5%8F%B7 */
     latin("英文", new Object[] {
             //
             ",", ".", "?", "!", ":", ";", "@", "#", "$", "%",

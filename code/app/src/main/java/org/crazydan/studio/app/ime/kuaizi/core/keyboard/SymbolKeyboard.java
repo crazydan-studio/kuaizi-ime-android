@@ -216,7 +216,7 @@ public class SymbolKeyboard extends InputCandidateKeyboard {
             leftInput.appendKey(leftKey);
 
             if (wrapSelected) {
-                // 选中被包裹输入的右侧 Gap：左符号+Gap+被包裹输入+右符号
+                // 选中被包裹输入的右侧 Gap：左符号 + Gap + 被包裹输入 + 右符号
                 inputList.confirmPendingAndSelectByOffset(3);
             } else {
                 inputList.confirmPendingAndSelectNext();

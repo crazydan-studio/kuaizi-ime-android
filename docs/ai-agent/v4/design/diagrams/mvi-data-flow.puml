@@ -159,7 +159,7 @@ legend right
     |<#E8F5E9>| :ime-ui 层 |
     |<#FFF3E0>| :ime-engine 层 |
     |<#E3F2FD>| :app 层 |
-    |<#F3E5F5>| 跨切面/架构 |
+    |<#F3E5F5>| 跨切面 / 架构 |
     |<#FFF9C4>| 程序化输入 |
 endlegend
 

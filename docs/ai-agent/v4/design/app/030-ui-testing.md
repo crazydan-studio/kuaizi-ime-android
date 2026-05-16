@@ -550,7 +550,7 @@ android {
 
 ### 5.1 框架选型
 
-截图对比测试（Screenshot Testing）用于验证 UI 在代码变更后不会出现意外视觉变化。使用 Paparazzi 或 Roborazzi 框架，在 JVM/设备上渲染 Compose 组件并截图，与基准截图进行像素级对比。
+截图对比测试（Screenshot Testing）用于验证 UI 在代码变更后不会出现意外视觉变化。使用 Paparazzi 或 Roborazzi 框架，在 JVM / 设备上渲染 Compose 组件并截图，与基准截图进行像素级对比。
 
 | 框架 | 优势 | 劣势 |
 |------|------|------|

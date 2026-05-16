@@ -12,7 +12,7 @@
 
 | 类型 | 规范 | 示例 |
 |------|------|------|
-| 类/接口 | PascalCase | `DataProcessor`, `InputHandler` |
+| 类 / 接口 | PascalCase | `DataProcessor`, `InputHandler` |
 | Sealed class | PascalCase，子类也 PascalCase | `Result.Success`, `Result.Error` |
 | Data class | PascalCase | `UserState`, `Config` |
 | Value class | PascalCase | `EntityId`, `PreferenceKey` |
@@ -36,7 +36,7 @@
 |------|------|------|
 | 局部变量 | camelCase | `candidate`, `currentInput` |
 | 常量（compile-time） | `SCREAMING_SNAKE_CASE` | `MAX_CANDIDATES`, `DEFAULT_TIMEOUT` |
-| 顶层/对象常量 | `SCREAMING_SNAKE_CASE` | `Defaults.MAX_COUNT` |
+| 顶层 / 对象常量 | `SCREAMING_SNAKE_CASE` | `Defaults.MAX_COUNT` |
 | 私有属性 | camelCase，不加前缀 | `state`, `dict`（不用 `mState`） |
 | Backing property | 下划线前缀 | `_state` → `state`（`StateFlow` 模式） |
 | Lambda 参数 | 显式命名，避免 `it` 超过一层嵌套 | `items.map { item -> item.name }` |
@@ -44,7 +44,7 @@
 ### 1.4 文件命名
 
 - 单类文件：与类名一致，PascalCase
-- 多类/函数文件：使用 camelCase 或 PascalCase，反映内容
+- 多类 / 函数文件：使用 camelCase 或 PascalCase，反映内容
 - 扩展函数文件：`<ReceiverName>+<Feature>.kt`，如 `String+Pinyin.kt`
 
 ---
@@ -212,7 +212,7 @@ fun `commit input updates state correctly`() {
 - `refactor`: 重构（不改变功能）
 - `docs`: 文档
 - `test`: 测试
-- `chore`: 构建/工具
+- `chore`: 构建 / 工具
 
 ### 6.2 分支策略
 

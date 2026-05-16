@@ -88,7 +88,7 @@ public abstract class KeyTable {
 
     /** 字母按键调色板 */
     private static final Map<List<String>, Key.Color> char_key_color_palette = new HashMap<>();
-    /** 控制按键样式：图标+背景色 */
+    /** 控制按键样式：图标 + 背景色 */
     private static final Map<CtrlKey.Type, Key.Style> ctrl_key_styles = new HashMap<>();
 
     static {

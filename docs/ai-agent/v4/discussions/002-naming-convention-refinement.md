@@ -56,19 +56,19 @@
 
 ### 4. KeyboardView 为什么改名为 KeyboardPanel？
 
-**问题背景**：`KeyboardView` 是键盘的顶层组合面板，组合了三层面板、候选面板、输入列表面板等。它的角色是容器/组合器，而非独立的视图组件。
+**问题背景**：`KeyboardView` 是键盘的顶层组合面板，组合了三层面板、候选面板、输入列表面板等。它的角色是容器 / 组合器，而非独立的视图组件。
 
 **探讨过程**：
 
 在 Compose 生态中，`View` 后缀通常用于叶子组件（如 `KeyView`、`XPadView`），表示一个独立的可渲染单元。而 `KeyboardView` 是一个组合容器，将多个子面板编排在一起——这在语义上更接近 `Panel`（面板组合）而非 `View`（单一视图）。
 
 统一为 `Panel` 后缀后，:ime-ui 模块的命名体系更清晰：
-- `Panel` 后缀 = 容器/组合器（`KeyboardPanel`、`GestureInputPanel`、`CandidateListPanel`、`InputListPanel`、`KeyGridPanel`、`GestureFeedbackPanel`）
+- `Panel` 后缀 = 容器 / 组合器（`KeyboardPanel`、`GestureInputPanel`、`CandidateListPanel`、`InputListPanel`、`KeyGridPanel`、`GestureFeedbackPanel`）
 - `Screen` 后缀 = 全屏界面（`KeyboardScreen`、`SettingsScreen`、`MainScreen`、`ExerciseScreen`）
 - `View` 后缀 = 叶子视图（`XPadView`、`InputHostView`、`KeyView`）
 - 直接职能名 = 非组合非叶子的功能组件（`EditorField`、`EditorHost`）
 
-这种"容器-叶子-功能"的三分法，让类名本身就能传达组件在层级中的位置。
+这种"容器 - 叶子 - 功能"的三分法，让类名本身就能传达组件在层级中的位置。
 
 **结论**：`KeyboardView` 更名为 `KeyboardPanel`，明确其容器角色；`View` 后缀保留给叶子组件。
 

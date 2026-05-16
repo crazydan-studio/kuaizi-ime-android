@@ -143,7 +143,7 @@ public class InputList {
             return List.of();
         }
         return this.completions.data.stream().map((completion) -> {
-            // Note: 使用输入选项，以确保汉字的繁/简转换符合应用的配置要求
+            // Note: 使用输入选项，以确保汉字的繁 / 简转换符合应用的配置要求
             return InputCompletion.ViewData.create(completion, getInputOption());
         }).collect(Collectors.toList());
     }
@@ -949,7 +949,7 @@ public class InputList {
      */
     public boolean needGapSpace(int i) {
         int total = this.inputs.size();
-        // 在首/尾位置均不需要空格
+        // 在首 / 尾位置均不需要空格
         if (i <= 0 || i >= total - 1) {
             return false;
         }

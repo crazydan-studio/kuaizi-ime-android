@@ -157,7 +157,7 @@ public class Favoriteboard {
         unbindClipboard();
 
         this.clipChangedListener = () -> {
-            // Note: 剪贴板监听仅输入法处于前台时才会触发，因此，复制/剪切均将由输入法触发，
+            // Note: 剪贴板监听仅输入法处于前台时才会触发，因此，复制 / 剪切均将由输入法触发，
             // 故而，不提示可粘贴
             InputClip clip = readClip(this.clipboard);
             trySave(context, clip, InputClipMsgData.ClipSourceType.copy_cut);
@@ -311,7 +311,7 @@ public class Favoriteboard {
                     return null;
                 }
 
-                // Note: 对于未确定类型或来自复制/剪切的数据，需要做类型检测
+                // Note: 对于未确定类型或来自复制 / 剪切的数据，需要做类型检测
                 if (clip.type == null || source == InputClipMsgData.ClipSourceType.copy_cut) {
                     return deeplyCollectClips(clip).get(0);
                 }

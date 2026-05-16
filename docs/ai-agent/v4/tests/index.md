@@ -22,11 +22,11 @@
 |----------|----------|----------|------|
 | （待创建） | （与计划同名） | 键盘状态机、Intent 处理、状态转换（对应设计 100） | 📋待编写 |
 | （待创建） | （与计划同名） | ImeEngine API、ImeConfig、ImeOutput、ImeDictProvider（对应设计 160） | 📋待编写 |
-| （待创建） | （与计划同名） | InputList 不可变操作、游标、撤销/重做（对应设计 200） | 📋待编写 |
+| （待创建） | （与计划同名） | InputList 不可变操作、游标、撤销 / 重做（对应设计 200） | 📋待编写 |
 | （待创建） | （与计划同名） | Room DAO、ImeDictProvider 实现、字典查询、升级迁移（对应设计 300） | 📋待编写 |
 | （待创建） | （与计划同名） | ConfigRepository、ImeConfig 运行时优先、DataStore（对应设计 500） | 📋待编写 |
 | （待创建） | （与计划同名） | ClipboardProvider、FavoritesRepository、Feature 裁剪（对应设计 600） | 📋待编写 |
-| （待创建） | （与计划同名） | UserDataService、JSON 序列化、替换/合并、SAF（对应设计 800） | 📋待编写 |
+| （待创建） | （与计划同名） | UserDataService、JSON 序列化、替换 / 合并、SAF（对应设计 800） | 📋待编写 |
 | （待创建） | （与计划同名） | ImeLog 分级、持久化、崩溃拦截（对应设计 900） | 📋待编写 |
 | （待创建） | （与计划同名） | InputActionPlayer、脚本编译、回放（对应设计 930） | 📋待编写 |
 

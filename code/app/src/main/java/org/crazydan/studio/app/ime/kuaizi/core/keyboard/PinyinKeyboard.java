@@ -105,7 +105,7 @@ public class PinyinKeyboard extends EditorEditKeyboard {
             default: {
                 State previous = this.state.previous;
 
-                // Note：滑屏/翻动输入结束后，恢复按键布局也需禁用动效
+                // Note：滑屏 / 翻动输入结束后，恢复按键布局也需禁用动效
                 if (previous != null) {
                     switch (previous.type) {
                         case InputChars_Slip_Doing:

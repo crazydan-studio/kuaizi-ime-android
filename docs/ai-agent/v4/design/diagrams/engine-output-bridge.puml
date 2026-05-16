@@ -87,7 +87,7 @@ package "InputConnectionBridge\n系统输入连接\n[:app]" as app_impl #E3F2FD 
         - targetSupplier: () -> InputConnection?
         + doNormalCommitText(text) : ic.commitText
         + doReplaceableCommitText(text, replacements) : 替换轮换
-        + insertPairedSymbols(left, right) : 包裹选区/插入对
+        + insertPairedSymbols(left, right) : 包裹选区 / 插入对
         + moveCursor(direction) : InputConnection API
         + performAction(action) : performContextMenuAction
         + getText() : ExtractedText
@@ -109,7 +109,7 @@ package "EditTextBridge\nEditText 桥接\n[:ime-ui]" as ui_impl #E8F5E9 {
         - targetSupplier: () -> EditText?
         + doNormalCommitText(text) : Editable.replace
         + doReplaceableCommitText(text, replacements) : 替换轮换
-        + insertPairedSymbols(left, right) : 包裹选区/插入对
+        + insertPairedSymbols(left, right) : 包裹选区 / 插入对
         + moveCursor(direction) : EditText 选区 API
         + performAction(action) : EditText 操作
         + getText() : Editable

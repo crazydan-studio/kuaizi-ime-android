@@ -49,7 +49,7 @@ public class InputClipMsgData extends InputMsgData {
     public enum ClipSourceType {
         /** 来自粘贴操作 */
         paste(R.string.text_confirm_save_pasted_content),
-        /** 来自复制/剪贴 */
+        /** 来自复制 / 剪贴 */
         copy_cut(R.string.text_confirm_save_copied_content),
         /** 来自用户输入 */
         user_input(R.string.text_confirm_save_input_content),

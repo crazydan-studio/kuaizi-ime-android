@@ -51,7 +51,7 @@ public class UserInputListInputMsgData extends UserInputMsgData {
      * <li>- {@link #POSITION_END_IN_INPUT_LIST}: 在 {@link InputList} 列表的尾部；</li>
      * <li>- {@link #POSITION_LEFT_IN_GAP_INPUT_PENDING}: 在 Gap 待输入的左侧位置；</li>
      * <li>- {@link #POSITION_RIGHT_IN_GAP_INPUT_PENDING}: 在 Gap 待输入的右侧位置；</li>
-     * <li>- 其他: 在 {@link InputList} 列表中的实际序号；</li>
+     * <li>- 其他：在 {@link InputList} 列表中的实际序号；</li>
      * </ul>
      */
     public final int position;

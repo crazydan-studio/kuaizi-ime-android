@@ -413,11 +413,11 @@ public class ViewGestureDetector {
         DoubleTap,
         /** 开始移动 */
         MovingStart,
-        /** 移动: 手指在屏幕上移动 */
+        /** 移动：手指在屏幕上移动 */
         Moving,
         /** 结束移动 */
         MovingEnd,
-        /** 翻动: 在一段时间内完成手指按下、移动到抬起的过程，期间没有其他动作 */
+        /** 翻动：在一段时间内完成手指按下、移动到抬起的过程，期间没有其他动作 */
         Flipping,
     }
 

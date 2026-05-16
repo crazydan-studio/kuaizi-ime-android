@@ -107,7 +107,7 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
     public void setAlpha(float alpha) {
         // Note: RecyclerView 在显示子项目时，
         // 会通过 DefaultItemAnimator 动画将 this.itemView 的透明度设置为 1，
-        // 故而，只能对 this.itemView 中的全部子视图修改透明度，从而实现对其的启用/禁用效果
+        // 故而，只能对 this.itemView 中的全部子视图修改透明度，从而实现对其的启用 / 禁用效果
         // https://stackoverflow.com/questions/8395168/android-get-children-inside-a-view
         for (int i = 0; i < ((ViewGroup) this.itemView).getChildCount(); i++) {
             View child = ((ViewGroup) this.itemView).getChildAt(i);
@@ -119,7 +119,7 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
         setScale(this.itemView, scale);
     }
 
-    /** 背景色渐隐/显动画 */
+    /** 背景色渐隐 / 显动画 */
     public void fadeBackgroundColor(View view, int fromAttrId, int toAttrId) {
         int fromColor = getColorByAttrId(fromAttrId);
         int toColor = getColorByAttrId(toAttrId);

@@ -177,7 +177,7 @@ end note
 
 note left of PinyinCharsTree
     前缀匹配树
-    支持 T9/九宫格 拼音前缀查询
+    支持 T9 / 九宫格 拼音前缀查询
     O(m) 查询复杂度, m=前缀长度
 end note
 

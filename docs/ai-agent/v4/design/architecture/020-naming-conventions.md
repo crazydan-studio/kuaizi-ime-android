@@ -22,7 +22,7 @@
 
 | 后缀 | 含义 | 示例 |
 |------|------|------|
-| `Panel` | 容器/组合器（组合多个子组件） | `KeyboardPanel`, `GestureInputPanel`, `CandidateListPanel`, `InputListPanel`, `KeyGridPanel`, `GestureFeedbackPanel` |
+| `Panel` | 容器 / 组合器（组合多个子组件） | `KeyboardPanel`, `GestureInputPanel`, `CandidateListPanel`, `InputListPanel`, `KeyGridPanel`, `GestureFeedbackPanel` |
 | `Screen` | 全屏界面（UI 库或应用层页面） | `KeyboardScreen`, `SettingsScreen`, `MainScreen`, `ExerciseScreen` |
 
 > **注意**：`KeyboardPanel` 和 `KeyboardScreen` 均为完整的输入法组件，包含候选栏、输入栏、工具栏和键盘区域，只是形式和交互不同（叠加 vs 全屏分离）。

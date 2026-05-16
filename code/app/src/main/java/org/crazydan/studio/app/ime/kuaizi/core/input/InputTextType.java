@@ -31,7 +31,7 @@ public enum InputTextType {
     url(R.string.value_text_type_url),
     /** 验证码 */
     captcha(R.string.value_text_type_captcha),
-    /** 手机/电话号码 */
+    /** 手机 / 电话号码 */
     phone(R.string.value_text_type_phone),
     /** 邮箱 */
     email(R.string.value_text_type_email),

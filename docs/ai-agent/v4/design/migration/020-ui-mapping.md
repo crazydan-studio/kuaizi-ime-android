@@ -12,7 +12,7 @@
 
 | Java Class | v4 对应 | 变更说明 |
 |-----------|---------|----------|
-| `MainboardView` | `KeyboardPanel` / `KeyboardScreen` | 两者均为完整输入法组件（含候选栏/输入栏/工具栏 + 键盘区域），叠加/全屏两种布局模式，合并原 `ThreeLayerKeyboardArea` 和 `InputScreen` 职责 |
+| `MainboardView` | `KeyboardPanel` / `KeyboardScreen` | 两者均为完整输入法组件（含候选栏 / 输入栏 / 工具栏 + 键盘区域），叠加 / 全屏两种布局模式，合并原 `ThreeLayerKeyboardArea` 和 `InputScreen` 职责 |
 | `KeyboardView` | `KeyGridPanel` + `GestureInputPanel` + `GestureFeedbackPanel` | 三层分离替代单 View：按键渲染层 + 透明手势拦截层 + 透明反馈绘制层 |
 | `KeyboardViewGestureListener` | `GestureDetectorLayer` | Compose `Modifier.pointerInput` 手势检测替代 View 手势监听 |
 | `KeyboardViewKeyAnimator` | `KeyView`（状态渲染）+ `GestureFeedbackPanel`（临时反馈） | 持续性状态与临时性反馈分离：KeyView 渲染按键常规状态（按下态、激活态、禁用态），GestureFeedbackPanel 绘制临时手势反馈（滑行轨迹、按键高亮） |
@@ -51,7 +51,7 @@
 
 | Java UI 组件 | v4 Compose 对应 | 变更说明 |
 |-------------|----------------|----------|
-| `MainboardView` | `KeyboardPanel`（叠加模式）/ `KeyboardScreen`（全屏模式） | 两者均为完整输入法组件（含候选栏/输入栏/工具栏），叠加/全屏两种布局模式，合并原 `ThreeLayerKeyboardArea` 和 `InputScreen` 职责 |
+| `MainboardView` | `KeyboardPanel`（叠加模式）/ `KeyboardScreen`（全屏模式） | 两者均为完整输入法组件（含候选栏 / 输入栏 / 工具栏），叠加 / 全屏两种布局模式，合并原 `ThreeLayerKeyboardArea` 和 `InputScreen` 职责 |
 | `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyGridPanel` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
 | `KeyboardViewLayoutManager` | Compose `Row`/`Column` + `Modifier.weight` | 移除自定义 LayoutManager |
 | `KeyboardViewGestureListener` | `Modifier.pointerInput` | Compose 手势 API |
@@ -111,7 +111,7 @@ Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高
 |-------------|------|------------|
 | 手势检测与按键坐标绑定 | `KeyboardViewGestureListener` 通过 `findVisibleKeyViewHolderUnderLoose()` 查找触摸点下的 ViewHolder，手势检测依赖按键的实际布局位置 | `GestureInputPanel` 通过 `keyPanelLayout.findKeyAt()` 查询按键布局定位目标按键，与渲染层解耦 |
 | 手势反馈与按键面板绑定 | `RecyclerViewGestureTrailer` 作为 `ItemDecoration` 绑定在 `KeyboardView` 上，轨迹绘制依赖按键面板的 Canvas | `GestureFeedbackPanel` 是独立的透明绘制层，不依赖任何面板的 Canvas |
-| 按键状态反馈与按键渲染混合 | `KeyboardViewKeyAnimator` 既负责按键常规渲染又负责按下/激活等状态动画 | `KeyView` 仅渲染持续性状态，`GestureFeedbackPanel` 绘制临时手势反馈 |
+| 按键状态反馈与按键渲染混合 | `KeyboardViewKeyAnimator` 既负责按键常规渲染又负责按下 / 激活等状态动画 | `KeyView` 仅渲染持续性状态，`GestureFeedbackPanel` 绘制临时手势反馈 |
 | X-Pad 手势、反馈与绘制不可分 | `XPadView.onTouchEvent()` 既检测手势区域又触发绘制更新 | 手势由 `GestureInputPanel` 处理，反馈由 `GestureFeedbackPanel` 绘制，XPadView 仅渲染 |
 | 无法支持分离布局 | 输入手势、按键渲染和视觉反馈在同一组件中 | 三层独立，可灵活组合叠加或分离布局 |
 | 无法独立控制反馈 | 反馈的显隐、样式、位置与按键面板生命周期绑定 | `GestureFeedbackPanel` 独立控制，支持多实例 |
@@ -121,10 +121,10 @@ Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高
 | 层级 | 组件 | 职责 | 是否处理触摸 | 是否绘制反馈 |
 |------|------|------|------------|------------|
 | 顶层 | `GestureInputPanel` | 透明手势拦截层，识别手势并输出 `InputGesture` | ✅ 唯一触摸接收者 | ❌ 完全透明 |
-| 中层 | `GestureFeedbackPanel` | 透明反馈绘制层，绘制滑行轨迹/按键高亮/X-Pad 路径/手指指示器 | ❌ | ✅ 唯一反馈绘制者 |
+| 中层 | `GestureFeedbackPanel` | 透明反馈绘制层，绘制滑行轨迹 / 按键高亮 / X-Pad 路径 / 手指指示器 | ❌ | ✅ 唯一反馈绘制者 |
 | 底层 | `KeyGridPanel` | 按键渲染层，根据 `ImeState` 渲染按键布局和持续性状态 | ❌ | ❌ 仅渲染常规状态 |
 
-**历史原因**：Java 版本的 `KeyboardView` 作为 RecyclerView 内嵌了 LayoutManager、Adapter、GestureListener 和 KeyAnimator，手势检测、按键渲染和视觉反馈高度耦合。`XPadView` 同样将绘制、手势和反馈合为一体。这种耦合导致无法将输入区域、按键区域和反馈区域放置在不同位置，无法独立控制反馈的显隐和样式，也无法支持分离布局模式。v4 通过三层面板分离（输入面板/反馈面板/按键面板）彻底解耦，每一层都可以独立地改变位置、大小和组合方式。
+**历史原因**：Java 版本的 `KeyboardView` 作为 RecyclerView 内嵌了 LayoutManager、Adapter、GestureListener 和 KeyAnimator，手势检测、按键渲染和视觉反馈高度耦合。`XPadView` 同样将绘制、手势和反馈合为一体。这种耦合导致无法将输入区域、按键区域和反馈区域放置在不同位置，无法独立控制反馈的显隐和样式，也无法支持分离布局模式。v4 通过三层面板分离（输入面板 / 反馈面板 / 按键面板）彻底解耦，每一层都可以独立地改变位置、大小和组合方式。
 
 ---
 
@@ -169,7 +169,7 @@ Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高
 | 无搜索 | `SearchBar` + 搜索索引 | 快速定位配置 |
 | 无键盘快捷入口 | `QuickSettingsPopup` | 输入中快速切换高频配置 |
 | 无键盘预览 | `KeyboardPreview` 内嵌预览 | 配置变更即时可视化 |
-| `AboutDonate`（微信/支付宝二维码） | `DonateScreen`（Compose） | 保留捐赠入口，简化交互 |
+| `AboutDonate`（微信 / 支付宝二维码） | `DonateScreen`（Compose） | 保留捐赠入口，简化交互 |
 | Alpha 用户协议 | 移除 | v4 无 alpha 变体 |
 | 12 个 About Activity | `AboutScreen` + Navigation | 单 Activity 架构 |
 

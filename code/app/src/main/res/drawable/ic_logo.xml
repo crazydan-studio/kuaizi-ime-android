@@ -22,7 +22,7 @@
         android:height="64dp"
         android:viewportWidth="64"
         android:viewportHeight="64">
-    <!-- 配色来自: http://zhongguose.com/
+    <!-- 配色来自：http://zhongguose.com/
      - #eb3c70: 松叶牡丹红
      -->
     <path

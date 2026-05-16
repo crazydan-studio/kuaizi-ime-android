@@ -47,7 +47,7 @@ package ":ime-engine\n领域层 + 数据层\nDomain + Data Layer" as engine #FFF
         component [ImeDictProvider\n词典提供者接口] as DictProvider
         component [ImeSqliteDictProvider\nSQLite 词典实现] as SqlDictProvider
     }
-    note right of engine : 逻辑层与 UI/应用分离\n第三方可定制 UI 与交互
+    note right of engine : 逻辑层与 UI / 应用分离\n第三方可定制 UI 与交互
 }
 
 ' ─── Module Dependencies ───────────────────────────────────────────
@@ -103,8 +103,8 @@ legend right
     |= 颜色 |= 含义 |
     |<#E3F2FD>| :app 平台层 |
     |<#E8F5E9>| :ime-ui UI+ViewModel 层 |
-    |<#FFF3E0>| :ime-engine 领域+数据层 |
-    |<#F3E5F5>| 架构/跨切面 |
+    |<#FFF3E0>| :ime-engine 领域 + 数据层 |
+    |<#F3E5F5>| 架构 / 跨切面 |
 endlegend
 
 @enduml

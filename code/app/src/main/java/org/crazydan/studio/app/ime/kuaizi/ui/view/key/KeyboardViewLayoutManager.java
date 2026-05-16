@@ -131,10 +131,10 @@ public class KeyboardViewLayoutManager extends RecyclerViewLayoutManager {
         // 按键按照行列数自动适配屏幕尺寸（以 POINTY_TOP 方向为例，FLAT_TOP 方向为 POINTY_TOP 方向的 xy 轴交换）
         // - 这里按照按键紧挨的情况计算正六边形的半径，
         //   再在绘制时按照按键间隔计算正六边形的实际绘制半径
-        // - 相邻六边形中心间距的计算公式见: https://www.redblobgames.com/grids/hexagons/#spacing
-        // - 横向半径（r1）与宽度（w）的关系: w = (2 * n + 1) * r1 * cos30
-        // - 纵向半径（r2）与高度（h）的关系: h = 2 * r2 + (m - 1) * cos30 * (2 * r2 * cos30)
-        // - 最终正六边形的半径: radius = Math.min(r1, r2)
+        // - 相邻六边形中心间距的计算公式见：https://www.redblobgames.com/grids/hexagons/#spacing
+        // - 横向半径（r1）与宽度（w）的关系：w = (2 * n + 1) * r1 * cos30
+        // - 纵向半径（r2）与高度（h）的关系：h = 2 * r2 + (m - 1) * cos30 * (2 * r2 * cos30)
+        // - 最终正六边形的半径：radius = Math.min(r1, r2)
         // - 按键实际绘制半径（减去一半间距）: R = radius - spacing / (2 * cos30)
         int w = orientation == HexagonOrientation.POINTY_TOP ? getWidth() : getGridHeight();
         int h = orientation == HexagonOrientation.POINTY_TOP ? getGridHeight() : getWidth();

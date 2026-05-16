@@ -397,7 +397,7 @@ public class IMEditor implements InputMsgListener, UserMsgListener, ConfigChange
             case InputChars_Input_Doing:
             case InputChars_Input_Done:
             case InputCandidate_Choose_Done: {
-                // 若产生新的输入，则需要清除 已删除/已提交 的恢复数据
+                // 若产生新的输入，则需要清除 已删除 / 已提交 的恢复数据
                 if (!this.inputList.isEmpty()) {
                     this.log.debug("Clear %s's committed/cleaned for message %s",
                                    () -> new Object[] { this.inputboard.getClass(), msg.type });

@@ -156,7 +156,7 @@ fun KeyGridPanel(
 
 ### 1.4 按键视图
 
-KeyView 在 v4 中是纯展示组件，不处理触摸事件，也不绘制手势反馈。触摸由 GestureInputPanel 统一拦截，手势反馈由 GestureFeedbackPanel 绘制。KeyView 仅渲染按键的常规状态（标签、背景、激活/禁用等持续性状态）。
+KeyView 在 v4 中是纯展示组件，不处理触摸事件，也不绘制手势反馈。触摸由 GestureInputPanel 统一拦截，手势反馈由 GestureFeedbackPanel 绘制。KeyView 仅渲染按键的常规状态（标签、背景、激活 / 禁用等持续性状态）。
 
 ```kotlin
 /**

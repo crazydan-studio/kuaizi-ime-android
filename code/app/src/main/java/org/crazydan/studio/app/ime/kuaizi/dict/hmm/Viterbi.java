@@ -57,7 +57,7 @@ public class Viterbi {
         // <<<<<<<<<<<<< 对串进行回溯即可得对应拼音的汉字
         int lastIndex = phraseSize - 1;
 
-        // 结构: viterbiWords[n] = [[probability, s], ...]，其每一纵列是一个短语的字数组
+        // 结构：viterbiWords[n] = [[probability, s], ...]，其每一纵列是一个短语的字数组
         Object[][][] viterbiWords = new Object[lastIndex + 1][][];
 
         // Note：取概率最大的前 top 个末尾汉字
@@ -130,7 +130,7 @@ public class Viterbi {
         // viterbi[pos][word] = (probability, pre_word)
         Map<Integer, Object[]>[] viterbi = new Map[total];
 
-        // 句子总数: word_id_ == -1 且 prev_word_id_ == -2
+        // 句子总数：word_id_ == -1 且 prev_word_id_ == -2
         int phraseTotal = getTransProbValue(transProb, options.wordEos, options.wordTotal);
 
         int lastIndex = total - 1;

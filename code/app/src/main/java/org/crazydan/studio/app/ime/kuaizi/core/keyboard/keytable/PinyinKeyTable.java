@@ -599,7 +599,7 @@ public class PinyinKeyTable extends KeyTable {
 
     /** 创建 XPad 第 2 区的按键 */
     private Key[][][] createXPadZone2Keys() {
-        // 声母频率: https://www.zhihu.com/question/23111438/answer/559582999
+        // 声母频率：https://www.zhihu.com/question/23111438/answer/559582999
         return new Key[][][] {
                 new Key[][] {
                         new Key[] { level0CharKey("g"), level0CharKey("f"), level0CharKey("p"), }, //

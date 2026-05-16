@@ -44,10 +44,10 @@ public abstract class RecyclerPageView<A extends RecyclerViewAdapter<I, ?>, I> e
         super(context, attrs);
 
         // 以翻页形式切换项目至视图中心
-        // - 用 RecyclerView 打造一个轮播图: https://juejin.cn/post/6844903512447385613
-        // - 使用 RecyclerView 实现 Gallery 画廊效果，并控制 Item 停留位置: https://cloud.tencent.com/developer/article/1041258
+        // - 用 RecyclerView 打造一个轮播图：https://juejin.cn/post/6844903512447385613
+        // - 使用 RecyclerView 实现 Gallery 画廊效果，并控制 Item 停留位置：https://cloud.tencent.com/developer/article/1041258
         // - 用 RecyclerView 打造一个轮播图（进阶版）: https://juejin.cn/post/6844903513189777421
-        // - RecyclerView 实现 Gallery 画廊效果: https://www.cnblogs.com/xwgblog/p/7580812.html
+        // - RecyclerView 实现 Gallery 画廊效果：https://www.cnblogs.com/xwgblog/p/7580812.html
         this.pager = new PagerSnapHelper();
         this.pager.attachToRecyclerView(this);
 

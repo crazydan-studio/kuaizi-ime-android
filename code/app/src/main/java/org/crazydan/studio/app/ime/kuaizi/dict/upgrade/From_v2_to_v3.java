@@ -176,7 +176,7 @@ public class From_v2_to_v3 extends Upgrader {
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
         // <<<<<<<<<<<<< 获取用户输入短语出现次数
-        // 新旧字典可能存在拼音、拼音字母组合、字的 id 不一致的问题，故而，需以 字+拼音 做关联查询
+        // 新旧字典可能存在拼音、拼音字母组合、字的 id 不一致的问题，故而，需以 字 + 拼音 做关联查询
         // {'<字 id>:<字读音字母组合 id>,...': 10, ...}
         Map<String, Integer> usedPhraseCountMap = new HashMap<>();
         // Note：视图 used_pinyin_phrase 已默认按 target_index_ 升序排序，

@@ -82,7 +82,7 @@ package "原子组件\n最小粒度" as atom #FFF3E0 {
 
     rectangle "KeyView\n按键渲染（纯展示）" as KV #FFE0B2
     rectangle "CandidateItem\n候选项" as CI #FFE0B2
-    rectangle "CharInputItem / GapInputItem\n输入栏字符/间隙" as CII #FFE0B2
+    rectangle "CharInputItem / GapInputItem\n输入栏字符 / 间隙" as CII #FFE0B2
     rectangle "ClipTipPopup\n剪贴板提示弹窗" as CTP #FFE0B2
     rectangle "FavoriteItem\n收藏项（含滑动删除）" as FI #FFE0B2
     rectangle "FingerOverlay\n手指指示器" as FO #FFE0B2

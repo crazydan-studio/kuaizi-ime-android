@@ -83,7 +83,7 @@ sealed class KeyboardState {
 | | `XPadding` | X-Pad 输入中 |
 | `CandidateSelection` | `Choosing` | 候选选择 |
 | | `Filtering` | 候选过滤 |
-| | `AdvanceFiltering` | 高级过滤（部首/声调） |
+| | `AdvanceFiltering` | 高级过滤（部首 / 声调） |
 | `CommitOptionChoosing` | — | 提交选项 |
 | `EditorEditing` | `CursorMoving` | 光标移动 |
 | | `TextSelecting` | 文本选择 |

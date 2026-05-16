@@ -45,7 +45,7 @@
         <!-- Note：输入键盘的宽度设置为 match_parent ，且 parent 的左右不设置空白，
         以确保其键盘高度没有过多的空白，在将其等比缩放，从而可以显示出四周的底色
 
-        矩形 View 添加阴影: https://stackoverflow.com/questions/21211870/android-view-shadow#answer-21445593
+        矩形 View 添加阴影：https://stackoverflow.com/questions/21211870/android-view-shadow#answer-21445593
         -->
         <LinearLayout
                 android:layout_width="match_parent"

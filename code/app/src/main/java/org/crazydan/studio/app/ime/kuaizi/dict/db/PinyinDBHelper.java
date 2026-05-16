@@ -130,7 +130,7 @@ public class PinyinDBHelper {
     /**
      * 查询拼音字表 pinyin_word 以获得{@link PinyinWord 拼音字对象}列表
      * <p/>
-     * 注：拼音字对象已包含其繁/简体
+     * 注：拼音字对象已包含其繁 / 简体
      */
     private static List<PinyinWord> queryPinyinWords(
             SQLiteDatabase db, String queryWhere, String[] queryParams, Integer limit

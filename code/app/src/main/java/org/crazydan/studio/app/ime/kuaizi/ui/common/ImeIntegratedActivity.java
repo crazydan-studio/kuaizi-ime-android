@@ -66,7 +66,7 @@ public abstract class ImeIntegratedActivity extends FollowSystemThemeActivity
     }
 
     // ===================== Start: 生命周期 ==================
-    // Activity 生命周期: https://media.geeksforgeeks.org/wp-content/uploads/20210303165235/ActivityLifecycleinAndroid-601x660.jpg
+    // Activity 生命周期：https://media.geeksforgeeks.org/wp-content/uploads/20210303165235/ActivityLifecycleinAndroid-601x660.jpg
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

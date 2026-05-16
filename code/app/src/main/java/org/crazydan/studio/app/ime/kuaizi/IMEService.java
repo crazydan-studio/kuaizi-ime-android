@@ -53,7 +53,7 @@ import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputListPairSymbolComm
 import org.crazydan.studio.app.ime.kuaizi.core.msg.input.InputTextCommitMsgData;
 
 /**
- * 输入法生命周期: https://stackoverflow.com/questions/19961618/inputmethodservice-lifecycle-bug#answer-66238856
+ * 输入法生命周期：https://stackoverflow.com/questions/19961618/inputmethodservice-lifecycle-bug#answer-66238856
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2023-06-29
@@ -194,7 +194,7 @@ public class IMEService extends InputMethodService implements UserMsgListener, I
         super.onFinishInputView(finishingInput);
     }
 
-    /** 输入结束：彻底退出编辑。注意，熄屏/亮屏也会调用该接口 */
+    /** 输入结束：彻底退出编辑。注意，熄屏 / 亮屏也会调用该接口 */
     @Override
     public void onFinishInput() {
         // Note: 在 #onCreateInputView 之前，该接口也会被调用

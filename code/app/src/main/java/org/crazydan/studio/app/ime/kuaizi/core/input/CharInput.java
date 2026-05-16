@@ -372,7 +372,7 @@ public class CharInput extends Input {
 
     // ======================= Start: 拼音输入转换 ======================
 
-    /** 是否为拼音 平/翘舌 开头 */
+    /** 是否为拼音 平 / 翘舌 开头 */
     public boolean is_Pinyin_SCZ_Starting() {
         List<String> chars = getKeyChars();
         if (chars.isEmpty()) {
@@ -397,7 +397,7 @@ public class CharInput extends Input {
         replaceCharKeyText(key, 0, keyText);
     }
 
-    /** 是否为拼音 前/后鼻韵 */
+    /** 是否为拼音 前 / 后鼻韵 */
     public boolean is_Pinyin_NG_Ending() {
         List<String> chars = getKeyChars();
         if (chars.isEmpty()) {
@@ -409,7 +409,7 @@ public class CharInput extends Input {
                || ch.endsWith("en") || ch.endsWith("in") || ch.endsWith("an");
     }
 
-    /** 切换拼音输入的前/后鼻韵 */
+    /** 切换拼音输入的前 / 后鼻韵 */
     public void toggle_Pinyin_NG_Ending() {
         CharKey key = (CharKey) getLastKey();
         String keyText = key.value;

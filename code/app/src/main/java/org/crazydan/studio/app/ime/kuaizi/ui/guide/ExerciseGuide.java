@@ -389,7 +389,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                 // 核心按键
                 new Object[] { "%s为前向删除按键，单击可向前删除输入内容，长按则可做连续删除；", key_ctrl_backspace },
                 new Object[] {
-                        "%s为回车/换行按键，单击可向目标编辑器输入换行符，长按则可连续输入换行符；", key_ctrl_enter
+                        "%s为回车 / 换行按键，单击可向目标编辑器输入换行符，长按则可连续输入换行符；", key_ctrl_enter
                 },
                 new Object[] { "%s为空格输入按键，单击可在输入内容中添加空格，长按则将连续添加空格；", key_ctrl_space },
                 new Object[] {

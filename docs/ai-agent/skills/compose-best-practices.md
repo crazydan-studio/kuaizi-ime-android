@@ -13,8 +13,8 @@
 | 场景 | Compose 方案 | 优势 |
 |------|-------------|------|
 | **设置页面** | 标准 Compose 组件 | 声明式 UI、主题统一、代码简洁 |
-| **列表/网格** | `LazyRow`/`LazyColumn`/`LazyVerticalGrid` | 替代自定义 RecyclerView |
-| **标签/分类** | `ScrollableTabRow` + `HorizontalPager` | 标准化分页 |
+| **列表 / 网格** | `LazyRow`/`LazyColumn`/`LazyVerticalGrid` | 替代自定义 RecyclerView |
+| **标签 / 分类** | `ScrollableTabRow` + `HorizontalPager` | 标准化分页 |
 | **主题切换** | `isSystemInDarkTheme()` | 自动跟随系统主题 |
 | **按键反馈** | 扩展的触觉反馈 API | 丰富的按键触觉反馈类型 |
 
@@ -104,7 +104,7 @@ haptics.performHapticFeedback(HapticFeedbackType.GestureEnd)
 
 ### 2.4 预测性动画（Predictive Animations）— ★★★★☆ 重要
 
-尺寸变化动画（如展开/折叠）：
+尺寸变化动画（如展开 / 折叠）：
 
 ```kotlin
 LookaheadScope {
@@ -240,7 +240,7 @@ GesturePanel(
 
 ## 4. 手势处理
 
-### 4.1 点击/长按手势
+### 4.1 点击 / 长按手势
 
 ```kotlin
 // ✅ 推荐：使用 pointerInput 处理自定义手势
@@ -262,7 +262,7 @@ Modifier.pointerInput(key) {
 }
 ```
 
-### 4.2 滑行/拖拽手势
+### 4.2 滑行 / 拖拽手势
 
 ```kotlin
 Modifier.pointerInput(Unit) {
