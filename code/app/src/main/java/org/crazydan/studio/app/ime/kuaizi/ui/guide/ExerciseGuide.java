@@ -387,49 +387,49 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
         Object[][] steps = new Object[][] {
                 // 核心按键
-                new Object[] { "%s 为前向删除按键，单击可向前删除输入内容，长按则可做连续删除；", key_ctrl_backspace },
+                new Object[] { "%s为前向删除按键，单击可向前删除输入内容，长按则可做连续删除；", key_ctrl_backspace },
                 new Object[] {
-                        "%s 为回车/换行按键，单击可向目标编辑器输入换行符，长按则可连续输入换行符；", key_ctrl_enter
+                        "%s为回车/换行按键，单击可向目标编辑器输入换行符，长按则可连续输入换行符；", key_ctrl_enter
                 },
-                new Object[] { "%s 为空格输入按键，单击可在输入内容中添加空格，长按则将连续添加空格；", key_ctrl_space },
+                new Object[] { "%s为空格输入按键，单击可在输入内容中添加空格，长按则将连续添加空格；", key_ctrl_space },
                 new Object[] {
-                        "%s 为光标定位按键，在其上滑动手指可移动目标编辑器中的光标，" + "双击则将进入<b>内容编辑</b>模式；",
+                        "%s为光标定位按键，在其上滑动手指可移动目标编辑器中的光标，" + "双击则将进入<b>内容编辑</b>模式；",
                         key_ctrl_cursor_locator
                 },
                 // 其他按键
-                new Object[] { "%s 为左右手输入模式切换按键，用于临时切换<b>左右手使用</b>模式；", key_ctrl_hand_mode },
-                new Object[] { "%s 为算术键盘切换按键，用于切换到<b>算术输入</b>键盘；", key_ctrl_switch_math },
+                new Object[] { "%s为左右手输入模式切换按键，用于临时切换<b>左右手使用</b>模式；", key_ctrl_hand_mode },
+                new Object[] { "%s为算术键盘切换按键，用于切换到<b>算术输入</b>键盘；", key_ctrl_switch_math },
                 new Object[] {
-                        "%s 为拉丁文键盘切换按键，用于从拼音键盘切换到拉丁文（英文、数字）输入键盘；", key_ctrl_switch_latin
+                        "%s为拉丁文键盘切换按键，用于从拼音键盘切换到拉丁文（英文、数字）输入键盘；", key_ctrl_switch_latin
                 },
                 new Object[] {
-                        "%s 为拼音键盘切换按键，其在切换到拉丁文键盘后显示，用于从拉丁文键盘切换回拼音键盘；",
+                        "%s为拼音键盘切换按键，其在切换到拉丁文键盘后显示，用于从拉丁文键盘切换回拼音键盘；",
                         key_ctrl_switch_pinyin
                 },
-                new Object[] { "%s 为表情符号键盘切换按键，用于切换到表情符号输入键盘；", key_ctrl_switch_emoji },
-                new Object[] { "%s 为标点符号键盘切换按键，用于切换到标点符号输入键盘；", key_ctrl_switch_symbol },
+                new Object[] { "%s为表情符号键盘切换按键，用于切换到表情符号输入键盘；", key_ctrl_switch_emoji },
+                new Object[] { "%s为标点符号键盘切换按键，用于切换到标点符号输入键盘；", key_ctrl_switch_symbol },
                 new Object[] {
-                        "%s 为已提交输入的<b>撤回</b>按键，用于撤回已提交至目标编辑器的输入，以重新修正。"
+                        "%s为已提交输入的<b>撤回</b>按键，用于撤回已提交至目标编辑器的输入，以重新修正。"
                         + "在没有可撤回输入时，该按键将被禁用；", key_ctrl_input_revoke
                 },
                 // 隐藏按键
                 new Object[] {
-                        "%s 为输入的提交按键，其在键盘上方的<b>输入列表</b>不为空时显示。"
+                        "%s为输入的提交按键，其在键盘上方的<b>输入列表</b>不为空时显示。"
                         + "单击可向目标编辑器提交当前输入；", key_ctrl_commit
                 },
                 new Object[] {
-                        "%s 为拼音候选字的确认按键，其在选中拼音候选字时显示。"
+                        "%s为拼音候选字的确认按键，其在选中拼音候选字时显示。"
                         + "若当前选中的候选字已经是正确的，则可点击该按键以跳过对其的选择；", key_ctrl_input_confirm
                 },
                 new Object[] {
-                        "%s 为当前键盘退出按键，点击后将切换回原键盘。比如，从表情符号键盘退回到拼音键盘；", key_ctrl_exit
+                        "%s为当前键盘退出按键，点击后将切换回原键盘。比如，从表情符号键盘退回到拼音键盘；", key_ctrl_exit
                 },
                 new Object[] {
-                        "%s 为已选中输入的删除按键，在选中表情符号、标点符号、拼音候选字等时显示。"
+                        "%s为已选中输入的删除按键，在选中表情符号、标点符号、拼音候选字等时显示。"
                         + "单击可删除当前选中的输入；", key_ctrl_input_drop
                 },
                 new Object[] {
-                        "%s 为内容选择按键，在长按或双击%s 后显示。在其上滑动手指可移动目标编辑器中的光标，"
+                        "%s为内容选择按键，在长按或双击%s后显示。在其上滑动手指可移动目标编辑器中的光标，"
                         + "并选中光标移动范围内的内容，可进一步执行复制、粘贴、剪切等操作；",
                         key_ctrl_range_selector,
                         key_ctrl_cursor_locator
@@ -526,7 +526,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                 key_level_0, key_level_1, null
         }, key_case_word, expected_auto_word, null);
 
-        exercise.newStep("请<span style=\"color:#ed4c67;\">长按</span>输入提交按键%s 以进入<b>输入提交选项</b>模式；",
+        exercise.newStep("请<span style=\"color:#ed4c67;\">长按</span>输入提交按键%s以进入<b>输入提交选项</b>模式；",
                          key_ctrl_commit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_Switch_Done) {
@@ -541,7 +541,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
                     toast("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">长按</span> <b>输入提交按键</b>");
                 });
-        exercise.newStep("请点击按键%s 以设置待提交的输入需携带拼音。<b>注</b>：可多次点击做形式切换；",
+        exercise.newStep("请点击按键%s以设置待提交的输入需携带拼音。<b>注</b>：可多次点击做形式切换；",
                          key_ctrl_commit_mode_with_pinyin) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputChars_Input_Done) {
@@ -553,14 +553,14 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                     }
                 });
 
-        exercise.newStep("请点击输入提交按键%s 将当前形式的输入提交至目标编辑器。"
-                         + "<b>注</b>：可点击按键%s 退出<b>输入提交选项</b>模式；", key_ctrl_commit, key_ctrl_exit) //
+        exercise.newStep("请点击输入提交按键%s将当前形式的输入提交至目标编辑器。"
+                         + "<b>注</b>：可点击按键%s退出<b>输入提交选项</b>模式；", key_ctrl_commit, key_ctrl_exit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         exercise.gotoNextStep();
                     }
                 });
-        exercise.newStep("请点击按键%s 将刚刚提交的输入撤回；", key_ctrl_commit_revoke) //
+        exercise.newStep("请点击按键%s将刚刚提交的输入撤回；", key_ctrl_commit_revoke) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Committed_Revoke_Doing) {
                         exercise.gotoNextStep();
@@ -588,7 +588,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
         exercise.newStep("<b>提示</b>：光标移动和内容选择的范围与手指在按键上滑行的距离相关，"
                          + "手指在按键上的滑行距离越长，光标移动和内容选择的范围将越大；");
-        exercise.newStep("请使用手指在光标定位按键%s 上向不同方向滑动，并观察目标编辑器中光标位置的变化；",
+        exercise.newStep("请使用手指在光标定位按键%s上向不同方向滑动，并观察目标编辑器中光标位置的变化；",
                          key_ctrl_cursor_locator) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Editor_Cursor_Move_Doing) {
@@ -602,7 +602,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
                     toast("请按当前步骤的指导要求移动目标编辑器中的光标");
                 });
-        exercise.newStep("请<span style=\"color:#ed4c67;\">双击</span>光标定位按键%s 以进入<b>内容编辑</b>模式；",
+        exercise.newStep("请<span style=\"color:#ed4c67;\">双击</span>光标定位按键%s以进入<b>内容编辑</b>模式；",
                          key_ctrl_cursor_locator) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_Switch_Done) {
@@ -617,7 +617,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
                     toast("请按当前步骤的指导要求<span style=\"color:#ed4c67;\">双击</span><b>光标定位按键</b>");
                 });
-        exercise.newStep("请在内容选择按键%s 上滑动，并观察目标编辑器中内容的选择状态；", key_ctrl_range_selector) //
+        exercise.newStep("请在内容选择按键%s上滑动，并观察目标编辑器中内容的选择状态；", key_ctrl_range_selector) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Editor_Range_Select_Doing) {
                         Key key = msg.data().key;
@@ -630,7 +630,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
                     toast("请按当前步骤的指导要求选择编辑内容");
                 });
-        exercise.newStep("请尝试点击%s、%s 等按键，并观察复制、粘贴、剪切、撤销和重做等操作的结果；",
+        exercise.newStep("请尝试点击%s、%s等按键，并观察复制、粘贴、剪切、撤销和重做等操作的结果；",
                          key_ctrl_edit_copy,
                          key_ctrl_edit_paste) //
                 .action((msg) -> {
@@ -642,7 +642,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                     toast("请按当前步骤的指导要求操作编辑内容");
                 });
 
-        exercise.newStep("请点击退出按键%s 以切换回原键盘；", key_ctrl_exit) //
+        exercise.newStep("请点击退出按键%s以切换回原键盘；", key_ctrl_exit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_Switch_Done) {
                         exercise.gotoNextStep();
@@ -671,7 +671,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         char[] chars = new char[] { 'B', 'e', ' ', 'H', 'a', 'p', 'p', 'y' };
         for (char ch : chars) {
             if (ch == ' ') {
-                exercise.newStep("请点击按键%s 以输入空格；", key_ctrl_space) //
+                exercise.newStep("请点击按键%s以输入空格；", key_ctrl_space) //
                         .action((msg) -> {
                             if (msg.type == InputMsgType.InputChars_Input_Done) {
                                 Key key = msg.data().key;
@@ -691,9 +691,9 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
             Key key_char = keyTable.level0CharKey(String.valueOf(ch).toLowerCase());
 
             exercise.newStep(useUpperCase
-                             ? "请<span style=\"color:#ed4c67;\">快速双击</span>按键%s 以输入大写字母"
+                             ? "请<span style=\"color:#ed4c67;\">快速双击</span>按键%s以输入大写字母"
                                + " <span style=\"color:#ed4c67;\">%s</span>；"
-                             : "请点击按键%s 以输入小写字母 <span style=\"color:#ed4c67;\">%s</span>；", key_char, ch) //
+                             : "请点击按键%s以输入小写字母 <span style=\"color:#ed4c67;\">%s</span>；", key_char, ch) //
                     .action((msg) -> {
                         switch (msg.type) {
                             case Keyboard_Switch_Done: {
@@ -729,7 +729,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         }
 
         String tanhao = "!";
-        exercise.newStep("请<span style=\"color:#ed4c67;\">快速双击</span>按键%s 以输入字符"
+        exercise.newStep("请<span style=\"color:#ed4c67;\">快速双击</span>按键%s以输入字符"
                          + " <span style=\"color:#ed4c67;\">%s</span>；", key_symbol_tanhao, tanhao) //
                 .action((msg) -> {
                     switch (msg.type) {
@@ -779,7 +779,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         exercise.newStep("<b>提示</b>：若计算式以等号开头，则提交内容将仅包含计算结果。"
                          + "若计算式以等号结尾，则提交内容除了计算结果以外还将包括计算式本身。"
                          + "对于无效的计算式，则将保持原样输出；");
-        exercise.newStep("请点击按键%s 以切换到算术键盘；", key_ctrl_switch_math) //
+        exercise.newStep("请点击按键%s以切换到算术键盘；", key_ctrl_switch_math) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.Keyboard_Switch_Done) {
                         KeyboardSwitchMsgData data = msg.data();
@@ -804,7 +804,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                 keyTable.mathOpKey(MathOpKey.Type.Equal),
                 };
         for (Key mathKey : mathKeys) {
-            exercise.newStep("请点击按键%s 以输入%s <span style=\"color:#ed4c67;\">%s</span>；",
+            exercise.newStep("请点击按键%s以输入%s <span style=\"color:#ed4c67;\">%s</span>；",
                              mathKey,
                              mathKey instanceof MathOpKey ? "运算符" : "数字",
                              mathKey.value) //
@@ -824,7 +824,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                     });
         }
 
-        exercise.newStep("请点击输入提交按键%s 将当前输入提交至目标编辑器，并观察输入的计算式中是否包含最终的运算结果；",
+        exercise.newStep("请点击输入提交按键%s将当前输入提交至目标编辑器，并观察输入的计算式中是否包含最终的运算结果；",
                          key_ctrl_commit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
@@ -892,7 +892,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         exercise.newStep("<b>提示</b>：X 型输入面板默认未启用，请自行在配置项「%s」中「%s」；", config_label, enable_label);
 
         // =======================================================
-        exercise.newStep("请点击回车按键%s 以开始英文输入演示动画；", key_ctrl_enter) //
+        exercise.newStep("请点击回车按键%s以开始英文输入演示动画；", key_ctrl_enter) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         InputListCommitMsgData data = msg.data();
@@ -955,7 +955,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                     });
 
             ExerciseStep step = isFirstStep
-                                ? exercise.newStep("请让手指从中央正六边形外围的%s 处开始，沿演示动画所绘制的运动轨迹滑行，"
+                                ? exercise.newStep("请让手指从中央正六边形外围的%s处开始，沿演示动画所绘制的运动轨迹滑行，"
                                                    + "以输入 <span style=\"color:#ed4c67;\">%s</span>；",
                                                    key_ctrl_switch_latin,
                                                    key.label)
@@ -995,7 +995,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
         }
 
         // =======================================================================
-        exercise.newStep("请<span style=\"color:#ed4c67;\">释放手指</span>，并点击空格按键%s 以开始拼音输入的演示动画；",
+        exercise.newStep("请<span style=\"color:#ed4c67;\">释放手指</span>，并点击空格按键%s以开始拼音输入的演示动画；",
                          key_ctrl_space) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
@@ -1035,7 +1035,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                     exercise.gotoStep(firstSimulatorStepName);
                 };
 
-                exercise.newStep("请注意观看%s 的输入演示动画；",
+                exercise.newStep("请注意观看%s的输入演示动画；",
                                  key instanceof CtrlKey
                                  ? key
                                  : " <span style=\"color:#ed4c67;\">" + key.label + "</span> ") //
@@ -1075,7 +1075,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         });
 
                 ExerciseStep step = isFirstStep
-                                    ? exercise.newStep("请让手指从中央正六边形外围的%s 处开始，沿演示动画所绘制的运动轨迹滑行，"
+                                    ? exercise.newStep("请让手指从中央正六边形外围的%s处开始，沿演示动画所绘制的运动轨迹滑行，"
                                                        + "以输入 <span style=\"color:#ed4c67;\">%s</span>；",
                                                        key_ctrl_switch_pinyin,
                                                        key.label)
@@ -1144,7 +1144,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
 
         exercise.newStep("<b>提示</b>：在拼音输入过程中，手指可随意滑过其他按键，仅需确保手指释放前输入了完整的拼音即可；");
 
-        exercise.newStep("请将手指放在下方键盘的按键%s 上，并让手指贴着屏幕从该按键上滑出；", key_level_0) //
+        exercise.newStep("请将手指放在下方键盘的按键%s上，并让手指贴着屏幕从该按键上滑出；", key_level_0) //
                 .name("input_level_0") //
                 .action((msg) -> {
                     switch (msg.type) {
@@ -1181,7 +1181,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                 });
 
         if (key_level_2 == null) {
-            exercise.newStep("请不要让手指离开屏幕，继续将手指滑到按键%s 上，并就地释放手指；", key_level_1) //
+            exercise.newStep("请不要让手指离开屏幕，继续将手指滑到按键%s上，并就地释放手指；", key_level_1) //
                     .name("input_level_1") //
                     .action((msg) -> {
                         switch (msg.type) {
@@ -1211,7 +1211,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                         }
                     });
         } else {
-            exercise.newStep("请不要让手指离开屏幕，继续将手指滑到按键%s 上，再从该按键上滑出；", key_level_1) //
+            exercise.newStep("请不要让手指离开屏幕，继续将手指滑到按键%s上，再从该按键上滑出；", key_level_1) //
                     .name("input_level_1") //
                     .action((msg) -> {
                         if (msg.type == InputMsgType.InputChars_Input_Doing) {
@@ -1229,7 +1229,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
                             exercise.restart();
                         }
                     });
-            exercise.newStep("请继续将手指滑到按键%s 上，并就地释放手指；", key_level_2) //
+            exercise.newStep("请继续将手指滑到按键%s上，并就地释放手指；", key_level_2) //
                     .name("input_level_2") //
                     .action((msg) -> {
                         switch (msg.type) {
@@ -1324,7 +1324,7 @@ public class ExerciseGuide extends ImeIntegratedActivity implements ExerciseMsgL
     }
 
     private void add_Common_Input_Committing_Step(Exercise exercise, Key key_ctrl_commit) {
-        exercise.newStep("请点击输入提交按键%s 将当前输入提交至目标编辑器；", key_ctrl_commit) //
+        exercise.newStep("请点击输入提交按键%s将当前输入提交至目标编辑器；", key_ctrl_commit) //
                 .action((msg) -> {
                     if (msg.type == InputMsgType.InputList_Commit_Doing) {
                         exercise.gotoNextStep();
