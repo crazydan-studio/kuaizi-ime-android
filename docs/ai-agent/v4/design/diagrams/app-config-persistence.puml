@@ -110,8 +110,8 @@ package "启动恢复" as startup #F3E5F5 {
 
 package "配置变更两条路径" as summary #FFF9C4 {
 
-    rectangle "路径1: 运行时修改\nQuickSettingsPopup" as path1 #E8F5E9
-    rectangle "路径2: 持久化修改\nSettingsScreen" as path2 #E3F2FD
+    rectangle "路径 1: 运行时修改\nQuickSettingsPopup" as path1 #E8F5E9
+    rectangle "路径 2: 持久化修改\nSettingsScreen" as path2 #E3F2FD
 
     rectangle "共同终点\nviewModel.updateConfig()\n→ engine.updateConfig()\n→ ImeState 自动同步" as common #FFF3E0
 
@@ -124,7 +124,7 @@ package "配置变更两条路径" as summary #FFF9C4 {
 legend right
     |= 颜色 |= 含义 |
     |<#E3F2FD>| :app 平台层（含持久化）|
-    |<#E8F5E9>| :ime-ui UI层（仅运行时）|
+    |<#E8F5E9>| :ime-ui UI 层（仅运行时）|
     |<#FFF3E0>| :ime-engine 层 |
     |<#F3E5F5>| 启动恢复 |
 endlegend

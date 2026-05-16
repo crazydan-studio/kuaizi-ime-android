@@ -148,7 +148,7 @@ package "日志流程\nLog Flow" as logflow #FFF9C4 {
 
     entry_point --> core : "1. 委托"
     core --> crash : "2. 拦截检查"
-    core --> logcat : "3. 写入Logcat"
+    core --> logcat : "3. 写入 Logcat"
     core --> file : "3. 写入文件"
     file --> storage : "4. 存储管理"
 }

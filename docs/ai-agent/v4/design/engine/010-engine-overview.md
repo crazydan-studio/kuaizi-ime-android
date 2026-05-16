@@ -8,13 +8,13 @@
 
 | 定位 | 说明 |
 |------|------|
-| **逻辑与UI分离** | 引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等 |
+| **逻辑与 UI 分离** | 引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等 |
 | **MVI 驱动** | 通过 `StateFlow<ImeState>` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeOutput` 输出编辑指令 |
 | **可嵌入** | 第三方应用只需引入 `:ime-engine` 即可获得完整输入法能力，无需系统 IME 服务 |
 | **可扩展** | 字典接口与实现分离（`ImeDictProvider`），输出桥接可自定义（`ImeOutputBridge`），功能可裁剪（`Feature`） |
 | **Fail Fast** | 非法操作（如禁用收藏后调用收藏功能）立即抛出异常而非静默忽略 |
 
-引擎库的「逻辑与UI分离」定位意味着第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能，也可以仅引入 `:ime-engine` 自行实现视图层和交互逻辑。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来消除 Android 依赖。
+引擎库的「逻辑与 UI 分离」定位意味着第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能，也可以仅引入 `:ime-engine` 自行实现视图层和交互逻辑。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来消除 Android 依赖。
 
 「MVI 驱动」定位是引擎与 UI 完全分离的技术基础。引擎不依赖任何 UI 框架，所有状态变更通过 `StateFlow` 暴露，所有用户操作通过 `ImeIntent` 接收，所有编辑指令通过 `ImeOutputBridge` 输出。这种单向数据流使得引擎可以被任意 UI 框架（Compose、View、Web、游戏引擎等）消费，而不需要引擎感知 UI 的存在。
 

@@ -216,7 +216,7 @@ package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
 ' :ime-ui
 ' ═══════════════════════════════════════════════════════════════════
 
-package ":ime-ui\nUI层 + ViewModel层" as ime_ui #E8F5E9 {
+package ":ime-ui\nUI 层 + ViewModel 层" as ime_ui #E8F5E9 {
 
     package "viewmodel/\nViewModel" as ui_viewmodel #C8E6C9 {
         class KeyboardViewModel {
