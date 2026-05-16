@@ -17,61 +17,32 @@ package "脚本来源\nScript Source" as source #F3E5F5 {
 
 ' ─── Script Loading ────────────────────────────────────────────────
 
-rectangle "ActionScriptLoader\n脚本加载器" as loader #F3E5F5 {
-    :parseScript(json)\n→ ActionScript;
-}
+rectangle "ActionScriptLoader 脚本加载器\n──\nparseScript(json) → ActionScript" as loader #F3E5F5
 
-rectangle "ActionScript\n动作脚本" as script #CE93D8 {
-    name: String
-    description: String
-    actions: List<InputAction>
-}
+rectangle "ActionScript 动作脚本\n──\nname: String\ndescription: String\nactions: List<InputAction>" as script #CE93D8
 
 ' ─── Player Core ───────────────────────────────────────────────────
 
 package "播放器核心\nInputActionPlayer" as player #FFF3E0 {
 
-    rectangle "PlaybackState\n播放状态" as state #FFE0B2 {
-        Idle / Ready / Playing
-        Paused / Finished
-    }
+    rectangle "PlaybackState 播放状态\n──\nIdle / Ready / Playing\nPaused / Finished" as state #FFE0B2
 
-    rectangle "播放控制\nPlayback Control" as control #FFE0B2 {
-        load(script)
-        play() / pause()
-        resume() / stop()
-        stepForward()
-        setSpeed()
-    }
+    rectangle "播放控制 Playback Control\n──\nload(script)\nplay() / pause()\nresume() / stop()\nstepForward()\nsetSpeed()" as control #FFE0B2
 
-    rectangle "动作执行\nexecuteAction()" as executor #FFCC80 {
-        按时间轴调度
-        查询实时坐标
-        驱动反馈 + 引擎
-    }
+    rectangle "动作执行 executeAction()\n──\n按时间轴调度\n查询实时坐标\n驱动反馈 + 引擎" as executor #FFCC80
 }
 
 ' ─── Coordinate Resolution ────────────────────────────────────────
 
 package "坐标解析\nCoordinate Resolution" as coord #E8F5E9 {
 
-    rectangle "KeyPositionResolver\n按键位置解析器" as resolver #C8E6C9 {
-        resolve(key): Offset?
-        resolveCandidatePosition(i): Offset?
-    }
+    rectangle "KeyPositionResolver 按键位置解析器\n──\nresolve(key): Offset?\nresolveCandidatePosition(i): Offset?" as resolver #C8E6C9
 
-    rectangle "ComposeKeyPositionResolver\nCompose 布局实现" as compose_resolver #A5D6A7 {
-        keyboardLayoutProvider
-        candidateLayoutProvider
-    }
+    rectangle "ComposeKeyPositionResolver\nCompose 布局实现\n──\nkeyboardLayoutProvider\ncandidateLayoutProvider" as compose_resolver #A5D6A7
 
-    rectangle "KeyboardLayoutInfo\n键盘布局信息" as kb_layout #A5D6A7 {
-        keyPositions: Map<InputKey, Rect>
-    }
+    rectangle "KeyboardLayoutInfo 键盘布局信息\n──\nkeyPositions: Map<InputKey, Rect>" as kb_layout #A5D6A7
 
-    rectangle "CandidateLayoutInfo\n候选栏布局信息" as cand_layout #A5D6A7 {
-        candidatePositions: List<Rect>
-    }
+    rectangle "CandidateLayoutInfo 候选栏布局信息\n──\ncandidatePositions: List<Rect>" as cand_layout #A5D6A7
 }
 
 ' ─── Action Execution Outputs ─────────────────────────────────────
@@ -84,19 +55,11 @@ package "动作输出\nAction Outputs" as outputs #E3F2FD {
 
     package "反馈驱动\nFeedback Driving" as feedback_drive #C8E6C9 {
 
-        rectangle "GestureFeedbackState\n手势反馈状态" as gfs #A5D6A7 {
-            fingerIndicator
-            (FingerIndicatorState)
-        }
+        rectangle "GestureFeedbackState 手势反馈状态\n──\nfingerIndicator\n(FingerIndicatorState)" as gfs #A5D6A7
 
-        rectangle "SwipePathInterpolator\n滑行路径插值器" as interpolator #A5D6A7 {
-            interpolate(from, to)
-            → 贝塞尔曲线点列表
-        }
+        rectangle "SwipePathInterpolator 滑行路径插值器\n──\ninterpolate(from, to)\n→ 贝塞尔曲线点列表" as interpolator #A5D6A7
 
-        rectangle "trailPoints\n滑行轨迹点" as trail #A5D6A7 {
-            StateFlow<List<Offset>>
-        }
+        rectangle "trailPoints 滑行轨迹点\n──\nStateFlow<List<Offset>>" as trail #A5D6A7
     }
 }
 
