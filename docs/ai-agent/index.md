@@ -80,7 +80,6 @@ docs/ai-agent/
     - 使用相对路径链接，不要使用「文档 160」「文档 800」等抽象编号
     - 文件重命名后必须同步更新所有引用该文件的链接
     - 跨目录引用注意相对路径层级（如从 `architecture/` 引用 `engine/` 的文件需用 `../engine/`）
-  - **VitePress 静态资源目录**：`vitepress-plugin-diagrams` 的 `diagramsDir` 必须为 `.vitepress` 所在根目录下 `public/` 目录的子目录路径（如 `public/diagrams`），且该目录必须在服务启动前已存在，否则 VitePress 不会加载其中的静态文件
 
 ---
 
