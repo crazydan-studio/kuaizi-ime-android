@@ -268,7 +268,7 @@ package ":ime-ui\nUI 层 + ViewModel 层" as ime_ui #E8F5E9 {
     package "atom/\n原子组件" as ui_atom #66BB6A {
         class KeyView <<按键渲染>>
         class CandidateItem <<候选项>>
-        class CharInputItem / GapInputItem <<输入栏项>>
+        class "CharInputItem / GapInputItem" <<输入栏项>>
         class ClipTipPopup <<剪贴板提示>>
         class FavoriteItem <<收藏项>>
         class FingerOverlay <<手指指示器>>
@@ -357,7 +357,7 @@ package ":app\n平台层" as app #E3F2FD {
         + importUserData(filePath)
     }
 
-    class LogViewerScreen / LogExportScreen <<日志界面>>
+    class "LogViewerScreen / LogExportScreen" <<日志界面>>
 }
 
 ' ═══════════════════════════════════════════════════════════════════

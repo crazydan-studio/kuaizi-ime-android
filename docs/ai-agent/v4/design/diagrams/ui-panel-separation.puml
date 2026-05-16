@@ -1,4 +1,5 @@
 @startuml ui-panel-separation
+allowmixing
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false
