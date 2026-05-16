@@ -1,0 +1,300 @@
+@startuml ui-input-action-class-relationship
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam classFontSize 13
+
+title 筷子输入法 - 输入动作程序化类关系\nInput Action Playback Class Relationships
+
+' ─── Script Model ──────────────────────────────────────────────────
+
+package "脚本模型\nScript Model\n[:ime-engine]" as script_pkg #FFF3E0 {
+
+    class ActionScript {
+        + name: String
+        + description: String
+        + actions: List<InputAction>
+    }
+
+    abstract class InputAction {
+        + startTime: Long
+    }
+
+    class KeyDown {
+        + key: InputKey
+    }
+
+    class KeyUp {
+        + key: InputKey
+    }
+
+    class SwipeTo {
+        + fromKey: InputKey
+        + toKey: InputKey
+        + duration: Long
+    }
+
+    class Wait {
+        + duration: Long
+    }
+
+    class SelectCandidate {
+        + candidateIndex: Int
+    }
+
+    class SwitchKeyboard {
+        + targetType: KeyboardType
+    }
+}
+
+' ─── Playback State ────────────────────────────────────────────────
+
+package "播放状态\nPlayback State" as state_pkg #F3E5F5 {
+
+    abstract class PlaybackState
+    class Idle
+    class Ready {
+        + script: ActionScript
+    }
+    class Playing {
+        + script: ActionScript
+    }
+    class Paused {
+        + script: ActionScript
+    }
+    class Finished {
+        + script: ActionScript
+    }
+}
+
+' ─── Player ────────────────────────────────────────────────────────
+
+package "播放器\nPlayer\n[:ime-ui]" as player_pkg #E8F5E9 {
+
+    class InputActionPlayer {
+        - viewModel: KeyboardViewModel
+        - feedbackState: GestureFeedbackState
+        - positionResolver: KeyPositionResolver
+        - scope: CoroutineScope
+        - job: Job?
+        - currentScript: ActionScript?
+        - actionIndex: Int
+        - _trailPoints: MutableStateFlow<List<Offset>>
+        + playbackState: StateFlow<PlaybackState>
+        + speed: StateFlow<Float>
+        + trailPoints: StateFlow<List<Offset>>
+        + load(script: ActionScript)
+        + play()
+        + pause()
+        + resume()
+        + stop()
+        + stepForward()
+        + setSpeed(speed: Float)
+        - executeAction(action: InputAction)
+        - animateFingerAlongPath(feedbackState, path, duration)
+    }
+}
+
+' ─── Coordinate Resolution ────────────────────────────────────────
+
+package "坐标解析\nCoordinate Resolution\n[:ime-ui]" as coord_pkg #E3F2FD {
+
+    interface KeyPositionResolver {
+        + resolve(key: InputKey): Offset?
+        + resolveCandidatePosition(index: Int): Offset?
+    }
+
+    class ComposeKeyPositionResolver {
+        - keyboardLayoutProvider: () -> KeyboardLayoutInfo?
+        - candidateLayoutProvider: () -> CandidateLayoutInfo?
+        + resolve(key: InputKey): Offset?
+        + resolveCandidatePosition(index: Int): Offset?
+    }
+
+    class KeyboardLayoutInfo {
+        + keyPositions: Map<InputKey, Rect>
+    }
+
+    class CandidateLayoutInfo {
+        + candidatePositions: List<Rect>
+    }
+}
+
+' ─── Path Interpolation ───────────────────────────────────────────
+
+package "路径插值\nPath Interpolation\n[:ime-ui]" as path_pkg #FFF9C4 {
+
+    class SwipePathInterpolator <<object>> {
+        + interpolate(from: Offset, to: Offset,\narcFactor: Float, steps: Int): List<Offset>
+    }
+}
+
+' ─── Feedback State ────────────────────────────────────────────────
+
+package "反馈状态\nFeedback State\n[:ime-ui]" as feedback_pkg #FFE0B2 {
+
+    class GestureFeedbackState {
+        - _touchTrailPoints: MutableStateFlow<List<Offset>>
+        - _pressedKeys: MutableStateFlow<Set<InputKey>>
+        - _keyPath: MutableStateFlow<List<InputKey>>
+        - _xPadPath: MutableStateFlow<List<XPadZone>>
+        - _fingerIndicator: MutableStateFlow<FingerIndicatorState?>
+        + touchTrailPoints: StateFlow<List<Offset>>
+        + pressedKeys: StateFlow<Set<InputKey>>
+        + keyPath: StateFlow<List<InputKey>>
+        + xPadPath: StateFlow<List<XPadZone>>
+        + fingerIndicator: StateFlow<FingerIndicatorState?>
+        + setFingerIndicator(state: FingerIndicatorState?)
+    }
+
+    class FingerIndicatorState {
+        + position: Offset
+        + pressed: Boolean
+        + visible: Boolean
+    }
+}
+
+' ─── Script Loader ────────────────────────────────────────────────
+
+package "脚本加载\nScript Loader\n[:app]" as loader_pkg #D1C4E9 {
+
+    class ActionScriptLoader {
+        - context: Context
+        + loadPreset(name: String): ActionScript
+        + listPresets(): List<String>
+        + loadFromFile(uri: Uri): ActionScript
+        - parseScript(json: String): ActionScript
+    }
+}
+
+' ─── ViewModel ─────────────────────────────────────────────────────
+
+package "ViewModel\n[:ime-ui]" as vm_pkg #C8E6C9 {
+
+    class KeyboardViewModel {
+        - engine: ImeEngine
+        - feedbackState: GestureFeedbackState
+        + state: StateFlow<ImeState>
+        + handleGesture(gesture: InputGesture)
+        + handleIntent(intent: ImeIntent)
+        + updateConfig(config: ImeConfig)
+    }
+}
+
+' ─── UI Components ─────────────────────────────────────────────────
+
+package "UI 组件\nUI Components\n[:ime-ui]" as ui_pkg #E3F2FD {
+
+    class ExerciseScreen <<@Composable>> {
+        + TargetTextDisplay
+        + InputMethodSelector
+        + KeyboardWithOverlay
+        + ActionPlayerPanel
+    }
+
+    class KeyboardWithOverlay <<@Composable>> {
+        + KeyboardPanel
+        + SwipeTrailOverlay
+        + FingerOverlay
+    }
+
+    class ActionPlayerPanel <<@Composable>> {
+        + 播放 / 暂停 / 停止按钮
+        + 步进按钮
+        + 速度滑块
+    }
+
+    class FingerOverlay <<@Composable>> {
+        + 渲染手指指示器
+        + 读取 GestureFeedbackState.fingerIndicator
+    }
+
+    class SwipeTrailOverlay <<@Composable>> {
+        + 渲染滑行轨迹
+        + 读取 trailPoints
+    }
+}
+
+' ─── KeyboardPanel / KeyboardScreen ───────────────────────────────
+
+package "KeyboardPanel\n叠加模式\n[:ime-ui]" as kp_pkg #BBDEFB {
+    class KeyboardPanel <<@Composable>> {
+        + 候选栏 + 输入栏 + 工具栏
+        + GestureInputPanel (顶层)
+        + GestureFeedbackPanel (中层)
+        + KeyGridPanel (底层)
+    }
+}
+
+package "KeyboardScreen\n全屏模式\n[:ime-ui]" as ks_pkg #A5D6A7 {
+    class KeyboardScreen <<@Composable>> {
+        + 候选栏 + 输入栏 + 工具栏
+        + GestureInputPanel + FeedbackPanel (输入侧)
+        + FeedbackPanel + KeyGridPanel (按键侧)
+    }
+}
+
+' ─── Inheritance ───────────────────────────────────────────────────
+
+InputAction <|-- KeyDown
+InputAction <|-- KeyUp
+InputAction <|-- SwipeTo
+InputAction <|-- Wait
+InputAction <|-- SelectCandidate
+InputAction <|-- SwitchKeyboard
+
+PlaybackState <|-- Idle
+PlaybackState <|-- Ready
+PlaybackState <|-- Playing
+PlaybackState <|-- Paused
+PlaybackState <|-- Finished
+
+KeyPositionResolver <|.. ComposeKeyPositionResolver
+
+' ─── Composition ───────────────────────────────────────────────────
+
+InputActionPlayer *-- PlaybackState : "播放状态"
+InputActionPlayer o-- ActionScript : "当前脚本"
+InputActionPlayer --> KeyboardViewModel : "发送 ImeIntent"
+InputActionPlayer --> GestureFeedbackState : "更新手指指示器"
+InputActionPlayer --> KeyPositionResolver : "查询按键位置"
+InputActionPlayer --> SwipePathInterpolator : "计算滑行路径"
+InputActionPlayer --> FingerIndicatorState : "创建"
+
+ComposeKeyPositionResolver --> KeyboardLayoutInfo : "读取"
+ComposeKeyPositionResolver --> CandidateLayoutInfo : "读取"
+
+GestureFeedbackState *-- FingerIndicatorState : "fingerIndicator"
+
+ActionScriptLoader ..> ActionScript : "加载并解析"
+
+KeyboardViewModel *-- GestureFeedbackState : "持有"
+KeyboardViewModel --> ImeEngine : "持有引用"
+
+ExerciseScreen *-- KeyboardWithOverlay
+ExerciseScreen *-- ActionPlayerPanel
+KeyboardWithOverlay *-- KeyboardPanel
+KeyboardWithOverlay *-- SwipeTrailOverlay
+KeyboardWithOverlay *-- FingerOverlay
+
+ActionPlayerPanel --> InputActionPlayer : "控制播放"
+
+KeyboardPanel ..> KeyboardLayoutInfo : "提供布局信息"
+KeyboardScreen ..> KeyboardLayoutInfo : "提供布局信息"
+
+' ─── Legend ─────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 所属模块 / 层 |
+    |<#FFF3E0>| :ime-engine 脚本模型 |
+    |<#E8F5E9>| :ime-ui 播放器 |
+    |<#E3F2FD>| :ime-ui 坐标解析与 UI 组件 |
+    |<#FFE0B2>| :ime-ui 反馈状态 |
+    |<#D1C4E9>| :app 脚本加载 |
+    |<#FFF9C4>| :ime-ui 路径插值 |
+    |<#BBDEFB>| KeyboardPanel |
+    |<#A5D6A7>| KeyboardScreen |
+endlegend
+
+@enduml

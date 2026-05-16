@@ -1,0 +1,201 @@
+@startuml ui-input-action-data-flow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam classFontSize 13
+
+title 筷子输入法 - 输入动作程序化数据流\nInput Action Playback Data Flow
+
+' ─── Script Source ─────────────────────────────────────────────────
+
+package "脚本来源\nScript Source" as source #F3E5F5 {
+
+    rectangle "预置脚本\nassets/scripts/*.json" as preset #E1BEE7
+    rectangle "外部脚本\n用户导入 .json 文件" as external #E1BEE7
+}
+
+' ─── Script Loading ────────────────────────────────────────────────
+
+rectangle "ActionScriptLoader\n脚本加载器" as loader #F3E5F5 {
+    :parseScript(json)\n→ ActionScript;
+}
+
+rectangle "ActionScript\n动作脚本" as script #CE93D8 {
+    name: String
+    description: String
+    actions: List<InputAction>
+}
+
+' ─── Player Core ───────────────────────────────────────────────────
+
+package "播放器核心\nInputActionPlayer" as player #FFF3E0 {
+
+    rectangle "PlaybackState\n播放状态" as state #FFE0B2 {
+        Idle / Ready / Playing
+        Paused / Finished
+    }
+
+    rectangle "播放控制\nPlayback Control" as control #FFE0B2 {
+        load(script)
+        play() / pause()
+        resume() / stop()
+        stepForward()
+        setSpeed()
+    }
+
+    rectangle "动作执行\nexecuteAction()" as executor #FFCC80 {
+        按时间轴调度
+        查询实时坐标
+        驱动反馈 + 引擎
+    }
+}
+
+' ─── Coordinate Resolution ────────────────────────────────────────
+
+package "坐标解析\nCoordinate Resolution" as coord #E8F5E9 {
+
+    rectangle "KeyPositionResolver\n按键位置解析器" as resolver #C8E6C9 {
+        resolve(key): Offset?
+        resolveCandidatePosition(i): Offset?
+    }
+
+    rectangle "ComposeKeyPositionResolver\nCompose 布局实现" as compose_resolver #A5D6A7 {
+        keyboardLayoutProvider
+        candidateLayoutProvider
+    }
+
+    rectangle "KeyboardLayoutInfo\n键盘布局信息" as kb_layout #A5D6A7 {
+        keyPositions: Map<InputKey, Rect>
+    }
+
+    rectangle "CandidateLayoutInfo\n候选栏布局信息" as cand_layout #A5D6A7 {
+        candidatePositions: List<Rect>
+    }
+}
+
+' ─── Action Execution Outputs ─────────────────────────────────────
+
+package "动作输出\nAction Outputs" as outputs #E3F2FD {
+
+    package "引擎输入\nEngine Input" as engine_input #BBDEFB {
+        rectangle "KeyboardViewModel\nhandleIntent()" as kvm_intent #90CAF9
+    }
+
+    package "反馈驱动\nFeedback Driving" as feedback_drive #C8E6C9 {
+
+        rectangle "GestureFeedbackState\n手势反馈状态" as gfs #A5D6A7 {
+            fingerIndicator
+            (FingerIndicatorState)
+        }
+
+        rectangle "SwipePathInterpolator\n滑行路径插值器" as interpolator #A5D6A7 {
+            interpolate(from, to)
+            → 贝塞尔曲线点列表
+        }
+
+        rectangle "trailPoints\n滑行轨迹点" as trail #A5D6A7 {
+            StateFlow<List<Offset>>
+        }
+    }
+}
+
+' ─── Visual Feedback ───────────────────────────────────────────────
+
+package "视觉反馈\nVisual Feedback" as visual #FFF9C4 {
+
+    rectangle "GestureFeedbackPanel\n反馈面板\n(FingerIndicator)" as gfp #FFF59D
+    rectangle "SwipeTrailOverlay\n滑行轨迹覆盖层" as trail_overlay #FFF59D
+    rectangle "FingerOverlay\n手指指示器覆盖层" as finger_overlay #FFF59D
+}
+
+' ─── Engine State ──────────────────────────────────────────────────
+
+package "引擎状态\nEngine State" as engine_state #FFF3E0 {
+
+    rectangle "ImeEngine\nreduce()" as engine #FFE0B2
+    rectangle "StateFlow<ImeState>" as ime_state #FFCC80
+}
+
+' ─── KeyboardPanel / KeyboardScreen ───────────────────────────────
+
+package "KeyboardPanel (叠加模式)" as kp #E3F2FD {
+    rectangle "KeyGridPanel\n按键面板" as kp_kgp #BBDEFB
+    rectangle "GestureFeedbackPanel\n反馈面板" as kp_gfp #C8E6C9
+    rectangle "GestureInputPanel\n输入面板（空闲）" as kp_gip #FFCCBC
+}
+
+package "KeyboardScreen (全屏模式)" as ks #E8F5E9 {
+    rectangle "KeyGridPanel\n按键面板" as ks_kgp #A5D6A7
+    rectangle "GestureFeedbackPanel\n输入侧" as ks_gfp_input #C8E6C9
+    rectangle "GestureFeedbackPanel\n按键侧" as ks_gfp_key #C8E6C9
+}
+
+' ─── ExerciseScreen ────────────────────────────────────────────────
+
+package "ExerciseScreen\n输入练习演示页面" as exercise #F3E5F5 {
+    rectangle "TargetTextDisplay\n目标文本展示" as target_text #E1BEE7
+    rectangle "InputMethodSelector\n输入方式选择" as method_sel #E1BEE7
+    rectangle "KeyboardWithOverlay\n键盘 + 覆盖层" as kb_overlay #E1BEE7
+    rectangle "ActionPlayerPanel\n播放控制面板" as player_panel #E1BEE7
+}
+
+' ─── Data Flow Arrows ──────────────────────────────────────────────
+
+preset --> loader : "加载"
+external --> loader : "导入"
+loader --> script : "解析"
+script --> control : "load(script)"
+
+control --> executor : "按时间轴调度"
+control --> state : "状态变更"
+
+executor ..> resolver : "1. 查询按键实时坐标"
+resolver <.. compose_resolver : "实现"
+compose_resolver <.. kb_layout : "读取"
+compose_resolver <.. cand_layout : "读取"
+
+executor ..> kvm_intent : "2a. ImeIntent\n（PressKey / SelectCandidate / SwitchKeyboard）"
+executor ..> interpolator : "2b. 滑行路径计算\n（fromKey, toKey → 实时坐标）"
+interpolator --> trail : "贝塞尔曲线点"
+executor ..> gfs : "2c. 更新 fingerIndicator\n（位置、按下状态）"
+
+kvm_intent --> engine : "handleIntent()"
+engine --> ime_state : "reduce()"
+ime_state --> kp_kgp : "StateFlow 驱动渲染"
+ime_state --> ks_kgp : "StateFlow 驱动渲染"
+
+gfs --> gfp : "fingerIndicator\n→ FingerIndicator"
+trail --> trail_overlay : "轨迹点列表"
+
+gfp --> kp_gfp : "叠加模式：单实例\n(OverlaySet)"
+gfp --> ks_gfp_input : "全屏模式：输入侧\n(FingerIndicator)"
+gfp --> ks_gfp_key : "全屏模式：按键侧\n(KeyHighlight)"
+
+trail_overlay --> kb_overlay : "叠加"
+finger_overlay --> kb_overlay : "叠加"
+
+' ─── ExerciseScreen connections ────────────────────────────────────
+
+script ..> player_panel : "显示脚本信息"
+state --> player_panel : "播放 / 暂停 / 停止按钮"
+kb_overlay --> kp : "内部组合 KeyboardPanel"
+
+' ─── Layout info provider ──────────────────────────────────────────
+
+kp_kgp ..> kb_layout : "onGloballyPositioned\n提供布局信息"
+ks_kgp ..> kb_layout : "onGloballyPositioned\n提供布局信息"
+
+' ─── Legend ─────────────────────────────────────────────────────────
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#F3E5F5>| 脚本来源与加载 |
+    |<#FFF3E0>| 播放器与引擎 |
+    |<#E8F5E9>| 坐标解析与反馈驱动 |
+    |<#E3F2FD>| KeyboardPanel (叠加模式) |
+    |<#E8F5E9>| KeyboardScreen (全屏模式) |
+    |<#FFF9C4>| 视觉反馈覆盖层 |
+endlegend
+
+@enduml
