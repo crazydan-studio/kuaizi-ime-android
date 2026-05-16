@@ -65,6 +65,23 @@ docs/ai-agent/
     - 表示路径、目录、文件名的文本内部不加空格（如 `values/` 文件夹、`月-日` 命名格式）
   - **适用范围**：Markdown 文档、PlantUML 图表中的标签和注释、源码中的注释和中文文本字符串、配置与国际化资源文件中的文本
 
+- **PlantUML 语法注意事项**：
+  - **混用类图与用例图**：同一图表中同时使用 `class`/`package` 和 `usecase` 时，必须在 `@startuml` 后添加 `allowmixing` 指令，否则渲染报错
+  - **跨分区注释**：`note across` 只能用于泳道图（`|分区|`），非泳道图的分区注释应使用 `note bottom of <element>` 或 `note right of <element>`
+  - **多行方法体**：类成员中的多行方法体不能直接换行书写，需用 `\n` 转义为单行字符串，如 `dispatchToTarget(output) : {\n  when(output) {\n    ...\n  }\n}`
+  - **外部文件导入**：在 Markdown 中嵌入 PlantUML 必须使用 `plantuml` 代码块 + `@file:` 语法（而非 `> @file:` 引用块），否则 vitepress-plugin-diagrams 无法识别和渲染
+    - 正确：以 ` ```plantuml ` 开头的代码块，内含 `@file:../diagrams/architecture.puml`
+    - 错误：`> @file:../diagrams/architecture.puml`（引用块语法不会被插件处理）
+  - **PUML 中的 `\n` 不是英文**：`\n` 是 PlantUML 的换行转义序列，不是英文字母，其与相邻中文之间不加空格
+
+- **Markdown 语法注意事项**：
+  - **尖括号被识别为 HTML 标签**：当 `<...>` 成对出现时（如泛型 `StateFlow<ImeState>`），Markdown 解析器会将其视为 HTML 标签并吞没内容。必须用反引号包裹：`` `StateFlow<ImeState>` ``
+  - **文档交叉引用**：
+    - 使用相对路径链接，不要使用「文档 160」「文档 800」等抽象编号
+    - 文件重命名后必须同步更新所有引用该文件的链接
+    - 跨目录引用注意相对路径层级（如从 `architecture/` 引用 `engine/` 的文件需用 `../engine/`）
+  - **VitePress 静态资源目录**：`vitepress-plugin-diagrams` 的 `diagramsDir` 必须为 `.vitepress` 所在根目录下 `public/` 目录的子目录路径（如 `public/diagrams`），且该目录必须在服务启动前已存在，否则 VitePress 不会加载其中的静态文件
+
 ---
 
 ## 参考工作树
