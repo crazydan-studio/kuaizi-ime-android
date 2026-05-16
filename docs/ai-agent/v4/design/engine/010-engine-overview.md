@@ -29,7 +29,7 @@
 上图展示了引擎库的核心类关系，按职责分为三层：
 
 - **公开 API（契约层）**（橙色）：`ImeEngine`、`ImeConfig`、`ImeIntent`、`ImeOutput`、`ImeOutputBridge` 构成引擎库与外部模块之间的契约。第三方应用和 `:ime-ui` 库仅依赖这些公开类型，不依赖引擎内部实现
-- **状态类型**（绿色）：`ImeState` 及其子状态类型（`InputListState`、`CandidateListState`、`ClipboardState`、`FavoriteListState`），均为不可变 `data class`，通过 `StateFlow` 自动传播到 UI
+- **状态类型**（绿色）：`ImeState` 及其子状态类型（`InputList`、`CandidateList`、`Clipboard`、`FavoriteList`），均为不可变 `data class`，通过 `StateFlow` 自动传播到 UI
 - **内部组件**（蓝色）：`KeyboardStateMachine`、`InputListOperator`、`FeatureRegistry`、`ImeDictProvider` 等，由 `ImeEngine` 内部组合使用，不对外暴露
 
 ---
@@ -215,7 +215,7 @@ sealed class ImeIntent {
 `ImeState` 中引用的子状态类型均为 `data class`，不可变，通过 `copy()` 模式创建新实例。
 
 ```kotlin
-data class InputListState(
+data class InputList(
     val inputs: List<InputItem> = emptyList(),
     val gapIndex: Int = 0,
     val pendingSpell: String = "",
@@ -228,19 +228,19 @@ sealed class InputItem {
     data class MathExpr(override val id: String, val expression: String) : InputItem()
 }
 
-data class CandidateListState(
+data class CandidateList(
     val candidates: List<InputWord> = emptyList(),
     val pageIndex: Int = 0,
     val pageSize: Int = 20,
     val hasMore: Boolean = false,
 )
 
-data class ClipboardState(
+data class Clipboard(
     val currentText: String? = null,
     val showTip: Boolean = false,
 )
 
-data class FavoriteListState(
+data class FavoriteList(
     val favorites: List<InputFavorite> = emptyList(),
     val isLoading: Boolean = false,
 )
@@ -253,7 +253,7 @@ data class FavoriteListState(
 | 文档 | 说明 |
 |------|------|
 | [020-键盘状态机](020-state-machine.md) | KeyboardState sealed class 层次结构、状态转换规则、Keyboard 组合模式、InputKey 体系、StateHistory 有界历史栈 |
-| [030-输入列表](030-input-list.md) | InputListState 不可变数据模型、InputItem/InputWord/InputCompletion 类型、线程安全设计、撤销机制、游标管理、InputListEditor |
+| [030-输入列表](030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion 类型、线程安全设计、撤销机制、游标管理、InputListEditor |
 | [040-字典系统](040-dict-system.md) | DictRepository + DAO 接口、Room 数据库与 Entity、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree 前缀树、HmmModel + ViterbiDecoder |
 | [050-X-Pad 核心](050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout 区域定义、KeyboardState.PinyinInput.XPadding 状态集成 |
 | [060-输入动作程序化](060-input-action.md) | InputAction sealed class、ActionScript、InputMethod 枚举、PinyinSegment、ActionScriptCompiler 脚本编译器 |

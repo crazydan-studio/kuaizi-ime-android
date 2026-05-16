@@ -13,14 +13,14 @@ package "KeyboardPanel\n键盘面板容器" as KPContainer #E3F2FD {
 
     package "CandidateListPanel\n候选词面板" as CLP #E8F5E9 {
         class CandidateListPanel {
-            + state: CandidateListState
+            + state: CandidateList
             + onCandidateSelected: (InputWord) -> Unit
         }
     }
 
     package "InputListPanel\n输入缓冲面板" as ILP #E8F5E9 {
         class InputListPanel {
-            + state: InputListState
+            + state: InputList
             + onGapTapped: (Int) -> Unit
         }
     }

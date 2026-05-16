@@ -26,7 +26,7 @@ DictRepository (仓库，协程化)
 
 ---
 
-## 3. ImeDatabase 与 Entity
+## 3. DictDatabase 与 Entity
 
 ### 3.1 数据库定义
 
@@ -42,7 +42,7 @@ DictRepository (仓库，协程化)
     version = 4,
     exportSchema = true,
 )
-abstract class ImeDatabase : RoomDatabase() {
+abstract class DictDatabase : RoomDatabase() {
     abstract fun pinyinWordDao(): PinyinWordDao
     abstract fun pinyinPhraseDao(): PinyinPhraseDao
     abstract fun userInputDao(): UserInputDao
@@ -271,8 +271,8 @@ code/app/src/main/assets/dict/
 **数据库初始化**：
 
 ```kotlin
-fun createDatabase(context: Context): ImeDatabase {
-    return Room.databaseBuilder(context, ImeDatabase::class.java, "kuaizi_dict.db")
+fun createDatabase(context: Context): DictDatabase {
+    return Room.databaseBuilder(context, DictDatabase::class.java, "kuaizi_dict.db")
         .createFromAsset("dict/pinyin_word_dict.db")
         .addMigrations(MIGRATION_3_4)
         .build()

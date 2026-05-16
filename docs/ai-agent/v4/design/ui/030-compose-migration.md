@@ -23,7 +23,7 @@ fun KeyboardPanel(viewModel: KeyboardViewModel) {
         Column(modifier = Modifier) {
             // 候选栏
             CandidateListPanel(
-                state = state.candidates,
+                state = state.candidateList,
                 onCandidateSelected = { candidate ->
                     viewModel.handleIntent(ImeIntent.SelectCandidate(candidate))
                 },
@@ -210,10 +210,10 @@ fun CharKeyContent(key: InputKey.Char) {
 ```kotlin
 @Composable
 fun CandidateListPanel(
-    state: CandidateListState,
+    state: CandidateList,
     onCandidateSelected: (InputWord) -> Unit,
 ) {
-    if (state.candidates.isEmpty()) return
+    if (state.candidateList.isEmpty()) return
 
     LazyRow(
         modifier = Modifier
@@ -223,7 +223,7 @@ fun CandidateListPanel(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = PaddingValues(horizontal = 8.dp),
     ) {
-        items(items = state.candidates, key = { it.id }) { candidate ->
+        items(items = state.candidateList.candidates, key = { it.id }) { candidate ->
             CandidateItem(
                 candidate = candidate,
                 onClick = { onCandidateSelected(candidate) },
@@ -264,7 +264,7 @@ fun CandidateItem(candidate: InputWord, onClick: () -> Unit) {
 ```kotlin
 @Composable
 fun InputListPanel(
-    state: InputListState,
+    state: InputList,
     onGapTapped: (Int) -> Unit,
 ) {
     LazyRow(

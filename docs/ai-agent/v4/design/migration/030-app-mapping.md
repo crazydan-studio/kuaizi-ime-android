@@ -19,7 +19,7 @@
 | `Guide` | `GuideScreen` | Compose 引导页面 |
 | `IMEService` | `IMEService`（`:app`） | 不再充当消息中介，仅管理 `InputConnection` 生命周期。创建 `ImeEngine`，接入 `InputConnectionBridge`，使用 `KeyboardPanel` 作为输入视图 |
 | — | `InputConnectionBridge`（`:app`） | 新增：面向系统 `InputConnection` 的桥梁实现，继承 `BaseImeOutputBridge`。替代原 `IMEService` 中嵌入的 InputConnection 操作 |
-| — | `ConfigRepository`（`:app`） | 新增：配置持久化仓库，基于 DataStore 存取 `ImeConfig`。处理运行时覆盖与持久化同步。替代原 `Config` + `SharedPreferences` |
+| — | `ConfigDataStore`（`:app`） | 新增：配置持久化仓库，基于 DataStore 存取 `ImeConfig`。处理运行时覆盖与持久化同步。替代原 `Config` + `SharedPreferences` |
 
 ### IMEService 职责变化
 
@@ -29,7 +29,7 @@
 | InputConnection 操作 | 在 IMEService 中手动处理 | 委托 `InputConnectionBridge` |
 | 输出分发 | 手动 when 分发（2 处重复） | `ImeEngine.dispatchToTarget()` 自动分发到桥梁 |
 | 输入视图 | `MainboardView`（自定义 View） | `KeyboardPanel`（Compose） |
-| 配置管理 | `Config` + `SharedPreferences` | `ConfigRepository` + DataStore |
+| 配置管理 | `Config` + `SharedPreferences` | `ConfigDataStore` + DataStore |
 
 ---
 
@@ -42,10 +42,10 @@
 | Java 配置功能 | v4 对应 | 变更说明 |
 |-------------|---------|----------|
 | `Config.Immutable` | `ImeConfig` data class | 移除层叠覆盖，统一不可变配置 |
-| `Config.Mutable` | `ConfigRepository.updateConfig()` | DataStore 原子更新 |
+| `Config.Mutable` | `ConfigDataStore.updateConfig()` | DataStore 原子更新 |
 | `ConfigChangeListener` | `Flow<ImeConfig>` | 响应式更新，自动生命周期管理 |
 | `ConfigKey` 枚举 | `ImeConfig` 属性 | 类型安全，编译期检查 |
-| `IMEConfig` 桥接 | `ConfigRepository` | DataStore 直接管理，无需桥接层 |
+| `IMEConfig` 桥接 | `ConfigDataStore` | DataStore 直接管理，无需桥接层 |
 | `SharedPreferences` | `DataStore<Preferences>` | 异步、类型安全、无 ANR |
 | 主题资源（`themes.xml`, `attrs.xml`） | Compose 主题 | 声明式主题系统 |
 | 60+ 主题属性 | `KeyboardColors` data class | 类型安全，IDE 自动补全 |
@@ -171,8 +171,8 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 | `EditorState` | （移除） | 撤销状态由 `BaseImeOutputBridge` 内部管理 |
 | `AppLog` / `AppLogger` | `ImeLog` / `ImeLogger` | Ime 前缀，划归 engine 模块。核心基础设施详见 [080-日志系统](../engine/080-logging.md) |
 | `LogExportActivity` | `LogExportScreen` | 页面以 Screen 为后缀，划归 app 模块。Android 日志实现与 UI 详见 [020-日志系统](../app/020-logging.md) |
-| `CandidateState` | `CandidateListState` | 体现列表语义 |
-| `FavoritesState` | `FavoriteListState` | 体现列表语义；单数 Favorite + ListState |
+| `CandidateState` | `CandidateList` | 体现列表语义 |
+| `FavoritesState` | `FavoriteList` | 体现列表语义；单数 Favorite + ListState |
 | `CandidatePanel` | `CandidateListPanel` | 体现列表语义 |
 | `FavoritesPanel` | `FavoriteListPanel` | 体现列表语义；单数 Favorite + ListPanel |
 | `CandidatePager` | `CandidateListPager` | 体现列表语义 |

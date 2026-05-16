@@ -6,7 +6,7 @@
 
 ---
 
-## 2. InputListState 不可变数据模型
+## 2. InputList 不可变数据模型
 
 ```kotlin
 /**
@@ -15,11 +15,11 @@
  * 所有状态变更通过 copy() 创建新实例，原始实例不受影响。
  * 游标位置通过 gapIndex 表示，指向 inputs 中的 GapInput 位置。
  */
-data class InputListState(
+data class InputList(
     val inputs: List<InputItem> = emptyList(),
     val gapIndex: Int = 0,
     val pending: PendingInput? = null,
-    val mathExprNested: InputListState? = null,
+    val mathExprNested: InputList? = null,
 ) {
     /** 当前游标位置的 GapInput */
     val cursorGap: InputItem.Gap
@@ -40,7 +40,7 @@ data class InputListState(
     // === 状态变更操作（返回新实例） ===
 
     /** 在游标位置追加字符输入 */
-    fun appendChar(char: InputItem.Char): InputListState {
+    fun appendChar(char: InputItem.Char): InputList {
         val newInputs = inputs.toMutableList().apply {
             add(gapIndex, char)
             // 在新字符后插入 GapInput
@@ -50,7 +50,7 @@ data class InputListState(
     }
 
     /** 删除游标前的一个字符 */
-    fun deleteCharBeforeCursor(): InputListState {
+    fun deleteCharBeforeCursor(): InputList {
         if (gapIndex < 2) return this
         val newInputs = inputs.toMutableList().apply {
             removeAt(gapIndex - 2) // 删除字符
@@ -60,16 +60,16 @@ data class InputListState(
     }
 
     /** 移动游标到指定位置 */
-    fun moveCursorTo(newGapIndex: Int): InputListState {
+    fun moveCursorTo(newGapIndex: Int): InputList {
         val clampedIndex = newGapIndex.coerceIn(0, inputs.lastIndex)
         return copy(gapIndex = clampedIndex)
     }
 
     /** 清空所有输入 */
-    fun clean(): InputListState = InputListState()
+    fun clean(): InputList = InputList()
 
     /** 设置待输入字符 */
-    fun withPending(pending: PendingInput?): InputListState =
+    fun withPending(pending: PendingInput?): InputList =
         copy(pending = pending)
 }
 ```
@@ -111,7 +111,7 @@ sealed class InputItem {
     /** 数学表达式 */
     data class MathExpr(
         override val id: String,
-        val nestedList: InputListState,
+        val nestedList: InputList,
     ) : InputItem()
 }
 ```
@@ -123,7 +123,7 @@ sealed class InputItem {
 ```kotlin
 /**
  * 待输入字符，表示拼音输入中尚未提交的字符序列。
- * 与 InputListState 分离，因为 pending 是临时状态。
+ * 与 InputList 分离，因为 pending 是临时状态。
  */
 data class PendingInput(
     val chars: List<InputItem.Char>,
@@ -229,7 +229,7 @@ private suspend fun reduce(state: ImeState, intent: ImeIntent): ImeState {
             // 3. 返回新状态
             state.copy(
                 inputList = newInputList,
-                candidates = CandidateListState(candidates = candidates),
+                candidateList = CandidateList(candidates = candidates),
             )
         }
         // ...
@@ -247,25 +247,25 @@ private suspend fun reduce(state: ImeState, intent: ImeIntent): ImeState {
 
 ## 9. 撤销（Revoke）机制
 
-由于 InputListState 是不可变的，撤销只需保存之前的状态引用：
+由于 InputList 是不可变的，撤销只需保存之前的状态引用：
 
 ```kotlin
 class InputListEditor {
-    private val undoStack = ArrayDeque<InputListState>(maxSize = 50)
-    private val redoStack = ArrayDeque<InputListState>(maxSize = 50)
+    private val undoStack = ArrayDeque<InputList>(maxSize = 50)
+    private val redoStack = ArrayDeque<InputList>(maxSize = 50)
 
-    fun pushUndo(state: InputListState) {
+    fun pushUndo(state: InputList) {
         undoStack.addLast(state)
         redoStack.clear()
     }
 
-    fun undo(current: InputListState): InputListState {
+    fun undo(current: InputList): InputList {
         val previous = undoStack.removeLastOrNull() ?: return current
         redoStack.addLast(current)
         return previous
     }
 
-    fun redo(current: InputListState): InputListState {
+    fun redo(current: InputList): InputList {
         val next = redoStack.removeLastOrNull() ?: return current
         undoStack.addLast(current)
         return next
@@ -278,7 +278,7 @@ class InputListEditor {
 ## 10. 游标管理
 
 ```kotlin
-data class InputListState(
+data class InputList(
     val inputs: List<InputItem> = emptyList(),
     val gapIndex: Int = 0,
 ) {
@@ -291,13 +291,13 @@ data class InputListState(
     }
 
     /** 移动游标到左侧的 GapInput */
-    fun moveCursorLeft(): InputListState {
+    fun moveCursorLeft(): InputList {
         val leftGapIndex = findPreviousGap(gapIndex)
         return if (leftGapIndex >= 0) copy(gapIndex = leftGapIndex) else this
     }
 
     /** 移动游标到右侧的 GapInput */
-    fun moveCursorRight(): InputListState {
+    fun moveCursorRight(): InputList {
         val rightGapIndex = findNextGap(gapIndex)
         return if (rightGapIndex >= 0) copy(gapIndex = rightGapIndex) else this
     }

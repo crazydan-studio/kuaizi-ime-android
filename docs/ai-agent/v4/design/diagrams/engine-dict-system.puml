@@ -54,7 +54,7 @@ class HmmTransitionDao <<DAO>> {
 
 ' ─── Database ──────────────────────────────────────────────────────
 
-class ImeDatabase <<Room Database>> {
+class DictDatabase <<Room Database>> {
     + pinyinWordDao(): PinyinWordDao
     + pinyinPhraseDao(): PinyinPhraseDao
     + userInputDao(): UserInputDao
@@ -139,11 +139,11 @@ DictRepository --> UserInputDao : "记录输入\nrecord input"
 DictRepository --> FavoriteDao : "收藏管理\nfavorites"
 DictRepository --> HmmTransitionDao : "转移概率\ntransitions"
 
-ImeDatabase --> PinyinWordDao : "提供\nprovides"
-ImeDatabase --> PinyinPhraseDao : "提供\nprovides"
-ImeDatabase --> UserInputDao : "提供\nprovides"
-ImeDatabase --> FavoriteDao : "提供\nprovides"
-ImeDatabase --> HmmTransitionDao : "提供\nprovides"
+DictDatabase --> PinyinWordDao : "提供\nprovides"
+DictDatabase --> PinyinPhraseDao : "提供\nprovides"
+DictDatabase --> UserInputDao : "提供\nprovides"
+DictDatabase --> FavoriteDao : "提供\nprovides"
+DictDatabase --> HmmTransitionDao : "提供\nprovides"
 
 ImeDictProvider <|.. ImeSqliteDictProvider : "实现\nimplements"
 ImeSqliteDictProvider --> DictRepository : "依赖"

@@ -14,7 +14,7 @@ title 筷子输入法 - 三层架构总览\nKuaizi IME - Three-Layer Architectur
 package ":app\n平台层 Platform Layer" as app #E3F2FD {
     component [IMEService\n输入法服务] as IMEService
     component [InputConnectionBridge\n输入连接桥] as ICB
-    component [ConfigRepository\n配置仓库 (DataStore)] as ConfigRepo
+    component [ConfigDataStore\n配置仓库 (DataStore)] as ConfigRepo
     component [SettingsScreen\n设置界面] as Settings
     component [LogViewerScreen / LogExportScreen\n日志界面] as LogUI
 }

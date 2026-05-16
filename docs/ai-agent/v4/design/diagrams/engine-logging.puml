@@ -35,7 +35,7 @@ end note
 
 class ImeLogger <<带标签记录器>> #E8F5E9 {
     - tag: String
-    - imeLog: ImeLog
+    - logFacade: ImeLog
     + verbose(msg: () -> String)
     + debug(msg: () -> String)
     + info(msg: () -> String)
@@ -171,7 +171,7 @@ end note
 
 ImeLog --> ImeLogger : "创建\nlogger(tag)"
 ImeLog --> LogWriter : "分发\ndispatch → writers"
-ImeLogger --> ImeLog : "委托\nimeLog.dispatch()"
+ImeLogger --> ImeLog : "委托\nlogFacade.dispatch()"
 ImeLog --> LogLevel : "过滤\nlevel 过滤"
 
 LogWriter <|.. FileLogWriter : "实现\nimplements"

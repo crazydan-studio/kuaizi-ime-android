@@ -24,7 +24,7 @@
 |------|------|
 | [010-引擎库设计总览](engine/010-engine-overview.md) | 模块定位与设计目标、核心 class 关系图、公开 API 概览（ImeEngine/ImeConfig/ImeOutput/ImeIntent/ImeState） |
 | [020-键盘状态机](engine/020-state-machine.md) | KeyboardState sealed class、状态转换规则、Keyboard 组合模式、InputKey 体系、StateHistory 有界历史栈 |
-| [030-输入列表](engine/030-input-list.md) | InputListState 不可变数据模型、InputItem/InputWord/InputCompletion、线程安全、撤销机制、游标管理 |
+| [030-输入列表](engine/030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion、线程安全、撤销机制、游标管理 |
 | [040-字典系统](engine/040-dict-system.md) | DictRepository + Room 数据库、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree、HmmModel + ViterbiDecoder |
 | [050-X-Pad 核心](engine/050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout、X-Pad 状态集成 |
 | [060-输入动作程序化](engine/060-input-action.md) | InputAction sealed class、ActionScript、ActionScriptCompiler、坐标无关设计 |
@@ -54,7 +54,7 @@
 
 | 文档 | 简述 |
 |------|------|
-| [010-配置与设置](app/010-config.md) | ConfigRepository（DataStore）、ImeConfig 运行时/持久化配置管理、主题系统 |
+| [010-配置与设置](app/010-config.md) | ConfigDataStore（DataStore）、ImeConfig 运行时/持久化配置管理、主题系统 |
 | [020-日志系统](app/020-logging.md) | LogcatWriter、CrashInterceptor、ImeLog 初始化、LogViewerScreen/LogExportScreen、LogLevelSetting/LogStoragePathSetting |
 | [030-UI 测试方案](app/030-ui-testing.md) | UITestOverlay 工具集、Release 自动移除、截图对比测试、Compose 编译器报告 |
 | [040-用户数据导入导出](app/040-user-data.md) | UserDataService、JSON 备份格式、导入策略、权限与安全 |

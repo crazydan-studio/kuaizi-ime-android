@@ -97,30 +97,30 @@ sealed class KeyboardState {
 ```kotlin
 sealed class KeyboardTransition {
     // 拼音输入转换
-    data class StartPinyinInput(val char: Char) : KeyboardTransition()
-    data class StartSlipping(val startKey: CharKey) : KeyboardTransition()
-    data class StartFlipping(val startChar: Char) : KeyboardTransition()
-    data class StartXPadding(val zones: List<XPadZone>) : KeyboardTransition()
-    data class SlipCharSelected(val char: Char) : KeyboardTransition()
-    data class FlipCharSelected(val char: Char) : KeyboardTransition()
-    data class XPadZoneSelected(val zone: XPadZone) : KeyboardTransition()
+    data class InputPinyinChar(val char: Char) : KeyboardTransition()
+    data class BeginSlip(val startKey: CharKey) : KeyboardTransition()
+    data class BeginFlip(val startChar: Char) : KeyboardTransition()
+    data class BeginXPad(val zones: List<XPadZone>) : KeyboardTransition()
+    data class SelectSlipChar(val char: Char) : KeyboardTransition()
+    data class SelectFlipChar(val char: Char) : KeyboardTransition()
+    data class SelectXPadZone(val zone: XPadZone) : KeyboardTransition()
 
     // 候选选择转换
-    data class ShowCandidates(val candidates: List<InputWord>) : KeyboardTransition()
+    data class LoadCandidates(val candidates: List<InputWord>) : KeyboardTransition()
     data class FilterCandidates(val spell: String) : KeyboardTransition()
     data class AdvanceFilterCandidates(val radical: String?, val tone: Int?) : KeyboardTransition()
     data class PageCandidates(val direction: PageDirection) : KeyboardTransition()
 
     // 提交选项转换
-    data class ShowCommitOptions(val options: List<CommitOption>) : KeyboardTransition()
+    data class LoadCommitOptions(val options: List<CommitOption>) : KeyboardTransition()
 
     // 编辑器转换
-    data class StartCursorMoving(val position: Int) : KeyboardTransition()
-    data class StartTextSelecting(val start: Int, val end: Int) : KeyboardTransition()
+    data class MoveCursor(val position: Int) : KeyboardTransition()
+    data class SelectText(val start: Int, val end: Int) : KeyboardTransition()
 
     // 符号/Emoji 转换
-    data class ShowSymbolGroup(val groupId: String?) : KeyboardTransition()
-    data class ShowEmojiGroup(val groupId: String?) : KeyboardTransition()
+    data class OpenSymbolGroup(val groupId: String?) : KeyboardTransition()
+    data class OpenEmojiGroup(val groupId: String?) : KeyboardTransition()
 
     // 通用转换
     data object ReturnToIdle : KeyboardTransition()
@@ -377,7 +377,7 @@ interface KeyTableGenerator {
 
 data class KeyTableContext(
     val config: ImeConfig,
-    val inputState: InputListState,
+    val inputState: InputList,
     val keyboardState: KeyboardState,
     val candidates: List<InputWord>,
 )

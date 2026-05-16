@@ -16,7 +16,7 @@ v4 采用 `ImeOutputBridge` 桥接模式。引擎内部仅执行一次 `when(Ime
 :ime-engine/api/  → ImeOutputBridge 接口 + BaseImeOutputBridge 抽象类
 :ime-ui/          → EditTextBridge
 :app/             → InputConnectionBridge 实现 ImeOutputBridge
-                    ImeService 不再手动收集 output
+                    IMEService 不再手动收集 output
 ```
 
 ---
@@ -169,17 +169,6 @@ class InputConnectionBridge(
     private val targetSupplier: () -> InputConnection?
 ) : BaseImeOutputBridge() {
 
-    /** 记录上次操作的 InputConnection 引用，用于检测变更 */
-    private var lastInputConnection: InputConnection? = null
-
-    private fun checkTargetChange() {
-        val current = targetSupplier()
-        if (current !== lastInputConnection) {
-            resetRevertion()
-            lastInputConnection = current
-        }
-    }
-
     override fun doNormalCommitText(text: String) {
         resetRevertion()
         val ic = targetSupplier() ?: return
@@ -268,7 +257,7 @@ class InputConnectionBridge(
 }
 ```
 
-`InputConnectionBridge` 是面向 Android 系统 `InputConnection` 的桥梁实现，由 `:app` 模块中的 `IMEService` 创建和管理。它使用 supplier 模式在每次操作时获取当前 `InputConnection`，自动检测连接变更（当用户切换输入目标时发生）并相应重置撤销状态。`FAVORITE` 动作在此实现中为空操作，因为 `InputConnection` 没有收藏的概念。
+`InputConnectionBridge` 是面向 Android 系统 `InputConnection` 的桥梁实现，由 `:app` 模块中的 `IMEService` 创建和管理。它使用 supplier 模式在每次操作时获取当前 `InputConnection`。目标变更（当用户切换输入目标时发生）不需要检测：`resetRevertion()` 的调用时机已经规避了目标变更可能造成的影响——每次新的可撤回输入开始前都会清空旧快照，目标变更后的首次输入自然会在新的 `InputConnection` 上建立新快照，不会错误恢复到旧目标的文本状态。`FAVORITE` 动作在此实现中为空操作，因为 `InputConnection` 没有收藏的概念。
 
 ---
 
@@ -285,19 +274,8 @@ class EditTextBridge(
     private val targetSupplier: () -> EditText?
 ) : BaseImeOutputBridge() {
 
-    private var lastEditor: EditText? = null
-
-    private fun checkTargetChange() {
-        val current = targetSupplier()
-        if (current !== lastEditor) {
-            resetRevertion()
-            lastEditor = current
-        }
-    }
-
     override fun doNormalCommitText(text: String) {
         resetRevertion()
-        checkTargetChange()
         val e = targetSupplier() ?: return
         val beforeStart = e.selectionStart
         val beforeEnd = e.selectionEnd
@@ -311,7 +289,6 @@ class EditTextBridge(
 
     override fun doReplaceableCommitText(text: String, replacements: List<String>) {
         resetRevertion()
-        checkTargetChange()
         val e = targetSupplier() ?: return
         val cursorPos = e.selectionStart
         val textBeforeCursor = if (cursorPos >= text.length) {
@@ -333,7 +310,6 @@ class EditTextBridge(
 
     override fun insertPairedSymbols(left: String, right: String) {
         resetRevertion()
-        checkTargetChange()
         val e = targetSupplier() ?: return
         val start = e.selectionStart
         val end = e.selectionEnd
@@ -370,7 +346,7 @@ class EditTextBridge(
 }
 ```
 
-`EditTextBridge` 是面向 Android `EditText` 目标的桥梁实现，由 `:ime-ui` 模块提供，适用于 IME 引擎在应用自身的 `EditText` 中使用（而非作为系统输入法）的场景。与 `InputConnectionBridge` 一样，它使用 supplier 模式并检测目标变更。关键区别在于它直接操作 `EditText` 的 `Editable` 文本，相比 `InputConnection` 提供了更精细的文本操控能力。
+`EditTextBridge` 是面向 Android `EditText` 目标的桥梁实现，由 `:ime-ui` 模块提供，适用于 IME 引擎在应用自身的 `EditText` 中使用（而非作为系统输入法）的场景。与 `InputConnectionBridge` 一样，它使用 supplier 模式且不检测目标变更——`resetRevertion()` 的调用时机已经规避了目标变更可能造成的影响。关键区别在于它直接操作 `EditText` 的 `Editable` 文本，相比 `InputConnection` 提供了更精细的文本操控能力。
 
 ---
 

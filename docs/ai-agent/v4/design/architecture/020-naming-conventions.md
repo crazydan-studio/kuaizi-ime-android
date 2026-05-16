@@ -10,7 +10,7 @@
 |------|----------|------|
 | `:ime-engine` | 公开 class 以 `Ime` 为前缀 | `ImeEngine`, `ImeConfig`, `ImeOutput`, `ImeState`, `ImeIntent`, `ImeOutputBridge` |
 | `:ime-ui` | 不使用 `Ime` 前缀，贴近 UI 业务命名 | `KeyboardPanel`, `EditTextBridge`, `GestureFeedbackPanel`, `CandidateListPanel` |
-| `:app` | 不使用 `Ime` 前缀，贴近应用业务命名 | `IMEService`, `ConfigRepository`, `InputConnectionBridge` |
+| `:app` | 不使用 `Ime` 前缀，贴近应用业务命名 | `IMEService`, `ConfigDataStore`, `InputConnectionBridge` |
 
 ### 1.1 engine 模块
 
@@ -31,7 +31,7 @@
 
 ### 1.3 app 模块
 
-Android 系统服务类沿用平台命名惯例（如 `IMEService`），配置类使用职能名称（如 `ConfigRepository`），桥接类使用目标对象 + Bridge 后缀命名（如 `InputConnectionBridge`），实现 ImeOutputBridge 接口。页面以 `Screen` 为后缀（如 `SettingsScreen`、`MainScreen`）。
+Android 系统服务类沿用平台命名惯例（如 `IMEService`），配置类使用职能名称（如 `ConfigDataStore`），桥接类使用目标对象 + Bridge 后缀命名（如 `InputConnectionBridge`），实现 ImeOutputBridge 接口。页面以 `Screen` 为后缀（如 `SettingsScreen`、`MainScreen`）。
 
 ---
 
@@ -98,8 +98,8 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 - `EditorState`（撤销状态由 BaseImeOutputBridge 内部管理）
 - `AppLog` / `AppLogger`（使用 `ImeLog` / `ImeLogger`，详见 [080-日志系统](../engine/080-logging.md)）
 - `LogExportActivity`（使用 `LogExportScreen`）
-- `CandidateState`（使用 `CandidateListState`）
-- `FavoritesState`（使用 `FavoriteListState`）
+- `CandidateState`（使用 `CandidateList`）
+- `FavoritesState`（使用 `FavoriteList`）
 - `CandidatePanel`（使用 `CandidateListPanel`）
 - `FavoritesPanel`（使用 `FavoriteListPanel`）
 - `CandidatePager`（使用 `CandidateListPager`）

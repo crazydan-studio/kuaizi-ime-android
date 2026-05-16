@@ -43,26 +43,26 @@ state "EmojiChoosing\n表情选择\ngroupId?" as EmojiChoosing #FFF9C4
 
 ' ─── Idle Transitions ──────────────────────────────────────────────
 
-Idle --> PinyinWaiting : StartPinyinInput(char)\n按下字母键
-Idle --> EditorCursorMoving : StartCursorMoving(position)\n按下编辑键
-Idle --> EditorTextSelecting : StartTextSelecting(start, end)
-Idle --> SymbolChoosing : ShowSymbolGroup(groupId?)\n按下符号键
-Idle --> EmojiChoosing : ShowEmojiGroup(groupId?)\n按下表情键
+Idle --> PinyinWaiting : InputPinyinChar(char)\n按下字母键
+Idle --> EditorCursorMoving : MoveCursor(position)\n按下编辑键
+Idle --> EditorTextSelecting : SelectText(start, end)
+Idle --> SymbolChoosing : OpenSymbolGroup(groupId?)\n按下符号键
+Idle --> EmojiChoosing : OpenEmojiGroup(groupId?)\n按下表情键
 
 ' ─── PinyinInput Sub-state Transitions ─────────────────────────────
 
-PinyinWaiting --> PinyinSlipping : StartSlipping(startKey)\n滑行开始
-PinyinWaiting --> PinyinFlipping : StartFlipping(startChar)\n翻转开始
-PinyinWaiting --> PinyinXPadding : StartXPadding(zones)\nX-Pad 开始
+PinyinWaiting --> PinyinSlipping : BeginSlip(startKey)\n滑行开始
+PinyinWaiting --> PinyinFlipping : BeginFlip(startChar)\n翻转开始
+PinyinWaiting --> PinyinXPadding : BeginXPad(zones)\nX-Pad 开始
 
-PinyinSlipping --> PinyinWaiting : SlipCharSelected(char)\n滑行选择字符
-PinyinSlipping --> CandidateChoosing : ShowCandidates(candidates)\n词典返回结果
+PinyinSlipping --> PinyinWaiting : SelectSlipChar(char)\n滑行选择字符
+PinyinSlipping --> CandidateChoosing : LoadCandidates(candidates)\n词典返回结果
 
-PinyinFlipping --> PinyinWaiting : FlipCharSelected(char)\n翻转选择字符
-PinyinFlipping --> CandidateChoosing : ShowCandidates(candidates)\n词典返回结果
+PinyinFlipping --> PinyinWaiting : SelectFlipChar(char)\n翻转选择字符
+PinyinFlipping --> CandidateChoosing : LoadCandidates(candidates)\n词典返回结果
 
-PinyinXPadding --> PinyinWaiting : XPadZoneSelected(zone)\nX-Pad 区域选择
-PinyinXPadding --> CandidateChoosing : ShowCandidates(candidates)\n词典返回结果
+PinyinXPadding --> PinyinWaiting : SelectXPadZone(zone)\nX-Pad 区域选择
+PinyinXPadding --> CandidateChoosing : LoadCandidates(candidates)\n词典返回结果
 
 ' ─── CandidateSelection Sub-state Transitions ─────────────────────
 
@@ -70,11 +70,11 @@ CandidateChoosing --> CandidateFiltering : FilterCandidates(spell)\n输入过滤
 CandidateChoosing --> CandidateAdvanceFiltering : AdvanceFilterCandidates(radical?, tone?)\n高级过滤
 CandidateChoosing --> Idle : SelectCandidate / CommitInput\n选择候选或提交
 
-CandidateFiltering --> CandidateChoosing : ShowCandidates(candidates)\n重新展示
+CandidateFiltering --> CandidateChoosing : LoadCandidates(candidates)\n重新展示
 CandidateFiltering --> CandidateAdvanceFiltering : AdvanceFilterCandidates(radical?, tone?)\n高级过滤
 CandidateFiltering --> Idle : SelectCandidate / CommitInput
 
-CandidateAdvanceFiltering --> CandidateChoosing : ShowCandidates(candidates)\n重新展示
+CandidateAdvanceFiltering --> CandidateChoosing : LoadCandidates(candidates)\n重新展示
 CandidateAdvanceFiltering --> CandidateFiltering : FilterCandidates(spell)\n拼音过滤
 CandidateAdvanceFiltering --> Idle : SelectCandidate / CommitInput
 
@@ -85,7 +85,7 @@ CandidateChoosing --> PinyinWaiting : BackToPrevious\n退格回退
 
 ' ─── CommitOptionChoosing Transitions ─────────────────────────────
 
-PinyinWaiting --> CommitOptionChoosing : ShowCommitOptions(options)\n长按/回车
+PinyinWaiting --> CommitOptionChoosing : LoadCommitOptions(options)\n长按/回车
 
 CommitOptionChoosing --> Idle : SelectCommitOption\n选择提交选项
 CommitOptionChoosing --> PinyinWaiting : BackToPrevious\n取消提交
@@ -99,12 +99,12 @@ EditorTextSelecting --> Idle : ReturnToIdle / Done\n返回/完成
 ' ─── SymbolChoosing Transitions ───────────────────────────────────
 
 SymbolChoosing --> Idle : ReturnToIdle\n选择符号或返回
-SymbolChoosing --> SymbolChoosing : ShowSymbolGroup(groupId)\n切换分组
+SymbolChoosing --> SymbolChoosing : OpenSymbolGroup(groupId)\n切换分组
 
 ' ─── EmojiChoosing Transitions ────────────────────────────────────
 
 EmojiChoosing --> Idle : ReturnToIdle\n选择表情或返回
-EmojiChoosing --> EmojiChoosing : ShowEmojiGroup(groupId)\n切换分组
+EmojiChoosing --> EmojiChoosing : OpenEmojiGroup(groupId)\n切换分组
 
 ' ─── Common Return ────────────────────────────────────────────────
 

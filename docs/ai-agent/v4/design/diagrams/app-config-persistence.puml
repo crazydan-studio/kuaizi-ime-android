@@ -14,7 +14,7 @@ package "持久化路径（SettingsScreen）" as persist #E3F2FD {
 
     component "SettingsScreen\n设置界面\n(:app)" as Settings #BBDEFB
 
-    component "ConfigRepository\n配置仓库\n(:app)" as ConfigRepo #BBDEFB {
+    component "ConfigDataStore\n配置仓库\n(:app)" as ConfigRepo #BBDEFB {
         note as cr_note
             1. DataStore 写入
             2. viewModel.updateConfig()
@@ -93,7 +93,7 @@ package "启动恢复" as startup #F3E5F5 {
 
     note as startup_note
         应用启动时：
-        1. ConfigRepository.syncFromDisk()
+        1. ConfigDataStore.syncFromDisk()
            → 从 DataStore 读取持久化配置
         2. ImeEngine.create(config = restoredConfig)
            → 使用恢复的配置创建引擎

@@ -60,10 +60,10 @@ package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
         }
         class ImeState <<状态根>> {
             + keyboardState: KeyboardState
-            + inputList: InputListState
-            + candidates: CandidateListState
-            + clipboard: ClipboardState
-            + favorites: FavoriteListState
+            + inputList: InputList
+            + candidateList: CandidateList
+            + clipboard: Clipboard
+            + favoriteList: FavoriteList
             + config: ImeConfig
         }
         interface ImeOutputBridge <<接口>> {
@@ -95,7 +95,7 @@ package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
             + backToPrevious()
         }
         class InputListOperator {
-            + apply(intent, list): InputListState
+            + apply(intent, list): InputList
         }
         class FeatureRegistry {
             + isEnabled(feature): Boolean
@@ -134,7 +134,7 @@ package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
         }
         class ImeLogger <<带标签记录器>> {
             - tag: String
-            - imeLog: ImeLog
+            - logFacade: ImeLog
             + verbose(msg: () -> String)
             + debug(msg: () -> String)
             + info(msg: () -> String)
@@ -252,11 +252,11 @@ package ":ime-ui\nUI层 + ViewModel层" as ime_ui #E8F5E9 {
             + keyboardType / keyGrid / keyboardState
         }
         class CandidateListPanel <<候选栏>> {
-            + state: CandidateListState
+            + state: CandidateList
             + onCandidateSelected
         }
         class InputListPanel <<输入栏>> {
-            + state: InputListState
+            + state: InputList
             + onGapTapped
         }
         class FavoriteListPanel <<收藏面板>> {
@@ -347,7 +347,7 @@ package ":app\n平台层" as app #E3F2FD {
         + moveCursor / selectRange / performAction
     }
 
-    class ConfigRepository <<DataStore>> {
+    class ConfigDataStore <<DataStore>> {
         + config: StateFlow<ImeConfig>
         + updateConfig(update)
         + syncFromDisk()
@@ -403,6 +403,6 @@ IMEService --> ImeEngine : "创建"
 IMEService --> InputConnectionBridge : "持有"
 InputConnectionBridge ..|> BaseImeOutputBridge : "实现"
 EditTextBridge ..|> BaseImeOutputBridge : "实现"
-ConfigRepository --> ImeConfig : "持久化"
+ConfigDataStore --> ImeConfig : "持久化"
 
 @enduml

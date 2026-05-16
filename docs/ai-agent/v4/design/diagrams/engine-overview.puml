@@ -92,32 +92,32 @@ package "状态类型" as state #E8F5E9 {
 
     class ImeState <<状态根>> {
         + keyboardState: KeyboardState
-        + inputList: InputListState
-        + candidates: CandidateListState
-        + clipboard: ClipboardState
-        + favorites: FavoriteListState
+        + inputList: InputList
+        + candidateList: CandidateList
+        + clipboard: Clipboard
+        + favoriteList: FavoriteList
         + config: ImeConfig
     }
 
-    class InputListState {
+    class InputList {
         + inputs: List<InputItem>
         + gapIndex: Int
         + pendingSpell: String
     }
 
-    class CandidateListState {
+    class CandidateList {
         + candidates: List<InputWord>
         + pageIndex: Int
         + pageSize: Int
         + hasMore: Boolean
     }
 
-    class ClipboardState {
+    class Clipboard {
         + currentText: String?
         + showTip: Boolean
     }
 
-    class FavoriteListState {
+    class FavoriteList {
         + favorites: List<InputFavorite>
         + isLoading: Boolean
     }
@@ -135,7 +135,7 @@ package "内部组件" as internal #E3F2FD {
     }
 
     class InputListOperator {
-        + apply(intent, list): InputListState
+        + apply(intent, list): InputList
     }
 
     class FeatureRegistry {
@@ -167,10 +167,10 @@ ImeEngine ..> ImeDictProvider : "依赖"
 BaseImeOutputBridge ..|> ImeOutputBridge : "实现"
 ImeSqliteDictProvider ..|> ImeDictProvider : "实现"
 
-ImeState *-- InputListState
-ImeState *-- CandidateListState
-ImeState *-- ClipboardState
-ImeState *-- FavoriteListState
+ImeState *-- InputList
+ImeState *-- CandidateList
+ImeState *-- Clipboard
+ImeState *-- FavoriteList
 ImeState *-- ImeConfig
 
 ' ─── 图例 ──────────────────────────────────────────────────────

@@ -127,41 +127,41 @@ interface LogWriter {
  * 支持 Kotlin 惯用语法和树形日志块。
  * 使用 inline + lambda 避免在不满足日志等级时评估消息参数。
  */
-class ImeLogger(private val tag: String, private val imeLog: ImeLog) {
+class ImeLogger(private val tag: String, private val logFacade: ImeLog) {
 
     inline fun verbose(msg: () -> String) {
-        if (imeLog.level <= LogLevel.VERBOSE) {
-            imeLog.dispatch(LogEntry(LogLevel.VERBOSE, tag, msg()))
+        if (logFacade.level <= LogLevel.VERBOSE) {
+            logFacade.dispatch(LogEntry(LogLevel.VERBOSE, tag, msg()))
         }
     }
 
     inline fun debug(msg: () -> String) {
-        if (imeLog.level <= LogLevel.DEBUG) {
-            imeLog.dispatch(LogEntry(LogLevel.DEBUG, tag, msg()))
+        if (logFacade.level <= LogLevel.DEBUG) {
+            logFacade.dispatch(LogEntry(LogLevel.DEBUG, tag, msg()))
         }
     }
 
     inline fun info(msg: () -> String) {
-        if (imeLog.level <= LogLevel.INFO) {
-            imeLog.dispatch(LogEntry(LogLevel.INFO, tag, msg()))
+        if (logFacade.level <= LogLevel.INFO) {
+            logFacade.dispatch(LogEntry(LogLevel.INFO, tag, msg()))
         }
     }
 
     inline fun warn(msg: () -> String) {
-        if (imeLog.level <= LogLevel.WARN) {
-            imeLog.dispatch(LogEntry(LogLevel.WARN, tag, msg()))
+        if (logFacade.level <= LogLevel.WARN) {
+            logFacade.dispatch(LogEntry(LogLevel.WARN, tag, msg()))
         }
     }
 
     inline fun error(msg: () -> String) {
-        if (imeLog.level <= LogLevel.ERROR) {
-            imeLog.dispatch(LogEntry(LogLevel.ERROR, tag, msg()))
+        if (logFacade.level <= LogLevel.ERROR) {
+            logFacade.dispatch(LogEntry(LogLevel.ERROR, tag, msg()))
         }
     }
 
     inline fun error(throwable: Throwable, msg: () -> String) {
-        if (imeLog.level <= LogLevel.ERROR) {
-            imeLog.dispatch(LogEntry(LogLevel.ERROR, tag, msg(), throwable))
+        if (logFacade.level <= LogLevel.ERROR) {
+            logFacade.dispatch(LogEntry(LogLevel.ERROR, tag, msg(), throwable))
         }
     }
 
@@ -172,7 +172,7 @@ class ImeLogger(private val tag: String, private val imeLog: ImeLog) {
      * 将作为此树形块的子节点输出，形成嵌套结构。
      */
     inline fun tree(title: String, block: () -> Unit) {
-        val treeWriter = TreeLogWriter(imeLog, tag, title)
+        val treeWriter = TreeLogWriter(logFacade, tag, title)
         treeWriter.begin()
         try {
             block()
@@ -527,8 +527,8 @@ log.debug("查询结果: ${candidates.map { it.text }.joinToString()}")
 | 存储路径 | 解析 `Context.filesDir` 或 SAF URI 为 `File`，创建 `LogStorage` | `LogStorage(File)` 构造 |
 | Logcat 输出 | 注册引擎提供的 `LogcatWriter` | `LogcatWriter` 工具类 |
 | 崩溃拦截 | 安装引擎提供的 `CrashInterceptor` | `CrashInterceptor` 工具类 |
-| 等级变更 | 从 `ConfigRepository` 同步到 `ImeLog.updateLevel()` | `ImeLog.updateLevel()` |
-| 路径变更 | 从 `ConfigRepository` 同步到 `LogStorage.updateDir()` | `LogStorage.updateDir()` |
+| 等级变更 | 从 `ConfigDataStore` 同步到 `ImeLog.updateLevel()` | `ImeLog.updateLevel()` |
+| 路径变更 | 从 `ConfigDataStore` 同步到 `LogStorage.updateDir()` | `LogStorage.updateDir()` |
 
 这种分层设计确保了引擎核心的平台无关性：在 Android 应用中，应用层使用引擎提供的 `LogcatWriter` 和 `CrashInterceptor` 工具类，只需一行代码即可完成平台集成；在纯 JVM 测试环境中，只需创建 `FileLogWriter` + `LogStorage` 即可使用日志基础设施，无需任何 Android 依赖。第三方应用可以完全跳过 `LogcatWriter` 和 `CrashInterceptor`，仅使用引擎内置的文件日志能力。
 

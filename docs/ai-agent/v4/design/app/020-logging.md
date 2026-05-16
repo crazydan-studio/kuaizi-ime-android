@@ -89,7 +89,7 @@ private fun resolveLogDir(context: Context, customPath: String?): File {
 
 初始化的关键设计决策是将所有 Android 平台依赖（`Context`、`BuildConfig.DEBUG`）集中在应用层处理，引擎库的 `ImeLog.init()` 只接收纯 Kotlin 参数（`LogLevel` 和 `List<LogWriter>`）。`resolveLogDir()` 方法将 Android 的 `Context.filesDir` 或 SAF URI 转换为纯 `File` 对象，传给引擎的 `LogStorage`，确保引擎不持有任何 Android 引用。
 
-日志等级与 `ImeConfig.UiConfig` 集成，配置字段 `logLevel` 和 `logStoragePath` 由 `ConfigRepository` 管理。等级变更通过 `ImeLog.updateLevel()` 立即生效，无需重启应用。路径变更通过 `LogStorage.updateDir()` 切换写入目录。
+日志等级与 `ImeConfig.UiConfig` 集成，配置字段 `logLevel` 和 `logStoragePath` 由 `ConfigDataStore` 管理。等级变更通过 `ImeLog.updateLevel()` 立即生效，无需重启应用。路径变更通过 `LogStorage.updateDir()` 切换写入目录。
 
 ---
 
@@ -319,7 +319,7 @@ val LogLevel.displayName: String
 ```
 用户在设置中选择日志等级
     ↓
-ConfigRepository.updateConfig { it.copy(ui = it.ui.copy(logLevel = newLevel)) }
+ConfigDataStore.updateConfig { it.copy(ui = it.ui.copy(logLevel = newLevel)) }
     ↓
 ImeLog.updateLevel(newLevel)
     ↓
@@ -328,7 +328,7 @@ ImeLog.updateLevel(newLevel)
 
 等级变更立即生效，不需要重启应用。DataStore 异步持久化确保配置在应用重启后恢复。
 
-Debug 构建的日志等级固定为 `VERBOSE`，界面上显示当前等级但不允许修改，这确保开发阶段始终有完整的日志输出。Release 构建允许用户通过设置页面调整日志等级，典型的使用场景是用户遇到问题后，在设置中将等级从 `WARN` 调低到 `DEBUG`，复现问题后导出日志发送给开发者排查。等级变更通过 `ConfigRepository` 持久化到 DataStore，同时通过 `ImeLog.updateLevel()` 立即更新运行时等级，两条路径并行确保即时生效和持久恢复。
+Debug 构建的日志等级固定为 `VERBOSE`，界面上显示当前等级但不允许修改，这确保开发阶段始终有完整的日志输出。Release 构建允许用户通过设置页面调整日志等级，典型的使用场景是用户遇到问题后，在设置中将等级从 `WARN` 调低到 `DEBUG`，复现问题后导出日志发送给开发者排查。等级变更通过 `ConfigDataStore` 持久化到 DataStore，同时通过 `ImeLog.updateLevel()` 立即更新运行时等级，两条路径并行确保即时生效和持久恢复。
 
 ---
 
@@ -377,7 +377,7 @@ fun LogStoragePathSetting(
 2. 应用私有目录 `{filesDir}/logs/` → 缺省路径
 3. 配置路径无效（目录不存在且无法创建）→ 降级到缺省路径并记录警告日志
 
-日志存储路径通过 Android SAF（Storage Access Framework）的 `OpenDocumentTree` 合约让用户选择目录，应用获取持久化 URI 权限后，将 URI 路径存入 `ImeConfig.UiConfig.logStoragePath`。路径变更时，应用层同时更新 `ConfigRepository` 的持久化配置和 `LogStorage.updateDir()` 的运行时目录，确保后续日志写入新路径。缺省路径为应用私有目录下的 `logs/` 子目录，无需用户配置即可使用，但日志文件在应用卸载后会被系统清除。用户选择外部存储路径后，日志文件在应用卸载后仍可保留，便于问题排查和数据迁移。
+日志存储路径通过 Android SAF（Storage Access Framework）的 `OpenDocumentTree` 合约让用户选择目录，应用获取持久化 URI 权限后，将 URI 路径存入 `ImeConfig.UiConfig.logStoragePath`。路径变更时，应用层同时更新 `ConfigDataStore` 的持久化配置和 `LogStorage.updateDir()` 的运行时目录，确保后续日志写入新路径。缺省路径为应用私有目录下的 `logs/` 子目录，无需用户配置即可使用，但日志文件在应用卸载后会被系统清除。用户选择外部存储路径后，日志文件在应用卸载后仍可保留，便于问题排查和数据迁移。
 
 ---
 
@@ -395,14 +395,14 @@ UI 测试方案与应用日志系统协同工作，详见 [030-UI 测试方案](
 ```kotlin
 // debug 源集：UI 测试与日志联动
 class DebugUITestOverlay(
-    private val imeLog: ImeLog,
+    private val logFacade: ImeLog,
 ) : UITestOverlay {
 
     override fun enable() {
         // UI 测试激活时降级日志等级
-        if (imeLog.level > LogLevel.DEBUG) {
-            imeLog.updateLevel(LogLevel.DEBUG)
-            imeLog.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
+        if (logFacade.level > LogLevel.DEBUG) {
+            logFacade.updateLevel(LogLevel.DEBUG)
+            logFacade.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
         }
     }
 
@@ -411,7 +411,7 @@ class DebugUITestOverlay(
             activeTools.remove(tool)
         } else {
             activeTools.add(tool)
-            imeLog.logger("UITest").debug { "激活工具: ${tool.displayName}" }
+            logFacade.logger("UITest").debug { "激活工具: ${tool.displayName}" }
         }
     }
 }

@@ -25,7 +25,7 @@ package ":app 模块\n平台层 Platform Layer" as app #E3F2FD {
         end note
     }
 
-    component "ConfigRepository\n配置仓库 (DataStore)" as ConfigRepo #BBDEFB {
+    component "ConfigDataStore\n配置仓库 (DataStore)" as ConfigRepo #BBDEFB {
         note as config_note
             • DataStore 持久化 / 恢复 ImeConfig
             • config: StateFlow<ImeConfig>

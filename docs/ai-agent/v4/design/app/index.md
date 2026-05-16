@@ -6,7 +6,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [010-配置管理](010-config.md) | ConfigRepository（DataStore 实现）、ImeConfig 运行时与持久化配置管理、ThemeType 处理 |
+| [010-配置管理](010-config.md) | ConfigDataStore（DataStore 实现）、ImeConfig 运行时与持久化配置管理、ThemeType 处理 |
 | [020-日志系统](020-logging.md) | 引擎日志基础设施初始化集成（LogcatWriter/CrashInterceptor 注册）、LogViewerScreen/LogExportScreen（日志查看与导出 UI）、LogLevelSetting/LogStoragePathSetting（日志配置 UI） |
 | [030-UI 测试方案](030-ui-testing.md) | 构建配置（release 自动移除）、UITestOverlay、5 种测试工具、UITestToolbar、Compose 编译器报告、截图对比测试 |
 | [040-用户数据导入导出](040-user-data.md) | UserDataService、UserBackup/BackupData 模型、ExportResult/ImportResult、ImportStrategy、UI 设计、权限与安全 |
