@@ -2,7 +2,7 @@
 
 v4 版本将键盘 UI 迁移到 Jetpack Compose，利用其声明式范式简化 UI 代码，同时利用 Compose 1.8 的新特性（AutoSize、智能省略号、触觉反馈等）提升 IME 的用户体验。
 
-> 键盘区域的三层面板架构（GestureInputPanel / GestureFeedbackPanel / KeyGridPanel）详见[面板三层分离设计](panel-separation.md)。本节仅描述 Compose 组件架构和迁移设计，不重复三层面板的设计细节。
+> 键盘区域的三层面板架构（GestureInputPanel / GestureFeedbackPanel / KeyGridPanel）详见[020-三层面板分离](020-panel-separation.md)。本节仅描述 Compose 组件架构和迁移设计，不重复三层面板的设计细节。
 
 ---
 
@@ -128,7 +128,7 @@ class IMEService : InputMethodService() {
 
 ### 1.3 键盘视图
 
-键盘视图在 v4 中拆分为三层面板（详见[面板三层分离设计](panel-separation.md)）：KeyGridPanel（纯展示，不处理触摸）、GestureInputPanel（透明手势层）、GestureFeedbackPanel（透明反馈绘制层）。KeyGridPanel 中的 KeyView 不处理触摸事件，触摸由 GestureInputPanel 统一拦截。以下仅展示 KeyGridPanel 中的按键渲染逻辑。
+键盘视图在 v4 中拆分为三层面板（详见[020-三层面板分离](020-panel-separation.md)）：KeyGridPanel（纯展示，不处理触摸）、GestureInputPanel（透明手势层）、GestureFeedbackPanel（透明反馈绘制层）。KeyGridPanel 中的 KeyView 不处理触摸事件，触摸由 GestureInputPanel 统一拦截。以下仅展示 KeyGridPanel 中的按键渲染逻辑。
 
 ```kotlin
 // KeyGridPanel：纯展示层，不处理触摸事件
@@ -367,7 +367,7 @@ Modifier.pointerInput(zones) {
 
 ## 3. 滑行输入手势处理
 
-> v4 的滑行手势检测统一由 GestureInputPanel 处理（详见[面板三层分离设计](panel-separation.md) §3），手势轨迹绘制由 GestureFeedbackPanel 处理（详见[面板三层分离设计](panel-separation.md) §4）。以下仅列出 Compose 手势 API 的基本用法参考。
+> v4 的滑行手势检测统一由 GestureInputPanel 处理（详见[020-三层面板分离](020-panel-separation.md) §3），手势轨迹绘制由 GestureFeedbackPanel 处理（详见[020-三层面板分离](020-panel-separation.md) §4）。以下仅列出 Compose 手势 API 的基本用法参考。
 
 ### 3.1 Compose 手势 API 参考
 
