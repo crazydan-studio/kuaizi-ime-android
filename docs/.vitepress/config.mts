@@ -53,6 +53,7 @@ export default defineConfig({
       {
         text: 'v4 版本',
         items: [
+          { text: '功能总览', link: '/ai-agent/v4/' },
           { text: '架构设计', link: '/ai-agent/v4/design/architecture/' },
           { text: '引擎模块', link: '/ai-agent/v4/design/engine/' },
           { text: 'UI 模块', link: '/ai-agent/v4/design/ui/' },
