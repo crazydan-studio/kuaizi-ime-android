@@ -1,7 +1,42 @@
+import { writeFileSync } from 'node:fs'
 import { defineConfig } from 'vitepress'
-import { configureDiagramsPlugin } from 'vitepress-plugin-diagrams'
+import { configureDiagramsPlugin, createBuildTimeDiagramsPlugin } from 'vitepress-plugin-diagrams'
 
-const logo = 'https://raw.githubusercontent.com/crazydan-studio/kuaizi-ime/refs/heads/master/logo.svg'
+const remoteLogoUrl = 'https://raw.githubusercontent.com/crazydan-studio/kuaizi-ime/refs/heads/master/logo.svg'
+let logo = remoteLogoUrl
+let fetchLogo = async (distDir: string) => {}
+
+const vitePlugins = []
+const diagramsPluginOpts = {
+  // 必须为 .vitepress 所在根目录下的 public 目录中的子目录，
+  // 且该子目录必须在服务启动前已存在，否则，vitepress 将不会加载该目录内的静态文件
+  diagramsDir: 'public/diagrams',
+  // 必须为相对于 .vitepress 所在根目录下的 public 目录的路径
+  publicPath: '/diagrams',
+}
+let configMarkdown = (md) => {
+  configureDiagramsPlugin(md, diagramsPluginOpts)
+}
+
+if (process.env.NODE_ENV == 'production') {
+  logo = '/logo.svg'
+  fetchLogo = async (distDir: string) => {
+    const distLogFile = distDir + logo
+
+    await fetch(remoteLogoUrl)
+            .then((resp) => resp.arrayBuffer())
+            .then((buf) => Buffer.from(buf))
+            .then((buf) => writeFileSync(distLogFile, buf))
+  }
+
+  // -------------------
+  const { configureMarkdown, vitePlugin } = createBuildTimeDiagramsPlugin({
+    diagramsDistDir: 'diagrams', ...diagramsPluginOpts
+  })
+
+  configMarkdown = configureMarkdown
+  vitePlugins.push(vitePlugin())
+}
 
 export default defineConfig({
   lang: 'zh-CN',
@@ -21,15 +56,7 @@ export default defineConfig({
     },
 
     // PlantUML / Mermaid 等图表（由 vitepress-plugin-diagrams 提供）
-    config(md) {
-      configureDiagramsPlugin(md, {
-        // 必须为 .vitepress 所在根目录下的 public 目录中的子目录，
-        // 且该子目录必须在服务启动前已存在，否则，vitepress 将不会加载该目录内的静态文件
-        diagramsDir: 'public/diagrams',
-        // 必须为相对于 .vitepress 所在根目录下的 public 目录的路径
-        publicPath: '/diagrams',
-      })
-    },
+    config: (md) => configMarkdown(md),
   },
 
   // ---------- 主题 ----------
@@ -105,10 +132,14 @@ export default defineConfig({
 
   // ---------- 构建 ----------
   vite: {
-    plugins: [],
+    plugins: vitePlugins,
   },
 
   cleanUrls: true,
+
+  async buildEnd(siteConfig) {
+    await fetchLogo(siteConfig.outDir)
+  }
 })
 
 /* ====== Sidebar helpers ====== */
