@@ -40,6 +40,17 @@ export default defineConfig({
       { text: '首页', link: '/' },
       { text: 'AI Agent', link: '/ai-agent/' },
       {
+        text: 'v3 版本',
+        items: [
+          { text: '功能总览', link: '/ai-agent/v3/' },
+          { text: '核心引擎', link: '/ai-agent/v3/engine/' },
+          { text: '键盘类型', link: '/ai-agent/v3/keyboard/' },
+          { text: 'UI 视图', link: '/ai-agent/v3/ui/' },
+          { text: '字典系统', link: '/ai-agent/v3/dict/' },
+          { text: '配置系统', link: '/ai-agent/v3/config/' },
+        ],
+      },
+      {
         text: 'v4 版本',
         items: [
           { text: '架构设计', link: '/ai-agent/v4/design/architecture/' },
@@ -56,6 +67,7 @@ export default defineConfig({
 
     sidebar: {
       '/': sidebarRoot(),
+      '/ai-agent/v3/': sidebarV3(),
       '/ai-agent/': sidebarAiAgent(),
     },
 
@@ -106,7 +118,52 @@ function sidebarRoot() {
       text: '首页',
       items: [{ text: '文档中心', link: '/' }],
     },
+    sidebarV3(),
     sidebarAiAgent(),
+  ]
+}
+
+function sidebarV3() {
+  return [
+    {
+      text: 'v3 版本（Java）',
+      items: [{ text: '功能总览', link: '/ai-agent/v3/' }],
+    },
+    {
+      text: '核心引擎',
+      collapsed: false,
+      items: [
+        { text: '输入列表 / 状态机 / 消息体系 / X-Pad', link: '/ai-agent/v3/engine/' },
+      ],
+    },
+    {
+      text: '键盘类型',
+      collapsed: false,
+      items: [
+        { text: '8 种键盘与按键表', link: '/ai-agent/v3/keyboard/' },
+      ],
+    },
+    {
+      text: 'UI 视图',
+      collapsed: false,
+      items: [
+        { text: '主面板 / 按键 / 输入 / X-Pad / 练习引导', link: '/ai-agent/v3/ui/' },
+      ],
+    },
+    {
+      text: '字典系统',
+      collapsed: false,
+      items: [
+        { text: '拼音字典 / HMM / 数据库升级', link: '/ai-agent/v3/dict/' },
+      ],
+    },
+    {
+      text: '配置系统',
+      collapsed: false,
+      items: [
+        { text: '运行时配置 / 按键表配置 / 偏好设置', link: '/ai-agent/v3/config/' },
+      ],
+    },
   ]
 }
 
