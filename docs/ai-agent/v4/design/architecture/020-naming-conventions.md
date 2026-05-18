@@ -41,7 +41,7 @@ Android 系统服务类沿用平台命名惯例（如 `IMEService`），配置�
 
 | 类名 | 说明 |
 |------|------|
-| `StandardKeyLayoutPanel` | 标准键盘（拼音、拉丁、数字、符号、编辑器、数学） |
+| `StandardKeyLayoutPanel` | 标准键盘（拼音、拉丁、数字、符号、数学） |
 | `EmojiKeyLayoutPanel` | Emoji 面板 |
 | `CandidateKeyLayoutPanel` | 候选键盘 |
 | `CommitOptionKeyLayoutPanel` | 提交选项键盘 |
@@ -78,39 +78,60 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 
 ---
 
-## 5 禁止使用的名称
+## 5 命名选择指引
 
-以下名称已废弃，不得在设计文档和代码中使用：
+以下列出 v4 设计中经过取舍后采用的命名及其替代方案，供后续设计决策参考。列出的替代方案并非错误，只是当前设计中选择了更合适的名称。
 
-- `KeyPanel`（使用 `KeyLayoutPanel`）
-- `KeyGridPanel`（使用 `KeyLayoutPanel`）
-- `StandardKeyGridPanel` / `EmojiKeyGridPanel` / `CandidateKeyGridPanel` / `CommitOptionKeyGridPanel`（使用对应 `KeyLayoutPanel` 子类）
-- `StandardKeyboard` / `StandardKeyPanel`（使用 `StandardKeyLayoutPanel`）
-- `InputPanel`（使用 `GestureInputPanel`）
-- `KeyboardView`（使用 `KeyboardHost`）
-- `CandidateBar` / `InputBar`（使用 `CandidateListPanel` / `InputListPanel`）
-- `EditorActionType`（使用 `EditorAction`）
-- `ImeEngineConfig`（使用 `ImeConfig`）
-- `onKeyPress`（使用 `handleGesture` / `handleIntent`）
-- `disable*` / `enable*` 前缀配置字段（使用 `*Enabled` 后缀）
-- `ActionScript`（使用 `InputActionScript`）
-- `ActionScriptLoader`（使用 `InputActionScriptLoader`）
-- `ActionScriptCompiler`（使用 `InputActionScriptCompiler`）
-- `EditorField`（使用 `EditTextBridge`）
-- `EditorHost`（使用 Bridge 接入示例，见 [030-三层模块划分](../engine/090-output-bridge.md)）
-- `InputHostView`（使用 Bridge 接入示例，见 [030-三层模块划分](../engine/090-output-bridge.md)）
-- `ImeEditText` / `ImeSupportEditText`（使用 `EditTextBridge`）
-- `EditorState`（撤销状态由 BaseImeOutputBridge 内部管理）
-- `AppLog` / `AppLogger`（使用 `ImeLog` / `ImeLogger`，详见 [080-日志系统](../engine/080-logging.md)）
-- `LogExportActivity`（使用 `LogExportScreen`）
-- `CandidateState`（使用 `CandidateList`）
-- `FavoritesState`（使用 `FavoriteList`）
-- `CandidatePanel`（使用 `CandidateListPanel`）
-- `FavoritesPanel`（使用 `FavoriteListPanel`）
-- `CandidatePager`（使用 `CandidateListPager`）
-- `ImeOutput.EditAction`（使用 `ImeOutput.PerformEdit`）
-- `InputScreen`（使用 `KeyboardHost`）
-- `ThreeLayerKeyboardArea`（使用 `KeyboardHost`，其内部已包含三层面板叠加区域）
-- `KeyboardArea`（使用 `KeyboardHost`，其内部已包含三层面板叠加区域）
-- `KeyboardPanel`（使用 `KeyboardHost`）
-- `KeyboardScreen`（使用 `KeyboardHost`）
+### 5.1 面板与布局
+
+| 选用名称 | 替代方案 | 选择理由 |
+|----------|---------|---------|
+| `KeyLayoutPanel` | `KeyPanel`, `KeyGridPanel` | `Layout` 更准确表达按键布局计算的职责 |
+| `StandardKeyLayoutPanel` | `StandardKeyboard`, `StandardKeyPanel`, `StandardKeyGridPanel` | 与 `KeyLayoutPanel` 子类命名规则一致 |
+| `EmojiKeyLayoutPanel` | `EmojiKeyGridPanel` | 同上 |
+| `CandidateKeyLayoutPanel` | `CandidateKeyGridPanel` | 同上 |
+| `CommitOptionKeyLayoutPanel` | `CommitOptionKeyGridPanel` | 同上 |
+| `GestureInputPanel` | `InputPanel` | `GestureInput` 更精确表达手势输入捕获职责 |
+| `KeyboardHost` | `KeyboardView`, `KeyboardArea`, `KeyboardPanel`, `KeyboardScreen`, `InputScreen`, `ThreeLayerKeyboardArea` | Compose 宿主组件惯例用 `Host` 后缀；该组件内部已包含三层面板叠加区域 |
+| `CandidateListPanel` | `CandidateBar`, `CandidatePanel` | `List` 表达列表滚动行为，`Panel` 表达容器组合 |
+| `InputListPanel` | `InputBar` | 同上 |
+| `FavoriteListPanel` | `FavoritesPanel` | `List` 与 `CandidateListPanel` 命名一致 |
+| `CandidateListPager` | `CandidatePager` | `List` 明确所属面板 |
+| `CandidateList` | `CandidateState` | 状态类以 `List` 后缀表达其数据集合本质 |
+
+### 5.2 引擎 API
+
+| 选用名称 | 替代方案 | 选择理由 |
+|----------|---------|---------|
+| `ImeConfig` | `ImeEngineConfig` | `Ime` 前缀已表达归属，无需冗余 `Engine` |
+| `EditorAction` | `EditorActionType` | 枚举命名不带 `Type` 后缀，Kotlin 惯例 |
+| `ImeOutput.PerformEdit` | `ImeOutput.EditAction` | `PerformEdit` 与 `ImeIntent.PerformEdit` 对称 |
+
+### 5.3 桥接与输出
+
+| 选用名称 | 替代方案 | 选择理由 |
+|----------|---------|---------|
+| `EditTextBridge` | `EditorField`, `ImeEditText`, `ImeSupportEditText` | `Bridge` 后缀与 `ImeOutputBridge` 一致；`EditText` 明确桥接目标 |
+| `BaseImeOutputBridge` 内部管理撤销状态 | `EditorState` | 撤销状态为桥接实现细节，不独立暴露 |
+
+### 5.4 输入动作程序化
+
+| 选用名称 | 替代方案 | 选择理由 |
+|----------|---------|---------|
+| `InputActionScript` | `ActionScript` | `InputAction` 前缀统一归属播放相关模型 |
+| `InputActionScriptLoader` | `ActionScriptLoader` | 同上 |
+| `InputActionScriptCompiler` | `ActionScriptCompiler` | 同上 |
+
+### 5.5 日志
+
+| 选用名称 | 替代方案 | 选择理由 |
+|----------|---------|---------|
+| `ImeLog` | `AppLog` | `Ime` 前缀归属引擎模块，`App` 暗示应用层 |
+| `ImeLogger` | `AppLogger` | 同上 |
+| `LogExportScreen` | `LogExportActivity` | 应用页面统一用 `Screen` 后缀 |
+
+### 5.6 配置字段
+
+| 选用名称 | 替代方案 | 选择理由 |
+|----------|---------|---------|
+| `*Enabled` 后缀 | `disable*` / `enable*` 前缀 | 布尔配置字段统一使用 `Enabled` 后缀，语义更清晰 |
