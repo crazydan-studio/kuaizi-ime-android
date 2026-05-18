@@ -18,7 +18,7 @@
 
 ### 1.3 设计原则
 
-本设计遵循以下核心原则。第一，组件职责单一：每个面板组件仅负责一项核心职责，不越界处理其他面板的事务；GestureFeedbackState 仅管理视觉反馈数据，弹出提示由 ImeState 管理，避免状态职责混淆。第二，坐标无关：所有逻辑层面使用归一化坐标，仅在绘制时转换到实际像素坐标，确保同一数据在不同 Zone 和不同设备上均可正确渲染。第三，单实例约束：KeyLayoutPanel 在任意时刻仅存在一个实例，根据 LayoutMode 决定其部署位置。第四，正交组合：InputMode 与 Keyboard.Type 作为两个独立的正交维度，任意 InputMode 可与任意 Type 组合，不存在互斥关系。第五，可替换性：所有 UI 组件仅依赖 `:ime-engine` 公开 API，第三方应用可替换任意组件而不影响引擎功能。第六，命名一致性：播放相关模型统一使用 InputAction 前缀（InputActionPlaybackState、InputActionFingerIndicator、InputActionPositionResolver 等），避免与普通 UI 状态命名混淆。
+本设计遵循以下核心原则。第一，组件职责单一：每个面板组件仅负责一项核心职责，不越界处理其他面板的事务；GestureFeedbackState 仅管理视觉反馈数据，弹出提示由 ImeState 管理，避免状态职责混淆。第二，坐标无关：所有逻辑层面使用归一化坐标，仅在绘制时转换到实际像素坐标，确保同一数据在不同 Zone 和不同设备上均可正确渲染。第三，单实例约束：KeyLayoutPanel 在任意时刻仅存在一个实例，根据 LayoutMode 决定其部署位置。第四，正交组合：InputMode 与 Keyboard.Type 作为两个独立的正交维度，任意 InputMode 可与任意 Type 组合，不存在互斥关系。第五，可替换性：所有 UI 组件仅依赖 `:ime-engine` 公开 API，第三方应用可替换任意组件而不影响引擎功能。第六，命名一致性：播放相关模型使用 InputAction 前缀（InputActionPlaybackState、InputActionFingerIndicator、InputActionPositionResolver 等）以区分于普通 UI 状态，但 UseMode 保持原名不变，因为其语义在 KeyboardInputActionPlayerHost 上下文中已足够明确，无需额外前缀。
 
 ---
 
@@ -376,7 +376,7 @@ private fun StackedLayout(
                 keyboardType = state.keyboardType,
                 keyGrid = state.keyGrid,
                 keyboardState = state.keyboardState,
-                onLayoutInfoChanged = { keyLayoutState = it },
+                onLayoutStateChanged = { keyLayoutState = it },
             )
             GestureFeedbackPanel(
                 elements = GestureFeedbackPanelSet.StackedSet.allElements,
@@ -421,7 +421,7 @@ private fun SeparatedLayout(
                 keyboardType = state.keyboardType,
                 keyGrid = state.keyGrid,
                 keyboardState = state.keyboardState,
-                onLayoutInfoChanged = { keyLayoutState = it },
+                onLayoutStateChanged = { keyLayoutState = it },
             )
             GestureFeedbackPanel(
                 elements = GestureFeedbackPanelSet.SeparatedSet.keySideElements,
@@ -818,7 +818,7 @@ fun InputListLayoutState.locateItem(index: Int): Offset? {
 | 角色 | Row 3 面板，按键布局渲染 |
 | 职责 | 根据 InputMode 和 Keyboard.Type 动态切换按键布局并渲染按键，提供布局状态供其他面板查询 |
 | 约束 | 单实例：同一时刻仅存在于 Zone A 或 Zone B 之一；InputMode x Type 正交组合 |
-| 关键属性 | inputMode: InputMode, keyboardType: Type, onLayoutInfoChanged, 计算归一化坐标 |
+| 关键属性 | inputMode: InputMode, keyboardType: Type, onLayoutStateChanged, 计算归一化坐标 |
 | 所属包 | panel |
 | 变更说明 | 由 v4 的 KeyGridPanel 更名，强调布局渲染职责而非仅网格渲染；KeyLayoutPanelLayoutInfo 重命名为 KeyLayoutState |
 
@@ -848,7 +848,7 @@ fun KeyLayoutPanel(
     keyboardType: Keyboard.Type,
     keyGrid: List<List<InputKey>>,
     keyboardState: KeyboardState,
-    onLayoutInfoChanged: (KeyLayoutState) -> Unit,
+    onLayoutStateChanged: (KeyLayoutState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val layoutStrategy = remember(inputMode, keyboardType) {
@@ -858,7 +858,7 @@ fun KeyLayoutPanel(
     layoutStrategy.Layout(
         keyGrid = keyGrid,
         keyboardState = keyboardState,
-        onLayoutInfoChanged = onLayoutInfoChanged,
+        onLayoutStateChanged = onLayoutStateChanged,
         modifier = modifier,
     )
 }
@@ -871,7 +871,7 @@ interface LayoutStrategy {
     fun Layout(
         keyGrid: List<List<InputKey>>,
         keyboardState: KeyboardState,
-        onLayoutInfoChanged: (KeyLayoutState) -> Unit,
+        onLayoutStateChanged: (KeyLayoutState) -> Unit,
         modifier: Modifier,
     )
 
@@ -1128,16 +1128,16 @@ sealed class GestureFeedbackPanelSet {
 | 属性 | 说明 |
 |------|------|
 | 角色 | 输入动作播放演示集成组件 |
-| 职责 | 支持 Animation 和 DirectInput 两种 InputActionUseMode，组合 KeyboardHost 和播放引擎 |
+| 职责 | 支持 Animation 和 DirectInput 两种 UseMode，组合 KeyboardHost 和播放引擎 |
 | 约束 | 仅用于演示/练习场景；Animation 模式访问真实字典数据但不提交到目标编辑器；DirectInput 模式不显示指示器 |
-| 关键属性 | inputActionUseMode: InputActionUseMode, viewModel: KeyboardViewModel |
+| 关键属性 | useMode: UseMode, viewModel: KeyboardViewModel |
 | 所属包 | integration |
 
 ```kotlin
 /**
  * 输入动作播放宿主组件。
  *
- * 支持两种 InputActionUseMode：
+ * 支持两种 UseMode：
  * - Animation：不可中断的动画播放模式，访问真实字典数据但不提交到目标编辑器，
  *   不写入数据库，仅展示输入过程动画。此模式下各面板的 showIndicator=true，
  *   指示器状态通过面板的 indicatorState 参数传入，在面板内部绘制。
@@ -1157,14 +1157,14 @@ sealed class GestureFeedbackPanelSet {
 @Composable
 fun KeyboardInputActionPlayerHost(
     viewModel: KeyboardViewModel,
-    inputActionUseMode: KeyboardInputActionPlayerHost.InputActionUseMode,
+    useMode: KeyboardInputActionPlayerHost.UseMode,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val playerState by viewModel.actionPlayer.playbackState.collectAsState()
 
     // 判断是否显示指示器：仅 Animation 模式下播放中才显示
-    val showIndicators = inputActionUseMode is KeyboardInputActionPlayerHost.InputActionUseMode.Animation
+    val showIndicators = useMode is KeyboardInputActionPlayerHost.UseMode.Animation
             && playerState is InputActionPlaybackState.Playing
 
     // 指示器状态（仅 Animation 模式下有意义）
@@ -1173,8 +1173,8 @@ fun KeyboardInputActionPlayerHost(
 
     Box(modifier = modifier.fillMaxSize()) {
         // 基础键盘组件，通过参数传递指示器控制
-        when (inputActionUseMode) {
-            is KeyboardInputActionPlayerHost.InputActionUseMode.Animation -> {
+        when (useMode) {
+            is KeyboardInputActionPlayerHost.UseMode.Animation -> {
                 // Animation 模式：showIndicator=true，传递 indicatorState
                 KeyboardHostWithIndicators(
                     viewModel = viewModel,
@@ -1183,7 +1183,7 @@ fun KeyboardInputActionPlayerHost(
                     row2Indicator = row2Indicator,
                 )
             }
-            is KeyboardInputActionPlayerHost.InputActionUseMode.DirectInput -> {
+            is KeyboardInputActionPlayerHost.UseMode.DirectInput -> {
                 // DirectInput 模式：showIndicator=false，不显示指示器
                 KeyboardHost(viewModel = viewModel)
             }
@@ -1213,11 +1213,11 @@ private fun KeyboardHostWithIndicators(
 }
 
 /**
- * 输入动作播放宿主的 InputActionUseMode。
+ * 输入动作播放宿主的使用模式。
  */
 sealed class KeyboardInputActionPlayerHost {
 
-    sealed class InputActionUseMode {
+    sealed class UseMode {
         /**
          * 动画播放模式。
          *
@@ -1225,7 +1225,7 @@ sealed class KeyboardInputActionPlayerHost {
          * 不写入数据库。仅用于演示/教学场景。
          * 此模式下各面板的 showIndicator=true，显示行指示器动画。
          */
-        data object Animation : InputActionUseMode()
+        data object Animation : UseMode()
 
         /**
          * 直接输入模式。
@@ -1235,7 +1235,7 @@ sealed class KeyboardInputActionPlayerHost {
          * 此模式下 showIndicator=false，不显示行指示器动画，
          * 仅通过 GestureFeedbackPanel 的 FingerIndicator 显示手指位置。
          */
-        data object DirectInput : InputActionUseMode()
+        data object DirectInput : UseMode()
     }
 }
 ```
@@ -1496,7 +1496,7 @@ data class InputActionFingerIndicator(
 
 ### 8.3 KeyboardViewModel 扩展
 
-KeyboardViewModel 需要扩展以支持 LayoutMode 管理、归一化坐标转换和 InputActionPlayer 集成。新增 layoutMode 状态管理，支持运行时动态切换；新增 actionPlayer 实例，提供输入动作播放能力；手势反馈状态中的坐标归一化逻辑集成到 ViewModel 中，确保输入面板写入的归一化坐标与反馈面板读取的归一化坐标一致。本次迭代将布局信息缓存变量的命名从 LayoutInfo 更新为 LayoutState 以与新命名对齐，将播放器相关模型统一添加 InputAction 前缀。
+KeyboardViewModel 需要扩展以支持 LayoutMode 管理、归一化坐标转换和 InputActionPlayer 集成。新增 layoutMode 状态管理，支持运行时动态切换；新增 actionPlayer 实例，提供输入动作播放能力；手势反馈状态中的坐标归一化逻辑集成到 ViewModel 中，确保输入面板写入的归一化坐标与反馈面板读取的归一化坐标一致。本次迭代将布局信息缓存变量的命名从 LayoutInfo 更新为 LayoutState 以与新命名对齐，将回调参数从 onLayoutInfoChanged 更新为 onLayoutStateChanged，播放器相关模型统一添加 InputAction 前缀（UseMode 保持原名不变）。
 
 ```kotlin
 class KeyboardViewModel(
@@ -1653,7 +1653,7 @@ InputActionPlayer.executeAction(InputAction)
 
 KeyboardInputActionPlayerHost 是输入动作播放的集成组件，内部组合 KeyboardHost 和播放引擎，通过面板内建的 showIndicator 参数控制指示器在 Row 1 和 Row 2 的显示，Row 3 的指示器则通过 GestureFeedbackPanel 的 FingerIndicator 绘制。播放引擎沿用 [040-input-action-player.md](040-input-action-player.md) 中的 InputActionPlayer 设计，但坐标体系从绝对坐标改为归一化坐标，InputActionPositionResolver 从解析绝对像素坐标改为解析归一化坐标。ActionScript 和 InputAction 沿用 [engine/060-input-action.md](../engine/060-input-action.md) 的定义，保持坐标无关设计。播放相关模型统一添加 InputAction 前缀以区分于普通 UI 状态。
 
-播放引擎的工作方式取决于 InputActionUseMode。Animation 模式下，播放器访问真实字典数据（通过 ImeEngine 的正常 reduce 路径），但不将结果提交到目标编辑器，也不写入数据库——这意味着 ImeEngine 的状态机正常运转，UI 正常渲染键盘状态变化，但 ImeOutput 不会被分发。此模式下 showIndicator=true，各面板在内部绘制行指示器动画。DirectInput 模式下，播放器在完整输入流程上叠加动画效果，结果会正常提交到目标编辑器，适用于实际输入辅助场景。此模式下 showIndicator=false，不显示行指示器，仅通过 GestureFeedbackPanel 的 FingerIndicator 显示手指位置。
+播放引擎的工作方式取决于 UseMode。Animation 模式下，播放器访问真实字典数据（通过 ImeEngine 的正常 reduce 路径），但不将结果提交到目标编辑器，也不写入数据库——这意味着 ImeEngine 的状态机正常运转，UI 正常渲染键盘状态变化，但 ImeOutput 不会被分发。此模式下 showIndicator=true，各面板在内部绘制行指示器动画。DirectInput 模式下，播放器在完整输入流程上叠加动画效果，结果会正常提交到目标编辑器，适用于实际输入辅助场景。此模式下 showIndicator=false，不显示行指示器，仅通过 GestureFeedbackPanel 的 FingerIndicator 显示手指位置。
 
 ### 9.2 InputActionPositionResolver 扩展
 
@@ -1806,15 +1806,15 @@ InputActionPlayer.play()
 
 ### 10.2 新增的设计
 
-以下设计是本次新增的概念和组件。Zone A / Zone B 屏幕分区模型是全新的空间组织概念，将 IME 屏幕纵向划分为两个功能区，使得分离布局模式下的空间分配有了清晰的语义定义。Zone B 三行结构是全新的面板组织方式，将候选、工具/输入、键盘交互三类面板在空间上分离，替代了 v4 中线性的 Column 布局。PopupTipPanel 是新增的短暂提示面板，替代了 v4 早期迭代中的 InfoTipPanel，从 ImeState 读取弹出提示状态。ToolListPanel 是新增的工具栏面板，在空闲时展示功能按钮，同时承载了原 Editor 类型的编辑功能键。KeyboardHost 是新增的统一集成组件，替代了 KeyboardPanel 和 KeyboardScreen 两个组件。KeyboardInputActionPlayerHost 是新增的播放演示集成组件，支持 Animation 和 DirectInput 两种 InputActionUseMode。CoordinateNormalizer 是新增的坐标归一化工具，支持归一化坐标与绝对坐标的双向转换。InputMode 枚举（XPad / HexGrid / RectGrid / MultiZone）是新增的交互范式维度，与 Keyboard.Type 正交组合。InputActionRowIndicator 是新增的行指示器状态模型，通过面板内建参数传递，替代了独立覆盖层。
+以下设计是本次新增的概念和组件。Zone A / Zone B 屏幕分区模型是全新的空间组织概念，将 IME 屏幕纵向划分为两个功能区，使得分离布局模式下的空间分配有了清晰的语义定义。Zone B 三行结构是全新的面板组织方式，将候选、工具/输入、键盘交互三类面板在空间上分离，替代了 v4 中线性的 Column 布局。PopupTipPanel 是新增的短暂提示面板，替代了 v4 早期迭代中的 InfoTipPanel，从 ImeState 读取弹出提示状态。ToolListPanel 是新增的工具栏面板，在空闲时展示功能按钮，同时承载了原 Editor 类型的编辑功能键。KeyboardHost 是新增的统一集成组件，替代了 KeyboardPanel 和 KeyboardScreen 两个组件。KeyboardInputActionPlayerHost 是新增的播放演示集成组件，支持 Animation 和 DirectInput 两种 UseMode。CoordinateNormalizer 是新增的坐标归一化工具，支持归一化坐标与绝对坐标的双向转换。InputMode 枚举（XPad / HexGrid / RectGrid / MultiZone）是新增的交互范式维度，与 Keyboard.Type 正交组合。InputActionRowIndicator 是新增的行指示器状态模型，通过面板内建参数传递，替代了独立覆盖层。
 
 ### 10.3 修改的设计
 
-以下设计从 v4 继承但做了重要修改。LayoutMode 命名从 Overlay/FullScreen 更新为 Stacked/Separated，语义更直观：Stacked 强调面板的堆叠共存，Separated 强调输入区域与按键区域的空间分离。KeyGridPanel 更名为 KeyLayoutPanel，强调其布局渲染职责而非仅网格渲染，并增加了 InputMode x Type 的正交组合支持。KeyLayoutPanelLayoutInfo 重命名为 KeyLayoutState，更准确反映其状态本质而非仅布局信息快照。CandidateListLayoutInfo 重命名为 CandidateListLayoutState，InputListLayoutInfo 重命名为 InputListLayoutState，同理更准确反映状态语义。GestureFeedbackState 从绝对坐标存储改为归一化坐标存储，并简化为仅管理视觉反馈（touchTrailPoints、pressedKeys、fingerIndicator），移除了 popupTip（移至 ImeState）、keyPath 和 xPadPath（合并到 touchTrailPoints）。KeyPositionResolver 重命名为 InputActionPositionResolver，从解析绝对像素坐标改为解析归一化坐标，并新增 InputListPanel 和 CandidateListPanel 的定位方法；ComposeKeyPositionResolver 同步重命名为 ComposeInputActionPositionResolver。GestureFeedbackPanelSet 从 OverlaySet/FullScreenSet 更名为 StackedSet/SeparatedSet，与 LayoutMode 命名对齐，并简化了元素类型（移除 KeyPath 和 XPadPathHighlight，合并到 TouchTrail）。FingerIndicatorState 重命名为 InputActionFingerIndicator，RowIndicatorState 重命名为 InputActionRowIndicator，UseMode 重命名为 InputActionUseMode，SwipePathInterpolator 重命名为 InputActionPathInterpolator，统一添加 InputAction 前缀。PopupTipPanel 改为从 ImeState 读取弹出提示状态而非 GestureFeedbackState。Keyboard.Type 移除了 Editor 枚举值，其功能合并到 ToolListPanel。行指示器从独立覆盖层改为内建到面板组件中，通过 showIndicator 和 indicatorState 参数控制。InputGesture 中增加了 InputMode 参数，使得手势识别逻辑可以根据不同输入模式采用不同策略。
+以下设计从 v4 继承但做了重要修改。LayoutMode 命名从 Overlay/FullScreen 更新为 Stacked/Separated，语义更直观：Stacked 强调面板的堆叠共存，Separated 强调输入区域与按键区域的空间分离。KeyGridPanel 更名为 KeyLayoutPanel，强调其布局渲染职责而非仅网格渲染，并增加了 InputMode x Type 的正交组合支持。KeyLayoutPanelLayoutInfo 重命名为 KeyLayoutState，更准确反映其状态本质而非仅布局信息快照。CandidateListLayoutInfo 重命名为 CandidateListLayoutState，InputListLayoutInfo 重命名为 InputListLayoutState，同理更准确反映状态语义。GestureFeedbackState 从绝对坐标存储改为归一化坐标存储，并简化为仅管理视觉反馈（touchTrailPoints、pressedKeys、fingerIndicator），移除了 popupTip（移至 ImeState）、keyPath 和 xPadPath（合并到 touchTrailPoints）。KeyPositionResolver 重命名为 InputActionPositionResolver，从解析绝对像素坐标改为解析归一化坐标，并新增 InputListPanel 和 CandidateListPanel 的定位方法；ComposeKeyPositionResolver 同步重命名为 ComposeInputActionPositionResolver。GestureFeedbackPanelSet 从 OverlaySet/FullScreenSet 更名为 StackedSet/SeparatedSet，与 LayoutMode 命名对齐，并简化了元素类型（移除 KeyPath 和 XPadPathHighlight，合并到 TouchTrail）。FingerIndicatorState 重命名为 InputActionFingerIndicator，RowIndicatorState 重命名为 InputActionRowIndicator，SwipePathInterpolator 重命名为 InputActionPathInterpolator，添加 InputAction 前缀。UseMode 保持原名不变，因为其语义在 KeyboardInputActionPlayerHost 上下文中已足够明确，无需额外前缀。PopupTipPanel 改为从 ImeState 读取弹出提示状态而非 GestureFeedbackState。Keyboard.Type 移除了 Editor 枚举值，其功能合并到 ToolListPanel。行指示器从独立覆盖层改为内建到面板组件中，通过 showIndicator 和 indicatorState 参数控制。InputGesture 中增加了 InputMode 参数，使得手势识别逻辑可以根据不同输入模式采用不同策略。
 
 ### 10.4 废弃的设计
 
-以下设计从 v4 中废弃。KeyboardPanel（原 Overlay 模式集成组件）被 KeyboardHost 替代，不再需要根据布局模式选择不同的集成组件。KeyboardScreen（原 FullScreen 模式集成组件）同样被 KeyboardHost 替代。InfoTipPanel（早期迭代的提示面板）被 PopupTipPanel 替代，强调了短暂弹出的交互特性。KeyGridPanelLayoutInfo 被 KeyLayoutState 替代，使用归一化坐标替代绝对像素坐标，命名更准确反映状态本质。GestureFeedbackState 中的绝对坐标字段（`MutableStateFlow<List<Offset>>`）被归一化坐标字段（`MutableStateFlow<List<OffsetF>>`）替代。GestureFeedbackState 中的 popupTip 字段移至 ImeState 管理。GestureFeedbackState 中的 keyPath 和 xPadPath 字段合并到 touchTrailPoints 中。FeedbackElementType 中的 KeyPath 和 XPadPathHighlight 合并到 TouchTrail 中。独立的 Row1IndicatorOverlay 和 Row2IndicatorOverlay 覆盖层被废弃，指示器改为面板内建绘制。Keyboard.Type 中的 Editor 枚举值被废弃，其功能合并到 ToolListPanel。KeyPositionResolver 废弃，由 InputActionPositionResolver 替代。ComposeKeyPositionResolver 废弃，由 ComposeInputActionPositionResolver 替代。FingerIndicatorState 废弃，由 InputActionFingerIndicator 替代。RowIndicatorState 废弃，由 InputActionRowIndicator 替代。UseMode 废弃，由 InputActionUseMode 替代。SwipePathInterpolator 废弃，由 InputActionPathInterpolator 替代。PlaybackState 废弃，由 InputActionPlaybackState 替代。
+以下设计从 v4 中废弃。KeyboardPanel（原 Overlay 模式集成组件）被 KeyboardHost 替代，不再需要根据布局模式选择不同的集成组件。KeyboardScreen（原 FullScreen 模式集成组件）同样被 KeyboardHost 替代。InfoTipPanel（早期迭代的提示面板）被 PopupTipPanel 替代，强调了短暂弹出的交互特性。KeyGridPanelLayoutInfo 被 KeyLayoutState 替代，使用归一化坐标替代绝对像素坐标，命名更准确反映状态本质。GestureFeedbackState 中的绝对坐标字段（`MutableStateFlow<List<Offset>>`）被归一化坐标字段（`MutableStateFlow<List<OffsetF>>`）替代。GestureFeedbackState 中的 popupTip 字段移至 ImeState 管理。GestureFeedbackState 中的 keyPath 和 xPadPath 字段合并到 touchTrailPoints 中。FeedbackElementType 中的 KeyPath 和 XPadPathHighlight 合并到 TouchTrail 中。独立的 Row1IndicatorOverlay 和 Row2IndicatorOverlay 覆盖层被废弃，指示器改为面板内建绘制。Keyboard.Type 中的 Editor 枚举值被废弃，其功能合并到 ToolListPanel。KeyPositionResolver 废弃，由 InputActionPositionResolver 替代。ComposeKeyPositionResolver 废弃，由 ComposeInputActionPositionResolver 替代。FingerIndicatorState 废弃，由 InputActionFingerIndicator 替代。RowIndicatorState 废弃，由 InputActionRowIndicator 替代。InputActionUseMode 废弃，由 UseMode 替代（UseMode 语义在 KeyboardInputActionPlayerHost 上下文中已足够明确，无需 InputAction 前缀）。SwipePathInterpolator 废弃，由 InputActionPathInterpolator 替代。PlaybackState 废弃，由 InputActionPlaybackState 替代。
 
 ### 10.5 对比总表
 
@@ -1839,7 +1839,7 @@ InputActionPlayer.play()
 | 手指指示器 | FingerIndicatorState | InputActionFingerIndicator | 修改（重命名） |
 | 行指示器 | RowIndicatorState + 独立覆盖层 | InputActionRowIndicator + 面板内建 | 修改（重命名+内建化） |
 | 播放状态 | PlaybackState | InputActionPlaybackState | 修改（重命名） |
-| 使用模式 | UseMode | InputActionUseMode | 修改（重命名） |
+| 使用模式 | UseMode | UseMode | 保持不变 |
 | 路径插值器 | SwipePathInterpolator | InputActionPathInterpolator | 修改（重命名） |
 | 反馈状态 | 含 popupTip/keyPath/xPadPath | 仅 touchTrailPoints/pressedKeys/fingerIndicator | 修改（简化） |
 | 反馈元素类型 | 含 KeyPath/XPadPathHighlight | 仅 TouchTrail/KeyHighlight/FingerIndicator | 修改（简化合并） |
