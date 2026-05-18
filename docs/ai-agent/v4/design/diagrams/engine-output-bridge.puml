@@ -8,10 +8,10 @@ title 输出桥接模式
 
 legend right
   |= 模块 |= 颜色 |= 说明 |
-  | :ime-engine | ##FFF3E0 | 接口/抽象定义 |
-  | :ime-ui | ##E8F5E9 | UI 层实现 |
-  | :app | ##E3F2FD | 应用层实现 |
-  | 第三方 | ##F5F5F5 | 自定义实现 |
+  | :ime-engine | <#FFF3E0> | 接口/抽象定义 |
+  | :ime-ui | <#E8F5E9> | UI 层实现 |
+  | :app | <#E3F2FD> | 应用层实现 |
+  | 第三方 | <#F5F5F5> | 自定义实现 |
 endlegend
 
 ' ===== ImeOutput =====

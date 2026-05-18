@@ -7,8 +7,8 @@ title UI 组件层次结构
 
 legend right
   |= 模块 |= 颜色 |= 说明 |
-  | :ime-ui | ##E8F5E9 | UI + ViewModel Layer |
-  | :ime-engine | ##FFF3E0 | Domain Layer (依赖) |
+  | :ime-ui | <#E8F5E9> | UI + ViewModel Layer |
+  | :ime-engine | <#FFF3E0> | Domain Layer (依赖) |
 endlegend
 
 ' ===== ViewModel 层 =====

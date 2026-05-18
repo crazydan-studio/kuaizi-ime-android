@@ -7,11 +7,11 @@ title 键盘状态机
 
 legend right
   |= 颜色 |= 说明 |
-  ##FFE0B2 | 顶层状态
-  ##C8E6C9 | 拼音输入子状态
-  ##BBDEFB | 候选选择子状态
-  ##F3E5F5 | 编辑器子状态
-  ##FFCDD2 | 符号/Emoji 子状态
+  | <#FFE0B2> | 顶层状态 |
+  | <#C8E6C9> | 拼音输入子状态 |
+  | <#BBDEFB> | 候选选择子状态 |
+  | <#F3E5F5> | 编辑器子状态 |
+  | <#FFCDD2> | 符号/Emoji 子状态 |
 endlegend
 
 ' ===== 顶层状态 =====
@@ -91,7 +91,6 @@ note right of Idle
   Math → Idle
   Symbol → SymbolChoosing
   Emoji → EmojiChoosing
-  Editor → Idle
   Candidate → Choosing
   CommitOption → CommitOptionChoosing
 end note

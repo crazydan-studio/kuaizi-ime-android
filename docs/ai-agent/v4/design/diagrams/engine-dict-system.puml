@@ -8,10 +8,10 @@ title 字典系统
 
 legend right
   |= 颜色 |= 说明 |
-  ##FFE0B2 | 公开接口
-  ##FFF3E0 | 内部实现
-  ##C8E6C9 | 数据模型
-  ##BBDEFB | Room 数据库层
+  | <#FFE0B2> | 公开接口 |
+  | <#FFF3E0> | 内部实现 |
+  | <#C8E6C9> | 数据模型 |
+  | <#BBDEFB> | Room 数据库层 |
 endlegend
 
 ' ===== 公开接口 =====
@@ -26,7 +26,7 @@ package "公开接口" #FFE0B2 {
 ' ===== 内部实现 =====
 package "内部实现" #FFF3E0 {
   class ImeSqliteDictProvider <<(C,#FFF3E0)>> {
-        - dictRepository: DictRepository
+    - dictRepository: DictRepository
     - pinyinCharsTree: PinyinCharsTree
     - hmmModel: HmmModel
     + query(pinyin): List<Candidate>

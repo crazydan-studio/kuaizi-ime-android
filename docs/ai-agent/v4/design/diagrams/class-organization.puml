@@ -8,9 +8,9 @@ title 类组织总览
 
 legend right
   |= 模块 |= 颜色 |= 说明 |
-  | :app | ##E3F2FD | Platform Layer |
-  | :ime-ui | ##E8F5E9 | UI + ViewModel Layer |
-  | :ime-engine | ##FFF3E0 | Domain + Data Layer |
+  | :app | <#E3F2FD> | Platform Layer |
+  | :ime-ui | <#E8F5E9> | UI + ViewModel Layer |
+  | :ime-engine | <#FFF3E0> | Domain + Data Layer |
 endlegend
 
 ' ==================== :ime-engine 模块 ====================
@@ -445,6 +445,15 @@ package ":app" #E3F2FD {
   }
   class LogExportScreen <<(C,#E3F2FD)>> {
     + 日志导出界面
+  }
+  class SettingsScreen <<(C,#E3F2FD)>> {
+    + 设置页面
+  }
+  class MainScreen <<(C,#E3F2FD)>> {
+    + 应用主界面
+  }
+  class ExerciseScreen <<(C,#E3F2FD)>> {
+    + 练习与演示界面
   }
 }
 

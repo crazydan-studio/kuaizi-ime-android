@@ -8,9 +8,9 @@ title :app 与 :ime-ui 模块边界
 
 legend right
   |= 模块 |= 颜色 |= 说明 |
-  | :app | ##E3F2FD | Platform Layer |
-  | :ime-ui | ##E8F5E9 | UI + ViewModel Layer |
-  | :ime-engine | ##FFF3E0 | Domain + Data Layer |
+  | :app | <#E3F2FD> | Platform Layer |
+  | :ime-ui | <#E8F5E9> | UI + ViewModel Layer |
+  | :ime-engine | <#FFF3E0> | Domain + Data Layer |
 endlegend
 
 ' ===== :app 模块 =====

@@ -1,4 +1,5 @@
 @startuml mvi-data-flow
+allowmixing
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam defaultFontSize 12
@@ -7,93 +8,36 @@ skinparam arrowThickness 1.5
 title MVI 完整数据流
 
 legend right
-  |= 模块 |= 颜色 |= 说明 |
-  | :app | ##E3F2FD | Platform Layer |
-  | :ime-ui | ##E8F5E9 | UI + ViewModel Layer |
-  | :ime-engine | ##FFF3E0 | Domain + Data Layer |
+  |= 模块/类别 |= 颜色 |= 说明 |
+  | :app | <#E3F2FD> | Platform Layer |
+  | :ime-ui | <#E8F5E9> | UI + ViewModel Layer |
+  | :ime-engine | <#FFF3E0> | Domain + Data Layer |
+  | 反馈流 | <#FFF9C4> | GestureFeedbackState → GestureFeedbackPanel |
+  | 状态流 | <#E1F5FE> | ImeState → UI / ViewModel |
+  | 输出流 | <#F3E5F5> | ImeEngine → ImeOutput → Bridge → Editor |
+  | 程序化输入流 | <#FCE4EC> | InputActionPlayer → KVM / GFS |
+  | UI 组件 | <#C8E6C9> | :ime-ui 内部组件 |
+  | 引擎组件 | <#FFE0B2> | :ime-engine 内部组件 |
+  | 平台组件 | <#BBDEFB> | :app 内部组件 |
 endlegend
 
 ' ===== 用户手势输入流（主流程） =====
 
-rectangle "用户" as User #FFFFFF {
-}
+rectangle "用户" as User #FFFFFF
 
 package "UI Layer [:ime-ui]" #E8F5E9 {
-  rectangle "GestureInputPanel\n(透明手势层)" as GIP #C8E6C9 {
-    note right of GIP
-      接收触摸事件
-      归一化坐标写入 GestureFeedbackState
-      查询 KeyLayoutState.findKeyAt()
-      输出 InputGesture
-    end note
-  }
-
-  rectangle "KeyboardViewModel\n(UI 协调中心)" as KVM #C8E6C9 {
-    note right of KVM
-      gestureToIntent() 转换
-      handleGesture() / handleIntent()
-      管理 LayoutMode
-      管理 GestureFeedbackState
-      集成 InputActionPlayer
-    end note
-  }
-
-  rectangle "GestureFeedbackState\n(归一化坐标)" as GFS #C8E6C9 {
-    note right of GFS
-      touchTrailPoints: List<OffsetF>
-      pressedKeys: Set<InputKey>
-      fingerIndicator: InputActionFingerIndicator?
-    end note
-  }
-
-  rectangle "GestureFeedbackPanel\n(透明绘制层)" as GFP #C8E6C9 {
-    note right of GFP
-      反归一化: OffsetF * panelSize
-      绘制轨迹/高亮/手指指示器
-      Zone A / Zone B 多实例
-    end note
-  }
-
-  rectangle "Compose UI\n面板组件" as UI #C8E6C9 {
-    note right of UI
-      KeyLayoutPanel (按键渲染)
-      CandidateListPanel (候选栏)
-      InputListPanel / ToolListPanel (输入栏/工具栏)
-      PopupTipPanel (弹出提示)
-    end note
-  }
-
-  rectangle "InputActionPlayer\n(程序化输入)" as IAP #C8E6C9 {
-    note right of IAP
-      播放 InputActionScript
-      驱动 feedbackState
-      驱动 handleIntent()
-      管理 row1/row2 Indicator
-    end note
-  }
+  rectangle "GestureInputPanel\n(透明手势层)" as GIP #C8E6C9
+  rectangle "KeyboardViewModel\n(UI 协调中心)" as KVM #C8E6C9
+  rectangle "GestureFeedbackState\n(归一化坐标)" as GFS #C8E6C9
+  rectangle "GestureFeedbackPanel\n(透明绘制层)" as GFP #C8E6C9
+  rectangle "Compose UI\n面板组件" as UI #C8E6C9
+  rectangle "InputActionPlayer\n(程序化输入)" as IAP #C8E6C9
 }
 
 package "Domain Layer [:ime-engine]" #FFF3E0 {
-  rectangle "ImeEngine\n(核心引擎)" as IE #FFE0B2 {
-    note right of IE
-      handleIntent()
-      reduce(state, intent)
-      状态机转换
-      字典查询
-      输出分发
-    end note
-  }
-
+  rectangle "ImeEngine\n(核心引擎)" as IE #FFE0B2
   rectangle "ImeIntent\n(用户意图)" as II #FFE0B2
-  rectangle "ImeState\n(不可变状态)" as IS #FFE0B2 {
-    note right of IS
-      inputMode, isInputting
-      keyboardState
-      candidateList, inputList
-      popupTip, toolList
-      config
-    end note
-  }
+  rectangle "ImeState\n(不可变状态)" as IS #FFE0B2
   rectangle "ImeOutput\n(编辑输出)" as IO #FFE0B2
 }
 
@@ -111,29 +55,76 @@ II -down-> IE : handleIntent()
 IE -down-> IS : reduce\nStateFlow 更新
 
 ' ===== 反馈流 =====
-GFS -down-> GFP : collectAsState()\n反归一化绘制
+GFS -[#FFF9C4]-> GFP : collectAsState()\n反归一化绘制
 
 ' ===== 状态流 =====
-IS -up-> UI : collectAsState()\n驱动面板重组
-IS -up-> KVM : state 引用
+IS -[#E1F5FE]-> UI : collectAsState()\n驱动面板重组
+IS -[#E1F5FE]-> KVM : state 引用
 
 ' ===== 输出流 =====
-IE -down-> IO : ImeOutput
-IO -down-> Bridge : dispatchToTarget()
-Bridge -down-> Editor : 语义方法调用
+IE -[#F3E5F5]-> IO : ImeOutput
+IO -[#F3E5F5]-> Bridge : dispatchToTarget()
+Bridge -[#F3E5F5]-> Editor : 语义方法调用
 
 ' ===== 程序化输入流 =====
-IAP -left-> KVM : handleIntent(ImeIntent)
-IAP -left-> GFS : setFingerIndicator()\nsetTouchTrailPoints()\nsetPressedKeys()
+IAP -[#FCE4EC]-> KVM : handleIntent(ImeIntent)
+IAP -[#FCE4EC]-> GFS : setFingerIndicator()\nsetTouchTrailPoints()\nsetPressedKeys()
 
-' ===== 分组标注 =====
-rectangle "反馈流" #FFF9C4 {
-}
-rectangle "状态流" #E1F5FE {
-}
-rectangle "输出流" #F3E5F5 {
-}
-rectangle "程序化输入流" #FCE4EC {
-}
+note right of GIP
+  接收触摸事件
+  归一化坐标写入 GestureFeedbackState
+  查询 KeyLayoutState.findKeyAt()
+  输出 InputGesture
+end note
+
+note right of KVM
+  gestureToIntent() 转换
+  handleGesture() / handleIntent()
+  管理 LayoutMode
+  管理 GestureFeedbackState
+  集成 InputActionPlayer
+end note
+
+note right of GFS
+  touchTrailPoints: List<OffsetF>
+  pressedKeys: Set<InputKey>
+  fingerIndicator: InputActionFingerIndicator?
+end note
+
+note right of GFP
+  反归一化: OffsetF * panelSize
+  绘制轨迹/高亮/手指指示器
+  Zone A / Zone B 多实例
+end note
+
+note right of UI
+  KeyLayoutPanel (按键渲染)
+  CandidateListPanel (候选栏)
+  InputListPanel / ToolListPanel (输入栏/工具栏)
+  PopupTipPanel (弹出提示)
+end note
+
+note right of IAP
+  播放 InputActionScript
+  驱动 feedbackState
+  驱动 handleIntent()
+  管理 row1/row2 Indicator
+end note
+
+note right of IE
+  handleIntent()
+  reduce(state, intent)
+  状态机转换
+  字典查询
+  输出分发
+end note
+
+note right of IS
+  inputMode, isInputting
+  keyboardState
+  candidateList, inputList
+  popupTip, toolList
+  config
+end note
 
 @enduml

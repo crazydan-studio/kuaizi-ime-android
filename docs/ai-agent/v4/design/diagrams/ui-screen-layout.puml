@@ -1,4 +1,5 @@
 @startuml ui-screen-layout
+allowmixing
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam shadowing false
@@ -51,6 +52,8 @@ legend right
     |<#A5D6A7>| 面板组件 |
     |<#BBDEFB>| 按键层 / 功能按钮 |
     |<#FFF3E0>| 三层叠加区域 |
+    |<#E8F5E9>| Separated 模式包 |
+    |<#E3F2FD>| Stacked 模式包 |
 endlegend
 
 @enduml

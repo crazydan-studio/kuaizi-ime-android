@@ -8,17 +8,17 @@ title :ime-engine 核心类关系
 
 legend right
   |= 颜色 |= 说明 |
-  ##FFE0B2 | 核心模型
-  ##C8E6C9 | 状态类型
-  ##BBDEFB | 内部组件
-  ##FFF3E0 | 输入动作
-  ##F3E5F5 | 日志系统
+  | <#FFE0B2> | 核心模型 |
+  | <#C8E6C9> | 状态类型 |
+  | <#BBDEFB> | 内部组件 |
+  | <#FFF3E0> | 输入动作 |
+  | <#F3E5F5> | 日志系统 |
 endlegend
 
 ' ===== 核心模型 (橙色) =====
 package "核心模型" #FFE0B2 {
   class ImeEngine <<(C,#FFE0B2)>> {
-        - state: MutableStateFlow<ImeState>
+    - state: MutableStateFlow<ImeState>
     + state: StateFlow<ImeState>
     - _outputBridge: ImeOutputBridge?
     + attachOutputBridge(bridge)

@@ -8,10 +8,10 @@ title 日志系统 [:ime-engine]
 
 legend right
   |= 颜色 |= 说明 |
-  ##FFE0B2 | 门面与记录器
-  ##C8E6C9 | 数据模型
-  ##BBDEFB | Writer 接口与实现
-  ##F3E5F5 | 工具类
+  | <#FFE0B2> | 门面与记录器 |
+  | <#C8E6C9> | 数据模型 |
+  | <#BBDEFB> | Writer 接口与实现 |
+  | <#F3E5F5> | 工具类 |
 endlegend
 
 ' ===== 门面与记录器 =====

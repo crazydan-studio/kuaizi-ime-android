@@ -14,9 +14,9 @@ skinparam component<<ime_engine>> #FFF3E0
 
 legend right
   |= 模块 |= 颜色 |= 说明 |
-  | :app | ##E3F2FD | Platform Layer - 平台集成 |
-  | :ime-ui | ##E8F5E9 | UI Layer + ViewModel Layer |
-  | :ime-engine | ##FFF3E0 | Domain Layer + Data Layer |
+  | :app | <#E3F2FD> | Platform Layer - 平台集成 |
+  | :ime-ui | <#E8F5E9> | UI Layer + ViewModel Layer |
+  | :ime-engine | <#FFF3E0> | Domain Layer + Data Layer |
 endlegend
 
 package ":app 模块\n(Platform Layer)" as app #E3F2FD {
@@ -24,7 +24,7 @@ package ":app 模块\n(Platform Layer)" as app #E3F2FD {
   component [InputConnectionBridge] as ICB <<app>>
   component [ConfigDataStore] as CDS <<app>>
   component [LogExportScreen\nLogViewerScreen\nLogLevelSetting] as AppLogUI <<app>>
-  component [SettingsScreen\nExerciseScreen] as AppScreens <<app>>
+  component [SettingsScreen\nMainScreen\nExerciseScreen] as AppScreens <<app>>
 }
 
 package ":ime-ui 模块\n(UI Layer + ViewModel Layer)" as ui #E8F5E9 {

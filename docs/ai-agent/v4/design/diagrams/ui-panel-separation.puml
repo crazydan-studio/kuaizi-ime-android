@@ -1,4 +1,5 @@
 @startuml ui-panel-separation
+allowmixing
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam defaultFontSize 12
@@ -7,45 +8,47 @@ title 面板三层分离与屏幕布局
 
 legend right
   |= 颜色 |= 说明 |
-  ##C8E6C9 | GestureInputPanel (最上层)
-  ##FFF9C4 | GestureFeedbackPanel (中间层)
-  ##BBDEFB | KeyLayoutPanel (最下层)
-  ##FFCDD2 | 信息面板 (Row 1/2)
-  ##E1BEE7 | 指示器/覆盖层
+  | <#C8E6C9> | GestureInputPanel (最上层) |
+  | <#FFF9C4> | GestureFeedbackPanel (中间层) |
+  | <#BBDEFB> | KeyLayoutPanel (最下层) |
+  | <#FFCDD2> | 信息面板 (Row 1/2) |
+  | <#E1BEE7> | 指示器/覆盖层 |
+  | <#F5F5F5> | Zone 容器 |
+  | <#FFFFFF> | 中性容器 |
 endlegend
 
 ' ===== 三层分离核心 =====
 rectangle "三层分离架构" as ThreeLayer #FFFFFF {
-  rectangle "最上层: GestureInputPanel\n(透明手势层)" as GIP #C8E6C9 {
-    note right
-      接收原始触摸事件
-      识别手势类型 (点击/长按/滑行/翻转)
-      查询 KeyLayoutState 定位按键
-      输出 InputGesture → ViewModel
-      驱动 GestureFeedbackState → 反馈面板
-      不绘制任何视觉反馈 (完全透明)
-    end note
-  }
-  rectangle "中间层: GestureFeedbackPanel\n(透明绘制层，可多实例)" as GFP #FFF9C4 {
-    note right
-      绘制输入轨迹 (含按键间路径/X-Pad路径)
-      绘制按键高亮
-      绘制手指指示器 (程序化输入)
-      绘制 clickAnimation 涟漪
-      不处理触摸事件
-      使用归一化坐标绘制
-    end note
-  }
-  rectangle "最下层: KeyLayoutPanel\n(按键布局层，单实例)" as KLP #BBDEFB {
-    note right
-      根据 InputMode + Type 渲染按键
-      展示按键状态 (按下/激活/禁用)
-      提供 KeyLayoutState 供查询
-      onLayoutStateChanged 回调
-      不处理触摸事件
-    end note
-  }
+  rectangle "最上层: GestureInputPanel\n(透明手势层)" as GIP #C8E6C9
+  rectangle "中间层: GestureFeedbackPanel\n(透明绘制层，可多实例)" as GFP #FFF9C4
+  rectangle "最下层: KeyLayoutPanel\n(按键布局层，单实例)" as KLP #BBDEFB
 }
+
+note right of GIP
+  接收原始触摸事件
+  识别手势类型 (点击/长按/滑行/翻转)
+  查询 KeyLayoutState 定位按键
+  输出 InputGesture → ViewModel
+  驱动 GestureFeedbackState → 反馈面板
+  不绘制任何视觉反馈 (完全透明)
+end note
+
+note right of GFP
+  绘制输入轨迹 (含按键间路径/X-Pad路径)
+  绘制按键高亮
+  绘制手指指示器 (程序化输入)
+  绘制 clickAnimation 涟漪
+  不处理触摸事件
+  使用归一化坐标绘制
+end note
+
+note right of KLP
+  根据 InputMode + Type 渲染按键
+  展示按键状态 (按下/激活/禁用)
+  提供 KeyLayoutState 供查询
+  onLayoutStateChanged 回调
+  不处理触摸事件
+end note
 
 ' ===== 通信解耦 =====
 rectangle "InputGesture\n(坐标无关)" as IG
@@ -90,42 +93,42 @@ rectangle "屏幕分区" as Zones #FFFFFF {
 
 ' ===== 数据模型 =====
 package "数据模型" {
-  rectangle "InputGesture\n(坐标无关)" as IG2 {
-    note right
-      Tap, LongPress, Swipe
-      Flip, XPadZonePath
-      CandidateTap
-    end note
-  }
-  rectangle "GestureFeedbackState\n(归一化坐标)" as GFS2 {
-    note right
-      touchTrailPoints: List<OffsetF>
-      pressedKeys: Set<InputKey>
-      fingerIndicator: InputActionFingerIndicator?
-    end note
-  }
-  rectangle "InputActionFingerIndicator\n(归一化坐标)" as IAFI {
-    note right
-      position: OffsetF
-      pressed: Boolean
-      visible: Boolean
-      clickAnimation: ClickAnimation?
-      手指指示器（绘制手指图形 + 点击动画）
-    end note
-  }
-  rectangle "KeyLayoutState\n(归一化坐标)" as KLS {
-    note right
-      keyPositions: Map<InputKey, RectF>
-      findKeyAt(position): InputKey?
-      onLayoutStateChanged 回调
-    end note
-  }
-  rectangle "CoordinateNormalizer" as CN {
-    note right
-      normalize(offset, size): OffsetF
-      denormalize(OffsetF, size): Offset
-    end note
-  }
+  rectangle "InputGesture\n(坐标无关)" as IG2
+  rectangle "GestureFeedbackState\n(归一化坐标)" as GFS2
+  rectangle "InputActionFingerIndicator\n(归一化坐标)" as IAFI
+  rectangle "KeyLayoutState\n(归一化坐标)" as KLS
+  rectangle "CoordinateNormalizer" as CN
 }
+
+note right of IG2
+  Tap, LongPress, Swipe
+  Flip, XPadZonePath
+  CandidateTap
+end note
+
+note right of GFS2
+  touchTrailPoints: List<OffsetF>
+  pressedKeys: Set<InputKey>
+  fingerIndicator: InputActionFingerIndicator?
+end note
+
+note right of IAFI
+  position: OffsetF
+  pressed: Boolean
+  visible: Boolean
+  clickAnimation: ClickAnimation?
+  手指指示器（绘制手指图形 + 点击动画）
+end note
+
+note right of KLS
+  keyPositions: Map<InputKey, RectF>
+  findKeyAt(position): InputKey?
+  onLayoutStateChanged 回调
+end note
+
+note right of CN
+  normalize(offset, size): OffsetF
+  denormalize(OffsetF, size): Offset
+end note
 
 @enduml

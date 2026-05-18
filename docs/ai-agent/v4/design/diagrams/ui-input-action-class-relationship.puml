@@ -8,9 +8,9 @@ title 输入动作播放类关系
 
 legend right
   |= 模块 |= 颜色 |= 说明 |
-  | :ime-engine | ##FFF3E0 | 接口/数据定义 |
-  | :ime-ui | ##E8F5E9 | UI 实现 |
-  | :app | ##E3F2FD | 应用集成 |
+  | :ime-engine | <#FFF3E0> | 接口/数据定义 |
+  | :ime-ui | <#E8F5E9> | UI 实现 |
+  | :app | <#E3F2FD> | 应用集成 |
 endlegend
 
 ' ===== :ime-engine 模块 =====
@@ -18,27 +18,27 @@ endlegend
 package ":ime-engine" #FFF3E0 {
 
   package "输入动作模型" {
-    abstract class InputAction {
+    abstract class InputAction <<(S,#FFF3E0)>> {
       + startTime: Long
     }
-    class KeyDown {
+    class KeyDown <<(S,#FFF3E0)>> {
       + key: InputKey
     }
-    class SwipeTo {
+    class SwipeTo <<(S,#FFF3E0)>> {
       + fromKey: InputKey
       + toKey: InputKey
       + duration: Long
     }
-    class KeyUp {
+    class KeyUp <<(S,#FFF3E0)>> {
       + key: InputKey
     }
-    class Wait {
+    class Wait <<(S,#FFF3E0)>> {
       + duration: Long
     }
-    class SelectCandidate {
+    class SelectCandidate <<(S,#FFF3E0)>> {
       + candidateIndex: Int
     }
-    class SwitchKeyboard {
+    class SwitchKeyboard <<(S,#FFF3E0)>> {
       + targetType: KeyboardType
     }
     InputAction <|-- KeyDown
@@ -67,20 +67,20 @@ package ":ime-engine" #FFF3E0 {
 
   abstract class InputActionPlaybackState <<(S,#FFF3E0)>> {
   }
-  class Idle {
+  class Idle <<(S,#FFF3E0)>> {
   }
-  class Ready {
+  class Ready <<(S,#FFF3E0)>> {
     + script: InputActionScript
   }
-  class Playing {
+  class Playing <<(S,#FFF3E0)>> {
     + currentIndex: Int
     + totalActions: Int
   }
-  class Paused {
+  class Paused <<(S,#FFF3E0)>> {
     + currentIndex: Int
     + totalActions: Int
   }
-  class Finished {
+  class Finished <<(S,#FFF3E0)>> {
   }
   InputActionPlaybackState <|-- Idle
   InputActionPlaybackState <|-- Ready

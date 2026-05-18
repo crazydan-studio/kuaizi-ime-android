@@ -2118,9 +2118,3 @@ private fun SeparatedLayout(
     }
 }
 ```
-
----
-
-```plantuml
-@file:../diagrams/ui-data-flow.puml
-```
