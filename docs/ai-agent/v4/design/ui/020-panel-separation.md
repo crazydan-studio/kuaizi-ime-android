@@ -1569,7 +1569,7 @@ CandidateListPanel 展示多个可补全输入、可粘贴内容等候选项，�
 | 属性 | 说明 |
 |------|------|
 | 角色 | Row 1 面板，展示候选列表 |
-| 职责 | 展示候选项，支持滚动和选择；内建行指示器动画 |
+| 职责 | 展示候选项，支持滚动和选择；内建指示器动画 |
 | 约束 | 始终部署在 Zone B Row 1，与 PopupTipPanel 叠加共享空间 |
 | 关键属性 | state, onCandidateSelected, showIndicator, indicatorState |
 | 所属包 | candidate |
@@ -1609,7 +1609,7 @@ fun CandidateListPanel(
             }
         }
 
-        // 内建行指示器
+        // 内建指示器
         if (showIndicator && indicatorState != null) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val pixelPosition = indicatorState.position.denormalize(size)
@@ -1722,7 +1722,7 @@ Editor 类型的编辑功能键（如全选、复制、粘贴、剪切、撤销�
 | 属性 | 说明 |
 |------|------|
 | 角色 | Row 2 面板（空闲时），展示工具按钮（含 Editor 类型的编辑功能键） |
-| 职责 | 空闲时展示固定 ToolItem 按钮，输入时仅显示切换按钮；内建行指示器动画 |
+| 职责 | 空闲时展示固定 ToolItem 按钮，输入时仅显示切换按钮；内建指示器动画 |
 | 约束 | 与 InputListPanel 互斥共享 Row 2 空间，由 isInputting 状态控制切换 |
 | 关键属性 | state, onToolSelected, showIndicator, indicatorState |
 | 所属包 | panel |
@@ -1763,7 +1763,7 @@ fun ToolListPanel(
             }
         }
 
-        // 内建行指示器
+        // 内建指示器
         if (showIndicator && indicatorState != null) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val pixelPosition = indicatorState.position.denormalize(size)
@@ -1802,7 +1802,7 @@ InputListPanel 展示当前输入的字符序列，支持点击间隙移动光�
 | 属性 | 说明 |
 |------|------|
 | 角色 | Row 2 面板（输入时），展示当前输入 |
-| 职责 | 展示当前输入内容，支持选择已输入文本进行修改或选择候选；内建行指示器动画 |
+| 职责 | 展示当前输入内容，支持选择已输入文本进行修改或选择候选；内建指示器动画 |
 | 约束 | 与 ToolListPanel 互斥共享 Row 2 空间；提供 locateItem() 方法供播放器定位 |
 | 关键属性 | state, onGapTapped, onItemSelected, showIndicator, indicatorState |
 | 所属包 | input |
@@ -1848,7 +1848,7 @@ fun InputListPanel(
             }
         }
 
-        // 内建行指示器
+        // 内建指示器
         if (showIndicator && indicatorState != null) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val pixelPosition = indicatorState.position.denormalize(size)

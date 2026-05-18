@@ -97,7 +97,7 @@ rectangle "KeyboardInputActionPlayerHost" as KIAPH #E8F5E9 {
   rectangle "DirectInput 模式" as Direct #E8F5E9 {
     note right
       showIndicator = false
-      不显示行指示器
+      不显示 Row 1/2 指示器
       仅 Row 3: FingerIndicator via GestureFeedbackPanel
     end note
   }

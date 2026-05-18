@@ -635,7 +635,7 @@ fun KeyboardHost(
  *   指示器状态通过面板的 indicatorState 参数传入，在面板内部绘制。
  * - DirectInput：封装 KeyboardHost 提供完整输入支持，
  *   在此基础上叠加播放引擎。此模式下 showIndicator=false，
- *   不显示行指示器动画，仅通过 GestureFeedbackPanel 绘制手指指示器。
+ *   不显示 Row 1/2 的指示器，仅通过 GestureFeedbackPanel 绘制手指指示器。
  */
 @Composable
 fun KeyboardInputActionPlayerHost(
@@ -666,7 +666,7 @@ fun KeyboardInputActionPlayerHost(
                 )
             }
             is KeyboardInputActionPlayerHost.UseMode.DirectInput -> {
-                // DirectInput 模式：不显示行指示器
+                // DirectInput 模式：不显示 Row 1/2 的指示器
                 KeyboardHost(viewModel = viewModel)
             }
         }
@@ -674,7 +674,7 @@ fun KeyboardInputActionPlayerHost(
 }
 ```
 
-`KeyboardInputActionPlayerHost` 从 `viewModel.actionPlayer` 读取播放状态和指示器状态。行指示器（`InputActionFingerIndicator`）通过面板的 `showIndicator` 和 `indicatorState` 参数内建绘制，无需外部覆盖层。手指指示器（`InputActionFingerIndicator`）通过 `GestureFeedbackPanel` 绘制，从 `feedbackState.fingerIndicator` 读取归一化坐标后反归一化渲染。`InputActionPlaybackState`、`InputActionFingerIndicator` 的类型定义见 [engine/060-input-action.md](../engine/060-input-action.md)。
+`KeyboardInputActionPlayerHost` 从 `viewModel.actionPlayer` 读取播放状态和指示器状态。三行均使用统一的 `InputActionFingerIndicator` 模型，职能相同——绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画。Row 1/2 的指示器通过面板的 `showIndicator` 和 `indicatorState` 参数内建绘制，无需外部覆盖层。Row 3 的指示器通过 `GestureFeedbackPanel` 绘制，从 `feedbackState.fingerIndicator` 读取归一化坐标后反归一化渲染。`InputActionPlaybackState`、`InputActionFingerIndicator` 的类型定义见 [engine/060-input-action.md](../engine/060-input-action.md)。
 
 ### 5.3 InputActionPlayer 协作
 

@@ -87,7 +87,7 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 @file:../diagrams/ui-component-hierarchy.puml
 ```
 
-KeyboardHost 通过 LayoutMode 统一 Stacked/Separated 入口。KeyboardInputActionPlayerHost 在 KeyboardHost 基础上叠加播放引擎，专用于输入动作演示。行指示器已内建到 CandidateListPanel、InputListPanel、ToolListPanel 中，通过 showIndicator 参数控制，消除独立覆盖层。
+KeyboardHost 通过 LayoutMode 统一 Stacked/Separated 入口。KeyboardInputActionPlayerHost 在 KeyboardHost 基础上叠加播放引擎，专用于输入动作演示。指示器已内建到 CandidateListPanel、InputListPanel、ToolListPanel 中，通过 showIndicator 参数控制，消除独立覆盖层。
 
 ---
 
@@ -104,7 +104,7 @@ UI 库的所有组件仅依赖 `:ime-engine` 的公开 API：
 | `ImeConfig` / `ImeConfig.UiConfig` | 主题系统、配置 UI 组件读取配置驱动界面呈现 |
 | `InputMode` 枚举 | KeyLayoutPanel 布局策略选择、GestureInputPanel 手势识别逻辑 |
 | `InputActionPlaybackState` | InputActionPlayer 播放状态管理 |
-| `InputActionFingerIndicator` | GestureFeedbackPanel 手指指示器渲染（兼作行指示器，供 CandidateListPanel/InputListPanel/ToolListPanel 内建绘制） |
+| `InputActionFingerIndicator` | 手指指示器渲染，绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画（供 CandidateListPanel/InputListPanel/ToolListPanel 内建绘制及 GestureFeedbackPanel 绘制） |
 | `InputActionPathInterpolator` | InputActionPlayer 轨迹插值计算 |
 | `InputActionPositionResolver` | InputActionPlayer 坐标解析 |
 | `OffsetF` / `RectF` | 归一化坐标类型，CoordinateNormalizer 与 GestureFeedbackPanel 使用 |

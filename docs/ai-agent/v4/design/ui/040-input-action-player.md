@@ -4,9 +4,9 @@
 
 **坐标无关设计**：动作脚本只记录按键的语义标识（如 `InputKey`），不存储任何绝对坐标。回放时，播放器通过 `InputActionPositionResolver` 根据当前键盘状态动态查找按键的归一化位置，从而消除按键布局变更、屏幕尺寸变化、手模式切换等因素导致的回放失效问题。同一份脚本可以在任意设备、任意布局下正确回放。
 
-**两种使用模式**：Animation 模式用于演示/教学场景，访问真实字典数据但不提交到目标编辑器，显示完整的行指示器动画；DirectInput 模式用于输入辅助场景，在完整输入流程上叠加动画效果，结果正常提交到编辑器，不显示行指示器。
+**两种使用模式**：Animation 模式用于演示/教学场景，访问真实字典数据但不提交到目标编辑器，显示完整的手指指示器动画；DirectInput 模式用于输入辅助场景，在完整输入流程上叠加动画效果，结果正常提交到编辑器，不显示 Row 1/2 的指示器。
 
-**本文档范围**：动画相关的数据模型（`InputActionPlaybackState`、`InputActionFingerIndicator`、`InputActionPathInterpolator`、`InputActionPositionResolver` 接口）均定义在 [engine/060-input-action.md](../engine/060-input-action.md)，此处不再重复定义。本文档覆盖 UI 层的实现：`KeyboardInputActionPlayerHost`、`ComposeInputActionPositionResolver`、`InputActionPlayer` 的使用方式和行指示器内建机制。
+**本文档范围**：动画相关的数据模型（`InputActionPlaybackState`、`InputActionFingerIndicator`、`InputActionPathInterpolator`、`InputActionPositionResolver` 接口）均定义在 [engine/060-input-action.md](../engine/060-input-action.md)，此处不再重复定义。本文档覆盖 UI 层的实现：`KeyboardInputActionPlayerHost`、`ComposeInputActionPositionResolver`、`InputActionPlayer` 的使用方式和指示器内建机制。
 
 ```plantuml
 @file:../diagrams/ui-input-action-data-flow.puml
@@ -31,7 +31,7 @@ sealed class KeyboardInputActionPlayerHost {
          *
          * 不可中断的播放模式，访问真实字典数据但不提交到目标编辑器，
          * 不写入数据库。仅用于演示/教学场景。
-         * 此模式下各面板的 showIndicator=true，显示行指示器动画。
+         * 此模式下各面板的 showIndicator=true，显示手指指示器动画。
          */
         data object Animation : UseMode()
 
@@ -40,7 +40,7 @@ sealed class KeyboardInputActionPlayerHost {
          *
          * 封装 KeyboardHost 提供完整输入支持，
          * 在此基础上叠加播放引擎。
-         * 此模式下 showIndicator=false，不显示行指示器动画，
+         * 此模式下 showIndicator=false，不显示 Row 1/2 的指示器，
          * 仅通过 GestureFeedbackPanel 的 FingerIndicator 显示手指位置。
          */
         data object DirectInput : UseMode()
@@ -51,7 +51,7 @@ sealed class KeyboardInputActionPlayerHost {
 Animation 模式和 DirectInput 模式的核心差异在于：
 
 - **数据提交**：Animation 模式下 ImeEngine 的状态机正常运转（访问真实字典），但 ImeOutput 不会被分发到目标编辑器；DirectInput 模式下所有输入结果正常提交。
-- **指示器显示**：Animation 模式下 `showIndicator=true`，Row 1 的 CandidateListPanel 和 Row 2 的 InputListPanel/ToolListPanel 在内部绘制行指示器动画，Row 3 通过 GestureFeedbackPanel 的 FingerIndicator 绘制手指指示器；DirectInput 模式下 `showIndicator=false`，Row 1 和 Row 2 不显示指示器，仅 Row 3 的 FingerIndicator 通过 GestureFeedbackPanel 绘制。
+- **指示器显示**：Animation 模式下 `showIndicator=true`，三行均显示 `InputActionFingerIndicator`——Row 1 的 CandidateListPanel 和 Row 2 的 InputListPanel/ToolListPanel 在内部绘制指示器，Row 3 通过 GestureFeedbackPanel 绘制；DirectInput 模式下 `showIndicator=false`，Row 1 和 Row 2 不显示指示器，仅 Row 3 通过 GestureFeedbackPanel 绘制。
 - **中断性**：Animation 模式不可中断，播放过程中用户输入被忽略；DirectInput 模式下播放与用户输入共存。
 
 | 属性 | Animation 模式 | DirectInput 模式 |
@@ -60,9 +60,9 @@ Animation 模式和 DirectInput 模式的核心差异在于：
 | 字典数据 | 访问真实字典 | 访问真实字典 |
 | 编辑器提交 | 不提交 | 正常提交 |
 | 数据库写入 | 不写入 | 正常写入 |
-| Row 1 指示器 | showIndicator=true | showIndicator=false |
-| Row 2 指示器 | showIndicator=true | showIndicator=false |
-| Row 3 手指指示器 | FingerIndicator 可见 | FingerIndicator 可见 |
+| Row 1 指示器 | showIndicator=true，内建绘制 | showIndicator=false |
+| Row 2 指示器 | showIndicator=true，内建绘制 | showIndicator=false |
+| Row 3 指示器 | 通过 GestureFeedbackPanel 绘制 | 通过 GestureFeedbackPanel 绘制 |
 | 中断性 | 不可中断 | 与用户输入共存 |
 | ImeOutput | 不分发 | 正常分发 |
 
@@ -74,12 +74,12 @@ Animation 模式和 DirectInput 模式的核心差异在于：
 |------|------|
 | 角色 | 输入动作播放演示集成组件 |
 | 职责 | 支持 Animation 和 DirectInput 两种 UseMode，组合 KeyboardHost 和播放引擎 |
-| 约束 | 仅用于演示/练习场景；Animation 模式访问真实字典数据但不提交到目标编辑器；DirectInput 模式不显示行指示器 |
+| 约束 | 仅用于演示/练习场景；Animation 模式访问真实字典数据但不提交到目标编辑器；DirectInput 模式不显示 Row 1/2 的指示器 |
 | 关键属性 | useMode: UseMode, viewModel: KeyboardViewModel |
-| 指示器控制 | Animation 模式：showIndicator=true，传递 indicatorState；DirectInput 模式：showIndicator=false |
+| 指示器控制 | Animation 模式：showIndicator=true，传递 InputActionFingerIndicator；DirectInput 模式：showIndicator=false |
 | 所属包 | integration |
 
-`KeyboardInputActionPlayerHost` 是输入动作播放的集成组件，内部组合 `KeyboardHost` 和播放引擎，通过面板内建的 `showIndicator` 参数控制指示器在 Row 1 和 Row 2 的显示，Row 3 的指示器则通过 GestureFeedbackPanel 的 FingerIndicator 绘制。
+`KeyboardInputActionPlayerHost` 是输入动作播放的集成组件，内部组合 `KeyboardHost` 和播放引擎，通过面板内建的 `showIndicator` 参数控制指示器在 Row 1 和 Row 2 的显示，Row 3 的指示器则通过 GestureFeedbackPanel 绘制。三行均使用统一的 `InputActionFingerIndicator` 模型。
 
 ```kotlin
 /**
@@ -91,14 +91,14 @@ Animation 模式和 DirectInput 模式的核心差异在于：
  *   指示器状态通过面板的 indicatorState 参数传入，在面板内部绘制。
  * - DirectInput：封装 KeyboardHost 提供完整输入支持，
  *   在此基础上叠加播放引擎。此模式下 showIndicator=false，
- *   不显示行指示器动画，仅通过 GestureFeedbackPanel 绘制手指指示器。
+ *   不显示 Row 1/2 的指示器，仅通过 GestureFeedbackPanel 绘制手指指示器。
  *
  * 输入数据包括键盘输入模式 + 动作序列，针对不同输入对象（按键、输入列表、候选列表），
  * 但 UI 坐标无关。输入轨迹由 KeyLayoutPanel 的 InputMode 决定，
  * KeyLayoutPanel 动态计算按键位置和轨迹形状。
  *
  * 对于 InputListPanel 和 CandidateListPanel 的交互，仅需选择操作：
- * 在面板上绘制圆形指示器点击动画（Animation 模式），
+ * 在面板上通过 InputActionFingerIndicator 绘制手指图形及点击动画（Animation 模式），
  * 点击坐标由面板的 locateItem() 方法动态计算。
  * 若目标项不在可视范围内，需先滚动到目标位置再定位。
  */
@@ -143,7 +143,7 @@ fun KeyboardInputActionPlayerHost(
  * 带指示器参数的 KeyboardHost 封装。
  *
  * 将 showIndicator 和 indicatorState 参数传递到各面板组件，
- * 面板组件在内部绘制指示器，无需外部覆盖层。
+ * 面板组件在内部绘制 InputActionFingerIndicator，无需外部覆盖层。
  */
 @Composable
 private fun KeyboardHostWithIndicators(
@@ -156,7 +156,7 @@ private fun KeyboardHostWithIndicators(
     // 在各面板调用处传递 showIndicator 和 indicatorState
     // Row 1: CandidateListPanel(showIndicator = showIndicators, indicatorState = row1Indicator)
     // Row 2: InputListPanel/ToolListPanel(showIndicator = showIndicators, indicatorState = row2Indicator)
-    // Row 3: 指示器通过 GestureFeedbackPanel 的 FingerIndicator 绘制
+    // Row 3: 指示器通过 GestureFeedbackPanel 绘制
     KeyboardHost(viewModel = viewModel)
 }
 ```
@@ -256,9 +256,9 @@ class ComposeInputActionPositionResolver(
 | 约束 | 坐标无关，所有位置通过 InputActionPositionResolver 实时查询归一化坐标 |
 | 构造参数 | viewModel: KeyboardViewModel, feedbackState: GestureFeedbackState, positionResolver: InputActionPositionResolver, scope: CoroutineScope |
 | 播放状态 | playbackState: StateFlow\<InputActionPlaybackState\>（定义在 engine/060） |
-| 行指示器 | row1IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\>, row2IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\> |
+| Row 1/2 指示器 | row1IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\>, row2IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\> |
 | 路径插值 | 使用 InputActionPathInterpolator.interpolate()（定义在 engine/060） |
-| 动作分发 | KeyDown → 设置手指指示器 + 启动按键点击涟漪动画 + 按键高亮 + 发送 PressKey；SwipeTo → 生成插值路径 + 动画移动手指 + 发送 PressKey；KeyUp → 更新手指状态 + 清除按键高亮；SelectCandidate → 更新 Row 1 行指示器 + 发送 SelectCandidate；SwitchKeyboard → 发送 SwitchKeyboard |
+| 动作分发 | KeyDown → 设置手指指示器 + 启动点击涟漪动画 + 按键高亮 + 发送 PressKey；SwipeTo → 生成插值路径 + 动画移动手指 + 发送 PressKey；KeyUp → 更新手指状态 + 清除按键高亮；SelectCandidate → 更新 Row 1 指示器 + 发送 SelectCandidate；SwitchKeyboard → 发送 SwitchKeyboard |
 | 所属包 | player |
 
 `InputActionPlayer` 是输入动作播放引擎，接收坐标无关的 InputActionScript，按时间轴依次执行动作。
@@ -272,7 +272,7 @@ class ComposeInputActionPositionResolver(
  * 接收坐标无关的 InputActionScript，按时间轴依次执行动作：
  * - 将 InputAction 转换为 ImeIntent 通过 KeyboardViewModel 发送到引擎
  * - 通过 InputActionPositionResolver 在回放时动态解析归一化坐标
- * - 同步驱动动画覆盖层（手指指示器、轨迹、行指示器）
+ * - 同步驱动动画覆盖层（手指指示器、触摸轨迹）
  * - 提供播放控制接口
  *
  * 坐标无关意味着：
@@ -296,11 +296,11 @@ class InputActionPlayer(
     private var currentScript: InputActionScript? = null
     private var actionIndex = 0
 
-    // Row 1 行指示器状态（归一化坐标，行相对）
+    // Row 1 指示器状态（归一化坐标，行相对）
     private val _row1IndicatorState = MutableStateFlow<InputActionFingerIndicator?>(null)
     val row1IndicatorState: StateFlow<InputActionFingerIndicator?> = _row1IndicatorState.asStateFlow()
 
-    // Row 2 行指示器状态（归一化坐标，行相对）
+    // Row 2 指示器状态（归一化坐标，行相对）
     private val _row2IndicatorState = MutableStateFlow<InputActionFingerIndicator?>(null)
     val row2IndicatorState: StateFlow<InputActionFingerIndicator?> = _row2IndicatorState.asStateFlow()
 
@@ -446,11 +446,16 @@ class InputActionPlayer(
             }
             is InputAction.SelectCandidate -> {
                 val position = positionResolver.resolveCandidatePosition(action.candidateIndex) ?: return
-                // 更新 Row 1 行指示器
+                // 更新 Row 1 指示器
                 _row1IndicatorState.value = InputActionFingerIndicator(
-                    position = position, pressed = true, visible = true
+                    position = position, pressed = true, visible = true,
+                    clickAnimation = ClickAnimation(progress = 0f),
                 )
                 viewModel.handleIntent(ImeIntent.SelectCandidate(/* candidate */))
+                // 启动点击涟漪动画
+                scope.launch {
+                    animateRowIndicatorClick(_row1IndicatorState, position)
+                }
                 // 短暂显示后清除指示器
                 scope.launch {
                     delay(300)
@@ -494,6 +499,32 @@ class InputActionPlayer(
     }
 
     /**
+     * 面板内建指示器的点击涟漪动画。
+     *
+     * 在 Row 1/2 面板内建指示器位置绘制涟漪扩散动画，
+     * 通过更新 InputActionFingerIndicator 的 clickAnimation 字段驱动。
+     */
+    private suspend fun animateRowIndicatorClick(
+        indicatorState: MutableStateFlow<InputActionFingerIndicator?>,
+        position: OffsetF,
+    ) {
+        val animatable = Animatable(0f)
+        animatable.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 300),
+        ) {
+            val current = indicatorState.value
+            if (current != null && current.position == position) {
+                indicatorState.value = current.copy(clickAnimation = ClickAnimation(progress = value))
+            }
+        }
+        val final = indicatorState.value
+        if (final != null && final.position == position) {
+            indicatorState.value = final.copy(clickAnimation = null)
+        }
+    }
+
+    /**
      * 沿路径动画移动手指指示器（通过 GestureFeedbackState.fingerIndicator）。
      *
      * 路径点均为归一化坐标，直接写入 InputActionFingerIndicator。
@@ -530,11 +561,11 @@ class InputActionPlayer(
 
 ---
 
-## 5. 行指示器内建机制
+## 5. 指示器内建机制
 
-Zone B 三行结构中，每行在播放动画时需要展示指示器。本设计将行指示器从独立覆盖层改为内建到面板组件中，通过 `showIndicator` 布尔参数和 `indicatorState` 状态参数控制。这种内建设计消除了独立的覆盖层组件，简化了组件层次，同时使指示器的坐标与面板内容使用同一坐标系，避免了跨组件坐标对齐问题。
+Zone B 三行结构中，每行在播放动画时需要展示指示器。本设计将指示器从独立覆盖层改为内建到面板组件中，通过 `showIndicator` 布尔参数和 `indicatorState` 状态参数控制。这种内建设计消除了独立的覆盖层组件，简化了组件层次，同时使指示器的坐标与面板内容使用同一坐标系，避免了跨组件坐标对齐问题。三行均使用统一的 `InputActionFingerIndicator` 模型，职能相同：绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画。
 
-### 5.1 各行指示器机制
+### 5.1 各行指示器绘制方式
 
 | 行 | 面板 | 指示器方式 | 参数 |
 |---|---|---|---|
@@ -544,17 +575,17 @@ Zone B 三行结构中，每行在播放动画时需要展示指示器。本设�
 
 ### 5.2 Animation 模式与 DirectInput 模式的指示器差异
 
-在 Animation 模式下，`KeyboardInputActionPlayerHost` 将 `showIndicator=true` 传递给 Row 1 和 Row 2 的面板，并将 InputActionPlayer 计算的行指示器状态通过 `indicatorState` 参数传入。面板在常规内容之上叠加绘制一个半透明圆形指示器。在 DirectInput 模式下，`showIndicator=false`，面板不绘制指示器，仅通过 GestureFeedbackPanel 的 FingerIndicator 显示手指位置。
+在 Animation 模式下，`KeyboardInputActionPlayerHost` 将 `showIndicator=true` 传递给 Row 1 和 Row 2 的面板，并将 InputActionPlayer 计算的指示器状态通过 `indicatorState` 参数传入。面板在常规内容之上叠加绘制手指指示器图形。在 DirectInput 模式下，`showIndicator=false`，面板不绘制指示器，仅通过 GestureFeedbackPanel 显示手指位置。
 
 这种模式差异使得 Animation 模式提供完整的可视化演示效果，而 DirectInput 模式仅保留必要的手指位置提示，避免在实际输入辅助场景中过度干扰用户操作。
 
 ### 5.3 面板内建指示器绘制逻辑
 
-以 CandidateListPanel 为例，所有支持行指示器的面板采用相同的内建绘制模式：
+以 CandidateListPanel 为例，所有支持指示器的面板采用相同的内建绘制模式：
 
 ```kotlin
 /**
- * 候选列表面板（行指示器内建部分）。
+ * 候选列表面板（指示器内建部分）。
  *
  * 当 showIndicator=true 且 indicatorState 非空时，
  * 面板在常规内容之上叠加绘制一个半透明圆形指示器。
@@ -572,7 +603,7 @@ fun CandidateListPanel(
     Box(modifier = modifier.fillMaxSize()) {
         // ... 常规候选列表内容 ...
 
-        // 内建行指示器
+        // 内建指示器
         if (showIndicator && indicatorState != null) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val pixelPosition = indicatorState.position.denormalize(size)
@@ -593,7 +624,7 @@ InputListPanel 和 ToolListPanel 采用完全相同的内建指示器绘制模�
 
 ## 6. 播放执行流程
 
-输入动作播放的执行流程如下。播放器加载 InputActionScript 后，按时间轴依次执行 InputAction。对于不同类型的动作，播放器通过 `InputActionPositionResolver` 解析归一化坐标，通过 `InputActionPathInterpolator` 生成插值轨迹，更新 `GestureFeedbackState` 的手指指示器和触摸轨迹，同时管理行指示器状态。
+输入动作播放的执行流程如下。播放器加载 InputActionScript 后，按时间轴依次执行 InputAction。对于不同类型的动作，播放器通过 `InputActionPositionResolver` 解析归一化坐标，通过 `InputActionPathInterpolator` 生成插值轨迹，更新 `GestureFeedbackState` 的手指指示器和触摸轨迹，同时管理各行的指示器状态。
 
 ```plantuml
 @file:../diagrams/ui-input-action-data-flow.puml
@@ -607,7 +638,7 @@ InputListPanel 和 ToolListPanel 采用完全相同的内建指示器绘制模�
 
 **SelectCandidate 执行**：播放器通过 `resolveCandidatePosition(index)` 获取候选项的归一化坐标（行相对），更新 `row1IndicatorState` 为 `InputActionFingerIndicator`。CandidateListPanel 在内部检测到 `showIndicator=true` 且 `indicatorState` 非空后，根据面板尺寸反归一化绘制圆形指示器。短暂延时后清除指示器。
 
-**行指示器与 FingerIndicator 的分工**：Row 1 和 Row 2 的点击类操作（SelectCandidate、SelectInputItem）使用行指示器（`InputActionFingerIndicator`），在面板内部绘制；Row 3 的按键操作（KeyDown、SwipeTo、KeyUp）使用 FingerIndicator（`InputActionFingerIndicator`），通过 GestureFeedbackPanel 绘制。两者均使用归一化坐标，但坐标系不同：行指示器使用行相对坐标系，FingerIndicator 使用 KeyLayoutPanel 的归一化坐标系。
+**各行的指示器绘制**：三行均使用 `InputActionFingerIndicator` 模型，职能相同——绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画。Row 1 和 Row 2 的点击类操作（SelectCandidate、SelectInputItem）通过面板内建的 `indicatorState` 参数绘制；Row 3 的按键操作（KeyDown、SwipeTo、KeyUp）通过 GestureFeedbackPanel 绘制。两者均使用归一化坐标，但坐标系不同：Row 1/2 使用行相对坐标系，Row 3 使用 KeyLayoutPanel 的归一化坐标系。
 
 ---
 
@@ -678,7 +709,7 @@ class InputActionScriptLoader(private val context: Context) {
 
 1. **解析阶段**：`InputActionPositionResolver` 从布局状态中查询位置。按键位置直接取 `KeyLayoutState.keyPositions` 的归一化值；候选项和输入项通过 `locateItem()` 获取像素坐标后经 `CoordinateNormalizer.normalize()` 归一化。
 2. **插值阶段**：`InputActionPathInterpolator.interpolate()` 接收归一化起止坐标，输出归一化坐标路径点列表。
-3. **写入阶段**：归一化坐标写入 `GestureFeedbackState`（FingerIndicator、touchTrailPoints）或 `InputActionFingerIndicator`（行指示器）。
+3. **写入阶段**：归一化坐标写入 `GestureFeedbackState`（FingerIndicator、touchTrailPoints）或 Row 1/2 的 `InputActionFingerIndicator`（indicatorState）。
 4. **绘制阶段**：GestureFeedbackPanel 读取归一化坐标后根据面板尺寸反归一化绘制；面板内建指示器读取行相对归一化坐标后根据面板尺寸反归一化绘制。
 
 ### 8.3 与用户手势输入数据流的关系

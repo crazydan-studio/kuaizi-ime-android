@@ -93,7 +93,7 @@ package ":ime-engine" #FFF3E0 {
     + pressed: Boolean
     + visible: Boolean = true
     + clickAnimation: ClickAnimation?
-    note "手指指示器 + 行指示器\n+ 点击动画" as N1
+    note "绘制手指图形 + 跟随滑行轨迹\n+ 点击动画" as N1
   }
 
   class ClickAnimation <<(D,#FFF3E0)>> {
@@ -250,7 +250,7 @@ KeyboardViewModel --> ComposeInputActionPositionResolver : 创建(惰性提供�
 
 KeyboardInputActionPlayerHost --> KeyboardHost : 组合
 KeyboardInputActionPlayerHost --> KeyboardViewModel : viewModel
-KeyboardInputActionPlayerHost ..> InputActionFingerIndicator : 传递行指示器
+KeyboardInputActionPlayerHost ..> InputActionFingerIndicator : 传递 Row 1/2 指示器
 
 IMEService --> KeyboardViewModel : Factory(engine)
 

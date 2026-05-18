@@ -96,7 +96,6 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 - `ActionScript`（使用 `InputActionScript`）
 - `ActionScriptLoader`（使用 `InputActionScriptLoader`）
 - `ActionScriptCompiler`（使用 `InputActionScriptCompiler`）
-- `InputActionRowIndicator`（使用 `InputActionFingerIndicator`）
 - `EditorField`（使用 `EditTextBridge`）
 - `EditorHost`（使用 Bridge 接入示例，见 [030-三层模块划分](../engine/090-output-bridge.md)）
 - `InputHostView`（使用 Bridge 接入示例，见 [030-三层模块划分](../engine/090-output-bridge.md)）

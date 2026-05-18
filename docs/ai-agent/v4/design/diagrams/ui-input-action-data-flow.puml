@@ -102,9 +102,9 @@ rectangle "GestureFeedbackState\n(:ime-ui)\n归一化坐标" as Feedback #E8F5E9
 
 Execute -down-> Feedback : 写入归一化坐标
 
-' ===== 行指示器 =====
-rectangle "Row 1 行指示器\nrow1IndicatorState\nInputActionFingerIndicator\n(归一化坐标，行相对)" as Row1Ind #E8F5E9
-rectangle "Row 2 行指示器\nrow2IndicatorState\nInputActionFingerIndicator\n(归一化坐标，行相对)" as Row2Ind #E8F5E9
+' ===== Row 1/2 指示器 =====
+rectangle "Row 1 指示器\nrow1IndicatorState\nInputActionFingerIndicator\n(归一化坐标，行相对)" as Row1Ind #E8F5E9
+rectangle "Row 2 指示器\nrow2IndicatorState\nInputActionFingerIndicator\n(归一化坐标，行相对)" as Row2Ind #E8F5E9
 
 Execute -down-> Row1Ind : SelectCandidate
 Execute -down-> Row2Ind : (未来扩展)

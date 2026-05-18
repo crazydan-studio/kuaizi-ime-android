@@ -110,7 +110,7 @@ package "数据模型" {
       pressed: Boolean
       visible: Boolean
       clickAnimation: ClickAnimation?
-      手指指示器 + 行指示器
+      手指指示器（绘制手指图形 + 点击动画）
     end note
   }
   rectangle "KeyLayoutState\n(归一化坐标)" as KLS {

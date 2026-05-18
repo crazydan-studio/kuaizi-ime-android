@@ -6,7 +6,7 @@
 
 **坐标无关设计**：动作脚本只记录按键的语义标识（如 `InputKey`），不存储任何绝对坐标。回放时，播放器根据当前键盘状态动态查找按键的实时位置，从而消除按键布局变更、屏幕尺寸变化、手模式切换等因素导致的回放失效问题。
 
-> 本文档涵盖 `:ime-engine` 模块中的核心数据模型、编译器、播放状态模型（`InputActionPlaybackState`）、指示器模型（`InputActionFingerIndicator`，兼作行指示器）、路径插值算法（`InputActionPathInterpolator`）、位置解析器接口（`InputActionPositionResolver`）以及归一化坐标基础类型（`OffsetF`、`RectF`）。播放器（`InputActionPlayer`）的主体逻辑和 UI 覆盖层（`FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay`）属于 `:ime-ui` / `:app` 模块，不在本文档范围内。
+> 本文档涵盖 `:ime-engine` 模块中的核心数据模型、编译器、播放状态模型（`InputActionPlaybackState`）、指示器模型（`InputActionFingerIndicator`）、路径插值算法（`InputActionPathInterpolator`）、位置解析器接口（`InputActionPositionResolver`）以及归一化坐标基础类型（`OffsetF`、`RectF`）。播放器（`InputActionPlayer`）的主体逻辑和 UI 覆盖层（`FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay`）属于 `:ime-ui` / `:app` 模块，不在本文档范围内。
 
 ---
 
@@ -344,22 +344,18 @@ sealed class InputActionPlaybackState {
 
 | 属性 | 说明 |
 |------|------|
-| 角色 | 播放动画中的虚拟手指指示器兼行指示器，兼负按键点击动画绘制 |
-| 职责 | **手指指示器**：存储归一化坐标位置、按下状态、可见性，供 UI 层反归一化后绘制；**行指示器**：存储归一化坐标和可见性，供面板内建绘制；**点击动画**：通过 `clickAnimation` 字段描述按键点击动画参数，支持在指定位置绘制点击涟漪动画效果 |
-| 约束 | 使用归一化坐标，不依赖具体面板尺寸；纯数据模型；行指示器模式下 `pressed` 在 `visible` 为 `true` 时恒为 `true`；`clickAnimation` 仅在手指指示器角色下有语义 |
+| 角色 | 播放动画中的虚拟手指指示器，绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画 |
+| 职责 | 存储归一化坐标位置、按下状态、可见性，供 UI 层反归一化后绘制手指图形；通过 `clickAnimation` 字段描述手指点击动画参数，支持在指定位置绘制点击涟漪动画效果 |
+| 约束 | 使用归一化坐标，不依赖具体面板尺寸；纯数据模型 |
 | 所属模块 | 本文档（:ime-engine 模块）|
 
 ```kotlin
 /**
- * 输入动作指示器状态（归一化坐标）。
+ * 输入动作手指指示器状态（归一化坐标）。
  *
- * 兼具三种职能：
- * - **手指指示器**：用于 Row 3 键盘区域的按键手势，描述虚拟手指的位置和按压状态；
- * - **行指示器**：用于 Row 1/2 候选栏/输入列表的交互，描述圆形点击指示器的位置和可见性。
- *   作为行指示器使用时，`pressed` 在 `visible` 为 `true` 时始终为 `true`。
- * - **点击动画**：通过 `clickAnimation` 描述按键点击时的涟漪动画参数，
- *   支持在指定位置绘制针对按键的点击动画效果，
- *   仅在手指指示器角色下有语义。
+ * 在 B 区各行中统一使用，职能为：
+ * - 绘制代表手指的图形并跟随滑行轨迹移动；
+ * - 绘制手指的点击动画（通过 `clickAnimation` 描述涟漪扩散参数）。
  *
  * 使用归一化坐标 [0,1]x[0,1]，与面板尺寸无关。
  * 纯数据模型，定义见本文档。
@@ -367,20 +363,16 @@ sealed class InputActionPlaybackState {
 data class InputActionFingerIndicator(
     /** 归一化坐标位置 [0,1]x[0,1] */
     val position: OffsetF,
-    /**
-     * 手指是否按下。
-     * 仅在手指指示器角色下有语义；作为行指示器时，当 `visible` 为 `true` 则 `pressed` 始终为 `true`。
-     */
+    /** 手指是否按下 */
     val pressed: Boolean,
     /** 指示器是否可见 */
     val visible: Boolean = true,
     /**
-     * 按键点击动画参数。
+     * 手指点击动画参数。
      *
-     * 当手指指示器按下按键时，通过此字段描述点击动画效果。
-     * GestureFeedbackPanel 在反归一化坐标后，在按键位置绘制涟漪扩散动画，
+     * 当手指按下时，通过此字段描述点击动画效果。
+     * UI 层在反归一化坐标后，在对应位置绘制涟漪扩散动画，
      * 动画半径从 0 扩展到 maxRadius，透明度从 1 衰减到 0。
-     * 仅在手指指示器角色下有语义；作为行指示器时此字段为 null。
      */
     val clickAnimation: ClickAnimation? = null,
 )
