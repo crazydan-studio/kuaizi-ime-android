@@ -12,8 +12,8 @@
 
 | Java Class | v4 对应 | 变更说明 |
 |-----------|---------|----------|
-| `MainboardView` | `KeyboardPanel` / `KeyboardScreen` | 两者均为完整输入法组件（含候选栏 / 输入栏 / 工具栏 + 键盘区域），叠加 / 全屏两种布局模式，合并原 `ThreeLayerKeyboardArea` 和 `InputScreen` 职责 |
-| `KeyboardView` | `KeyGridPanel` + `GestureInputPanel` + `GestureFeedbackPanel` | 三层分离替代单 View：按键渲染层 + 透明手势拦截层 + 透明反馈绘制层 |
+| `MainboardView` | `KeyboardHost` | 完整输入法组件（含候选栏 / 输入栏 / 工具栏 + 键盘区域），叠加 / 全屏两种布局模式，合并原 `ThreeLayerKeyboardArea` 和 `InputScreen` 职责 |
+| `KeyboardView` | `KeyLayoutPanel` + `GestureInputPanel` + `GestureFeedbackPanel` | 三层分离替代单 View：按键渲染层 + 透明手势拦截层 + 透明反馈绘制层 |
 | `KeyboardViewGestureListener` | `GestureDetectorLayer` | Compose `Modifier.pointerInput` 手势检测替代 View 手势监听 |
 | `KeyboardViewKeyAnimator` | `KeyView`（状态渲染）+ `GestureFeedbackPanel`（临时反馈） | 持续性状态与临时性反馈分离：KeyView 渲染按键常规状态（按下态、激活态、禁用态），GestureFeedbackPanel 绘制临时手势反馈（滑行轨迹、按键高亮） |
 | `CandidatesView` | `CandidateListPanel` | Compose `LazyRow` 替代 FlexboxLayout + 自定义分页 |
@@ -36,12 +36,12 @@
 
 | 组件 | Java 实现 | 代码量 | 复杂度 | v4 Compose 对应 |
 |------|----------|--------|--------|----------------|
-| **KeyboardView** | 自定义 RecyclerView + LayoutManager | ~800 行 | 高 | `StandardKeyGridPanel` + `KeyView` |
+| **KeyboardView** | 自定义 RecyclerView + LayoutManager | ~800 行 | 高 | `StandardKeyLayoutPanel` + `KeyView` |
 | **InputListView** | 自定义 RecyclerView + LayoutManager | ~600 行 | 高 | `InputListPanel` + `LazyRow` |
 | **CandidatesView** | FlexboxLayout + 自定义分页 | ~400 行 | 中 | `CandidateListPanel` + `LazyRow` |
 | **FavoriteboardView** | 自定义 RecyclerView | ~300 行 | 中 | `FavoriteListPanel` + `LazyColumn` |
 | **XPadView** | 自定义 Canvas 绘制 | ~500 行 | 高 | `XPadView` + Compose `Canvas` |
-| **MainboardView** | 组合容器 | ~200 行 | 低 | `KeyboardPanel` / `KeyboardScreen` |
+| **MainboardView** | 组合容器 | ~200 行 | 低 | `KeyboardHost` |
 | **InputboardView** | 组合容器 | ~150 行 | 低 | `InputListPanel` |
 | **ViewGestureDetector** | 自定义手势检测 | ~300 行 | 高 | `Modifier.pointerInput` |
 | **ViewGestureTrailer** | 手势轨迹绘制 | ~200 行 | 中 | `GestureFeedbackPanel`（TouchTrail 元素） |
@@ -51,8 +51,8 @@
 
 | Java UI 组件 | v4 Compose 对应 | 变更说明 |
 |-------------|----------------|----------|
-| `MainboardView` | `KeyboardPanel`（叠加模式）/ `KeyboardScreen`（全屏模式） | 两者均为完整输入法组件（含候选栏 / 输入栏 / 工具栏），叠加 / 全屏两种布局模式，合并原 `ThreeLayerKeyboardArea` 和 `InputScreen` 职责 |
-| `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyGridPanel` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
+| `MainboardView` | `KeyboardHost` | 完整输入法组件（含候选栏 / 输入栏 / 工具栏），叠加 / 全屏两种布局模式，合并原 `ThreeLayerKeyboardArea` 和 `InputScreen` 职责 |
+| `KeyboardView` + `KeyboardViewAdapter` | `StandardKeyLayoutPanel` + `KeyView` | 移除 Adapter/ViewHolder 模式 |
 | `KeyboardViewLayoutManager` | Compose `Row`/`Column` + `Modifier.weight` | 移除自定义 LayoutManager |
 | `KeyboardViewGestureListener` | `Modifier.pointerInput` | Compose 手势 API |
 | `KeyboardViewKeyAnimator` | Compose 动画 API | 声明式动画 |
@@ -97,7 +97,7 @@ Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高
 
 | 组件 | 耦合的职责 | v4 分离后 |
 |------|----------|----------|
-| `KeyboardView`（RecyclerView） | 六边形网格布局 + ViewHolder 管理 + 手势检测 + 按键动画 + 滑行轨迹绘制 | 拆分为三层：`KeyGridPanel`（渲染）+ `GestureInputPanel`（手势）+ `GestureFeedbackPanel`（反馈） |
+| `KeyboardView`（RecyclerView） | 六边形网格布局 + ViewHolder 管理 + 手势检测 + 按键动画 + 滑行轨迹绘制 | 拆分为三层：`KeyLayoutPanel`（渲染）+ `GestureInputPanel`（手势）+ `GestureFeedbackPanel`（反馈） |
 | `KeyboardViewLayoutManager` | 六边形网格布局 | Compose `Row`/`Column` + `Modifier.weight` |
 | `KeyboardViewAdapter` | ViewHolder 管理 | 移除，Compose 条件分支替代 |
 | `KeyboardViewGestureListener` | 手势检测 + 按键查找 + 消息生成 | `GestureDetectorLayer`（`Modifier.pointerInput`） |
@@ -122,7 +122,7 @@ Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高
 |------|------|------|------------|------------|
 | 顶层 | `GestureInputPanel` | 透明手势拦截层，识别手势并输出 `InputGesture` | ✅ 唯一触摸接收者 | ❌ 完全透明 |
 | 中层 | `GestureFeedbackPanel` | 透明反馈绘制层，绘制滑行轨迹 / 按键高亮 / X-Pad 路径 / 手指指示器 | ❌ | ✅ 唯一反馈绘制者 |
-| 底层 | `KeyGridPanel` | 按键渲染层，根据 `ImeState` 渲染按键布局和持续性状态 | ❌ | ❌ 仅渲染常规状态 |
+| 底层 | `KeyLayoutPanel` | 按键渲染层，根据 `ImeState` 渲染按键布局和持续性状态 | ❌ | ❌ 仅渲染常规状态 |
 
 **历史原因**：Java 版本的 `KeyboardView` 作为 RecyclerView 内嵌了 LayoutManager、Adapter、GestureListener 和 KeyAnimator，手势检测、按键渲染和视觉反馈高度耦合。`XPadView` 同样将绘制、手势和反馈合为一体。这种耦合导致无法将输入区域、按键区域和反馈区域放置在不同位置，无法独立控制反馈的显隐和样式，也无法支持分离布局模式。v4 通过三层面板分离（输入面板 / 反馈面板 / 按键面板）彻底解耦，每一层都可以独立地改变位置、大小和组合方式。
 

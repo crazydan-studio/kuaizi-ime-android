@@ -1,191 +1,157 @@
 @startuml app-logging
 !theme plain
 skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam defaultFontSize 13
-skinparam classFontSize 13
+skinparam defaultFontSize 11
+skinparam arrowThickness 1.5
 
-title 筷子输入法 - 日志系统\nLogging System
+title 应用层日志配置与流程
 
-' ─── Facade ────────────────────────────────────────────────────────
+legend right
+  |= 模块 |= 颜色 |= 说明 |
+  | :app | ##E3F2FD | 应用层 |
+  | :ime-engine | ##FFF3E0 | 引擎基础设施 |
+endlegend
 
-class ImeLog <<门面 Facade>> #E3F2FD {
-    + {static} v(tag: String, msg: String)
-    + {static} d(tag: String, msg: String)
-    + {static} i(tag: String, msg: String)
-    + {static} w(tag: String, msg: String)
-    + {static} e(tag: String, msg: String, throwable?: Throwable)
-    + {static} init(context: Context)
-    + {static} setLevel(level: LogLevel)
-    + {static} flush()
-}
-
-' ─── Logger Core ───────────────────────────────────────────────────
-
-class ImeLogger <<核心 Core>> #E8F5E9 {
-    - writers: List<LogWriter>
-    - level: LogLevel
-    - crashInterceptor: CrashInterceptor?
-    + log(level: LogLevel, tag: String, msg: String)
-    + addWriter(writer: LogWriter)
-    + removeWriter(writer: LogWriter)
-    + setLevel(level: LogLevel)
-    + flush()
-}
-
-' ─── Writers ───────────────────────────────────────────────────────
-
-interface LogWriter <<接口>> {
-    + write(entry: LogEntry)
-    + flush()
-    + close()
-}
-
-class LogcatWriter <<Writer>> #FFF3E0 {
-    - tagPrefix: String
-    + write(entry: LogEntry)
-    + flush()
-    + close()
-    note: "Android Logcat 输出"
-}
-
-class FileLogWriter <<Writer>> #FFF3E0 {
-    - logStorage: LogStorage
-    - formatter: LogFormatter
-    + write(entry: LogEntry)
-    + flush()
-    + close()
-    note: "文件日志输出"
-}
-
-class CrashInterceptor <<拦截器>> #FCE4EC {
-    - lastEntries: CircularBuffer<LogEntry>
-    - crashFilePath: String
-    + intercept(entry: LogEntry)
-    + dumpOnCrash(throwable: Throwable)
-    + getCrashLog(): String?
-    note: "崩溃日志拦截"
-}
-
-' ─── Storage ───────────────────────────────────────────────────────
-
-class LogStorage <<存储管理>> #F3E5F5 {
-    - logDir: File
-    - maxFileSize: Long
-    - maxFileCount: Int
-    - currentFile: File
-    + write(line: String)
-    + rotateIfNeeded()
-    + getLogFiles(): List<File>
-    + clearOldLogs()
-    + getCurrentLog(): String
-}
-
-' ─── Log Level ─────────────────────────────────────────────────────
-
-enum LogLevel #E0F7FA {
-    VERBOSE = 0
-    DEBUG = 1
-    INFO = 2
-    WARN = 3
-    ERROR = 4
-}
-
-class LogEntry <<数据类>> {
-    + timestamp: Long
+' ===== :ime-engine 引擎基础设施 =====
+package ":ime-engine 引擎日志基础设施" #FFF3E0 {
+  class ImeLog <<(O,#FFF3E0)>> {
     + level: LogLevel
-    + tag: String
-    + message: String
-    + throwable: Throwable?
+    + init(level, writers)
+    + updateLevel(newLevel)
+    + logger(tag): ImeLogger
+  }
+  class LogWriter <<(I,#FFF3E0)>> {
+    + write(entry)
+    + flush()
+  }
+  class FileLogWriter <<(C,#FFF3E0)>> {
+    - storage: LogStorage
+  }
+  class LogcatWriter <<(C,#FFF3E0)>> {
+  }
+  class CrashInterceptor <<(C,#FFF3E0)>> {
+    + install()
+  }
+  class LogStorage <<(C,#FFF3E0)>> {
+    + appendEntries(entries)
+    + readLogs(...): List<LogEntry>
+    + exportLogs(...)
+    + updateDir(logDir)
+  }
+  class LogLevel <<(E,#FFF3E0)>> {
+    VERBOSE / DEBUG / INFO / WARN / ERROR
+  }
 }
 
-class LogFormatter <<格式化>> {
-    + {static} format(entry: LogEntry): String
-    + {static} formatTimestamp(ts: Long): String
-    + {static} formatThrowable(t: Throwable): String
+' ===== :app 应用层 =====
+package ":app 应用层" #E3F2FD {
+
+  package "初始化集成层" {
+    class ImeApplication <<(C,#E3F2FD)>> {
+      + onCreate()
+    }
+    class "initLogging(context, config)" as InitLog <<(F,#E3F2FD)>> {
+      根据 BuildConfig.DEBUG 确定等级
+      创建 LogcatWriter (仅 debug)
+      创建 FileLogWriter
+      ImeLog.init(level, writers)
+      CrashInterceptor.install()
+    }
+    class "resolveLogDir(context, path)" as ResolveDir <<(F,#E3F2FD)>> {
+      优先: 用户配置路径 (SAF URI)
+      缺省: {filesDir}/logs/
+      降级: 无效路径 → 缺省 + 警告
+    }
+  }
+
+  package "配置管理层" {
+    class ConfigDataStore <<(C,#E3F2FD)>> {
+      + config: Flow<ImeConfig>
+      + updateConfig(transform)
+      持久化 logLevel, logStoragePath
+    }
+  }
+
+  package "用户界面层" {
+    class LogViewerScreen <<(C,#E3F2FD)>> {
+      LazyColumn 渲染日志
+      等级过滤 / 关键词搜索
+      颜色编码 (V=灰/D=蓝/I=绿/W=橙/E=红)
+    }
+    class LogExportScreen <<(C,#E3F2FD)>> {
+      Activity Result API
+      CreateDocument 合约
+      导出指定日期范围日志
+    }
+    class LogLevelSetting <<(C,#E3F2FD)>> {
+      Debug: 固定 VERBOSE (不可修改)
+      Release: 用户可选择等级
+    }
+    class LogStoragePathSetting <<(C,#E3F2FD)>> {
+      SAF OpenDocumentTree
+      持久化 URI 权限
+    }
+    class LogViewerViewModel <<(C,#E3F2FD)>> {
+      - storage: LogStorage
+      + state: StateFlow<LogViewerState>
+      + refresh()
+      + setLevelFilter(level?)
+      + setKeyword(keyword?)
+    }
+  }
 }
 
-class CircularBuffer<T> <<环形缓冲>> {
-    - buffer: Array<T?>
-    - head: Int
-    - size: Int
-    + add(item: T)
-    + getAll(): List<T>
-    + clear()
+' ===== 初始化流程 =====
+ImeApplication --> InitLog : onCreate()
+InitLog --> ResolveDir : 解析路径
+InitLog --> ImeLog : init(level, writers)
+InitLog --> CrashInterceptor : install()
+
+ResolveDir --> LogStorage : 创建
+
+LogWriter <|.. FileLogWriter
+LogWriter <|.. LogcatWriter
+FileLogWriter --> LogStorage : 写入
+CrashInterceptor --> LogStorage : 崩溃直接写入
+ImeLog --> LogWriter : dispatch
+
+' ===== 配置变更流程 =====
+rectangle "等级变更流程" #FFF9C4 {
+  LogLevelSetting --> ConfigDataStore : updateConfig\n(logLevel = newLevel)
+  ConfigDataStore --> ImeLog : updateLevel(newLevel)
+  ImeLog --> LogWriter : 后续按新等级过滤
 }
 
-' ─── Relationships ─────────────────────────────────────────────────
-
-ImeLog --> ImeLogger : "委托\ndelegates to"
-ImeLogger --> LogWriter : "分发\ndispatches to"
-ImeLogger --> CrashInterceptor : "拦截\nintercepts"
-
-LogWriter <|.. LogcatWriter : "实现\nimplements"
-LogWriter <|.. FileLogWriter : "实现\nimplements"
-
-FileLogWriter --> LogStorage : "写入\nwrites to"
-FileLogWriter --> LogFormatter : "格式化\nformats with"
-CrashInterceptor --> CircularBuffer : "缓冲\nbuffers in"
-
-ImeLogger --> LogLevel : "过滤\nfilters by"
-LogEntry --> LogLevel : "包含\ncontains"
-
-' ─── Log Level Hierarchy ──────────────────────────────────────────
-
-package "日志级别层级\nLog Level Hierarchy" as levelHierarchy #E0F7FA {
-    rectangle "VERBOSE < DEBUG < INFO < WARN < ERROR\n(0)       (1)      (2)     (3)     (4)\n详尽     调试     信息     警告     错误" as levelDesc
+rectangle "路径变更流程" #FFF9C4 {
+  LogStoragePathSetting --> ConfigDataStore : updateConfig\n(logStoragePath = newPath)
+  ConfigDataStore --> LogStorage : updateDir(newDir)
+  LogStorage --> FileLogWriter : 后续写入新路径
 }
 
-' ─── Flow Diagram ──────────────────────────────────────────────────
+' ===== 日志查看/导出 =====
+LogViewerScreen --> LogViewerViewModel : collectAsState()
+LogViewerViewModel --> LogStorage : readLogs(...)
+LogExportScreen --> LogStorage : exportLogs(...)
 
-package "日志流程\nLog Flow" as logflow #FFF9C4 {
-    usecase "ImeLog.d(tag, msg)\n调用入口" as entry_point
-    usecase "ImeLogger\n日志核心" as core
-    usecase "CrashInterceptor\n崩溃拦截" as crash
-    usecase "LogcatWriter\n控制台输出" as logcat
-    usecase "FileLogWriter\n文件输出" as file
-    usecase "LogStorage\n文件管理" as storage
+' ===== 日志标签约定 =====
+note bottom
+  **层级标签约定**
+  | 层 | 前缀 | 示例 |
+  |---|---|---|
+  | Platform | IME# | InputConnection 操作 |
+  | ViewModel | VM# | Intent 处理 |
+  | Domain | KB# / IL# / Dict# | 键盘/输入列表/字典 |
+  | Data | DB# / DS# | 数据库/DataStore |
+  | 崩溃 | Crash | 未捕获异常 |
 
-    entry_point --> core : "1. 委托"
-    core --> crash : "2. 拦截检查"
-    core --> logcat : "3. 写入 Logcat"
-    core --> file : "3. 写入文件"
-    file --> storage : "4. 存储管理"
-}
-
-' ─── Notes ─────────────────────────────────────────────────────────
-
-note right of ImeLog
-    门面模式，全局静态入口。
-    所有模块通过 ImeLog 访问日志。
-    无需关心底层 Writer 配置。
-    
-    Facade pattern, global static entry.
-    All modules access logging via ImeLog.
-    No need to care about Writer configuration.
-end note
-
-note left of LogStorage
-    文件轮转策略：
-    - 单文件最大 2MB
-    - 最多保留 5 个文件
-    - 自动清理过期日志
-    - 崩溃时独立导出
-    
-    File rotation:
-    - Max 2MB per file
-    - Max 5 files retained
-    - Auto cleanup of old logs
-    - Separate dump on crash
-end note
-
-note bottom of CrashInterceptor
-    维护最近 200 条日志的环形缓冲区。
-    当崩溃发生时，将缓冲区内容
-    写入独立崩溃日志文件。
-    
-    Maintains a ring buffer of last 200 entries.
-    On crash, dumps buffer to a separate crash log file.
+  **等级使用指南**
+  | 等级 | 场景 |
+  |---|---|
+  | VERBOSE | 细粒度流程追踪 |
+  | DEBUG | 开发期调试信息 |
+  | INFO | 关键业务节点 |
+  | WARN | 可恢复异常 |
+  | ERROR | 不可恢复错误 |
 end note
 
 @enduml

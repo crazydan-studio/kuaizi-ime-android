@@ -1,0 +1,56 @@
+@startuml ui-screen-layout
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 12
+
+title 筷子输入法 - 屏幕布局模型\nScreen Layout Model
+
+package "Separated 模式" as separated #E8F5E9 {
+
+    rectangle "Zone A (40%)" as za #E1BEE7 {
+        rectangle "KeyLayoutPanel\n+\nGestureFeedbackPanel\n(叠加，共享同一空间)" as za_content #BBDEFB
+    }
+
+    rectangle "Zone B (60%)" as zb #C8E6C9 {
+        rectangle "Row 1" as s_r1 #A5D6A7 {
+            rectangle "CandidateListPanel\n(含内建 IndicatorOverlay)\n+\nPopupTipPanel (叠加)" as s_r1_content
+        }
+        rectangle "Row 2" as s_r2 #A5D6A7 {
+            rectangle "ToolListPanel (空闲时)\n/ InputListPanel (输入时)\n(互斥，共享同一空间)\n(含内建 IndicatorOverlay)" as s_r2_content
+        }
+        rectangle "Row 3" as s_r3 #FFF3E0 {
+            rectangle "左列\n功能按钮" as s_r3_left #BBDEFB
+            rectangle "中列\nGestureFeedbackPanel\n+\nGestureInputPanel\n(叠加)" as s_r3_mid #C8E6C9
+            rectangle "右列\n功能按钮" as s_r3_right #BBDEFB
+        }
+    }
+
+    za -[hidden]right- zb
+}
+
+package "Stacked 模式" as stacked #E3F2FD {
+
+    rectangle "Zone B (100%)" as zb2 #C8E6C9 {
+        rectangle "Row 1" as t_r1 #A5D6A7 {
+            rectangle "CandidateListPanel\n(含内建 IndicatorOverlay)\n+\nPopupTipPanel (叠加)" as t_r1_content
+        }
+        rectangle "Row 2" as t_r2 #A5D6A7 {
+            rectangle "ToolListPanel (空闲时)\n/ InputListPanel (输入时)\n(互斥，共享同一空间)\n(含内建 IndicatorOverlay)" as t_r2_content
+        }
+        rectangle "Row 3" as t_r3 #FFF3E0 {
+            rectangle "KeyLayoutPanel (底层)\n+\nGestureFeedbackPanel (中层)\n+\nGestureInputPanel (顶层)\n(叠加，共享同一空间)" as t_r3_content
+        }
+    }
+}
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#E1BEE7>| Zone A 容器 |
+    |<#C8E6C9>| Zone B 容器 / 反馈层 |
+    |<#A5D6A7>| 面板组件 |
+    |<#BBDEFB>| 按键层 / 功能按钮 |
+    |<#FFF3E0>| 三层叠加区域 |
+endlegend
+
+@enduml

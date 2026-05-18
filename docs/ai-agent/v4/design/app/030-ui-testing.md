@@ -487,7 +487,7 @@ val UITestTool.displayName: String
 @Composable
 fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
     KeyboardTheme(themeType = state.config.ui.themeType) {
-        KeyboardPanel(state, intentHandler)
+        KeyboardHost(state, intentHandler)
     }
 }
 
@@ -496,7 +496,7 @@ fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
 fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
     KeyboardTheme(themeType = state.config.ui.themeType) {
         Box {
-            KeyboardPanel(state, intentHandler)
+            KeyboardHost(state, intentHandler)
 
             // UI 测试覆盖层（仅 debug 构建存在）
             val overlay = remember { UITestOverlay.create() }
@@ -589,7 +589,7 @@ class PinyinKeyboardScreenshotTest {
     fun pinyinKeyboardIdle() {
         paparazzi.snapshot {
             KeyboardTheme(themeType = ThemeType.Light) {
-                KeyboardPanel(
+                KeyboardHost(
                     state = ImeState(
                         keyboardType = KeyboardType.Pinyin,
                         keyboardState = KeyboardState.Idle,
@@ -604,7 +604,7 @@ class PinyinKeyboardScreenshotTest {
     fun pinyinKeyboardWithCandidates() {
         paparazzi.snapshot {
             KeyboardTheme(themeType = ThemeType.Light) {
-                KeyboardPanel(
+                KeyboardHost(
                     state = ImeState(
                         keyboardType = KeyboardType.Pinyin,
                         keyboardState = KeyboardState.PinyinInput.Waiting(

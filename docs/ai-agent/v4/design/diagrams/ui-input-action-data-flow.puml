@@ -1,160 +1,176 @@
 @startuml ui-input-action-data-flow
 !theme plain
 skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam defaultFontSize 13
-skinparam classFontSize 13
+skinparam defaultFontSize 11
+skinparam arrowThickness 1.5
 
-title 筷子输入法 - 输入动作程序化数据流\nInput Action Playback Data Flow
-
-' ─── Script Source ─────────────────────────────────────────────────
-
-package "脚本来源\nScript Source" as source #F3E5F5 {
-
-    rectangle "预置脚本\nassets/scripts/*.json" as preset #E1BEE7
-    rectangle "外部脚本\n用户导入 .json 文件" as external #E1BEE7
-}
-
-' ─── Script Loading ────────────────────────────────────────────────
-
-rectangle "InputActionScriptLoader 脚本加载器\n──\nparseScript(json) → InputActionScript" as loader #F3E5F5
-
-rectangle "InputActionScript 动作脚本\n──\nname: String\ndescription: String\nactions: List<InputAction>" as script #CE93D8
-
-' ─── Player Core ───────────────────────────────────────────────────
-
-package "播放器核心\nInputActionPlayer" as player #FFF3E0 {
-
-    rectangle "InputActionPlaybackState 播放状态\n──\nIdle / Ready / Playing\nPaused / Finished" as state #FFE0B2
-
-    rectangle "播放控制 Playback Control\n──\nload(script)\nplay() / pause()\nresume() / stop()\nstepForward()\nsetSpeed()" as control #FFE0B2
-
-    rectangle "动作执行 executeAction()\n──\n按时间轴调度\n查询归一化坐标\n驱动反馈 + 引擎\nshowIndicator 内置指示器" as executor #FFCC80
-}
-
-' ─── Coordinate Resolution ────────────────────────────────────────
-
-package "坐标解析\nCoordinate Resolution" as coord #E8F5E9 {
-
-    rectangle "InputActionPositionResolver 输入动作位置解析器\n──\nresolve(key): OffsetF?\nresolveCandidatePosition(i): OffsetF?\n返回归一化坐标 OffsetF" as resolver #C8E6C9
-
-    rectangle "ComposeInputActionPositionResolver\nCompose 布局实现\n──\nkeyLayoutProvider\ncandidateLayoutProvider\n使用 CoordinateNormalizer 归一化" as compose_resolver #A5D6A7
-
-    rectangle "KeyLayoutState 按键布局状态\n──\nkeyPositions: Map<InputKey, Rect>" as kb_layout #A5D6A7
-
-    rectangle "CandidateListLayoutState 候选栏布局状态\n──\ncandidatePositions: List<Rect>" as cand_layout #A5D6A7
-
-    rectangle "CoordinateNormalizer 坐标归一化器\n──\nnormalize(Offset, Rect): OffsetF\ndenormalize(OffsetF, Rect): Offset" as coord_norm #A5D6A7
-}
-
-' ─── Action Execution Outputs ─────────────────────────────────────
-
-package "动作输出\nAction Outputs" as outputs #E3F2FD {
-
-    package "引擎输入\nEngine Input" as engine_input #BBDEFB {
-        rectangle "KeyboardViewModel\nhandleIntent()" as kvm_intent #90CAF9
-    }
-
-    package "反馈驱动\nFeedback Driving" as feedback_drive #C8E6C9 {
-
-        rectangle "GestureFeedbackState 手势反馈状态\n──\nfingerIndicator\n(InputActionFingerIndicator)\ntouchTrailPoints (OffsetF)\npressedKeys" as gfs #A5D6A7
-
-        rectangle "InputActionPathInterpolator 输入动作路径插值器\n──\ninterpolate(from: OffsetF, to: OffsetF)\n→ 贝塞尔曲线点列表 (OffsetF)" as interpolator #A5D6A7
-
-        rectangle "trailPoints 滑行轨迹点\n──\nStateFlow<List<OffsetF>>\n归一化坐标" as trail #A5D6A7
-    }
-}
-
-' ─── Built-in Visual Feedback ─────────────────────────────────────
-
-package "内置视觉反馈\nBuilt-in Feedback (GestureFeedbackPanel)" as visual #FFF9C4 {
-
-    rectangle "GestureFeedbackPanel\n反馈面板\nTouchTrail / KeyHighlight / FingerIndicator\n内置 showIndicator 机制" as gfp #FFF59D
-}
-
-' ─── Engine State ──────────────────────────────────────────────────
-
-package "引擎状态\nEngine State" as engine_state #FFF3E0 {
-
-    rectangle "ImeEngine\nreduce()" as engine #FFE0B2
-    rectangle "StateFlow<ImeState>" as ime_state #FFCC80
-}
-
-' ─── KeyboardHost ─────────────────────────────────────────────────
-
-package "KeyboardHost (Stacked 模式)" as kh_stacked #E3F2FD {
-    rectangle "KeyLayoutPanel\n按键面板" as kh_klp #BBDEFB
-    rectangle "GestureFeedbackPanel\n反馈面板" as kh_gfp #C8E6C9
-    rectangle "GestureInputPanel\n输入面板（空闲）" as kh_gip #FFCCBC
-}
-
-package "KeyboardHost (Separated 模式)" as kh_separated #E8F5E9 {
-    rectangle "KeyLayoutPanel\n按键面板" as kh2_klp #A5D6A7
-    rectangle "GestureFeedbackPanel\nZone A" as kh2_gfp_a #C8E6C9
-    rectangle "GestureFeedbackPanel\nZone B" as kh2_gfp_b #C8E6C9
-}
-
-' ─── KeyboardInputActionPlayerHost ────────────────────────────────
-
-package "KeyboardInputActionPlayerHost\n输入动作播放宿主" as kiaph #F3E5F5 {
-    rectangle "KeyboardHost\n键盘宿主\n(内置指示器，无外部覆盖层)" as kiaph_kh #E1BEE7
-    rectangle "ActionPlayerPanel\n播放控制面板" as player_panel #E1BEE7
-}
-
-' ─── Data Flow Arrows ──────────────────────────────────────────────
-
-preset --> loader : "加载"
-external --> loader : "导入"
-loader --> script : "解析"
-script --> control : "load(script)"
-
-control --> executor : "按时间轴调度"
-control --> state : "状态变更"
-
-executor ..> resolver : "1. 查询按键归一化坐标\nOffsetF"
-resolver <.. compose_resolver : "实现"
-compose_resolver <.. kb_layout : "读取"
-compose_resolver <.. cand_layout : "读取"
-compose_resolver --> coord_norm : "归一化坐标转换"
-
-executor ..> kvm_intent : "2a. ImeIntent\n（PressKey / SelectCandidate / SwitchKeyboard）"
-executor ..> interpolator : "2b. 路径计算\n（fromKey, toKey → 归一化坐标 OffsetF）"
-interpolator --> trail : "贝塞尔曲线点 (OffsetF)"
-executor ..> gfs : "2c. 更新 fingerIndicator\n（归一化位置、按下状态）\nshowIndicator 内置机制"
-
-kvm_intent --> engine : "handleIntent()"
-engine --> ime_state : "reduce()"
-ime_state --> kh_klp : "StateFlow 驱动渲染"
-ime_state --> kh2_klp : "StateFlow 驱动渲染"
-
-gfs --> gfp : "fingerIndicator + touchTrailPoints\n→ 内置 TouchTrail / KeyHighlight / FingerIndicator"
-
-gfp --> kh_gfp : "Stacked 模式：单实例\n(StackedSet)"
-gfp --> kh2_gfp_a : "Separated 模式：Zone A\n(KeyHighlight + FingerIndicator)"
-gfp --> kh2_gfp_b : "Separated 模式：Zone B\n(TouchTrail + KeyHighlight + FingerIndicator)"
-
-' ─── KeyboardInputActionPlayerHost connections ────────────────────
-
-script ..> player_panel : "显示脚本信息"
-state --> player_panel : "播放 / 暂停 / 停止按钮"
-kiaph_kh --> kh_stacked : "内部组合 KeyboardHost\n(或 Separated)"
-
-' ─── Layout info provider ──────────────────────────────────────────
-
-kh_klp ..> kb_layout : "onGloballyPositioned\n提供布局状态"
-kh2_klp ..> kb_layout : "onGloballyPositioned\n提供布局状态"
-
-' ─── Legend ─────────────────────────────────────────────────────────
+title 输入动作播放数据流
 
 legend right
-    |= 颜色 |= 含义 |
-    |<#F3E5F5>| 脚本来源与加载 |
-    |<#FFF3E0>| 播放器与引擎 |
-    |<#E8F5E9>| 坐标解析与反馈驱动 |
-    |<#E3F2FD>| KeyboardHost (Stacked) |
-    |<#E8F5E9>| KeyboardHost (Separated) |
-    |<#FFF9C4>| 内置视觉反馈 |
-    |<#F3E5F5>| KeyboardInputActionPlayerHost |
+  |= 颜色 |= 说明 |
+  ##FFF3E0 | :ime-engine 数据模型
+  ##E8F5E9 | :ime-ui 实现
+  ##E3F2FD | :app 集成
 endlegend
+
+' ===== 脚本加载 =====
+rectangle "InputActionScriptLoader\n(:ime-ui)" as Loader #E8F5E9 {
+  note left
+    loadPreset(name)
+    loadFromFile(uri)
+    parseScript(json)
+  end note
+}
+rectangle "InputActionScript\n(:ime-engine)\n坐标无关" as Script #FFF3E0 {
+  note right
+    name, description
+    inputMethod: InputMethod
+    actions: List<InputAction>
+    totalDuration: Long
+  end note
+}
+
+Loader -down-> Script : 加载/反序列化
+
+' ===== 播放器 =====
+rectangle "InputActionPlayer\n(:ime-ui)" as Player #E8F5E9 {
+  note left
+    load(script) → Ready
+    play() → Playing
+    按时间轴遍历 actions
+    executeAction(action)
+  end note
+}
+
+Script -down-> Player : load()
+
+' ===== 坐标解析 =====
+rectangle "ComposeInputActionPositionResolver\n(:ime-ui)" as Resolver #E8F5E9 {
+  note left
+    resolve(key) → KeyLayoutState.keyPositions
+    resolveCandidatePosition(index) → locateItem + normalize
+    resolveInputItemPosition(index) → locateItem + normalize
+  end note
+}
+rectangle "KeyLayoutState\nCandidateListLayoutState\nInputListLayoutState\n(:ime-ui)" as LayoutState #E8F5E9
+
+Resolver -up-> LayoutState : 惰性读取
+
+' ===== 动作执行 =====
+rectangle "executeAction\n(InputAction)" as Execute #FFF9C4 {
+  note right
+    KeyDown → resolve + setFingerIndicator + setPressedKeys
+      + 启动 clickAnimation 涟漪
+      + handleIntent(PressKey)
+    SwipeTo → resolve(from/to) + interpolate
+      + setTouchTrailPoints
+      + animateFingerAlongPath
+      + handleIntent(PressKey)
+    KeyUp → setFingerIndicator(pressed=false) + clearPressedKeys
+    SelectCandidate → resolveCandidatePosition
+      + row1IndicatorState 更新
+      + handleIntent(SelectCandidate)
+    SwitchKeyboard → handleIntent(SwitchKeyboard)
+  end note
+}
+
+Player -down-> Execute : 执行动作
+Execute -left-> Resolver : 查询归一化坐标\nOffsetF
+
+' ===== 路径插值 =====
+rectangle "InputActionPathInterpolator\n(:ime-engine)" as Interpolator #FFF3E0 {
+  note right
+    interpolate(from, to, arcFactor, steps)
+    → List<OffsetF>
+    二次贝塞尔曲线
+  end note
+}
+
+Execute -right-> Interpolator : SwipeTo\n生成插值路径
+
+' ===== 反馈状态驱动 =====
+rectangle "GestureFeedbackState\n(:ime-ui)\n归一化坐标" as Feedback #E8F5E9 {
+  note right
+    fingerIndicator: InputActionFingerIndicator
+      position: OffsetF (归一化)
+      pressed: Boolean
+      clickAnimation: ClickAnimation?
+    touchTrailPoints: List<OffsetF> (归一化)
+    pressedKeys: Set<InputKey>
+  end note
+}
+
+Execute -down-> Feedback : 写入归一化坐标
+
+' ===== 行指示器 =====
+rectangle "Row 1 行指示器\nrow1IndicatorState\nInputActionFingerIndicator\n(归一化坐标，行相对)" as Row1Ind #E8F5E9
+rectangle "Row 2 行指示器\nrow2IndicatorState\nInputActionFingerIndicator\n(归一化坐标，行相对)" as Row2Ind #E8F5E9
+
+Execute -down-> Row1Ind : SelectCandidate
+Execute -down-> Row2Ind : (未来扩展)
+
+' ===== 引擎状态转换 =====
+rectangle "KeyboardViewModel\nhandleIntent(ImeIntent)" as KVM #E8F5E9
+rectangle "ImeEngine\nreduce(state, intent)" as Engine #FFF3E0
+rectangle "ImeState\nStateFlow" as State #FFF3E0
+
+Execute -left-> KVM : handleIntent
+KVM -down-> Engine : handleIntent
+Engine -down-> State : StateFlow 更新
+
+' ===== UI 渲染 =====
+rectangle "GestureFeedbackPanel\n(:ime-ui)\nZone A / Zone B" as GFP #E8F5E9 {
+  note right
+    反归一化: OffsetF * panelSize
+    绘制手指指示器
+    绘制触摸轨迹
+    绘制按键高亮
+    绘制 clickAnimation 涟漪
+  end note
+}
+
+rectangle "CandidateListPanel\n(:ime-ui)\nRow 1" as CLP #E8F5E9 {
+  note right
+    showIndicator=true (Animation)
+    indicatorState → Row1Ind
+    反归一化绘制圆形指示器
+  end note
+}
+
+rectangle "InputListPanel / ToolListPanel\n(:ime-ui)\nRow 2" as Row2Panel #E8F5E9 {
+  note right
+    showIndicator=true (Animation)
+    indicatorState → Row2Ind
+    反归一化绘制圆形指示器
+  end note
+}
+
+rectangle "KeyLayoutPanel\n(:ime-ui)" as KLP #E8F5E9 {
+  note right
+    按键状态渲染
+    从 ImeState 读取
+  end note
+}
+
+Feedback -down-> GFP : collectAsState()
+Row1Ind -down-> CLP : indicatorState\n(Animation模式)
+Row2Ind -down-> Row2Panel : indicatorState\n(Animation模式)
+State -down-> KLP : collectAsState()
+State -down-> CLP : candidateList
+State -down-> Row2Panel : inputList / toolList
+
+' ===== 内建指示器说明 =====
+note across
+  **内建指示器机制**:
+  Row 1/2: 面板内建 Canvas 绘制
+    (showIndicator + indicatorState 参数)
+  Row 3: GestureFeedbackPanel 绘制
+    (GestureFeedbackState.fingerIndicator)
+
+  **ClickAnimation 涟漪**:
+  仅在 Row 3 手指指示器下有语义
+  GestureFeedbackPanel 在按键位置
+  绘制涟漪扩散动画
+end note
 
 @enduml

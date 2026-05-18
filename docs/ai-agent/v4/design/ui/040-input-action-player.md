@@ -258,7 +258,7 @@ class ComposeInputActionPositionResolver(
 | 播放状态 | playbackState: StateFlow\<InputActionPlaybackState\>（定义在 engine/060） |
 | 行指示器 | row1IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\>, row2IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\> |
 | 路径插值 | 使用 InputActionPathInterpolator.interpolate()（定义在 engine/060） |
-| 动作分发 | KeyDown → 设置手指指示器 + 按键高亮 + 发送 PressKey；SwipeTo → 生成插值路径 + 动画移动手指 + 发送 PressKey；KeyUp → 更新手指状态 + 清除按键高亮；SelectCandidate → 更新 Row 1 行指示器 + 发送 SelectCandidate；SwitchKeyboard → 发送 SwitchKeyboard |
+| 动作分发 | KeyDown → 设置手指指示器 + 启动按键点击涟漪动画 + 按键高亮 + 发送 PressKey；SwipeTo → 生成插值路径 + 动画移动手指 + 发送 PressKey；KeyUp → 更新手指状态 + 清除按键高亮；SelectCandidate → 更新 Row 1 行指示器 + 发送 SelectCandidate；SwitchKeyboard → 发送 SwitchKeyboard |
 | 所属包 | player |
 
 `InputActionPlayer` 是输入动作播放引擎，接收坐标无关的 InputActionScript，按时间轴依次执行动作。
@@ -403,9 +403,14 @@ class InputActionPlayer(
             is InputAction.KeyDown -> {
                 val position = positionResolver.resolve(action.key) ?: return
                 feedbackState.setFingerIndicator(InputActionFingerIndicator(
-                    position = position, pressed = true, visible = true
+                    position = position, pressed = true, visible = true,
+                    clickAnimation = ClickAnimation(progress = 0f),
                 ))
                 feedbackState.setPressedKeys(setOf(action.key))
+                // 启动按键点击涟漪动画
+                scope.launch {
+                    animateClickAnimation(feedbackState, position)
+                }
                 viewModel.handleIntent(ImeIntent.PressKey(action.key, KeyGesture.Tap))
             }
             is InputAction.SwipeTo -> {
@@ -455,6 +460,36 @@ class InputActionPlayer(
             is InputAction.SwitchKeyboard -> {
                 viewModel.handleIntent(ImeIntent.SwitchKeyboard(action.targetType))
             }
+        }
+    }
+
+    /**
+     * 按键点击涟漪动画。
+     *
+     * 在按键位置绘制涟漪扩散动画，
+     * 动画半径从 0 扩展到 maxRadius，透明度从 1 衰减到 0。
+     * 通过更新 InputActionFingerIndicator 的 clickAnimation 字段驱动。
+     */
+    private suspend fun animateClickAnimation(
+        feedbackState: GestureFeedbackState,
+        position: OffsetF,
+    ) {
+        val animatable = Animatable(0f)
+        animatable.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 300),
+        ) {
+            val currentIndicator = feedbackState.fingerIndicator.value
+            if (currentIndicator != null && currentIndicator.position == position) {
+                feedbackState.setFingerIndicator(
+                    currentIndicator.copy(clickAnimation = ClickAnimation(progress = value))
+                )
+            }
+        }
+        // 动画结束后清除 clickAnimation
+        val finalIndicator = feedbackState.fingerIndicator.value
+        if (finalIndicator != null && finalIndicator.position == position) {
+            feedbackState.setFingerIndicator(finalIndicator.copy(clickAnimation = null))
         }
     }
 
@@ -560,55 +595,13 @@ InputListPanel 和 ToolListPanel 采用完全相同的内建指示器绘制模�
 
 输入动作播放的执行流程如下。播放器加载 InputActionScript 后，按时间轴依次执行 InputAction。对于不同类型的动作，播放器通过 `InputActionPositionResolver` 解析归一化坐标，通过 `InputActionPathInterpolator` 生成插值轨迹，更新 `GestureFeedbackState` 的手指指示器和触摸轨迹，同时管理行指示器状态。
 
-```
-InputActionScript 加载
-  |
-  v
-InputActionPlayer.play()
-  |
-  v
-遍历 InputActionScript.actions:
-  |
-  +-- InputAction.KeyDown
-  |     | InputActionPositionResolver.resolve(key) -> OffsetF
-  |     | feedbackState.setFingerIndicator(InputActionFingerIndicator(OffsetF, pressed=true))
-  |     | feedbackState.setPressedKeys(setOf(key))
-  |     | viewModel.handleIntent(PressKey(key, Tap))
-  |     v
-  |
-  +-- InputAction.SwipeTo
-  |     | resolve(fromKey), resolve(toKey) -> OffsetF, OffsetF
-  |     | InputActionPathInterpolator.interpolate(from, to) -> List<OffsetF>
-  |     | feedbackState.setTouchTrailPoints(normalizedPath)
-  |     | animateFingerAlongPath(feedbackState, duration)
-  |     | viewModel.handleIntent(PressKey(toKey, Swipe))
-  |     v
-  |
-  +-- InputAction.KeyUp
-  |     | feedbackState.setFingerIndicator(InputActionFingerIndicator(position, pressed=false))
-  |     | feedbackState.clearPressedKeys()
-  |     v
-  |
-  +-- InputAction.SelectCandidate
-  |     | resolveCandidatePosition(index) -> OffsetF (Row 1 归一化坐标)
-  |     | actionPlayer.row1IndicatorState = InputActionFingerIndicator(position=OffsetF, pressed=true)
-  |     | viewModel.handleIntent(SelectCandidate(...))
-  |     | delay -> actionPlayer.row1IndicatorState = null
-  |     v
-  |
-  +-- InputAction.SwitchKeyboard
-        | viewModel.handleIntent(SwitchKeyboard(targetType))
-        v
-
-播放结束
-  feedbackState.setFingerIndicator(null)
-  actionPlayer.row1IndicatorState = null
-  actionPlayer.row2IndicatorState = null
+```plantuml
+@file:../diagrams/ui-input-action-data-flow.puml
 ```
 
 ### 6.1 关键流程说明
 
-**KeyDown 执行**：播放器通过 `resolve(key)` 获取按键的归一化中心坐标，设置 FingerIndicator 为按下状态并显示，同时将按键加入 pressedKeys 集合触发按键高亮。GestureFeedbackPanel 读取归一化坐标后根据面板尺寸反归一化绘制。ViewModel 发送 PressKey 意图驱动引擎状态转换。
+**KeyDown 执行**：播放器通过 `resolve(key)` 获取按键的归一化中心坐标，设置 FingerIndicator 为按下状态并显示，同时启动按键点击涟漪动画（通过 `clickAnimation` 字段驱动 GestureFeedbackPanel 绘制涟漪扩散效果），并将按键加入 pressedKeys 集合触发按键高亮。GestureFeedbackPanel 读取归一化坐标后根据面板尺寸反归一化绘制。ViewModel 发送 PressKey 意图驱动引擎状态转换。
 
 **SwipeTo 执行**：播放器解析起止按键的归一化坐标，通过 `InputActionPathInterpolator.interpolate()` 生成二次贝塞尔曲线插值路径（归一化坐标点列表），将完整路径写入 `touchTrailPoints`，同时沿路径动画移动 FingerIndicator。GestureFeedbackPanel 在 Zone A 和 Zone B 各自根据面板尺寸反归一化后绘制轨迹。
 
@@ -675,50 +668,8 @@ class InputActionScriptLoader(private val context: Context) {
 
 ### 8.1 程序化输入数据流
 
-```
-InputActionScript (坐标无关)
-  |
-  v
-InputActionPlayer.executeAction(InputAction)
-  | 查询 InputActionPositionResolver.resolve(key) -> OffsetF
-  | 查询 InputActionPositionResolver.resolveCandidatePosition(index) -> OffsetF
-  | 查询 InputActionPositionResolver.resolveInputItemPosition(index) -> OffsetF
-  | InputActionPathInterpolator 生成归一化坐标插值路径
-  | 写入 GestureFeedbackState (归一化坐标)
-  v
-  +---> GestureFeedbackState
-  |     | fingerIndicator: InputActionFingerIndicator (归一化坐标)
-  |     | pressedKeys: Set<InputKey>
-  |     | touchTrailPoints: List<OffsetF> (含插值轨迹，归一化坐标)
-  |     v
-  |     GestureFeedbackPanel (Zone A / Zone B)
-  |       | 反归一化: OffsetF * panelSize -> Offset
-  |       | 绘制手指指示器、触摸轨迹、按键高亮
-  |       v
-  |
-  +---> InputActionPlayer.row1IndicatorState
-  |     | InputActionFingerIndicator (归一化坐标，行相对)
-  |     v
-  |     CandidateListPanel(showIndicator=true, indicatorState=row1Indicator)
-  |       | 反归一化: indicatorState.position.denormalize(size)
-  |       | 绘制圆形点击指示器
-  |       v
-  |
-  +---> InputActionPlayer.row2IndicatorState
-  |     | InputActionFingerIndicator (归一化坐标，行相对)
-  |     v
-  |     InputListPanel / ToolListPanel(showIndicator=true, indicatorState=row2Indicator)
-  |       | 反归一化: indicatorState.position.denormalize(size)
-  |       | 绘制圆形点击指示器
-  |       v
-  |
-  +---> KeyboardViewModel.handleIntent(ImeIntent)
-        | (Animation 模式不提交到编辑器)
-        v
-        ImeEngine -> ImeState -> 各面板
-        | popupTip -> PopupTipPanel
-        | candidateList -> CandidateListPanel
-        | inputList -> InputListPanel
+```plantuml
+@file:../diagrams/ui-programmatic-input-data-flow.puml
 ```
 
 ### 8.2 归一化坐标流详解

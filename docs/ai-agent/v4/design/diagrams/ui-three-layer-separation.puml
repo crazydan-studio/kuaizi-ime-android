@@ -1,0 +1,38 @@
+@startuml ui-three-layer-separation
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 13
+skinparam rectangleFontSize 13
+
+title 筷子输入法 - 三层面板分离架构\nThree-Layer Panel Separation Architecture
+
+rectangle "GestureInputPanel\n手势输入面板（最上层）\n──\n• 透明手势拦截层\n• 接收原始触摸事件\n• 识别手势类型（点击/长按/滑行/翻转）\n• 查询 KeyLayoutState 定位目标按键\n• 输出 InputGesture → ViewModel\n• 驱动 GestureFeedbackState → 反馈面板\n• 不绘制任何视觉反馈" as top #FFCCBC
+
+rectangle "GestureFeedbackPanel\n手势反馈面板（可多实例）\n──\n• 透明绘制层\n• 绘制输入轨迹（含按键间路径和 X-Pad 路径）\n• 绘制按键高亮\n• 绘制手指指示器 + 点击涟漪动画\n• 不处理任何触摸事件\n• 可与输入面板叠加，也可与按键面板叠加" as middle #C8E6C9
+
+rectangle "KeyLayoutPanel\n按键布局面板（最下层）\n──\n• 根据 InputMode 和 Keyboard.Type 渲染按键布局\n• 展示按键状态（按下/激活/禁用）\n• 提供布局状态供输入面板和反馈面板查询\n• 不处理任何触摸事件\n• 不绘制手势反馈" as bottom #BBDEFB
+
+top -[hidden]down- middle
+middle -[hidden]down- bottom
+
+note right of top
+  叠加顺序（z-index 从高到低）：
+  1. GestureInputPanel（顶层，捕获触摸）
+  2. GestureFeedbackPanel（中层，绘制反馈）
+  3. KeyLayoutPanel（底层，按键渲染）
+
+  三条核心原则：
+  ① 输入面板是唯一的触摸事件接收者
+  ② 反馈面板是唯一的视觉反馈绘制者
+  ③ 三者通过共享状态解耦
+end note
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#FFCCBC>| 手势输入层 |
+    |<#C8E6C9>| 反馈绘制层 |
+    |<#BBDEFB>| 按键渲染层 |
+endlegend
+
+@enduml

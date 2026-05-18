@@ -22,34 +22,8 @@
 
 三层分离是键盘 UI 的核心架构原则，将面板职责划分为三个完全独立的层，每层仅负责一项核心职责，不越界处理其他层的事务：
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     输入面板（最上层）                        │
-│  GestureInputPanel（透明手势层）                             │
-│  - 接收原始触摸事件（必须在最上层，确保触摸优先到达）          │
-│  - 识别手势类型（点击/长按/滑行/翻转）                       │
-│  - 查询 KeyLayoutState 定位目标按键                         │
-│  - 输出 InputGesture → ViewModel                           │
-│  - 驱动 GestureFeedbackState → 反馈面板                     │
-│  - 不绘制任何视觉反馈（完全透明，不遮挡下层反馈面板）          │
-├─────────────────────────────────────────────────────────────┤
-│                     反馈面板（可多实例）                      │
-│  GestureFeedbackPanel（透明绘制层）                          │
-│  - 绘制输入轨迹（含按键间路径和 X-Pad 路径的平滑曲线）        │
-│  - 绘制按键高亮                                             │
-│  - 绘制手指指示器（程序化输入动画）                           │
-│  - 不处理任何触摸事件（触摸事件穿透到下层或被上层拦截）        │
-│  - 不依赖任何面板的 Canvas                                  │
-│  - 可与输入面板叠加，也可与按键面板叠加                       │
-├─────────────────────────────────────────────────────────────┤
-│                        按键面板（最下层）                     │
-│  KeyLayoutPanel（按键布局层）                               │
-│  - 根据 InputMode 和 Keyboard.Type 渲染按键布局             │
-│  - 展示按键状态（按下/激活/禁用）                            │
-│  - 提供布局状态供输入面板和反馈面板查询                       │
-│  - 不处理任何触摸事件                                       │
-│  - 不绘制手势反馈                                           │
-└─────────────────────────────────────────────────────────────┘
+```plantuml
+@file:../diagrams/ui-three-layer-separation.puml
 ```
 
 **三条核心原则**：
@@ -229,46 +203,8 @@ InputMode 与 Keyboard.Type 是两个完全独立的正交维度，不存在互�
 
 屏幕纵向划分为 Zone A（上半区）和 Zone B（下半区），两区比例由 LayoutMode 决定。在 Stacked 模式下，Zone A 不使用（高度为 0），Zone B 占据全部 IME 屏幕空间；在 Separated 模式下，Zone A 和 Zone B 按 zoneARatio 比例分配屏幕高度，默认 Zone A 占 40%、Zone B 占 60%。Zone A 的内容仅包含 KeyLayoutPanel 和 GestureFeedbackPanel 的叠加，用于展示按键布局和手势反馈轨迹。Zone B 包含完整的三行结构，承载所有交互面板。
 
-```
-Separated 模式下的屏幕布局：
-
-+-------------------------------------------+
-|              Zone A (40%)                  |
-|  +---------------------------------------+|
-|  | KeyLayoutPanel + GestureFeedbackPanel  ||
-|  |     (叠加，共享同一空间)                ||
-|  +---------------------------------------+|
-+-------------------------------------------+
-|              Zone B (60%)                  |
-|  +---------------------------------------+|
-|  | Row 1: CandidateListPanel             ||
-|  |        + PopupTipPanel (叠加)          ||
-|  +---------------------------------------+|
-|  | Row 2: ToolListPanel / InputListPanel  ||
-|  |        (互斥，共享同一空间)             ||
-|  +---------------------------------------+|
-|  | Row 3: KeyLayoutPanel +                ||
-|  |        GestureFeedbackPanel +           ||
-|  |        GestureInputPanel (叠加)         ||
-|  +---------------------------------------+|
-+-------------------------------------------+
-
-Stacked 模式下的屏幕布局：
-
-+-------------------------------------------+
-|              Zone B (100%)                 |
-|  +---------------------------------------+|
-|  | Row 1: CandidateListPanel             ||
-|  |        + PopupTipPanel (叠加)          ||
-|  +---------------------------------------+|
-|  | Row 2: ToolListPanel / InputListPanel  ||
-|  |        (互斥，共享同一空间)             ||
-|  +---------------------------------------+|
-|  | Row 3: KeyLayoutPanel +                ||
-|  |        GestureFeedbackPanel +           ||
-|  |        GestureInputPanel (叠加)         ||
-|  +---------------------------------------+|
-+-------------------------------------------+
+```plantuml
+@file:../diagrams/ui-screen-layout.puml
 ```
 
 ### 2.2 Zone B 三行结构
@@ -282,18 +218,6 @@ Zone B 纵向划分为三个行，每行承载不同类型的面板组件，行�
 在 Separated 模式下，Row 3 被进一步划分为三列，以充分利用分离布局带来的空间优势。左列和右列各放置常用输入功能按钮，如切换键盘、删除、空格、回车等功能键，这些按钮在分离模式下从 KeyLayoutPanel 的主键区中抽出，放置在两侧便于拇指快速触达。中列承载 GestureFeedbackPanel 和 GestureInputPanel 的叠加，是手势交互的核心区域。KeyLayoutPanel 在 Separated 模式下部署在 Zone A 而非 Zone B 的 Row 3，因此 Row 3 的三列布局中不包含 KeyLayoutPanel。
 
 三列布局的设计目的是利用分离模式下手指在 Zone B 操作、按键在 Zone A 展示的空间优势，将常用功能键分布在手指两侧，缩短拇指移动距离，提升输入效率。中列的 GestureInputPanel 接收触摸事件，GestureFeedbackPanel 绘制手势轨迹，二者叠加共享中列空间。左列和右列的功能按钮由 KeyboardViewModel 根据 Keyboard.Type 动态配置，不同类型键盘可能显示不同的功能按钮集合。
-
-```
-Separated 模式下 Row 3 的三列布局：
-
-+----------+--------------------+----------+
-| 左列     |      中列           | 右列     |
-| 功能按钮  | GestureFeedbackPanel| 功能按钮  |
-| (切换等)  | +                  | (删除等)  |
-|          | GestureInputPanel   |          |
-|          | (叠加，共享空间)     |          |
-+----------+--------------------+----------+
-```
 
 ### 2.4 Zone A 内容
 
@@ -578,6 +502,8 @@ data class InputActionFingerIndicator(
     val position: OffsetF,
     val pressed: Boolean,
     val visible: Boolean = true,
+    /** 按键点击动画参数（定义见 [engine/060-input-action.md](../engine/060-input-action.md)） */
+    val clickAnimation: ClickAnimation? = null,
 )
 ```
 

@@ -1,183 +1,139 @@
 @startuml mvi-data-flow
 !theme plain
 skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam defaultFontSize 13
-skinparam activityFontSize 13
+skinparam defaultFontSize 12
+skinparam arrowThickness 1.5
 
-title 筷子输入法 - MVI 完整数据流\nComplete MVI Data Flow
-
-' ─── 主数据流：用户手势 → UI 渲染 ─────────────────────────────────
-
-package "主数据流：用户手势 → UI 渲染" as main_flow #F3E5F5 {
-
-    actor "用户\nUser" as user #E8F5E9
-
-    rectangle "GestureInputPanel\n手势输入面板\n(:ime-ui)" as GIP #E8F5E9 {
-        note as gip_note
-            透明手势拦截层
-            pointerInput { detectGesture }
-        end note
-    }
-
-    rectangle "InputGesture\n输入手势 (sealed)" as IG #FFF3E0 {
-        note as ig_note
-            Tap / LongPress / Swipe
-            Flip / XPadZonePath / CandidateTap
-        end note
-    }
-
-    rectangle "KeyboardViewModel\n.handleGesture()\n(:ime-ui)" as KVM #E8F5E9 {
-        note as kvm_note
-            gestureToIntent() 转换
-            InputGesture → ImeIntent
-        end note
-    }
-
-    rectangle "ImeIntent\n输入法意图 (sealed)" as II #FFF3E0 {
-        note as ii_note
-            PressKey / SelectCandidate
-            SwitchKeyboard / CommitInput
-            SelectXPadPath / UpdateConfig ...
-        end note
-    }
-
-    rectangle "ImeEngine\n.handleIntent()\n(:ime-engine)" as IE #FFF3E0 {
-        note as ie_note
-            reduce(state, intent)
-            纯函数状态归约
-        end note
-    }
-
-    rectangle "StateFlow<ImeState>\n状态流" as SF #F3E5F5 {
-        note as sf_note
-            keyboardState / inputList
-            candidates / clipboard
-            config
-        end note
-    }
-
-    rectangle "Compose UI\n界面渲染\n(:ime-ui)" as UI #E8F5E9 {
-        rectangle "KeyLayoutPanel\n按键渲染" as KLP #C8E6C9
-        rectangle "CandidateListPanel\n候选词" as CLP #C8E6C9
-        rectangle "InputListPanel\n输入栏" as ILP #C8E6C9
-        rectangle "PopupTipPanel\n弹出提示" as PTP #C8E6C9
-        rectangle "ToolListPanel\n工具列表" as TLP #C8E6C9
-    }
-
-    user --> GIP : "触摸"
-    GIP --> IG : "1. 识别手势"
-    IG --> KVM : "2. onGesture"
-    KVM --> II : "3. gestureToIntent()"
-    II --> IE : "4. handleIntent()"
-    IE --> SF : "5. _state.update"
-    SF --> KLP : "6. collectAsState"
-    SF --> CLP : "6. collectAsState"
-    SF --> ILP : "6. collectAsState"
-    SF --> PTP : "6. collectAsState"
-    SF --> TLP : "6. collectAsState"
-}
-
-' ─── 输出流：ImeOutput → 桥梁 ────────────────────────────────────
-
-package "输出流：ImeOutput → 编辑器" as output_flow #E3F2FD {
-
-    rectangle "ImeOutput\n引擎输出 (sealed)" as IO #FFF3E0 {
-        note as io_note
-            CommitText / RevokeCommit
-            InsertPairedSymbols / MoveCursor
-            SelectRange / PerformEdit
-        end note
-    }
-
-    rectangle "ImeEngine\n.dispatchToTarget()\nwhen(ImeOutput) 分发" as Dispatch #FFF3E0
-
-    rectangle "ImeOutputBridge\n输出桥接接口\n(:ime-engine)" as Bridge #FFF3E0
-
-    rectangle "InputConnectionBridge\n(:app)" as ICB #E3F2FD {
-        note as icb_note
-            Android InputConnection
-            系统输入法场景
-        end note
-    }
-
-    rectangle "EditTextBridge\n(:ime-ui)" as ETB #E8F5E9 {
-        note as etb_note
-            EditText
-            应用内嵌入场景
-        end note
-    }
-
-    rectangle "自定义 Bridge\n(:第三方)" as Custom #F3E5F5
-
-    IE --> IO : "reduce 产生输出"
-    IO --> Dispatch : "dispatchToTarget()"
-    Dispatch --> Bridge : "语义方法调用"
-    Bridge --> ICB : "实现"
-    Bridge --> ETB : "实现"
-    Bridge --> Custom : "实现"
-}
-
-' ─── 反馈流：GestureFeedbackState (Simplified) ─────────────────────
-
-package "反馈流：手势视觉反馈" as feedback_flow #E8F5E9 {
-
-    rectangle "InputGesture\n手势事件" as IG2 #FFF3E0
-
-    rectangle "GestureFeedbackState\n反馈状态 (简化)" as GFS #E8F5E9 {
-        note as gfs_note
-            touchTrailPoints (OffsetF)
-            pressedKeys
-            fingerIndicator (InputActionFingerIndicator)
-        end note
-    }
-
-    rectangle "GestureFeedbackPanel\n手势反馈面板\n(:ime-ui)" as GFP #E8F5E9 {
-        note as gfp_note
-            透明绘制层
-            多实例 + FeedbackElementType 配置
-            内置 TouchTrail / KeyHighlight / FingerIndicator
-        end note
-    }
-
-    rectangle "CoordinateNormalizer\n坐标归一化器\n(:ime-ui)" as CN #FCE4EC {
-        note as cn_note
-            Offset → OffsetF (归一化)
-            OffsetF → Offset (反归一化)
-        end note
-    }
-
-    IG2 --> GFS : "GestureInputPanel 驱动\nCoordinateNormalizer 归一化"
-    GFS --> GFP : "collectAsState 渲染\nCoordinateNormalizer 反归一化"
-}
-
-' ─── 程序化输入流 ─────────────────────────────────────────────────
-
-package "程序化输入流：InputActionPlayer" as program_flow #FFF9C4 {
-
-    rectangle "InputActionScript\n输入脚本" as AS #FFF3E0
-    rectangle "InputActionPlayer\n播放器" as IAP #E8F5E9
-    rectangle "InputActionPathInterpolator\n路径插值器" as IAPI #FFF9C4
-    rectangle "KeyboardViewModel\n.handleIntent()" as KVM2 #E8F5E9
-    rectangle "CoordinateNormalizer\n坐标归一化" as CN2 #FCE4EC
-
-    AS --> IAP : "执行"
-    IAP --> IAPI : "计算路径 (OffsetF)"
-    IAP --> KVM2 : "viewModel.handleIntent(ImeIntent)"
-    IAP --> GFS : "feedbackState.setFingerIndicator\nshowIndicator 内置机制"
-    IAP --> CN2 : "归一化坐标转换"
-}
-
-' ─── Legend ─────────────────────────────────────────────────────────
+title MVI 完整数据流
 
 legend right
-    |= 颜色 |= 含义 |
-    |<#E8F5E9>| :ime-ui 层 |
-    |<#FFF3E0>| :ime-engine 层 |
-    |<#E3F2FD>| :app 层 |
-    |<#F3E5F5>| 跨切面 / 架构 |
-    |<#FFF9C4>| 程序化输入 |
-    |<#FCE4EC>| 坐标归一化 |
+  |= 模块 |= 颜色 |= 说明 |
+  | :app | ##E3F2FD | Platform Layer |
+  | :ime-ui | ##E8F5E9 | UI + ViewModel Layer |
+  | :ime-engine | ##FFF3E0 | Domain + Data Layer |
 endlegend
+
+' ===== 用户手势输入流（主流程） =====
+
+rectangle "用户" as User #FFFFFF {
+}
+
+package "UI Layer [:ime-ui]" #E8F5E9 {
+  rectangle "GestureInputPanel\n(透明手势层)" as GIP #C8E6C9 {
+    note right of GIP
+      接收触摸事件
+      归一化坐标写入 GestureFeedbackState
+      查询 KeyLayoutState.findKeyAt()
+      输出 InputGesture
+    end note
+  }
+
+  rectangle "KeyboardViewModel\n(UI 协调中心)" as KVM #C8E6C9 {
+    note right of KVM
+      gestureToIntent() 转换
+      handleGesture() / handleIntent()
+      管理 LayoutMode
+      管理 GestureFeedbackState
+      集成 InputActionPlayer
+    end note
+  }
+
+  rectangle "GestureFeedbackState\n(归一化坐标)" as GFS #C8E6C9 {
+    note right of GFS
+      touchTrailPoints: List<OffsetF>
+      pressedKeys: Set<InputKey>
+      fingerIndicator: InputActionFingerIndicator?
+    end note
+  }
+
+  rectangle "GestureFeedbackPanel\n(透明绘制层)" as GFP #C8E6C9 {
+    note right of GFP
+      反归一化: OffsetF * panelSize
+      绘制轨迹/高亮/手指指示器
+      Zone A / Zone B 多实例
+    end note
+  }
+
+  rectangle "Compose UI\n面板组件" as UI #C8E6C9 {
+    note right of UI
+      KeyLayoutPanel (按键渲染)
+      CandidateListPanel (候选栏)
+      InputListPanel / ToolListPanel (输入栏/工具栏)
+      PopupTipPanel (弹出提示)
+    end note
+  }
+
+  rectangle "InputActionPlayer\n(程序化输入)" as IAP #C8E6C9 {
+    note right of IAP
+      播放 InputActionScript
+      驱动 feedbackState
+      驱动 handleIntent()
+      管理 row1/row2 Indicator
+    end note
+  }
+}
+
+package "Domain Layer [:ime-engine]" #FFF3E0 {
+  rectangle "ImeEngine\n(核心引擎)" as IE #FFE0B2 {
+    note right of IE
+      handleIntent()
+      reduce(state, intent)
+      状态机转换
+      字典查询
+      输出分发
+    end note
+  }
+
+  rectangle "ImeIntent\n(用户意图)" as II #FFE0B2
+  rectangle "ImeState\n(不可变状态)" as IS #FFE0B2 {
+    note right of IS
+      inputMode, isInputting
+      keyboardState
+      candidateList, inputList
+      popupTip, toolList
+      config
+    end note
+  }
+  rectangle "ImeOutput\n(编辑输出)" as IO #FFE0B2
+}
+
+package "Platform Layer [:app]" #E3F2FD {
+  rectangle "ImeOutputBridge\n(InputConnectionBridge)" as Bridge #BBDEFB
+  rectangle "编辑器\n(InputConnection)" as Editor #BBDEFB
+}
+
+' ===== 用户手势输入流 =====
+User -down-> GIP : 触摸事件
+GIP -down-> GFS : 归一化坐标\n+ touchTrailPoints\n+ pressedKeys
+GIP -down-> KVM : InputGesture
+KVM -down-> II : ImeIntent\n(手势→意图转换)
+II -down-> IE : handleIntent()
+IE -down-> IS : reduce\nStateFlow 更新
+
+' ===== 反馈流 =====
+GFS -down-> GFP : collectAsState()\n反归一化绘制
+
+' ===== 状态流 =====
+IS -up-> UI : collectAsState()\n驱动面板重组
+IS -up-> KVM : state 引用
+
+' ===== 输出流 =====
+IE -down-> IO : ImeOutput
+IO -down-> Bridge : dispatchToTarget()
+Bridge -down-> Editor : 语义方法调用
+
+' ===== 程序化输入流 =====
+IAP -left-> KVM : handleIntent(ImeIntent)
+IAP -left-> GFS : setFingerIndicator()\nsetTouchTrailPoints()\nsetPressedKeys()
+
+' ===== 分组标注 =====
+rectangle "反馈流" #FFF9C4 {
+}
+rectangle "状态流" #E1F5FE {
+}
+rectangle "输出流" #F3E5F5 {
+}
+rectangle "程序化输入流" #FCE4EC {
+}
 
 @enduml

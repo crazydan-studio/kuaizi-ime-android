@@ -1,402 +1,487 @@
 @startuml class-organization
 !theme plain
 skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam defaultFontSize 12
-skinparam classFontSize 12
-skinparam packageFontSize 14
+skinparam classAttributeIconSize 0
+skinparam defaultFontSize 11
 
-title 筷子输入法 - 模块类组织\nModule Class Organization
+title 类组织总览
 
-' ═══════════════════════════════════════════════════════════════════
-' :ime-engine
-' ═══════════════════════════════════════════════════════════════════
+legend right
+  |= 模块 |= 颜色 |= 说明 |
+  | :app | ##E3F2FD | Platform Layer |
+  | :ime-ui | ##E8F5E9 | UI + ViewModel Layer |
+  | :ime-engine | ##FFF3E0 | Domain + Data Layer |
+endlegend
 
-package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
+' ==================== :ime-engine 模块 ====================
 
-    package "core/\n核心模型" as engine_api #FFE0B2 {
-        class ImeEngine <<核心入口点>> {
-            - config: ImeConfig
-            - dictProvider: ImeDictProvider
-            - stateMachine: KeyboardStateMachine
-            - inputListOp: InputListOperator
-            - featureRegistry: FeatureRegistry
-            - _state: MutableStateFlow<ImeState>
-            - _outputBridge: ImeOutputBridge?
-            + state: StateFlow<ImeState>
-            + handleIntent(intent: ImeIntent)
-            + updateConfig(block: (ImeConfig) -> ImeConfig)
-            + attachOutputBridge(bridge: ImeOutputBridge)
-            + detachOutputBridge()
-            + companion.create(config, dictProvider): ImeEngine
-        }
-        class ImeConfig <<统一配置>> {
-            + engine: EngineConfig
-            + ui: UiConfig
-            + runtimeOverrides: Set<ConfigField>
-        }
-        class ImeIntent <<sealed>> {
-            + PressKey(key, gesture)
-            + LongPressKey(key)
-            + SelectCandidate(candidate)
-            + PageCandidate(direction)
-            + SwitchKeyboard(type)
-            + CommitInput / DeleteInput / CleanInput
-            + MoveCursorTo(index)
-            + PerformEdit(action)
-            + SelectXPadPath(startZone, path)
-            + PasteClip(text)
-            + SaveFavorite(favorite)
-            + UpdateConfig(config)
-            + ExportUserData / ImportUserData(filePath)
-        }
-        class ImeOutput <<sealed>> {
-            + CommitText(text, replacements)
-            + RevokeCommit()
-            + InsertPairedSymbols(left, right)
-            + MoveCursor(direction)
-            + SelectRange(direction)
-            + PerformEdit(action)
-        }
-        class ImeState <<状态根>> {
-            + keyboardState: KeyboardState
-            + inputList: InputList
-            + candidateList: CandidateList
-            + clipboard: Clipboard
-            + favoriteList: FavoriteList
-            + config: ImeConfig
-        }
-        interface ImeOutputBridge <<接口>> {
-            + commitText(text, replacements?)
-            + revokeCommit()
-            + insertPairedSymbols(left, right)
-            + moveCursor(direction)
-            + selectRange(direction)
-            + performAction(action)
-            + getText(): CharSequence
-            + getSelection(): TextRange
-        }
-        abstract class BaseImeOutputBridge <<抽象基类>> {
-            # revertion: SelectionSnapshot?
-            # resetRevertion()
-            # recordRevertion(...)
-            + revokeCommit()
-            # onRevokeCommit(snapshot)
-            # doNormalCommitText(text)
-            # doReplaceableCommitText(text, replacements)
-        }
+package ":ime-engine" #FFF3E0 {
+
+  package "engine.core" {
+    class ImeEngine <<(O,#FFF3E0)>> {
+      + state: StateFlow<ImeState>
+      + handleIntent(intent: ImeIntent)
+      + updateConfig(block)
+      + attachOutputBridge(bridge)
+      + detachOutputBridge()
+      + create(config, dictProvider): ImeEngine
     }
-
-    package "domain/\n领域逻辑" as engine_domain #FFCC80 {
-        class KeyboardStateMachine {
-            - _state: KeyboardState
-            - stateHistory: ArrayDeque<KeyboardState>
-            + transition(transition): List<ImeIntent>
-            + backToPrevious()
-        }
-        class InputListOperator {
-            + apply(intent, list): InputList
-        }
-        class FeatureRegistry {
-            + isEnabled(feature): Boolean
-        }
+    class ImeConfig <<(D,#FFF3E0)>> {
+      + engine: EngineConfig
+      + ui: UiConfig
+      + runtimeOverrides: Set<ConfigField>
     }
-
-    package "dict/\n词典系统" as engine_dict #FFB74D {
-        interface ImeDictProvider <<接口>> {
-            + query(spell): List<InputWord>
-            + queryPrefix(prefix): List<InputWord>
-            + recordInput(pinyin, word)
-        }
-        class ImeSqliteDictProvider <<实现>> {
-            - dictRepository: DictRepository
-            - pinyinCharsTree: PinyinCharsTree
-            - hmmModel: HmmModel
-        }
-        class DictRepository <<仓库>> {
-            + lookupPinyinWords(spell): List<InputWord>
-            + lookupPinyinPhrases(spells): List<InputWord>
-            + predictPhrase(spell, context): List<InputWord>
-            + recordUserInput(text, type)
-            + observeFavorites(): Flow<List<InputFavorite>>
-        }
+    class ImeIntent <<(S,#FFF3E0)>> {
+      {static} PressKey(key, gesture)
+      {static} SelectCandidate(candidate)
+      {static} SwitchKeyboard(type)
+      {static} CommitInput
+      {static} DeleteInput
+      {static} SelectXPadPath(startZone, path)
+      {static} PerformEdit(action)
+      {static} UpdateConfig(config)
     }
-
-    package "output/\n输出桥接" as engine_output #FFA726 {
+    class ImeOutput <<(S,#FFF3E0)>> {
+      {static} CommitText(text, replacements)
+      {static} RevokeCommit
+      {static} InsertPairedSymbols(left, right)
+      {static} MoveCursor(direction)
+      {static} PerformEdit(action)
     }
-
-    package "logging/\n日志" as engine_logging #FF9800 {
-        class ImeLog <<门面 Facade>> {
-            + {static} init(level, writers)
-            + {static} logger(tag): ImeLogger
-            + {static} updateLevel(newLevel)
-            + {static} dispatch(entry)
-        }
-        class ImeLogger <<带标签记录器>> {
-            - tag: String
-            - log: ImeLog
-            + verbose(msg: () -> String)
-            + debug(msg: () -> String)
-            + info(msg: () -> String)
-            + warn(msg: () -> String)
-            + error(msg: () -> String)
-            + tree(title, block)
-        }
-        enum LogLevel {
-            VERBOSE = 2
-            DEBUG = 3
-            INFO = 4
-            WARN = 5
-            ERROR = 6
-        }
-        class LogEntry <<不可变>> {
-            + level: LogLevel
-            + tag: String
-            + message: String
-            + throwable: Throwable?
-            + timestamp: Long
-            + threadName: String
-        }
-        interface LogWriter <<接口>> {
-            + write(entry: LogEntry)
-            + flush()
-        }
-        class LogStorage <<文件管理>> {
-            + appendEntries(entries)
-            + readLogs(date?, levelFilter?, keyword?): List<LogEntry>
-            + exportLogs(destination, fromDate, toDate)
-        }
-        class FileLogWriter <<Writer>> {
-            - storage: LogStorage
-            - channel: Channel<LogEntry>
-        }
-        class LogcatWriter <<Writer>> {
-            + write(entry: LogEntry)
-        }
-        class CrashInterceptor <<拦截器>> {
-            - writers: List<LogWriter>
-            - storage: LogStorage
-            + install()
-        }
-        class LogBlock <<树形日志块>> {
-            + title: String
-            + begin() / end()
-            + entries: List<LogEntry>
-        }
+    class ImeState <<(D,#FFF3E0)>> {
+      + keyboardType: KeyboardType
+      + inputMode: InputMode
+      + isInputting: Boolean
+      + keyboardState: KeyboardState
+      + inputList: InputList
+      + candidateList: CandidateList
+      + popupTip: PopupTipState?
+      + toolList: ToolListState
+      + config: ImeConfig
     }
+  }
 
-    package "action/\n输入动作" as engine_action #EF6C00 {
-        class InputAction <<sealed>> {
-            + KeyDown / SwipeTo / SelectCandidate
-            + SwitchKeyboard / ...
-        }
-        class InputActionScript <<脚本>> {
-            + actions: List<InputAction>
-            + method: InputMethod
-        }
-        class InputActionScriptCompiler <<编译器>> {
-            + compile(source): InputActionScript
-        }
+  package "engine.output" {
+    interface ImeOutputBridge <<(I,#FFF3E0)>> {
+      + commitText(text, replacements?)
+      + revokeCommit()
+      + insertPairedSymbols(left, right)
+      + moveCursor(direction)
+      + selectRange(direction)
+      + performAction(action)
+      + getText(): CharSequence
+      + getSelection(): TextRange
     }
+    abstract class BaseImeOutputBridge <<(A,#FFF3E0)>> {
+      # revertion: SelectionSnapshot?
+      # resetRevertion()
+      # recordRevertion(...)
+      # onRevokeCommit(snapshot)
+      # doNormalCommitText(text)
+      # doReplaceableCommitText(text, replacements)
+    }
+  }
 
-    package "service/\n服务" as engine_service #E65100 {
-        class ClipboardService {
-            + currentText: String?
-            + startMonitoring() / stopMonitoring()
-        }
-        class FavoriteService {
-            + addFavorite(favorite)
-            + removeFavorite(text)
-            + observeFavorites(): Flow<List<InputFavorite>>
-        }
+  package "engine.state" {
+    class KeyboardState <<(S,#FFF3E0)>> {
+      {static} Idle
+      {static} PinyinInput.Waiting
+      {static} PinyinInput.Slipping
+      {static} PinyinInput.Flipping
+      {static} PinyinInput.XPadding
+      {static} CandidateSelection.Choosing
+      {static} CandidateSelection.Filtering
+      {static} CandidateSelection.AdvanceFiltering
+      {static} CommitOptionChoosing
+      {static} EditorEditing.CursorMoving
+      {static} EditorEditing.TextSelecting
+      {static} SymbolChoosing
+      {static} EmojiChoosing
     }
+    class InputList <<(D,#FFF3E0)>> {
+      + inputs: List<InputItem>
+      + gapIndex: Int
+      + pendingSpell: String
+    }
+    class CandidateList <<(D,#FFF3E0)>> {
+      + candidates: List<InputWord>
+      + pageIndex: Int
+      + pageSize: Int
+      + hasMore: Boolean
+    }
+  }
+
+  package "engine.input_action" {
+    class InputAction <<(S,#FFF3E0)>> {
+      {static} KeyDown(startTime, key)
+      {static} SwipeTo(startTime, fromKey, toKey, duration)
+      {static} KeyUp(startTime, key)
+      {static} Wait(startTime, duration)
+      {static} SelectCandidate(startTime, candidateIndex)
+      {static} SwitchKeyboard(startTime, targetType)
+    }
+    class InputActionScript <<(D,#FFF3E0)>> {
+      + name: String
+      + description: String
+      + inputMethod: InputMethod
+      + actions: List<InputAction>
+      + totalDuration: Long
+    }
+    class InputActionScriptCompiler <<(C,#FFF3E0)>> {
+      + compile(text, method, speed): InputActionScript
+      - compileTapActions(...)
+      - compileSwipeActions(...)
+      - compileXPadActions(...)
+    }
+    class InputActionPlaybackState <<(S,#FFF3E0)>> {
+      {static} Idle
+      {static} Ready(script)
+      {static} Playing(currentIndex, totalActions)
+      {static} Paused(currentIndex, totalActions)
+      {static} Finished
+    }
+    class InputActionFingerIndicator <<(D,#FFF3E0)>> {
+      + position: OffsetF
+      + pressed: Boolean
+      + visible: Boolean
+      + clickAnimation: ClickAnimation?
+    }
+    class ClickAnimation <<(D,#FFF3E0)>> {
+      + progress: Float
+      + maxRadius: Float
+      + color: Long
+    }
+    class InputActionPathInterpolator <<(O,#FFF3E0)>> {
+      + interpolate(from, to, arcFactor, steps): List<OffsetF>
+    }
+    interface InputActionPositionResolver <<(I,#FFF3E0)>> {
+      + resolve(key): OffsetF?
+      + resolveCandidatePosition(index): OffsetF?
+      + resolveInputItemPosition(index): OffsetF?
+    }
+    class OffsetF <<(D,#FFF3E0)>> {
+      + x: Float
+      + y: Float
+    }
+    class RectF <<(D,#FFF3E0)>> {
+      + left: Float
+      + top: Float
+      + right: Float
+      + bottom: Float
+      + center: OffsetF
+    }
+  }
+
+  package "engine.internal" {
+    class KeyboardStateMachine <<(C,#FFF3E0)>> {
+      + state: KeyboardState
+      + transition(t): List<ImeIntent>
+      + backToPrevious()
+    }
+    class InputListOperator <<(C,#FFF3E0)>> {
+      + apply(intent, list): InputList
+    }
+    class FeatureRegistry <<(C,#FFF3E0)>> {
+      + isEnabled(feature): Boolean
+    }
+  }
+
+  package "engine.dict" {
+    interface ImeDictProvider <<(I,#FFF3E0)>> {
+      + query(pinyin): List<Candidate>
+      + queryPrefix(prefix): List<Candidate>
+      + recordInput(pinyin, word)
+    }
+    class ImeSqliteDictProvider <<(C,#FFF3E0)>> {
+      + query(pinyin): List<Candidate>
+      + queryPrefix(prefix): List<Candidate>
+      + recordInput(pinyin, word)
+    }
+    class DictRepository <<(C,#FFF3E0)>> {
+      + lookupPinyinWords(spell): List<InputWord>
+      + lookupPinyinPhrases(spells): List<InputWord>
+      + predictPhrase(spell, context): List<InputWord>
+      + recordUserInput(text, type)
+      + observeFavorites(): Flow<List<InputFavorite>>
+    }
+    class PinyinCharsTree <<(D,#FFF3E0)>> {
+      + children: Map<Char, PinyinCharsTree>
+      + keys: List<InputKey.Char>
+      + find(prefix): PinyinCharsTree?
+    }
+    class HmmModel <<(D,#FFF3E0)>> {
+      + states: Set<HmmState>
+      + transitionProb: Map<HmmState, Map<HmmState, Double>>
+      + emissionProb: Map<HmmState, Map<HmmObservation, Double>>
+    }
+    class ViterbiDecoder <<(C,#FFF3E0)>> {
+      + decode(observations): List<HmmState>
+    }
+  }
+
+  package "engine.logging" {
+    class ImeLog <<(O,#FFF3E0)>> {
+      + level: LogLevel
+      + init(level, writers)
+      + updateLevel(newLevel)
+      + logger(tag): ImeLogger
+    }
+    class ImeLogger <<(C,#FFF3E0)>> {
+      + verbose(msg)
+      + debug(msg)
+      + info(msg)
+      + warn(msg)
+      + error(msg)
+      + tree(title, block)
+    }
+    class LogLevel <<(E,#FFF3E0)>> {
+      VERBOSE
+      DEBUG
+      INFO
+      WARN
+      ERROR
+    }
+    class LogEntry <<(D,#FFF3E0)>> {
+      + level: LogLevel
+      + tag: String
+      + message: String
+      + throwable: Throwable?
+      + timestamp: Long
+      + format(): String
+    }
+    interface LogWriter <<(I,#FFF3E0)>> {
+      + write(entry)
+      + flush()
+    }
+    class FileLogWriter <<(C,#FFF3E0)>> {
+      + write(entry)
+      + flush()
+    }
+    class LogcatWriter <<(C,#FFF3E0)>> {
+      + write(entry)
+      + flush()
+    }
+    class CrashInterceptor <<(C,#FFF3E0)>> {
+      + install()
+    }
+    class LogStorage <<(C,#FFF3E0)>> {
+      + appendEntries(entries)
+      + readLogs(date?, levelFilter?, keyword?): List<LogEntry>
+      + exportLogs(destination, fromDate, toDate)
+      + updateDir(logDir)
+    }
+  }
 }
 
-' ═══════════════════════════════════════════════════════════════════
-' :ime-ui
-' ═══════════════════════════════════════════════════════════════════
+' ==================== :ime-ui 模块 ====================
 
-package ":ime-ui\nUI 层 + ViewModel 层" as ime_ui #E8F5E9 {
+package ":ime-ui" #E8F5E9 {
 
-    package "viewmodel/\nViewModel" as ui_viewmodel #C8E6C9 {
-        class KeyboardViewModel {
-            + engine: ImeEngine
-            + state: StateFlow<ImeState>
-            + config: ImeConfig
-            + feedbackState: GestureFeedbackState
-            + handleGesture(gesture: InputGesture)
-            + handleIntent(intent: ImeIntent)
-            + updateConfig(transform: (ImeConfig) -> ImeConfig)
-        }
+  package "ui.viewmodel" {
+    class KeyboardViewModel <<(C,#E8F5E9)>> {
+      + state: StateFlow<ImeState>
+      + config: ImeConfig
+      + layoutMode: StateFlow<LayoutMode>
+      + feedbackState: GestureFeedbackState
+      + actionPlayer: InputActionPlayer
+      + handleGesture(gesture)
+      + handleIntent(intent)
+      + setLayoutMode(mode)
+      + updateConfig(transform)
+      + updateKeyLayoutState(state)
+      + updateCandidateLayoutState(state)
+      + updateInputListLayoutState(state)
     }
-
-    package "integration/\n集成组件" as ui_integration #A5D6A7 {
-        class KeyboardHost {
-            + viewModel: KeyboardViewModel
-        }
+    class GestureFeedbackState <<(C,#E8F5E9)>> {
+      + touchTrailPoints: StateFlow<List<OffsetF>>
+      + pressedKeys: StateFlow<Set<InputKey>>
+      + fingerIndicator: StateFlow<InputActionFingerIndicator?>
+      + addTouchTrailPoint(point)
+      + setTouchTrailPoints(points)
+      + setPressedKeys(keys)
+      + setFingerIndicator(state?)
+      + clearAll()
+      + clear()
     }
+  }
 
-    package "panel/\n面板组件" as ui_panel #81C784 {
-        class GestureInputPanel <<透明手势层>> {
-            + onGesture: (InputGesture) -> Unit
-        }
-        class GestureFeedbackPanel <<透明反馈层>> {
-            + elements: Set<FeedbackElementType>
-            + feedbackState: GestureFeedbackState
-        }
-        class KeyLayoutPanel <<按键渲染层>> {
-            + inputMode / keyboardType / keyboardState
-        }
-        class CandidateListPanel <<候选栏>> {
-            + state: CandidateList
-            + onCandidateSelected
-        }
-        class InputListPanel <<输入栏>> {
-            + state: InputList
-            + onGapTapped
-        }
-        class FavoriteListPanel <<收藏面板>> {
-            + favorites / onSelected / onRemoved
-        }
-        class XPadView <<X-Pad 六边形面板>>
-        class ActionPlayerPanel <<播放控制面板>>
+  package "ui.integration" {
+    class KeyboardHost <<(C,#E8F5E9)>> {
+      + (Composable) KeyboardHost(viewModel)
     }
+    class KeyboardInputActionPlayerHost <<(C,#E8F5E9)>> {
+      + UseMode.Animation
+      + UseMode.DirectInput
+      + (Composable) KeyboardInputActionPlayerHost(viewModel, useMode)
+    }
+  }
 
-    package "atom/\n原子组件" as ui_atom #66BB6A {
-        class KeyView <<按键渲染>>
-        class CandidateItem <<候选项>>
-        class "CharInputItem / GapInputItem" <<输入栏项>>
-        class ClipTipPopup <<剪贴板提示>>
-        class FavoriteItem <<收藏项>>
-        class FingerOverlay <<手指指示器>>
+  package "ui.panel" {
+    class GestureInputPanel <<(C,#E8F5E9)>> {
+      + 透明手势拦截层
+      + 接收触摸事件
+      + 输出 InputGesture
     }
+    class KeyLayoutPanel <<(C,#E8F5E9)>> {
+      + 按键布局渲染层
+      + onLayoutStateChanged 回调
+      + 根据 InputMode + Type 渲染
+    }
+    class GestureFeedbackPanel <<(C,#E8F5E9)>> {
+      + 透明反馈绘制层
+      + 归一化坐标绘制
+      + 支持多实例
+    }
+    class CandidateListPanel <<(C,#E8F5E9)>> {
+      + 候选栏（含内建 IndicatorOverlay）
+      + showIndicator: Boolean
+      + indicatorState: InputActionFingerIndicator?
+    }
+    class InputListPanel <<(C,#E8F5E9)>> {
+      + 输入栏（含内建 IndicatorOverlay）
+      + showIndicator: Boolean
+      + indicatorState: InputActionFingerIndicator?
+    }
+    class ToolListPanel <<(C,#E8F5E9)>> {
+      + 工具列表面板（含内建 IndicatorOverlay）
+      + showIndicator: Boolean
+      + indicatorState: InputActionFingerIndicator?
+    }
+    class PopupTipPanel <<(C,#E8F5E9)>> {
+      + 弹出提示面板
+      + 从 ImeState 读取状态
+    }
+  }
 
-    package "gesture/\n手势" as ui_gesture #4CAF50 {
-        class InputGesture <<sealed>> {
-            + Tap(key, tick)
-            + LongPress(key)
-            + Swipe(startKey, endKey, visitedKeys)
-            + Flip(startKey, direction)
-            + XPadZonePath(startZone, path)
-            + CandidateTap(candidateIndex)
-        }
-        class GestureFeedbackState <<反馈状态>> {
-            + touchTrailPoints: StateFlow<List<OffsetF>>
-            + pressedKeys: StateFlow<Set<InputKey>>
-            + fingerIndicator: StateFlow<InputActionFingerIndicator?>
-        }
-        class FeedbackElementType <<enum>> {
-            TouchTrail / KeyHighlight / KeyPath
-            XPadPathHighlight / FingerIndicator
-        }
-        class GestureFeedbackPanelSet <<sealed>> {
-            + OverlaySet: allElements
-            + FullScreenSet: inputSideElements + keySideElements
-        }
+  package "ui.player" {
+    class InputActionPlayer <<(C,#E8F5E9)>> {
+      + playbackState: StateFlow<InputActionPlaybackState>
+      + row1IndicatorState: StateFlow<InputActionFingerIndicator?>
+      + row2IndicatorState: StateFlow<InputActionFingerIndicator?>
+      + load(script)
+      + play()
+      + pause()
+      + resume()
+      + stop()
+      + setSpeed(speed)
     }
+    class ComposeInputActionPositionResolver <<(C,#E8F5E9)>> {
+      + resolve(key): OffsetF?
+      + resolveCandidatePosition(index): OffsetF?
+      + resolveInputItemPosition(index): OffsetF?
+    }
+    class InputActionScriptLoader <<(C,#E8F5E9)>> {
+      + loadPreset(name): InputActionScript
+      + listPresets(): List<String>
+      + loadFromFile(uri): InputActionScript
+    }
+  }
 
-    package "player/\n输入动作播放" as ui_player #43A047 {
-        class InputActionPlayer {
-            + viewModel: KeyboardViewModel
-            + feedbackState: GestureFeedbackState
-            + positionResolver: InputActionPositionResolver
-        }
-        class InputActionPositionResolver <<interface>> {
-            + resolve(key): OffsetF?
-            + resolveCandidatePosition(i): OffsetF?
-        }
+  package "ui.theme" {
+    class KeyboardColors <<(D,#E8F5E9)>> {
+      + keyBackground/Foreground/Pressed/...
+      + candidatePanelBackground/...
+      + inputListPanelBackground/...
+      + xPadBackground/...
     }
+    class KeyboardThemes <<(O,#E8F5E9)>> {
+      + Light: KeyboardColors
+      + Night: KeyboardColors
+    }
+    class LocalKeyboardColors <<(O,#E8F5E9)>> {
+      CompositionLocal 提供颜色
+    }
+  }
 
-    package "bridge/\n桥接" as ui_bridge #388E3C {
-        class EditTextBridge <<ImeOutputBridge 实现>> {
-            - targetSupplier: () -> EditText?
-            + commitText / revokeCommit / insertPairedSymbols
-        }
+  package "ui.util" {
+    class CoordinateNormalizer <<(O,#E8F5E9)>> {
+      + normalize(offset, sourceSize): OffsetF
+      + denormalize(normalized, targetSize): Offset
     }
+  }
 
-    package "theme/\n主题" as ui_theme #2E7D32 {
-        class KeyboardColors <<颜色定义>>
-        class KeyboardThemes <<预置主题>>
-        class KeyboardTheme <<Composable>>
-        class LocalKeyboardColors <<CompositionLocal>>
+  package "ui.keyboard" {
+    class KeyLayoutState <<(D,#E8F5E9)>> {
+      + keyPositions: Map<InputKey, RectF>
+      + xPadLayoutInfo: XPadLayoutInfo?
+      + panelSize: Size
+      + findKeyAt(position, targetSize): InputKey?
+      + denormalize(normalized, targetSize): Rect
     }
+    class CandidateListLayoutState <<(D,#E8F5E9)>> {
+      + candidatePositions: List<Rect>
+      + panelSize: Size
+      + locateItem(index): Offset?
+    }
+    class InputListLayoutState <<(D,#E8F5E9)>> {
+      + itemPositions: List<Rect>
+      + panelSize: Size
+      + locateItem(index): Offset?
+    }
+  }
 }
 
-' ═══════════════════════════════════════════════════════════════════
-' :app
-' ═══════════════════════════════════════════════════════════════════
+' ==================== :app 模块 ====================
 
-package ":app\n平台层" as app #E3F2FD {
-
-    class IMEService <<Android Service>> {
-        - engine: ImeEngine?
-        - bridge: InputConnectionBridge?
-        + onCreate(): 创建引擎、挂载桥梁
-        + onCreateInputView(): 注入 ViewModel
-        + onDestroy(): 断开桥梁、销毁引擎
-    }
-
-    class InputConnectionBridge <<ImeOutputBridge 实现>> {
-        - targetSupplier: () -> InputConnection?
-        + commitText / revokeCommit / insertPairedSymbols
-        + moveCursor / selectRange / performAction
-    }
-
-    class ConfigDataStore <<DataStore>> {
-        + config: StateFlow<ImeConfig>
-        + updateConfig(update)
-        + syncFromDisk()
-    }
-
-    class UserDataService <<用户数据>> {
-        + exportUserData()
-        + importUserData(filePath)
-    }
-
-    class "LogViewerScreen / LogExportScreen" <<日志界面>>
+package ":app" #E3F2FD {
+  class IMEService <<(C,#E3F2FD)>> {
+    + onCreate()
+    + onCreateInputView(): View
+    + onDestroy()
+  }
+  class InputConnectionBridge <<(C,#E3F2FD)>> {
+    + doNormalCommitText(text)
+    + doReplaceableCommitText(text, replacements)
+    + insertPairedSymbols(left, right)
+    + moveCursor(direction)
+    + performAction(action)
+  }
+  class ConfigDataStore <<(C,#E3F2FD)>> {
+    + config: Flow<ImeConfig>
+    + updateConfig(transform)
+  }
+  class LogViewerScreen <<(C,#E3F2FD)>> {
+    + 日志浏览界面
+  }
+  class LogExportScreen <<(C,#E3F2FD)>> {
+    + 日志导出界面
+  }
 }
 
-' ═══════════════════════════════════════════════════════════════════
-' Cross-module Relationships
-' ═══════════════════════════════════════════════════════════════════
+' ==================== 关键关系 ====================
 
-app ..> ime_ui : "依赖"
-app ..> ime_engine : "依赖"
-ime_ui ..> ime_engine : "依赖"
+BaseImeOutputBridge <|-- InputConnectionBridge : :app
+BaseImeOutputBridge <|-- EditTextBridge : :ime-ui
+InputActionPositionResolver <|.. ComposeInputActionPositionResolver : :ime-ui
 
-' Engine internal
-ImeEngine *-- ImeConfig : "持有"
-ImeEngine *-- ImeState : "StateFlow"
-ImeEngine *-- KeyboardStateMachine : "组合"
-ImeEngine *-- InputListOperator : "组合"
-ImeEngine *-- FeatureRegistry : "组合"
-ImeEngine o-- ImeOutputBridge : "可选挂载"
-ImeEngine ..> ImeIntent : "接收"
-ImeEngine ..> ImeOutput : "产生"
-ImeEngine ..> ImeDictProvider : "依赖"
-BaseImeOutputBridge ..|> ImeOutputBridge : "实现"
-ImeSqliteDictProvider ..|> ImeDictProvider : "实现"
-ImeSqliteDictProvider --> DictRepository : "委托"
-ImeLog --> ImeLogger : "创建"
-ImeLogger --> LogWriter : "分发"
-LogWriter <|.. FileLogWriter : "实现"
-LogWriter <|.. LogcatWriter : "实现"
-FileLogWriter --> LogStorage : "写入"
-CrashInterceptor --> LogStorage : "崩溃时直接写入"
+ImeEngine *-- KeyboardStateMachine
+ImeEngine *-- InputListOperator
+ImeEngine *-- FeatureRegistry
+ImeSqliteDictProvider *-- DictRepository
+ImeSqliteDictProvider *-- PinyinCharsTree
+ImeSqliteDictProvider *-- HmmModel
+DictRepository --> ViterbiDecoder
 
-' UI relationships
-KeyboardViewModel --> ImeEngine : "持有引用"
-KeyboardHost --> KeyboardViewModel : "订阅"
-GestureInputPanel --> InputGesture : "输出"
-KeyboardViewModel --> InputGesture : "handleGesture()"
-GestureFeedbackPanel --> GestureFeedbackState : "读取"
-GestureInputPanel --> GestureFeedbackState : "驱动"
+KeyboardViewModel *-- GestureFeedbackState
+KeyboardViewModel *-- InputActionPlayer
+InputActionPlayer --> ComposeInputActionPositionResolver
+InputActionPlayer --> GestureFeedbackState
+InputActionScriptLoader --> InputActionScript
 
-' App relationships
-IMEService --> ImeEngine : "创建"
-IMEService --> InputConnectionBridge : "持有"
-InputConnectionBridge ..|> BaseImeOutputBridge : "实现"
-EditTextBridge ..|> BaseImeOutputBridge : "实现"
-ConfigDataStore --> ImeConfig : "持久化"
+ImeLog *-- LogWriter
+LogWriter <|.. FileLogWriter
+LogWriter <|.. LogcatWriter
+FileLogWriter --> LogStorage
+CrashInterceptor --> LogStorage
+CrashInterceptor --> LogWriter
+
+InputActionFingerIndicator *-- ClickAnimation : clickAnimation
+InputActionScript *-- InputAction : actions
+InputActionScriptCompiler ..> InputActionScript : 编译生成
+InputActionPathInterpolator ..> OffsetF : 输入输出
+
+IMEService --> KeyboardViewModel : Factory(engine)
+IMEService --> InputConnectionBridge : 创建并挂载
+ConfigDataStore --> ImeConfig : 持久化
 
 @enduml

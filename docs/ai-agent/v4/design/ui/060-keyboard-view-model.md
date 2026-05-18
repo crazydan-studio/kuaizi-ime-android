@@ -869,85 +869,16 @@ class IMEService : InputMethodService() {
 
 用户手势输入遵循 MVI 模式，从手势事件到 UI 更新的完整数据流如下。关键特征在于归一化坐标的使用和弹出提示由 `ImeState` 驱动。
 
-```
-GestureInputPanel (Zone B)
-  | 接收触摸事件
-  | 归一化: eventX/panelWidth -> OffsetF
-  | 写入 GestureFeedbackState (归一化坐标)
-  v
-GestureFeedbackState (归一化坐标)
-  | touchTrailPoints: List<OffsetF> (含按键间路径和 X-Pad 路径插值)
-  | pressedKeys: Set<InputKey>
-  v
-  +---> GestureFeedbackPanel (Zone B)
-  |     | 反归一化: OffsetF * panelSize -> Offset
-  |     | 绘制触摸轨迹、手指指示器
-  |     v
-  |
-  +---> GestureFeedbackPanel (Zone A, 仅 Separated)
-        | 反归一化: OffsetF * panelSize -> Offset
-        | 绘制按键高亮、输入轨迹
-        v
-
-GestureInputPanel
-  | 查询 KeyLayoutState.findKeyAt()
-  | 输出 InputGesture
-  v
-KeyboardViewModel.handleGesture()
-  | gestureToIntent()
-  v
-ImeEngine.handleIntent(ImeIntent)
-  |
-  v
-ImeState
-  | collectAsState()
-  | inputMode -> KeyLayoutPanel (布局策略选择)
-  | isInputting -> ToolListPanel/InputListPanel (互斥切换)
-  | popupTip -> PopupTipPanel (从 ImeState 读取)
-  | toolList -> ToolListPanel (工具列表)
-  | candidateList -> CandidateListPanel
-  | inputList -> InputListPanel
-  v
-各面板组件重组
+```plantuml
+@file:../diagrams/ui-gesture-input-data-flow.puml
 ```
 
 ### 7.2 程序化输入数据流
 
 程序化输入由 `InputActionPlayer` 驱动，坐标无关，通过归一化坐标解析和插值生成视觉反馈动画。
 
-```
-InputActionScript (坐标无关)
-  |
-  v
-InputActionPlayer.executeAction(InputAction)
-  | 查询 InputActionPositionResolver.resolve(key)
-  |   -> ComposeInputActionPositionResolver
-  |   -> 从 ViewModel 布局状态缓存读取 KeyLayoutState
-  |   -> 返回归一化坐标 OffsetF
-  |
-  | KeyLayoutPanel 根据 InputMode 计算轨迹形状
-  | 通过 InputActionPathInterpolator 生成归一化坐标插值路径
-  | 写入 GestureFeedbackState (归一化坐标)
-  v
-  +---> GestureFeedbackState
-  |     | fingerIndicator: InputActionFingerIndicator (归一化坐标)
-  |     | pressedKeys: Set<InputKey>
-  |     | touchTrailPoints: List<OffsetF> (含插值轨迹)
-  |     v
-  |     GestureFeedbackPanel (Zone A / Zone B)
-  |       | 反归一化: OffsetF * panelSize -> Offset
-  |       | 绘制轨迹、高亮、手指指示器
-  |       v
-  |
-  +---> KeyboardViewModel.handleIntent(ImeIntent)
-        | (Animation 模式不提交到编辑器)
-        v
-        ImeEngine.handleIntent() -> ImeState
-        | popupTip -> PopupTipPanel
-        | row1Indicator -> CandidateListPanel(showIndicator=true)
-        | row2Indicator -> InputListPanel/ToolListPanel(showIndicator=true)
-        v
-        各面板组件重组
+```plantuml
+@file:../diagrams/ui-programmatic-input-data-flow.puml
 ```
 
 ### 7.3 布局模式切换数据流

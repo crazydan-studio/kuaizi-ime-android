@@ -1,249 +1,131 @@
 @startuml ui-panel-separation
-allowmixing
 !theme plain
 skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam defaultFontSize 13
-skinparam classFontSize 13
+skinparam defaultFontSize 12
 
-title 筷子输入法 - Zone A / Zone B 面板分离\nZone A / Zone B Panel Separation
+title 面板三层分离与屏幕布局
 
-' ─── KeyboardHost Container ───────────────────────────────────────
+legend right
+  |= 颜色 |= 说明 |
+  ##C8E6C9 | GestureInputPanel (最上层)
+  ##FFF9C4 | GestureFeedbackPanel (中间层)
+  ##BBDEFB | KeyLayoutPanel (最下层)
+  ##FFCDD2 | 信息面板 (Row 1/2)
+  ##E1BEE7 | 指示器/覆盖层
+endlegend
 
-package "KeyboardHost\n键盘宿主容器" as KHContainer #E3F2FD {
-
-    package "Zone A Container\n手势+按键叠加区" as ZoneA #E1BEE7 {
-
-        package "GestureInputBox\n手势输入盒 (Box 层叠)" as GIB_A #FFF3E0 {
-            together {
-                class KeyLayoutPanel <<底层 bottom>> #BBDEFB {
-                    + keyboardType / keyLayout / keyboardState
-                    + onLayoutInfoChanged: (KeyLayoutState) -> Unit
-                    + 纯展示，不处理触摸
-                    + 含 XPad 策略
-                    + 不绘制手势反馈
-                }
-                class GestureFeedbackPanel <<中层 middle>> #C8E6C9 {
-                    + elements: Set<FeedbackElementType>
-                    + feedbackState: GestureFeedbackState
-                    + keyLayoutState: KeyLayoutState
-                    + 多实例 + FeedbackElementType 配置
-                    + 不处理触摸事件
-                    + 内置 TouchTrail / KeyHighlight / FingerIndicator
-                }
-            }
-        }
-    }
-
-    package "Zone B Container\n三行布局区" as ZoneB #C8E6C9 {
-
-        package "Row 1: 候选+提示" as Row1 #E8F5E9 {
-            class CandidateListPanel #A5D6A7 {
-                + state: CandidateList
-                + onCandidateSelected: (InputWord) -> Unit
-            }
-            class PopupTipPanel #A5D6A7 {
-                + tips: List<PopupTipItem>
-                + 剪贴板提示 / 输入建议
-            }
-        }
-
-        package "Row 2: 工具+输入" as Row2 #E8F5E9 {
-            class ToolListPanel #A5D6A7 {
-                + tools: List<ToolItem>
-                + 切换布局 / 设置
-            }
-            class InputListPanel #A5D6A7 {
-                + state: InputList
-                + onGapTapped: (Int) -> Unit
-            }
-        }
-
-        package "Row 3: 按键+反馈+手势 (三列)" as Row3 #FFF3E0 {
-            together {
-                class GestureInputPanel <<顶层 top>> #FFCCBC {
-                    + keyLayoutState: KeyLayoutState
-                    + keyboardType: KeyboardType
-                    + feedbackState: GestureFeedbackState
-                    + onGesture: (InputGesture) -> Unit
-                    + 透明手势拦截层，不绘制任何视觉反馈
-                }
-                class GestureFeedbackPanel_R3 <<中层 middle>> #C8E6C9 {
-                    + 同 Zone A GestureFeedbackPanel
-                    + Zone B Row3 实例
-                }
-                class KeyLayoutPanel_R3 <<底层 bottom>> #BBDEFB {
-                    + 同 Zone A KeyLayoutPanel
-                    + Zone B Row3 实例
-                }
-            }
-        }
-    }
+' ===== 三层分离核心 =====
+rectangle "三层分离架构" as ThreeLayer #FFFFFF {
+  rectangle "最上层: GestureInputPanel\n(透明手势层)" as GIP #C8E6C9 {
+    note right
+      接收原始触摸事件
+      识别手势类型 (点击/长按/滑行/翻转)
+      查询 KeyLayoutState 定位按键
+      输出 InputGesture → ViewModel
+      驱动 GestureFeedbackState → 反馈面板
+      不绘制任何视觉反馈 (完全透明)
+    end note
+  }
+  rectangle "中间层: GestureFeedbackPanel\n(透明绘制层，可多实例)" as GFP #FFF9C4 {
+    note right
+      绘制输入轨迹 (含按键间路径/X-Pad路径)
+      绘制按键高亮
+      绘制手指指示器 (程序化输入)
+      绘制 clickAnimation 涟漪
+      不处理触摸事件
+      使用归一化坐标绘制
+    end note
+  }
+  rectangle "最下层: KeyLayoutPanel\n(按键布局层，单实例)" as KLP #BBDEFB {
+    note right
+      根据 InputMode + Type 渲染按键
+      展示按键状态 (按下/激活/禁用)
+      提供 KeyLayoutState 供查询
+      onLayoutStateChanged 回调
+      不处理触摸事件
+    end note
+  }
 }
 
-' ─── Layer Ordering ────────────────────────────────────────────────
+' ===== 通信解耦 =====
+rectangle "InputGesture\n(坐标无关)" as IG
+rectangle "GestureFeedbackState\n(归一化坐标)" as GFS
+rectangle "ImeState\n(不可变状态)" as IS
 
-package "层级顺序\nLayer Order (z-index)" as layers #F3E5F5 {
-    rectangle "← 顶层 (Top)\nGestureInputPanel\n透明手势拦截层\n捕获所有触摸事件，不绘制视觉反馈" as layer3 #FFCCBC
-    rectangle "← 中层 (Middle)\nGestureFeedbackPanel\n透明反馈绘制层\nTouchTrail / KeyHighlight / FingerIndicator" as layer2 #C8E6C9
-    rectangle "← 底层 (Bottom)\nKeyLayoutPanel\n按键渲染层\n纯展示，ImeState 驱动渲染" as layer1 #BBDEFB
+GIP -down-> IG : 输出
+IG -down-> KLP : ViewModel → ImeState
+GIP -down-> GFS : 驱动
+GFS -down-> GFP : 消费
+IS -down-> KLP : 驱动
 
-    layer3 -down-> layer2 : "覆盖\noverlays"
-    layer2 -down-> layer1 : "覆盖\noverlays"
-}
+' ===== Zone A / Zone B =====
+rectangle "屏幕分区" as Zones #FFFFFF {
 
-' ─── Data Model: InputGesture ──────────────────────────────────────
+  rectangle "Zone A (上半区)\n仅 Separated 模式使用" as ZoneA #F5F5F5 {
+    rectangle "KeyLayoutPanel\n(底层渲染)" as ZA_KLP #BBDEFB
+    rectangle "GestureFeedbackPanel\n(Zone A 实例)\n透明反馈层" as ZA_GFP #FFF9C4
+    ZA_KLP -[hidden]up- ZA_GFP
+  }
 
-package "InputGesture (sealed)\n输入手势" as gesture_model #FFF3E0 {
-    class InputGesture <<sealed>> {
-        + timestamp: Long
-        --
-        + Tap(key, tick)
-        + LongPress(key)
-        + Swipe(startKey, endKey, visitedKeys, duration)
-        + Flip(startKey, direction)
-        + XPadZonePath(startZone, path)
-        + CandidateTap(candidateIndex)
-    }
-    enum FlipDirection {
-        Left / Right / Up / Down
-    }
-}
+  rectangle "Zone B (下半区)\n两种模式均使用" as ZoneB #F5F5F5 {
 
-' ─── Data Model: GestureFeedbackState (Simplified) ────────────────
-
-package "GestureFeedbackState\n手势反馈状态 (简化)" as feedback_model #E8F5E9 {
-    class GestureFeedbackState {
-        + touchTrailPoints: StateFlow<List<OffsetF>>
-        + pressedKeys: StateFlow<Set<InputKey>>
-        + fingerIndicator: StateFlow<InputActionFingerIndicator?>
-        --
-        + addTouchTrailPoint(normalizedOffset)
-        + setPressedKeys(keys) / clearPressedKeys()
-        + setFingerIndicator(state?)
-        + clearAll() : 手势结束清除
+    rectangle "Row 1: 候选提示区\n叠加共存" as Row1 #FFCDD2 {
+      rectangle "CandidateListPanel\n(含内建 IndicatorOverlay)" as R1_CLP #FFCDD2
+      rectangle "PopupTipPanel\n(叠加，短暂浮现)" as R1_PTP #E1BEE7
     }
 
-    class InputActionFingerIndicator {
-        + position: OffsetF
-        + pressed: Boolean
-        + visible: Boolean
+    rectangle "Row 2: 工具/输入区\n互斥共存" as Row2 #FFCDD2 {
+      rectangle "ToolListPanel\n(空闲时显示)\n含内建 IndicatorOverlay" as R2_TLP #FFCDD2
+      rectangle "InputListPanel\n(输入时互斥显示)\n含内建 IndicatorOverlay" as R2_ILP #FFCDD2
+      R2_TLP .> R2_ILP : 互斥
     }
-}
 
-' ─── FeedbackElementType ──────────────────────────────────────────
-
-package "FeedbackElementType\n反馈元素类型" as feedback_type #C8E6C9 {
-    enum FeedbackElementType {
-        TouchTrail : 触摸轨迹
-        KeyHighlight : 按键高亮
-        FingerIndicator : 手指指示器
+    rectangle "Row 3: 键盘交互区\n三层叠加共存" as Row3 #FFFFFF {
+      rectangle "KeyLayoutPanel\n(最下层，渲染)" as R3_KLP #BBDEFB
+      rectangle "GestureFeedbackPanel\n(Zone B 实例，反馈)" as R3_GFP #FFF9C4
+      rectangle "GestureInputPanel\n(最上层，触摸)" as R3_GIP #C8E6C9
     }
+  }
 }
 
-' ─── GestureFeedbackPanelSet ──────────────────────────────────────
-
-package "GestureFeedbackPanelSet\n反馈面板配置集" as panel_set #A5D6A7 {
-    class GestureFeedbackPanelSet <<sealed>> {
-        + StackedSet : 叠加模式
-          → allElements (TouchTrail + KeyHighlight + FingerIndicator)
-        --
-        + SeparatedSet : 分离模式
-          → zoneAElements (KeyHighlight + FingerIndicator)
-          → zoneBElements (TouchTrail + KeyHighlight + FingerIndicator)
-    }
+' ===== 数据模型 =====
+package "数据模型" {
+  rectangle "InputGesture\n(坐标无关)" as IG2 {
+    note right
+      Tap, LongPress, Swipe
+      Flip, XPadZonePath
+      CandidateTap
+    end note
+  }
+  rectangle "GestureFeedbackState\n(归一化坐标)" as GFS2 {
+    note right
+      touchTrailPoints: List<OffsetF>
+      pressedKeys: Set<InputKey>
+      fingerIndicator: InputActionFingerIndicator?
+    end note
+  }
+  rectangle "InputActionFingerIndicator\n(归一化坐标)" as IAFI {
+    note right
+      position: OffsetF
+      pressed: Boolean
+      visible: Boolean
+      clickAnimation: ClickAnimation?
+      手指指示器 + 行指示器
+    end note
+  }
+  rectangle "KeyLayoutState\n(归一化坐标)" as KLS {
+    note right
+      keyPositions: Map<InputKey, RectF>
+      findKeyAt(position): InputKey?
+      onLayoutStateChanged 回调
+    end note
+  }
+  rectangle "CoordinateNormalizer" as CN {
+    note right
+      normalize(offset, size): OffsetF
+      denormalize(OffsetF, size): Offset
+    end note
+  }
 }
-
-' ─── CoordinateNormalizer ─────────────────────────────────────────
-
-package "CoordinateNormalizer\n坐标归一化器" as coord_norm #FCE4EC {
-    class CoordinateNormalizer {
-        + normalize(offset: Offset, bounds: Rect): OffsetF
-        + denormalize(offsetF: OffsetF, bounds: Rect): Offset
-        + 归一化坐标用于跨区域传递
-        + 绝对坐标用于实际绘制
-    }
-}
-
-' ─── Data Flow ─────────────────────────────────────────────────────
-
-package "数据流\nData Flow" as dataflow #E0F7FA {
-    usecase "InputGesture\n输入手势" as gesture
-    usecase "GestureInputPanel\n手势输入面板" as gip
-    usecase "KeyboardViewModel\n视图模型" as kvm
-    usecase "ImeEngine.reduce()\n引擎归约" as reduce
-    usecase "StateFlow<ImeState>\n状态流" as stateflow
-    usecase "KeyLayoutPanel\n按键面板" as klp
-    usecase "CandidateListPanel\n候选词面板" as clp_flow
-    usecase "GestureFeedbackState\n反馈状态" as gfs
-
-    gesture --> gip : "1. 触摸事件\n向上流动 flows UP"
-    gip --> kvm : "2. onGesture"
-    gip --> gfs : "2. 驱动反馈\n（并行）"
-    kvm --> reduce : "3. ImeIntent"
-    reduce --> stateflow : "4. 新状态"
-    stateflow --> klp : "5. 更新按键\n向下流动 flows DOWN"
-    stateflow --> clp_flow : "5. 更新候选词\n向下流动 flows DOWN"
-    gfs --> klp : "5. 视觉反馈\nGestureFeedbackPanel 渲染"
-}
-
-' ─── Composition ───────────────────────────────────────────────────
-
-KeyboardHost *-- ZoneA : "Stacked 模式: 无\nSeparated 模式: 包含"
-KeyboardHost *-- ZoneB : "包含"
-ZoneA *-- KeyLayoutPanel : "包含"
-ZoneA *-- GestureFeedbackPanel : "包含"
-ZoneB *-- CandidateListPanel : "Row1 包含"
-ZoneB *-- PopupTipPanel : "Row1 包含"
-ZoneB *-- ToolListPanel : "Row2 包含"
-ZoneB *-- InputListPanel : "Row2 包含"
-ZoneB *-- KeyLayoutPanel_R3 : "Row3 包含"
-ZoneB *-- GestureFeedbackPanel_R3 : "Row3 包含"
-ZoneB *-- GestureInputPanel : "Row3 包含"
-
-' ─── Layout Hints ──────────────────────────────────────────────────
-
-note right of GIB_A
-    Zone A Box 布局层叠关系：
-    ┌──────────────────────┐
-    │  GestureFeedbackPanel│ ← 透明，绘制反馈
-    ├──────────────────────┤
-    │  KeyLayoutPanel      │ ← 不透明，按键布局
-    └──────────────────────┘
-
-    Stacked 模式: Zone A 不独立存在
-    Separated 模式: Zone A 为独立区域
-end note
-
-note right of ZoneB
-    Zone B 三行布局：
-    ┌──────────────────────────────────┐
-    │ Row1: CandidateListPanel | PopupTipPanel │
-    ├──────────────────────────────────┤
-    │ Row2: ToolListPanel / InputListPanel      │
-    ├──────────────────────────────────┤
-    │ Row3: KeyLayoutPanel (三列布局)           │
-    │      + GestureFeedbackPanel               │
-    │      + GestureInputPanel                  │
-    └──────────────────────────────────┘
-end note
-
-note bottom of GestureFeedbackPanel
-    多实例配置：
-    • 叠加模式 (StackedSet)：1 个实例绘制全部
-      - TouchTrail + KeyHighlight + FingerIndicator
-    • 分离模式 (SeparatedSet)：2 个实例
-      - Zone A: KeyHighlight + FingerIndicator
-      - Zone B Row3: TouchTrail + KeyHighlight + FingerIndicator
-end note
-
-note bottom of CoordinateNormalizer
-    归一化坐标流：
-    触摸事件 → Offset (绝对)
-      → CoordinateNormalizer.normalize() → OffsetF (归一化)
-      → GestureFeedbackState 存储 OffsetF
-      → CoordinateNormalizer.denormalize() → Offset (绝对)
-      → GestureFeedbackPanel 绘制
-end note
 
 @enduml

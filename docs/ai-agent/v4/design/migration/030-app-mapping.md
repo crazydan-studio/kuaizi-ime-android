@@ -12,12 +12,12 @@
 
 | Java Class | v4 对应 | 变更说明 |
 |-----------|---------|----------|
-| `ImeIntegratedActivity` | `KeyboardPanel` + `EditTextBridge` | Compose 组件 + 桥梁替代特定 Activity。应用内嵌输入法不再需要继承特定 Activity，可在 Fragment、Dialog 或自定义 View 中使用 |
+| `ImeIntegratedActivity` | `KeyboardHost` + `EditTextBridge` | Compose 组件 + 桥梁替代特定 Activity。应用内嵌输入法不再需要继承特定 Activity，可在 Fragment、Dialog 或自定义 View 中使用 |
 | `ImeSupportEditText` | `EditTextBridge` | 桥梁模式替代 `InputMsgListener` 实现。`EditTextBridge` 继承 `BaseImeOutputBridge`，构造时接受 `supplier: () -> EditText?` |
 | `Preferences` | `SettingsScreen` | Compose 设置页面替代 `PreferenceFragmentCompat` |
 | `PreferencesTheme` | `SettingsScreen` 中的主题设置 | 合并到设置页面，不再独立子页面 |
 | `Guide` | `GuideScreen` | Compose 引导页面 |
-| `IMEService` | `IMEService`（`:app`） | 不再充当消息中介，仅管理 `InputConnection` 生命周期。创建 `ImeEngine`，接入 `InputConnectionBridge`，使用 `KeyboardPanel` 作为输入视图 |
+| `IMEService` | `IMEService`（`:app`） | 不再充当消息中介，仅管理 `InputConnection` 生命周期。创建 `ImeEngine`，接入 `InputConnectionBridge`，使用 `KeyboardHost` 作为输入视图 |
 | — | `InputConnectionBridge`（`:app`） | 新增：面向系统 `InputConnection` 的桥梁实现，继承 `BaseImeOutputBridge`。替代原 `IMEService` 中嵌入的 InputConnection 操作 |
 | — | `ConfigDataStore`（`:app`） | 新增：配置持久化仓库，基于 DataStore 存取 `ImeConfig`。处理运行时覆盖与持久化同步。替代原 `Config` + `SharedPreferences` |
 
@@ -28,7 +28,7 @@
 | 消息路由 | UserMsg → IMEditor, InputMsg → IMEditorView | 不再路由，引擎内部通过 `reduce()` 处理 Intent |
 | InputConnection 操作 | 在 IMEService 中手动处理 | 委托 `InputConnectionBridge` |
 | 输出分发 | 手动 when 分发（2 处重复） | `ImeEngine.dispatchToTarget()` 自动分发到桥梁 |
-| 输入视图 | `MainboardView`（自定义 View） | `KeyboardPanel`（Compose） |
+| 输入视图 | `MainboardView`（自定义 View） | `KeyboardHost`（Compose） |
 | 配置管理 | `Config` + `SharedPreferences` | `ConfigDataStore` + DataStore |
 
 ---
@@ -154,11 +154,11 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 | 旧名称 | 新名称 | 变更说明 |
 |--------|--------|----------|
 | `EditorActionType` | `EditorAction` | 统一为单一枚举，与 ImeIntent/ImeOutput 对称使用 |
-| `StandardKeyboard` | `StandardKeyGridPanel` | 去掉 `onKeyPress`，纯渲染；强调 Grid 布局特征 |
-| `KeyPanel` | `KeyGridPanel` | 强调 Grid 布局特征 |
-| `StandardKeyPanel` | `StandardKeyGridPanel` | 跟随 KeyGridPanel 更名 |
+| `StandardKeyboard` | `StandardKeyLayoutPanel` | 去掉 `onKeyPress`，纯渲染；强调 Layout 布局特征 |
+| `KeyPanel` | `KeyLayoutPanel` | 强调 Layout 布局特征 |
+| `StandardKeyPanel` | `StandardKeyLayoutPanel` | 跟随 KeyLayoutPanel 更名 |
 | `InputPanel` | `GestureInputPanel` | 强调手势输入职能 |
-| `KeyboardView` | `KeyboardPanel` | 明确容器角色；完整输入法组件（含候选栏 / 输入栏 / 工具栏 + 三层面板叠加） |
+| `KeyboardView` | `KeyboardHost` | 明确容器角色；完整输入法组件（含候选栏 / 输入栏 / 工具栏 + 三层面板叠加） |
 | `CandidateBar` / `InputBar` | `CandidateListPanel` / `InputListPanel` | 统一 Panel 后缀，体现列表语义 |
 | `GuideScreen` | `MainScreen` | 准确反映主界面职能 |
 | `InputPracticeScreen` | `ExerciseScreen` | 合并练习与演示 |

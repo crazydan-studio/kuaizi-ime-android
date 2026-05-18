@@ -83,32 +83,8 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 
 以下为组件层次树（详细设计见 [020-面板三层分离与屏幕布局设计](020-panel-separation.md)）。
 
-```
-KeyboardHost (集成组件)
-├── Zone A Container (仅 Separated 模式)
-│   ├── KeyLayoutPanel (单实例)
-│   │   └── KeyView (原子组件) x N
-│   └── GestureFeedbackPanel (Zone A 实例)
-│       └── Canvas (归一化坐标绘制)
-└── Zone B Container
-    ├── Row 1
-    │   ├── CandidateListPanel (含内建 IndicatorOverlay)
-    │   │   └── CandidateItem x N
-    │   └── PopupTipPanel (叠加)
-    │       └── PopupTipItem
-    ├── Row 2
-    │   ├── ToolListPanel (空闲时，含内建 IndicatorOverlay)
-    │   │   └── ToolItem x N
-    │   └── InputListPanel (输入时互斥，含内建 IndicatorOverlay)
-    │       ├── CharInputItem x N
-    │       └── GapInputItem x N
-    └── Row 3
-        ├── Stacked: KeyLayoutPanel + GestureFeedbackPanel + GestureInputPanel (叠加)
-        └── Separated: 左右列功能按钮 + 中列 GestureFeedbackPanel + GestureInputPanel
-
-KeyboardInputActionPlayerHost (演示集成组件)
-├── Animation 模式: KeyboardHost (showIndicator=true)
-└── DirectInput 模式: KeyboardHost (showIndicator=false)
+```plantuml
+@file:../diagrams/ui-component-hierarchy.puml
 ```
 
 KeyboardHost 通过 LayoutMode 统一 Stacked/Separated 入口。KeyboardInputActionPlayerHost 在 KeyboardHost 基础上叠加播放引擎，专用于输入动作演示。行指示器已内建到 CandidateListPanel、InputListPanel、ToolListPanel 中，通过 showIndicator 参数控制，消除独立覆盖层。

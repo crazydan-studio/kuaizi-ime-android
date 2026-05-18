@@ -1,0 +1,59 @@
+@startuml ui-gesture-input-data-flow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontSize 12
+skinparam activityFontSize 12
+
+title 筷子输入法 - 用户手势输入数据流\nUser Gesture Input Data Flow
+
+|GestureInputPanel|
+start
+:接收触摸事件;
+:归一化: eventX/panelWidth → OffsetF;
+:写入 GestureFeedbackState (归一化坐标);
+
+|GestureFeedbackState|
+:touchTrailPoints: List<OffsetF>
+pressedKeys: Set<InputKey>;
+
+|GestureFeedbackPanel|
+:反归一化: OffsetF × panelSize → Offset;
+:绘制触摸轨迹、手指指示器;
+
+|GestureInputPanel|
+:查询 KeyLayoutState.findKeyAt();
+:输出 InputGesture;
+
+|KeyboardViewModel|
+:handleGesture();
+:gestureToIntent() 转换;
+
+|ImeEngine|
+:handleIntent(ImeIntent);
+:reduce(state, intent);
+
+|ImeState|
+:keyboardState / inputList
+candidateList / config
+inputMode / isInputting
+popupTip / toolList;
+
+|Compose UI|
+:collectAsState() 驱动重组;
+:inputMode → KeyLayoutPanel
+isInputting → ToolListPanel/InputListPanel
+popupTip → PopupTipPanel
+toolList → ToolListPanel
+candidateList → CandidateListPanel
+inputList → InputListPanel;
+
+stop
+
+legend right
+    |= 颜色 |= 含义 |
+    |<#E8F5E9>| :ime-ui 层 |
+    |<#FFF3E0>| :ime-engine 层 |
+endlegend
+
+@enduml

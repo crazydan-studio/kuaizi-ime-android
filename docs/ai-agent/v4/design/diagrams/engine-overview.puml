@@ -1,171 +1,207 @@
 @startuml engine-overview
 !theme plain
 skinparam backgroundColor #FEFEFE
-skinparam shadowing false
-skinparam defaultFontSize 13
-skinparam componentFontSize 14
-skinparam packageFontSize 15
-skinparam classFontSize 14
-skinparam classAttributeFontSize 12
+skinparam classAttributeIconSize 0
+skinparam defaultFontSize 11
 
-title :ime-engine 核心类关系图\nCore Class Relationship Diagram
+title :ime-engine 核心类关系
 
-' ─── Core Model ──────────────────────────────────────────
+legend right
+  |= 颜色 |= 说明 |
+  ##FFE0B2 | 核心模型
+  ##C8E6C9 | 状态类型
+  ##BBDEFB | 内部组件
+  ##FFF3E0 | 输入动作
+  ##F3E5F5 | 日志系统
+endlegend
 
-package "核心模型" as api #FFF3E0 {
-
-    class ImeEngine <<核心入口点>> {
-        - config: ImeConfig
-        - dictProvider: ImeDictProvider
-        - stateMachine: KeyboardStateMachine
-        - inputListOp: InputListOperator
-        - featureRegistry: FeatureRegistry
-        - _state: MutableStateFlow<ImeState>
-        - _outputBridge: ImeOutputBridge?
-        + state: StateFlow<ImeState>
-        + handleIntent(intent: ImeIntent)
-        + updateConfig(block: (ImeConfig) -> ImeConfig)
-        + attachOutputBridge(bridge: ImeOutputBridge)
-        + detachOutputBridge()
-        + companion.create(config, dictProvider): ImeEngine
-    }
-
-    class ImeConfig <<统一配置>> {
-        + engine: EngineConfig
-        + ui: UiConfig
-        + runtimeOverrides: Set<ConfigField>
-    }
-
-    class ImeIntent <<sealed>> {
-        + PressKey(key, gesture)
-        + LongPressKey(key)
-        + SelectCandidate(candidate)
-        + PageCandidate(direction)
-        + SwitchKeyboard(type)
-        + CommitInput
-        + DeleteInput
-        + CleanInput
-        + MoveCursorTo(index)
-        + PerformEdit(action)
-        + SelectXPadPath(startZone, path)
-        + PasteClip(text)
-        + SaveFavorite(favorite)
-        + UpdateConfig(config)
-        + ExportUserData
-        + ImportUserData(filePath)
-    }
-
-    class ImeOutput <<sealed>> {
-        + CommitText(text, replacements)
-        + RevokeCommit()
-        + InsertPairedSymbols(left, right)
-        + MoveCursor(direction)
-        + SelectRange(direction)
-        + PerformEdit(action)
-    }
-
-    class ImeOutputBridge <<interface>> {
-        + commitText(text, replacements?)
-        + revokeCommit()
-        + insertPairedSymbols(left, right)
-        + moveCursor(direction)
-        + selectRange(direction)
-        + performAction(action)
-        + getText(): CharSequence
-        + getSelection(): TextRange
-    }
-
-    class BaseImeOutputBridge <<abstract>> {
-        # revertion: SelectionSnapshot?
-        # resetRevertion()
-        # recordRevertion(...)
-        + revokeCommit()
-        # onRevokeCommit(snapshot)
-        # doNormalCommitText(text)
-        # doReplaceableCommitText(text, replacements)
-    }
+' ===== 核心模型 (橙色) =====
+package "核心模型" #FFE0B2 {
+  class ImeEngine <<(C,#FFE0B2)>> {
+        - state: MutableStateFlow<ImeState>
+    + state: StateFlow<ImeState>
+    - _outputBridge: ImeOutputBridge?
+    + attachOutputBridge(bridge)
+    + detachOutputBridge()
+    + handleIntent(intent)
+    + updateConfig(block)
+    + {static} create(config, dictProvider): ImeEngine
+  }
+  class ImeConfig <<(D,#FFE0B2)>> {
+    + engine: EngineConfig
+    + ui: UiConfig
+    + runtimeOverrides: Set<ConfigField>
+  }
+  class ImeIntent <<(S,#FFE0B2)>> {
+    PressKey(key, gesture)
+    SelectCandidate(candidate)
+    SwitchKeyboard(type)
+    CommitInput / DeleteInput
+    SelectXPadPath(startZone, path)
+    PerformEdit(action)
+    UpdateConfig(config)
+  }
+  class ImeOutput <<(S,#FFE0B2)>> {
+    CommitText(text, replacements?)
+    RevokeCommit
+    InsertPairedSymbols(left, right)
+    MoveCursor(direction)
+    SelectRange(direction)
+    PerformEdit(action)
+  }
+  interface ImeOutputBridge <<(I,#FFE0B2)>> {
+    commitText(text, replacements?)
+    revokeCommit()
+    insertPairedSymbols(left, right)
+    moveCursor(direction)
+    selectRange(direction)
+    performAction(action)
+    getText(): CharSequence
+    getSelection(): TextRange
+  }
+  abstract class BaseImeOutputBridge <<(A,#FFE0B2)>> {
+    # revertion: SelectionSnapshot?
+    # resetRevertion()
+    # recordRevertion(...)
+    # onRevokeCommit(snapshot)
+  }
 }
 
-' ─── State 子状态类型 ──────────────────────────────────────────
-
-package "状态类型" as state #E8F5E9 {
-
-    class ImeState <<状态根>> {
-        + keyboardState: KeyboardState
-        + inputList: InputList
-        + candidateList: CandidateList
-        + clipboard: Clipboard
-        + favoriteList: FavoriteList
-        + config: ImeConfig
-    }
-
-    class InputList {
-        + inputs: List<InputItem>
-        + gapIndex: Int
-        + pendingSpell: String
-    }
-
-    class CandidateList {
-        + candidates: List<InputWord>
-        + pageIndex: Int
-        + pageSize: Int
-        + hasMore: Boolean
-    }
-
-    class Clipboard {
-        + currentText: String?
-        + showTip: Boolean
-    }
-
-    class FavoriteList {
-        + favorites: List<InputFavorite>
-        + isLoading: Boolean
-    }
+' ===== 状态类型 (绿色) =====
+package "状态类型" #C8E6C9 {
+  class ImeState <<(D,#C8E6C9)>> {
+    + keyboardType: KeyboardType
+    + inputMode: InputMode
+    + isInputting: Boolean
+    + keyboardState: KeyboardState
+    + inputList: InputList
+    + candidateList: CandidateList
+    + popupTip: PopupTipState?
+    + toolList: ToolListState
+    + config: ImeConfig
+  }
+  class InputList <<(D,#C8E6C9)>> {
+    + inputs: List<InputItem>
+    + gapIndex: Int
+    + pendingSpell: String
+  }
+  class CandidateList <<(D,#C8E6C9)>> {
+    + candidates: List<InputWord>
+    + pageIndex: Int
+    + pageSize: Int
+    + hasMore: Boolean
+  }
+  class Clipboard <<(D,#C8E6C9)>> {
+    + currentText: String?
+    + showTip: Boolean
+  }
+  class FavoriteList <<(D,#C8E6C9)>> {
+    + favorites: List<InputFavorite>
+    + isLoading: Boolean
+  }
 }
 
-' ─── 内部组件 ──────────────────────────────────────────────────
-
-package "内部组件" as internal #E3F2FD {
-
-    class KeyboardStateMachine {
-        - _state: KeyboardState
-        - stateHistory: ArrayDeque<KeyboardState>
-        + transition(transition): List<ImeIntent>
-        + backToPrevious()
-    }
-
-    class InputListOperator {
-        + apply(intent, list): InputList
-    }
-
-    class FeatureRegistry {
-        + isEnabled(feature): Boolean
-    }
-
-    class ImeDictProvider <<interface>> {
-        + query(spell): List<InputWord>
-    }
-
-    class ImeSqliteDictProvider {
-        - dictRepository: DictRepository
-    }
+' ===== 内部组件 (蓝色) =====
+package "内部组件" #BBDEFB {
+  class KeyboardStateMachine <<(C,#BBDEFB)>> {
+    - _state: KeyboardState
+    + state: KeyboardState
+    + transition(t): List<ImeIntent>
+    + backToPrevious()
+  }
+  class InputListOperator <<(C,#BBDEFB)>> {
+    + apply(intent, list): InputList
+  }
+  class FeatureRegistry <<(C,#BBDEFB)>> {
+    + isEnabled(feature): Boolean
+  }
+  class KeyAudioPlayer <<(C,#BBDEFB)>> {
+    + play(keyType)
+  }
+  class CandidateListPager <<(C,#BBDEFB)>> {
+    + page(direction)
+  }
 }
 
-' ─── 关系 ──────────────────────────────────────────────────────
+' ===== 输入动作 (浅橙) =====
+package "输入动作" #FFF3E0 {
+  class InputAction <<(S,#FFF3E0)>> {
+    KeyDown / SwipeTo / KeyUp
+    Wait / SelectCandidate / SwitchKeyboard
+  }
+  class InputActionScript <<(D,#FFF3E0)>> {
+    + name / description / inputMethod
+    + actions: List<InputAction>
+    + totalDuration: Long
+  }
+  class InputActionScriptCompiler <<(C,#FFF3E0)>> {
+    + compile(text, method, speed): InputActionScript
+  }
+  class InputActionPlaybackState <<(S,#FFF3E0)>> {
+    Idle / Ready / Playing / Paused / Finished
+  }
+  class InputActionFingerIndicator <<(D,#FFF3E0)>> {
+    + position: OffsetF
+    + pressed: Boolean
+    + visible: Boolean
+    + clickAnimation: ClickAnimation?
+  }
+  class ClickAnimation <<(D,#FFF3E0)>> {
+    + progress: Float
+    + maxRadius: Float
+    + color: Long
+  }
+  class InputActionPathInterpolator <<(O,#FFF3E0)>> {
+    + interpolate(from, to, ...): List<OffsetF>
+  }
+  interface InputActionPositionResolver <<(I,#FFF3E0)>> {
+    + resolve(key): OffsetF?
+    + resolveCandidatePosition(index): OffsetF?
+    + resolveInputItemPosition(index): OffsetF?
+  }
+  class OffsetF <<(D,#FFF3E0)>> {
+    + x: Float
+    + y: Float
+  }
+  class RectF <<(D,#FFF3E0)>> {
+    + left, top, right, bottom: Float
+    + center: OffsetF
+  }
+}
 
-ImeEngine *-- ImeConfig : "持有配置"
-ImeEngine *-- ImeState : "持有状态\nStateFlow"
-ImeEngine *-- KeyboardStateMachine : "内部组合"
-ImeEngine *-- InputListOperator : "内部组合"
-ImeEngine *-- FeatureRegistry : "内部组合"
-ImeEngine o-- ImeOutputBridge : "可选挂载"
+' ===== 日志系统 (紫色) =====
+package "日志系统" #F3E5F5 {
+  class ImeLog <<(O,#F3E5F5)>> {
+    + level: LogLevel
+    + init(level, writers)
+    + updateLevel(newLevel)
+    + logger(tag): ImeLogger
+  }
+  class ImeLogger <<(C,#F3E5F5)>> {
+    + verbose / debug / info / warn / error
+    + tree(title, block)
+  }
+  class LogStorage <<(C,#F3E5F5)>> {
+    + appendEntries(entries)
+    + readLogs(...): List<LogEntry>
+    + exportLogs(dest, from, to)
+  }
+}
 
-ImeEngine ..> ImeIntent : "接收"
-ImeEngine ..> ImeOutput : "产生"
-ImeEngine ..> ImeDictProvider : "依赖"
+' ===== 关系 =====
+ImeEngine *-- KeyboardStateMachine : 组合
+ImeEngine *-- InputListOperator : 组合
+ImeEngine *-- FeatureRegistry : 组合
+ImeEngine *-- KeyAudioPlayer : 组合
+ImeEngine --> ImeIntent : 处理
+ImeEngine --> ImeOutput : 生成
+ImeEngine --> ImeOutputBridge : 分发
+ImeEngine --> ImeState : 更新
+ImeEngine --> ImeConfig : 持有
 
-BaseImeOutputBridge ..|> ImeOutputBridge : "实现"
-ImeSqliteDictProvider ..|> ImeDictProvider : "实现"
+ImeOutputBridge <|-- BaseImeOutputBridge
+KeyboardStateMachine --> KeyAudioPlayer : 使用
+KeyboardStateMachine --> InputListOperator : 使用
 
 ImeState *-- InputList
 ImeState *-- CandidateList
@@ -173,13 +209,11 @@ ImeState *-- Clipboard
 ImeState *-- FavoriteList
 ImeState *-- ImeConfig
 
-' ─── 图例 ──────────────────────────────────────────────────────
-
-legend right
-  |= 颜色 |= 含义 |
-  |<#FFF3E0>| 核心模型 |
-  |<#E8F5E9>| 状态类型 |
-  |<#E3F2FD>| 内部组件 |
-endlegend
+InputActionScript *-- InputAction : actions
+InputActionScriptCompiler ..> InputActionScript : 编译
+InputActionFingerIndicator *-- ClickAnimation : clickAnimation
+InputActionFingerIndicator *-- OffsetF : position
+RectF --> OffsetF : center
+InputActionPathInterpolator ..> OffsetF : 输入输出
 
 @enduml
