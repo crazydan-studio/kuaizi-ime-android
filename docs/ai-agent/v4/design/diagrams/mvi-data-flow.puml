@@ -155,7 +155,7 @@ package "反馈流：手势视觉反馈" as feedback_flow #E8F5E9 {
 
 package "程序化输入流：InputActionPlayer" as program_flow #FFF9C4 {
 
-    rectangle "ActionScript\n输入脚本" as AS #FFF3E0
+    rectangle "InputActionScript\n输入脚本" as AS #FFF3E0
     rectangle "InputActionPlayer\n播放器" as IAP #E8F5E9
     rectangle "InputActionPathInterpolator\n路径插值器" as IAPI #FFF9C4
     rectangle "KeyboardViewModel\n.handleIntent()" as KVM2 #E8F5E9

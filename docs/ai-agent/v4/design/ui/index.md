@@ -9,6 +9,6 @@
 | [010-UI 库设计总览](010-ui-library-overview.md) | UI 库设计目标（缺省实现、可替换、可组合、可定制）、组件清单（原子 / 面板 / 集成 / ViewModel / 主题）、组件层次关系、与引擎库的依赖关系 |
 | [020-面板三层分离与屏幕布局设计](020-panel-separation.md) | Zone A/B 屏幕分区、LayoutMode（Stacked/Separated）、InputMode（XPad/HexGrid/RectGrid/MultiZone）、三行/三列布局、面板三层分离架构（GestureInputPanel/GestureFeedbackPanel/KeyLayoutPanel）、归一化坐标体系、GestureFeedbackState 简化、各面板组件规格 |
 | [030-Compose UI 迁移](030-compose-migration.md) | Jetpack Compose 组件架构、KeyboardPanel/KeyboardScreen、候选栏 / 输入栏、X-Pad Compose 实现、滑行手势处理、性能验证计划 |
-| [040-输入动作播放设计](040-input-action-player.md) | KeyboardInputActionPlayerHost、UseMode（Animation/DirectInput）、InputActionPositionResolver、ComposeInputActionPositionResolver、InputActionPlayer、行指示器内建机制、ActionScriptLoader、程序化输入数据流 |
+| [040-输入动作播放设计](040-input-action-player.md) | KeyboardInputActionPlayerHost、UseMode（Animation/DirectInput）、InputActionPositionResolver、ComposeInputActionPositionResolver、InputActionPlayer、行指示器内建机制、InputActionScriptLoader、程序化输入数据流 |
 | [050-配置界面](050-config-ui.md) | KeyboardPreview 组件、ThemeSelector、HandModeToggle、QuickSettingsPopup 等配置相关 UI 组件 |
 | [060-KeyboardViewModel](060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，暴露 `StateFlow<ImeState>`，InputGesture→ImeIntent 转换，GestureFeedbackState 简化管理，LayoutMode 运行时切换，InputActionPlayer 集成，ImeState UI 扩展，布局状态缓存，完整数据流 |

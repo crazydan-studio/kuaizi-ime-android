@@ -17,9 +17,9 @@ package "脚本来源\nScript Source" as source #F3E5F5 {
 
 ' ─── Script Loading ────────────────────────────────────────────────
 
-rectangle "ActionScriptLoader 脚本加载器\n──\nparseScript(json) → ActionScript" as loader #F3E5F5
+rectangle "InputActionScriptLoader 脚本加载器\n──\nparseScript(json) → InputActionScript" as loader #F3E5F5
 
-rectangle "ActionScript 动作脚本\n──\nname: String\ndescription: String\nactions: List<InputAction>" as script #CE93D8
+rectangle "InputActionScript 动作脚本\n──\nname: String\ndescription: String\nactions: List<InputAction>" as script #CE93D8
 
 ' ─── Player Core ───────────────────────────────────────────────────
 

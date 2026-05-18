@@ -55,7 +55,7 @@ package "面板组件\n可独立使用" as panel #E8F5E9 {
             底层，纯展示
             StandardKeyLayout / EmojiKeyLayout 等
             含 XPad 策略
-            通过 onLayoutInfoChanged 提供布局
+            通过 onLayoutStateChanged 提供布局
             输出 KeyLayoutState
         end note
     }

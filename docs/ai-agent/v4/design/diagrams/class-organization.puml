@@ -190,12 +190,12 @@ package ":ime-engine\n领域层 + 数据层" as ime_engine #FFF3E0 {
             + KeyDown / SwipeTo / SelectCandidate
             + SwitchKeyboard / ...
         }
-        class ActionScript <<脚本>> {
+        class InputActionScript <<脚本>> {
             + actions: List<InputAction>
             + method: InputMethod
         }
-        class ActionScriptCompiler <<编译器>> {
-            + compile(source): ActionScript
+        class InputActionScriptCompiler <<编译器>> {
+            + compile(source): InputActionScript
         }
     }
 
@@ -231,10 +231,7 @@ package ":ime-ui\nUI 层 + ViewModel 层" as ime_ui #E8F5E9 {
     }
 
     package "integration/\n集成组件" as ui_integration #A5D6A7 {
-        class KeyboardPanel {
-            + viewModel: KeyboardViewModel
-        }
-        class KeyboardScreen {
+        class KeyboardHost {
             + viewModel: KeyboardViewModel
         }
     }
@@ -247,8 +244,8 @@ package ":ime-ui\nUI 层 + ViewModel 层" as ime_ui #E8F5E9 {
             + elements: Set<FeedbackElementType>
             + feedbackState: GestureFeedbackState
         }
-        class KeyGridPanel <<按键渲染层>> {
-            + keyboardType / keyGrid / keyboardState
+        class KeyLayoutPanel <<按键渲染层>> {
+            + inputMode / keyboardType / keyboardState
         }
         class CandidateListPanel <<候选栏>> {
             + state: CandidateList
@@ -284,11 +281,9 @@ package ":ime-ui\nUI 层 + ViewModel 层" as ime_ui #E8F5E9 {
             + CandidateTap(candidateIndex)
         }
         class GestureFeedbackState <<反馈状态>> {
-            + touchTrailPoints: StateFlow<List<Offset>>
+            + touchTrailPoints: StateFlow<List<OffsetF>>
             + pressedKeys: StateFlow<Set<InputKey>>
-            + keyPath: StateFlow<List<InputKey>>
-            + xPadPath: StateFlow<List<XPadZone>>
-            + fingerIndicator: StateFlow<FingerIndicatorState?>
+            + fingerIndicator: StateFlow<InputActionFingerIndicator?>
         }
         class FeedbackElementType <<enum>> {
             TouchTrail / KeyHighlight / KeyPath
@@ -304,10 +299,11 @@ package ":ime-ui\nUI 层 + ViewModel 层" as ime_ui #E8F5E9 {
         class InputActionPlayer {
             + viewModel: KeyboardViewModel
             + feedbackState: GestureFeedbackState
-            + positionResolver: KeyPositionResolver
+            + positionResolver: InputActionPositionResolver
         }
-        class KeyPositionResolver {
-            + resolve(key): Offset?
+        class InputActionPositionResolver <<interface>> {
+            + resolve(key): OffsetF?
+            + resolveCandidatePosition(i): OffsetF?
         }
     }
 
@@ -390,8 +386,7 @@ CrashInterceptor --> LogStorage : "崩溃时直接写入"
 
 ' UI relationships
 KeyboardViewModel --> ImeEngine : "持有引用"
-KeyboardPanel --> KeyboardViewModel : "订阅"
-KeyboardScreen --> KeyboardViewModel : "订阅"
+KeyboardHost --> KeyboardViewModel : "订阅"
 GestureInputPanel --> InputGesture : "输出"
 KeyboardViewModel --> InputGesture : "handleGesture()"
 GestureFeedbackPanel --> GestureFeedbackState : "读取"

@@ -42,6 +42,19 @@
 
 ## 2. KeyboardViewModel 类设计
 
+**KeyboardViewModel 规格表**：
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | `:ime-ui` 模块的 UI 协调中心，桥接 Compose UI 与 `:ime-engine` |
+| 职责 | 手势/意图分发、状态暴露、布局模式管理、反馈状态持有、动作播放器集成、布局状态缓存、运行时配置修改 |
+| 约束 | 仅依赖引擎公开 API；不持有 `InputConnectionBridge`；不执行配置持久化；不创建/销毁引擎 |
+| 关键属性 | state: StateFlow\<ImeState\>, config: ImeConfig, layoutMode: StateFlow\<LayoutMode\>, feedbackState: GestureFeedbackState, actionPlayer: InputActionPlayer |
+| 关键方法 | handleGesture(), handleIntent(), setLayoutMode(), updateConfig(), updateKeyLayoutState(), updateCandidateLayoutState(), updateInputListLayoutState() |
+| 布局状态缓存 | _currentKeyLayoutState, _currentCandidateLayoutState, _currentInputListLayoutState |
+| 所属包 | org.crazydan.studio.ime.ui.viewmodel |
+| 所属模块 | :ime-ui |
+
 ### 2.1 完整类定义
 
 ```kotlin
@@ -293,28 +306,27 @@ class KeyboardViewModel(
 }
 ```
 
-### 2.2 KeyboardViewModel 规格表
-
-| 属性 | 说明 |
-|------|------|
-| 角色 | `:ime-ui` 模块的 UI 协调中心，桥接 Compose UI 与 `:ime-engine` |
-| 职责 | 手势/意图分发、状态暴露、布局模式管理、反馈状态持有、动作播放器集成、布局状态缓存、运行时配置修改 |
-| 约束 | 仅依赖引擎公开 API；不持有 `InputConnectionBridge`；不执行配置持久化；不创建/销毁引擎 |
-| 关键属性 | state: StateFlow\<ImeState\>, config: ImeConfig, layoutMode: StateFlow\<LayoutMode\>, feedbackState: GestureFeedbackState, actionPlayer: InputActionPlayer |
-| 关键方法 | handleGesture(), handleIntent(), setLayoutMode(), updateConfig(), updateKeyLayoutState(), updateCandidateLayoutState(), updateInputListLayoutState() |
-| 布局状态缓存 | _currentKeyLayoutState, _currentCandidateLayoutState, _currentInputListLayoutState |
-| 所属包 | org.crazydan.studio.ime.ui.viewmodel |
-| 所属模块 | :ime-ui |
-
 ---
 
 ## 3. GestureFeedbackState
+
+**GestureFeedbackState 规格表**：
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | 手势视觉反馈状态管理，独立于 ImeState |
+| 职责 | 管理触摸轨迹、按键高亮、手指指示器三类纯视觉反馈数据 |
+| 约束 | 所有坐标使用归一化形式 [0,1]x[0,1]；不管理弹出提示（由 ImeState 管理）；不管理独立的按键间路径和 X-Pad 路径（统一合并到 touchTrailPoints） |
+| 状态字段 | touchTrailPoints: StateFlow\<List\<OffsetF\>\>, pressedKeys: StateFlow\<Set\<InputKey\>\>, fingerIndicator: StateFlow\<InputActionFingerIndicator?\> |
+| 更新方法 | addTouchTrailPoint(), setTouchTrailPoints(), clearTouchTrail(), setPressedKeys(), clearPressedKeys(), setFingerIndicator(), clearAll(), clear() |
+| 所属包 | org.crazydan.studio.ime.ui.viewmodel |
+| 所属模块 | :ime-ui |
 
 ### 3.1 设计说明
 
 `GestureFeedbackState` 经过简化后，职责收窄为纯粹的视觉反馈。所有坐标数据以归一化形式 `[0,1]x[0,1]` 存储，绘制时由 `GestureFeedbackPanel` 根据面板实际尺寸转换为像素坐标。这使得同一份反馈数据可以正确地在不同尺寸的面板实例上渲染，包括 Zone A 和 Zone B 的双实例场景。
 
-简化后的状态包含三类核心视觉反馈：触摸轨迹点（`touchTrailPoints`，含按键间路径和 X-Pad 路径的插值点）、按键高亮集合（`pressedKeys`）、手指指示器状态（`fingerIndicator`）。原先的 `popupTip` 已移至 `ImeState` 管理，因为弹出提示是引擎处理意图后更新 `ImeState` 触发的展示，属于输入状态变化而非视觉反馈。原先的 `keyPath` 和 `xPadPath` 已合并到 `touchTrailPoints` 中，因为按键间路径和 X-Pad 路径本质上都是输入轨迹的组成部分，由 `KeyLayoutPanel` 根据 `InputMode` 计算起止按键间的平滑曲线后，作为 `touchTrailPoints` 中的插值路径点统一写入。
+简化后的状态包含三类核心视觉反馈：触摸轨迹点（`touchTrailPoints`，含按键间路径和 X-Pad 路径的插值点）、按键高亮集合（`pressedKeys`）、手指指示器状态（`fingerIndicator`）。弹出提示由 `ImeState` 管理。按键间路径和 X-Pad 路径统一合并到 `touchTrailPoints` 中，由 `KeyLayoutPanel` 根据 `InputMode` 计算起止按键间的平滑曲线后，作为插值路径点统一写入。
 
 `InputActionFingerIndicator` 的类型定义在 [engine/060-input-action.md](../engine/060-input-action.md) 中，此处直接引用。
 
@@ -371,7 +383,7 @@ class GestureFeedbackState {
      * 归一化坐标基于 KeyLayoutPanel 的尺寸计算，
      * 在动画播放期间由 KeyLayoutPanel 动态提供。
      *
-     * 类型定义见 engine/060-input-action.md 中的 InputActionFingerIndicator。
+     * 类型定义见 [engine/060-input-action.md](../engine/060-input-action.md) 中的 InputActionFingerIndicator。
      */
     private val _fingerIndicator = MutableStateFlow<InputActionFingerIndicator?>(null)
     val fingerIndicator: StateFlow<InputActionFingerIndicator?> = _fingerIndicator.asStateFlow()
@@ -442,19 +454,7 @@ class GestureFeedbackState {
 }
 ```
 
-### 3.3 GestureFeedbackState 规格表
-
-| 属性 | 说明 |
-|------|------|
-| 角色 | 手势视觉反馈状态管理，独立于 ImeState |
-| 职责 | 管理触摸轨迹、按键高亮、手指指示器三类纯视觉反馈数据 |
-| 约束 | 所有坐标使用归一化形式 [0,1]x[0,1]；不管理弹出提示（由 ImeState 管理）；不管理独立的按键间路径和 X-Pad 路径（统一合并到 touchTrailPoints） |
-| 状态字段 | touchTrailPoints: StateFlow\<List\<OffsetF\>\>, pressedKeys: StateFlow\<Set\<InputKey\>\>, fingerIndicator: StateFlow\<InputActionFingerIndicator?\> |
-| 更新方法 | addTouchTrailPoint(), setTouchTrailPoints(), clearTouchTrail(), setPressedKeys(), clearPressedKeys(), setFingerIndicator(), clearAll(), clear() |
-| 所属包 | org.crazydan.studio.ime.ui.viewmodel |
-| 所属模块 | :ime-ui |
-
-### 3.4 状态字段与消费者对照表
+### 3.3 状态字段与消费者对照表
 
 | 状态字段 | 生产者 | 消费者 | 坐标类型 |
 |----------|--------|--------|----------|
@@ -466,9 +466,18 @@ class GestureFeedbackState {
 
 ## 4. ImeState UI 层扩展
 
+**ImeState 扩展字段规格表**：
+
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| inputMode | InputMode | RectGrid | 当前输入模式，决定布局几何和交互范式；与 Keyboard.Type 正交 |
+| isInputting | Boolean | false | 是否正在输入，控制 Row 2 面板互斥切换 |
+| toolList | ToolListState | emptyList() | 工具列表状态，含编辑功能键 |
+| popupTip | PopupTipState? | null | 弹出提示状态，由引擎 reduce 写入，PopupTipPanel 消费 |
+
 ### 4.1 设计说明
 
-`ImeState` 需要扩展以支持新的 UI 层概念。新增 `inputMode` 字段表示当前输入模式（决定按键布局几何和交互范式），`isInputting` 字段表示是否正在输入（控制 `ToolListPanel` 和 `InputListPanel` 的互斥切换），`toolList` 字段提供工具列表状态（含原 Editor 类型的编辑功能键），以及 `popupTip` 字段提供弹出提示状态（从 `GestureFeedbackState` 移至 `ImeState` 管理，因为弹出提示是引擎处理意图后更新 `ImeState` 触发的展示，属于输入状态变化而非视觉反馈）。这些扩展仅涉及 UI 层状态的暴露，不改变 `:ime-engine` 的核心 reduce 逻辑——引擎仍然通过 `ImeIntent` 驱动状态转换，UI 层从 `ImeState` 中读取新增字段来决定面板的部署和切换。
+`ImeState` 需要扩展以支持新的 UI 层概念。新增 `inputMode` 字段表示当前输入模式（决定按键布局几何和交互范式），`isInputting` 字段表示是否正在输入（控制 `ToolListPanel` 和 `InputListPanel` 的互斥切换），`toolList` 字段提供工具列表状态（含编辑功能键），以及 `popupTip` 字段提供弹出提示状态（弹出提示由引擎处理意图后更新 ImeState 触发显示）。这些扩展仅涉及 UI 层状态的暴露，不改变 `:ime-engine` 的核心 reduce 逻辑——引擎仍然通过 `ImeIntent` 驱动状态转换，UI 层从 `ImeState` 中读取新增字段来决定面板的部署和切换。
 
 ### 4.2 扩展字段定义
 
@@ -501,11 +510,11 @@ data class ImeState(
     val isInputting: Boolean = false,
 
     /**
-     * 工具列表状态（含原 Editor 类型的编辑功能键）。
+     * 工具列表状态（含编辑功能键）。
      *
-     * 原 Editor 键盘类型提供的编辑功能键（如全选、复制、粘贴、
-     * 剪切、撤销、重做等）已合并到 ToolListPanel 中作为 ToolItem 统一管理，
-     * 使编辑功能在任何键盘类型下均可通过工具栏快速访问。
+     * 编辑功能键（如全选、复制、粘贴、
+     * 剪切、撤销、重做等）统一由 ToolListPanel 中作为 ToolItem 管理，
+     * 在任何键盘类型下均可通过工具栏快速访问。
      */
     val toolList: ToolListState = ToolListState(emptyList()),
 
@@ -513,24 +522,14 @@ data class ImeState(
      * 弹出提示状态。
      *
      * 由引擎处理意图后更新 ImeState 触发显示。
-     * PopupTipPanel 从 ImeState.popupTip 读取提示内容，
-     * 而非从 GestureFeedbackState 读取。
+     * PopupTipPanel 从 ImeState.popupTip 读取提示内容。
      * 弹出提示属于输入状态变化触发的展示，不属于视觉反馈。
      */
     val popupTip: PopupTipState? = null,
 )
 ```
 
-### 4.3 扩展字段规格表
-
-| 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| inputMode | InputMode | RectGrid | 当前输入模式，决定布局几何和交互范式；与 Keyboard.Type 正交 |
-| isInputting | Boolean | false | 是否正在输入，控制 Row 2 面板互斥切换 |
-| toolList | ToolListState | emptyList() | 工具列表状态，含原 Editor 编辑功能键 |
-| popupTip | PopupTipState? | null | 弹出提示状态，由引擎 reduce 写入，PopupTipPanel 消费 |
-
-### 4.4 弹出提示状态
+### 4.3 弹出提示状态
 
 ```kotlin
 /**
@@ -539,9 +538,7 @@ data class ImeState(
  * 短暂显示操作信息（如按键操作结果、已输入字符、功能切换提示等）。
  * PopupTipPanel 叠加在 CandidateListPanel 上方，短暂浮现后自动消失。
  *
- * 重要：弹出提示从 GestureFeedbackState 移至 ImeState 管理，
- * 因为弹出提示是引擎处理意图后更新 ImeState 触发的展示，
- * 属于输入状态变化而非视觉反馈。
+ * 弹出提示由 ImeState 管理。
  */
 data class PopupTipState(
     /** 提示消息内容 */
@@ -551,14 +548,14 @@ data class PopupTipState(
 )
 ```
 
-### 4.5 工具列表状态
+### 4.4 工具列表状态
 
 ```kotlin
 /**
  * 工具列表状态。
  *
  * 空闲时展示固定工具按钮（剪贴板粘贴、收藏管理、设置、键盘切换、
- * 编辑功能等）。原 Editor 键盘类型的编辑功能键已合并到此处。
+ * 编辑功能等）。编辑功能键统一由 ToolListPanel 管理。
  */
 data class ToolListState(
     /** 工具项列表 */
@@ -587,13 +584,12 @@ data class ToolItem(
 
 ### 5.1 KeyboardHost
 
-`KeyboardHost` 是顶层集成组件，替代原先的 `KeyboardPanel` 和 `KeyboardScreen`，通过 `viewModel.layoutMode` 统一两种布局模式的入口。`KeyboardHost` 订阅 `viewModel.state`、`viewModel.layoutMode` 和 `viewModel.feedbackState`，根据布局模式选择 `StackedLayout` 或 `SeparatedLayout`。
+`KeyboardHost` 是顶层集成组件，通过 `viewModel.layoutMode` 统一两种布局模式的入口。`KeyboardHost` 订阅 `viewModel.state`、`viewModel.layoutMode` 和 `viewModel.feedbackState`，根据布局模式选择 `StackedLayout` 或 `SeparatedLayout`。
 
 ```kotlin
 /**
  * 键盘宿主组件，顶层集成组件。
  *
- * 替代原先的 KeyboardPanel（原 Overlay 模式）和 KeyboardScreen（原 FullScreen 模式），
  * 通过 LayoutMode 参数统一两种布局模式的入口。
  * 支持运行时动态切换 LayoutMode，切换时按实例策略表重新部署组件。
  */
@@ -678,7 +674,7 @@ fun KeyboardInputActionPlayerHost(
 }
 ```
 
-`KeyboardInputActionPlayerHost` 从 `viewModel.actionPlayer` 读取播放状态和指示器状态。行指示器（`InputActionRowIndicator`）通过面板的 `showIndicator` 和 `indicatorState` 参数内建绘制，无需外部覆盖层。手指指示器（`InputActionFingerIndicator`）通过 `GestureFeedbackPanel` 绘制，从 `feedbackState.fingerIndicator` 读取归一化坐标后反归一化渲染。`InputActionPlaybackState`、`InputActionRowIndicator`、`InputActionFingerIndicator` 的类型定义见 [engine/060-input-action.md](../engine/060-input-action.md)。
+`KeyboardInputActionPlayerHost` 从 `viewModel.actionPlayer` 读取播放状态和指示器状态。行指示器（`InputActionFingerIndicator`）通过面板的 `showIndicator` 和 `indicatorState` 参数内建绘制，无需外部覆盖层。手指指示器（`InputActionFingerIndicator`）通过 `GestureFeedbackPanel` 绘制，从 `feedbackState.fingerIndicator` 读取归一化坐标后反归一化渲染。`InputActionPlaybackState`、`InputActionFingerIndicator` 的类型定义见 [engine/060-input-action.md](../engine/060-input-action.md)。
 
 ### 5.3 InputActionPlayer 协作
 
@@ -794,7 +790,7 @@ class ComposeInputActionPositionResolver(
 
 ### 6.1 IMEService 组装
 
-`IMEService` 是 `:app` 模块的平台入口，负责创建引擎、挂载桥梁、注入 ViewModel。集成代码使用 `KeyboardHost` 替代原先的 `KeyboardPanel`/`KeyboardScreen`，通过 `viewModel.layoutMode` 统一布局模式管理。
+`IMEService` 是 `:app` 模块的平台入口，负责创建引擎、挂载桥梁、注入 ViewModel。集成代码使用 `KeyboardHost`，通过 `viewModel.layoutMode` 统一布局模式管理。
 
 ```kotlin
 class IMEService : InputMethodService() {
@@ -920,7 +916,7 @@ ImeState
 程序化输入由 `InputActionPlayer` 驱动，坐标无关，通过归一化坐标解析和插值生成视觉反馈动画。
 
 ```
-ActionScript (坐标无关)
+InputActionScript (坐标无关)
   |
   v
 InputActionPlayer.executeAction(InputAction)

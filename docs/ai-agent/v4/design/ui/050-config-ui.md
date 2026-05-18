@@ -31,7 +31,7 @@ fun KeyboardPreview(config: ImeConfig) {
             KeyboardTheme(themeType = config.ui.themeType) {
                 // 使用真实键盘 Composable，但 scale 缩小
                 Box(modifier = Modifier.scale(0.5f).fillMaxSize()) {
-                    StandardKeyGridPanel(
+                    StandardKeyLayoutPanel(
                         keyGrid = pinyinKeyGridPreview(config.engine.handMode),
                         keyboardState = KeyboardState.Idle,
                     )

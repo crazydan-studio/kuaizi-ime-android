@@ -2,22 +2,22 @@
 
 v4 版本将键盘 UI 迁移到 Jetpack Compose，利用其声明式范式简化 UI 代码，同时利用 Compose 1.8 的新特性（AutoSize、智能省略号、触觉反馈等）提升 IME 的用户体验。
 
-> 键盘区域的三层面板架构（GestureInputPanel / GestureFeedbackPanel / KeyGridPanel）详见[020-三层面板分离](020-panel-separation.md)。本节仅描述 Compose 组件架构和迁移设计，不重复三层面板的设计细节。
+> 键盘区域的三层面板架构（GestureInputPanel / GestureFeedbackPanel / KeyLayoutPanel）详见[020-三层面板分离](020-panel-separation.md)。本节仅描述 Compose 组件架构和迁移设计，不重复三层面板的设计细节。
 
 ---
 
 ## 1. Compose 组件架构
 
-### 1.1 KeyboardPanel（叠加模式）
+### 1.1 KeyboardHost（统一集成组件）
 
 > `KeyboardViewModel` 的完整设计见 [060-KeyboardViewModel](060-keyboard-view-model.md)。以下仅展示集成组件与 ViewModel 的交互方式。
 
 ```kotlin
 @Composable
-fun KeyboardPanel(viewModel: KeyboardViewModel) {
+fun KeyboardHost(viewModel: KeyboardViewModel) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val feedbackState = viewModel.feedbackState
-    var keyPanelLayout by remember { mutableStateOf(KeyGridPanelLayoutInfo()) }
+    var keyLayoutState by remember { mutableStateOf(KeyLayoutState()) }
 
     KeyboardTheme(themeType = state.config.ui.themeType) {
         Column(modifier = Modifier) {
@@ -40,31 +40,31 @@ fun KeyboardPanel(viewModel: KeyboardViewModel) {
             // 三层面板叠加区域
             Box {
                 // 底层：按键面板
-                KeyGridPanel(
+                KeyLayoutPanel(
                     keyboardType = state.keyboardType,
                     keyGrid = state.keyGrid,
                     keyboardState = state.keyboardState,
-                    onLayoutInfoChanged = { keyPanelLayout = it },
+                    onLayoutStateChanged = { keyLayoutState = it },
                 )
 
                 // 中层：反馈面板
                 GestureFeedbackPanel(
                     elements = GestureFeedbackPanelSet.OverlaySet.allElements,
                     feedbackState = feedbackState,
-                    keyPanelLayout = keyPanelLayout,
+                    keyLayoutState = keyLayoutState,
                 )
 
                 // 顶层：输入面板
                 GestureInputPanel(
-                    keyPanelLayout = keyPanelLayout,
+                    keyLayoutState = keyLayoutState,
                     keyboardType = state.keyboardType,
                     feedbackState = feedbackState,
                     onGesture = { viewModel.handleGesture(it) },
                 )
             }
 
-            // 工具栏
-            Toolbar(
+            // 工具列表
+            ToolListPanel(
                 keyboardType = state.keyboardType,
                 config = state.config,
                 onSwitchKeyboard = { viewModel.handleIntent(ImeIntent.SwitchKeyboard(it)) },
@@ -74,7 +74,7 @@ fun KeyboardPanel(viewModel: KeyboardViewModel) {
 }
 ```
 
-> **注意**：`KeyboardPanel` 是 UI 库的叠加模式完整输入法组件，包含候选栏、输入栏、工具栏和三层面板叠加区域（GestureInputPanel / GestureFeedbackPanel / KeyGridPanel 直接叠加，无中间包装层）。`KeyboardScreen` 是全屏模式完整输入法组件。两者均为完整输入法组件，只是形式和交互不同。
+> **注意**：`KeyboardHost` 是 UI 库的统一集成组件，包含候选栏、输入栏、工具列表和三层面板叠加区域（GestureInputPanel / GestureFeedbackPanel / KeyLayoutPanel 直接叠加，无中间包装层），通过 `LayoutMode` 参数支持 Stacked/Separated 两种布局模式。
 
 ### 1.2 ComposeView 桥接
 
@@ -108,8 +108,8 @@ class IMEService : InputMethodService() {
                 val viewModel: KeyboardViewModel = viewModel(
                     factory = KeyboardViewModel.Factory(engine)
                 )
-                // KeyboardPanel 已包含候选栏 + 输入栏 + 工具栏 + 三层面板叠加
-                KeyboardPanel(viewModel = viewModel)
+                // KeyboardHost 已包含候选栏 + 输入栏 + 工具列表 + 三层面板叠加
+                KeyboardHost(viewModel = viewModel)
             }
         }
     }
@@ -128,31 +128,31 @@ class IMEService : InputMethodService() {
 
 ### 1.3 键盘视图
 
-键盘视图在 v4 中拆分为三层面板（详见[020-三层面板分离](020-panel-separation.md)）：KeyGridPanel（纯展示，不处理触摸）、GestureInputPanel（透明手势层）、GestureFeedbackPanel（透明反馈绘制层）。KeyGridPanel 中的 KeyView 不处理触摸事件，触摸由 GestureInputPanel 统一拦截。以下仅展示 KeyGridPanel 中的按键渲染逻辑。
+键盘视图在 v4 中拆分为三层面板（详见[020-三层面板分离](020-panel-separation.md)）：KeyLayoutPanel（纯展示，不处理触摸）、GestureInputPanel（透明手势层）、GestureFeedbackPanel（透明反馈绘制层）。KeyLayoutPanel 中的 KeyView 不处理触摸事件，触摸由 GestureInputPanel 统一拦截。以下仅展示 KeyLayoutPanel 中的按键渲染逻辑。
 
 ```kotlin
-// KeyGridPanel：纯展示层，不处理触摸事件
+// KeyLayoutPanel：纯展示层，不处理触摸事件
 @Composable
-fun KeyGridPanel(
+fun KeyLayoutPanel(
     keyboardType: KeyboardType,
     keyGrid: List<List<InputKey>>,
     keyboardState: KeyboardState,
-    onLayoutInfoChanged: (KeyGridPanelLayoutInfo) -> Unit,
+    onLayoutStateChanged: (KeyLayoutState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (keyboardType) {
         KeyboardType.Pinyin, KeyboardType.Latin, KeyboardType.Number,
-        KeyboardType.Symbol, KeyboardType.Editor, KeyboardType.Math,
-        -> StandardKeyGridPanel(keyGrid, keyboardState, onLayoutInfoChanged, modifier)
+        KeyboardType.Symbol, KeyboardType.Math,
+        -> StandardKeyLayoutPanel(keyGrid, keyboardState, onLayoutStateChanged, modifier)
 
-        KeyboardType.Emoji -> EmojiKeyGridPanel(keyGrid, keyboardState, onLayoutInfoChanged, modifier)
-        KeyboardType.Candidate -> CandidateKeyGridPanel(keyGrid, onLayoutInfoChanged, modifier)
-        KeyboardType.CommitOption -> CommitOptionKeyGridPanel(keyGrid, onLayoutInfoChanged, modifier)
+        KeyboardType.Emoji -> EmojiKeyLayoutPanel(keyGrid, keyboardState, onLayoutStateChanged, modifier)
+        KeyboardType.Candidate -> CandidateKeyLayoutPanel(keyGrid, onLayoutStateChanged, modifier)
+        KeyboardType.CommitOption -> CommitOptionKeyLayoutPanel(keyGrid, onLayoutStateChanged, modifier)
     }
 }
 ```
 
-三层面板直接在 `KeyboardPanel` 中叠加（无中间包装层），`KeyboardPanel` 同时包含候选栏、输入栏和工具栏，构成完整的输入法组件。
+三层面板直接在 `KeyboardHost` 中叠加（无中间包装层），`KeyboardHost` 同时包含候选栏、输入栏和工具列表，构成完整的输入法组件。
 
 ### 1.4 按键视图
 
@@ -373,10 +373,10 @@ Modifier.pointerInput(zones) {
 
 ```kotlin
 // GestureInputPanel 中的手势检测核心逻辑
-Modifier.pointerInput(keyPanelLayout, keyboardType) {
+Modifier.pointerInput(keyLayoutState, keyboardType) {
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false)
-        // 根据 keyPanelLayout 查找触摸位置对应的按键
+        // 根据 keyLayoutState 查找触摸位置对应的按键
         // 识别手势类型（点击/长按/滑行/翻转）
         // 输出 InputGesture → ViewModel
         // 同步更新 GestureFeedbackState → GestureFeedbackPanel
