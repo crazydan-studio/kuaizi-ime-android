@@ -6,7 +6,7 @@
 
 **坐标无关设计**：动作脚本只记录按键的语义标识（如 `InputKey`），不存储任何绝对坐标。回放时，播放器根据当前键盘状态动态查找按键的实时位置，从而消除按键布局变更、屏幕尺寸变化、手模式切换等因素导致的回放失效问题。
 
-> 本文档仅涵盖 `:ime-engine` 模块中的核心数据模型和编译器。播放器（`InputActionPlayer`）、动画引擎和 UI 覆盖层（`FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay`）属于 `:ime-ui` / `:app` 模块，不在本文档范围内。
+> 本文档涵盖 `:ime-engine` 模块中的核心数据模型、编译器、播放状态模型（`InputActionPlaybackState`）、指示器模型（`InputActionFingerIndicator`、`InputActionRowIndicator`）、路径插值算法（`InputActionPathInterpolator`）、位置解析器接口（`InputActionPositionResolver`）以及归一化坐标基础类型（`OffsetF`、`RectF`）。播放器（`InputActionPlayer`）的主体逻辑和 UI 覆盖层（`FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay`）属于 `:ime-ui` / `:app` 模块，不在本文档范围内。
 
 ---
 
@@ -305,3 +305,238 @@ class ActionScriptCompiler(
   ]
 }
 ```
+
+---
+
+## 8. 输入动作播放状态 (InputActionPlaybackState)
+
+```kotlin
+/**
+ * 输入动作播放状态。
+ *
+ * 描述 InputActionPlayer 的播放生命周期状态。
+ * 纯逻辑状态模型，不依赖 UI 层，属于 :ime-engine 模块。
+ */
+sealed class InputActionPlaybackState {
+    /** 空闲状态，未加载脚本 */
+    data object Idle : InputActionPlaybackState()
+    /** 就绪状态，已加载脚本但未开始播放 */
+    data class Ready(val script: ActionScript) : InputActionPlaybackState()
+    /** 播放中状态 */
+    data class Playing(val currentIndex: Int, val totalActions: Int) : InputActionPlaybackState()
+    /** 暂停状态 */
+    data class Paused(val currentIndex: Int, val totalActions: Int) : InputActionPlaybackState()
+    /** 播放完成状态 */
+    data object Finished : InputActionPlaybackState()
+}
+```
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | 输入动作播放生命周期状态模型 |
+| 职责 | 描述播放器的状态转换：Idle → Ready → Playing ↔ Paused → Finished |
+| 约束 | 纯数据模型，不持有 UI 引用，不依赖 Compose |
+| 所属模块 | :ime-engine |
+
+---
+
+## 9. 输入动作手指指示器 (InputActionFingerIndicator)
+
+```kotlin
+/**
+ * 输入动作手指指示器状态（归一化坐标）。
+ *
+ * 描述播放动画中虚拟手指的位置和状态。
+ * 使用归一化坐标 [0,1]x[0,1]，与面板尺寸无关。
+ * 纯数据模型，属于 :ime-engine 模块。
+ */
+data class InputActionFingerIndicator(
+    /** 归一化坐标位置 [0,1]x[0,1] */
+    val position: OffsetF,
+    /** 手指是否按下 */
+    val pressed: Boolean,
+    /** 手指指示器是否可见 */
+    val visible: Boolean = true,
+)
+```
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | 播放动画中虚拟手指的位置和按压状态 |
+| 职责 | 存储归一化坐标位置、按下状态、可见性，供 UI 层反归一化后绘制 |
+| 约束 | 使用归一化坐标，不依赖具体面板尺寸；纯数据模型 |
+| 所属模块 | :ime-engine |
+
+---
+
+## 10. 输入动作行指示器 (InputActionRowIndicator)
+
+```kotlin
+/**
+ * 输入动作行指示器状态（归一化坐标，行相对）。
+ *
+ * 描述播放动画中在特定面板行上绘制的圆形点击指示器。
+ * 归一化坐标相对于所在行的面板尺寸。
+ * 纯数据模型，属于 :ime-engine 模块。
+ */
+data class InputActionRowIndicator(
+    /** 归一化坐标位置（相对于所在行的面板尺寸） */
+    val position: OffsetF,
+    /** 指示器是否可见 */
+    val visible: Boolean = true,
+)
+```
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | 播放动画中面板行上的圆形点击指示器 |
+| 职责 | 存储行相对归一化坐标和可见性，供面板内建绘制 |
+| 约束 | 坐标相对于所在行面板尺寸，非全局坐标；纯数据模型 |
+| 所属模块 | :ime-engine |
+
+---
+
+## 11. 输入动作路径插值器 (InputActionPathInterpolator)
+
+```kotlin
+/**
+ * 输入动作路径插值器。
+ *
+ * 在两个归一化坐标点之间生成平滑的插值路径，
+ * 用于 SwipeTo 动作的滑行轨迹动画。
+ * 使用二次贝塞尔曲线，控制点偏移量由 arcFactor 决定。
+ * 纯算法实现，不依赖 UI 层，属于 :ime-engine 模块。
+ */
+object InputActionPathInterpolator {
+
+    /**
+     * 在起止点之间生成二次贝塞尔曲线插值路径。
+     *
+     * @param from 起始归一化坐标
+     * @param to 目标归一化坐标
+     * @param arcFactor 弧线弯曲系数，0 为直线，越大弯曲越明显
+     * @param steps 插值步数，越大曲线越平滑
+     * @return 插值路径点列表（归一化坐标）
+     */
+    fun interpolate(
+        from: OffsetF,
+        to: OffsetF,
+        arcFactor: Float = 0.3f,
+        steps: Int = 20,
+    ): List<OffsetF> {
+        require(steps > 1) { "steps must be > 1: $steps" }
+        // 计算控制点：起止点连线的垂直方向偏移
+        val midX = (from.x + to.x) / 2
+        val midY = (from.y + to.y) / 2
+        val dx = to.x - from.x
+        val dy = to.y - from.y
+        // 垂直方向偏移
+        val controlX = midX - dy * arcFactor
+        val controlY = midY + dx * arcFactor
+
+        return (0..steps).map { i ->
+            val t = i.toFloat() / steps
+            val oneMinusT = 1f - t
+            OffsetF(
+                x = oneMinusT * oneMinusT * from.x + 2 * oneMinusT * t * controlX + t * t * to.x,
+                y = oneMinusT * oneMinusT * from.y + 2 * oneMinusT * t * controlY + t * t * to.y,
+            )
+        }
+    }
+}
+```
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | 输入动作路径插值算法 |
+| 职责 | 在起止归一化坐标点之间生成二次贝塞尔曲线插值路径，供播放器写入 touchTrailPoints |
+| 约束 | 纯算法，无副作用，不依赖 UI；输入输出均为归一化坐标 |
+| 所属模块 | :ime-engine |
+
+---
+
+## 12. 输入动作位置解析器 (InputActionPositionResolver)
+
+```kotlin
+/**
+ * 输入动作位置解析器接口，返回归一化坐标。
+ *
+ * 将语义按键标识符和列表索引解析为归一化坐标 [0,1]x[0,1]，
+ * 供播放器更新 GestureFeedbackState 的手指指示器和轨迹。
+ * 接口定义在 :ime-engine 模块，实现在 :ime-ui 模块。
+ */
+interface InputActionPositionResolver {
+
+    /**
+     * 查找指定按键的归一化中心坐标。
+     *
+     * @param key 待查找的按键
+     * @return 归一化中心坐标，若按键在当前键盘中不存在则返回 null
+     */
+    fun resolve(key: InputKey): OffsetF?
+
+    /**
+     * 查找指定候选项的归一化中心坐标。
+     *
+     * @param index 候选项索引
+     * @return 归一化中心坐标，若索引越界则返回 null
+     */
+    fun resolveCandidatePosition(index: Int): OffsetF?
+
+    /**
+     * 查找指定输入项的归一化中心坐标。
+     *
+     * @param index 输入项索引
+     * @return 归一化中心坐标，若索引越界则返回 null
+     */
+    fun resolveInputItemPosition(index: Int): OffsetF?
+}
+```
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | 输入动作位置解析器接口，将语义标识映射为归一化坐标 |
+| 职责 | 解析按键、候选项、输入项的归一化中心坐标，供播放器定位动画元素 |
+| 约束 | 接口定义在 :ime-engine，实现在 :ime-ui（ComposeInputActionPositionResolver）；返回归一化坐标 |
+| 所属模块 | 接口 :ime-engine，实现 :ime-ui |
+
+---
+
+## 13. 归一化坐标基础类型
+
+```kotlin
+/**
+ * 归一化浮点坐标点。
+ *
+ * 坐标范围 [0,1] x [0,1]，
+ * (0,0) 为左上角，(1,1) 为右下角。
+ * 用于在逻辑层面传递坐标数据，
+ * 绘制时由各面板根据自身尺寸反归一化为像素坐标。
+ */
+data class OffsetF(val x: Float, val y: Float)
+
+/**
+ * 归一化矩形。
+ *
+ * 坐标范围 [0,1] x [0,1]，
+ * 用于表示按键、候选项等元素的归一化位置区域。
+ */
+data class RectF(
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float,
+) {
+    val center: OffsetF get() = OffsetF(
+        (left + right) / 2,
+        (top + bottom) / 2,
+    )
+}
+```
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | 归一化坐标基础类型，供跨面板、跨 Zone 传递坐标数据 |
+| 职责 | OffsetF 表示归一化坐标点，RectF 表示归一化矩形区域 |
+| 约束 | 坐标范围 [0,1] x [0,1]，不依赖具体面板尺寸 |
+| 所属模块 | :ime-engine |

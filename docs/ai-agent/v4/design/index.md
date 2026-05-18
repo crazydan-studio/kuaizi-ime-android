@@ -27,7 +27,7 @@
 | [030-输入列表](engine/030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion、线程安全、撤销机制、游标管理 |
 | [040-字典系统](engine/040-dict-system.md) | DictRepository + Room 数据库、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree、HmmModel + ViterbiDecoder |
 | [050-X-Pad 核心](engine/050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout、X-Pad 状态集成 |
-| [060-输入动作程序化](engine/060-input-action.md) | InputAction sealed class、ActionScript、ActionScriptCompiler、坐标无关设计 |
+| [060-输入动作程序化](engine/060-input-action.md) | InputAction sealed class、ActionScript、ActionScriptCompiler、InputActionPlaybackState、InputActionFingerIndicator/InputActionRowIndicator、InputActionPathInterpolator、InputActionPositionResolver、OffsetF/RectF 归一化坐标类型 |
 | [070-剪贴板与收藏](engine/070-clipboard-and-favorites.md) | ClipboardService、FavoriteService、InputClip/InputFavorite 数据模型 |
 | [080-日志系统](engine/080-logging.md) | ImeLog 门面、ImeLogger、LogLevel、LogEntry、LogWriter 接口、LogStorage 文件存储、FileLogWriter 异步写入 |
 
@@ -40,11 +40,11 @@
 | 文档 | 简述 |
 |------|------|
 | [010-UI 库设计总览](ui/010-ui-library-overview.md) | UI 库设计目标（缺省实现、可替换、可组合、可定制）、组件清单、组件层次关系、与引擎库的依赖关系 |
-| [020-三层面板分离](ui/020-panel-separation.md) | GestureInputPanel/KeyGridPanel/GestureFeedbackPanel 三层分离、InputGesture/GestureFeedbackState 数据模型、KeyboardPanel/KeyboardScreen 集成组件 |
+| [020-面板三层分离与屏幕布局](ui/020-panel-separation.md) | Zone A/B 屏幕分区、LayoutMode（Stacked/Separated）、InputMode 正交维度、三行/三列布局、面板三层分离、归一化坐标、GestureFeedbackState 简化、各面板组件规格 |
 | [030-Compose 迁移](ui/030-compose-migration.md) | KeyboardPanel/KeyboardScreen Compose 实现、X-Pad Compose、滑行手势处理、性能验证 |
-| [040-输入动作播放器](ui/040-input-action-player.md) | InputActionPlayer、KeyPositionResolver、动画引擎（FingerOverlay/SwipeTrailOverlay/KeyHighlightOverlay）、ExerciseScreen |
+| [040-输入动作播放](ui/040-input-action-player.md) | KeyboardInputActionPlayerHost、UseMode、ComposeInputActionPositionResolver、InputActionPlayer、行指示器内建机制、ActionScriptLoader |
 | [050-配置 UI 组件](ui/050-config-ui.md) | KeyboardPreview、ThemeSelector、HandModeToggle、QuickSettingsPopup |
-| [060-KeyboardViewModel](ui/060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 管理，与 :app 集成方式 |
+| [060-KeyboardViewModel](ui/060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 简化管理，LayoutMode 切换，InputActionPlayer 集成，布局状态缓存 |
 
 ---
 

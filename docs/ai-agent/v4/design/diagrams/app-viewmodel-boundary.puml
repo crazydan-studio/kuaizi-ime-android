@@ -21,7 +21,7 @@ package ":app 模块\n平台层 Platform Layer" as app #E3F2FD {
             • 创建 KeyboardViewModel.Factory(engine)
             • 管理 Engine / Bridge 生命周期
             • ComposeView.setContent {
-                KeyboardPanel(viewModel) }
+                KeyboardHost(viewModel) }
         end note
     }
 
@@ -56,19 +56,32 @@ package ":ime-ui 模块\nUI + ViewModel 层" as ui #E8F5E9 {
         end note
     }
 
-    component "KeyboardPanel / KeyboardScreen\n集成组件" as KP #A5D6A7 {
-        note as kp_note
+    component "KeyboardHost\n键盘宿主\n集成组件" as KH #A5D6A7 {
+        note as kh_note
             • 订阅 viewModel.state
             • 通过 viewModel 发送操作
             • viewModel 为必填参数（无默认值）
+            • Zone A / Zone B 容器布局
         end note
     }
 
-    component "ExerciseScreen\n练习界面" as ES #A5D6A7 {
-        note as es_note
-            • 复用同一个 KeyboardViewModel
-            • ExerciseViewModel 仅管理练习特有状态
+    component "KeyboardInputActionPlayerHost\n输入动作播放宿主" as KIAPH #A5D6A7 {
+        note as kiaph_note
+            • 包含 KeyboardHost
+            • 包含 ActionPlayerPanel
+            • 内置指示器 (showIndicator)
+            • 无外部覆盖层
             • InputActionPlayer 程序化驱动
+        end note
+    }
+
+    component "InputActionPlayer\n输入动作播放器" as IAP #C8E6C9 {
+        note as iap_note
+            • 程序化驱动 ImeIntent
+            • InputActionPositionResolver (归一化坐标)
+            • InputActionPathInterpolator (路径插值)
+            • CoordinateNormalizer (坐标归一化)
+            • showIndicator 内置反馈
         end note
     }
 }
@@ -91,8 +104,13 @@ ImeEngine o-- Bridge : "挂载\nattachOutputBridge()"
 IMEService --> KVM : "通过 Factory 注入\nKeyboardViewModel.Factory(engine)"
 
 KVM --> ImeEngine : "持有引用\nhandleIntent / updateConfig"
-KP --> KVM : "订阅 state\n发送 handleGesture/handleIntent"
-ES --> KVM : "订阅 state\nInputActionPlayer 驱动"
+KH --> KVM : "订阅 state\n发送 handleGesture/handleIntent"
+KIAPH --> KVM : "订阅 state\nInputActionPlayer 驱动"
+KIAPH --> KH : "包含"
+KIAPH --> IAP : "使用"
+
+IAP --> KVM : "handleIntent(ImeIntent)"
+IAP --> ImeEngine : "间接通过 ViewModel"
 
 Settings --> ConfigRepo : "观察"
 ConfigRepo --> ImeEngine : "恢复配置\n(通过 viewModel.updateConfig)"
@@ -113,6 +131,8 @@ note bottom of ui
     • 状态订阅与渲染
     • 运行时配置修改 (不持久化)
     • 手势反馈状态管理
+    • 输入动作程序化播放
+    • 坐标归一化
 end note
 
 ' ─── Legend ─────────────────────────────────────────────────────────

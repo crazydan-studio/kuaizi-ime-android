@@ -25,24 +25,26 @@ rectangle "ActionScript 动作脚本\n──\nname: String\ndescription: String\
 
 package "播放器核心\nInputActionPlayer" as player #FFF3E0 {
 
-    rectangle "PlaybackState 播放状态\n──\nIdle / Ready / Playing\nPaused / Finished" as state #FFE0B2
+    rectangle "InputActionPlaybackState 播放状态\n──\nIdle / Ready / Playing\nPaused / Finished" as state #FFE0B2
 
     rectangle "播放控制 Playback Control\n──\nload(script)\nplay() / pause()\nresume() / stop()\nstepForward()\nsetSpeed()" as control #FFE0B2
 
-    rectangle "动作执行 executeAction()\n──\n按时间轴调度\n查询实时坐标\n驱动反馈 + 引擎" as executor #FFCC80
+    rectangle "动作执行 executeAction()\n──\n按时间轴调度\n查询归一化坐标\n驱动反馈 + 引擎\nshowIndicator 内置指示器" as executor #FFCC80
 }
 
 ' ─── Coordinate Resolution ────────────────────────────────────────
 
 package "坐标解析\nCoordinate Resolution" as coord #E8F5E9 {
 
-    rectangle "KeyPositionResolver 按键位置解析器\n──\nresolve(key): Offset?\nresolveCandidatePosition(i): Offset?" as resolver #C8E6C9
+    rectangle "InputActionPositionResolver 输入动作位置解析器\n──\nresolve(key): OffsetF?\nresolveCandidatePosition(i): OffsetF?\n返回归一化坐标 OffsetF" as resolver #C8E6C9
 
-    rectangle "ComposeKeyPositionResolver\nCompose 布局实现\n──\nkeyboardLayoutProvider\ncandidateLayoutProvider" as compose_resolver #A5D6A7
+    rectangle "ComposeInputActionPositionResolver\nCompose 布局实现\n──\nkeyLayoutProvider\ncandidateLayoutProvider\n使用 CoordinateNormalizer 归一化" as compose_resolver #A5D6A7
 
-    rectangle "KeyboardLayoutInfo 键盘布局信息\n──\nkeyPositions: Map<InputKey, Rect>" as kb_layout #A5D6A7
+    rectangle "KeyLayoutState 按键布局状态\n──\nkeyPositions: Map<InputKey, Rect>" as kb_layout #A5D6A7
 
-    rectangle "CandidateLayoutInfo 候选栏布局信息\n──\ncandidatePositions: List<Rect>" as cand_layout #A5D6A7
+    rectangle "CandidateListLayoutState 候选栏布局状态\n──\ncandidatePositions: List<Rect>" as cand_layout #A5D6A7
+
+    rectangle "CoordinateNormalizer 坐标归一化器\n──\nnormalize(Offset, Rect): OffsetF\ndenormalize(OffsetF, Rect): Offset" as coord_norm #A5D6A7
 }
 
 ' ─── Action Execution Outputs ─────────────────────────────────────
@@ -55,21 +57,19 @@ package "动作输出\nAction Outputs" as outputs #E3F2FD {
 
     package "反馈驱动\nFeedback Driving" as feedback_drive #C8E6C9 {
 
-        rectangle "GestureFeedbackState 手势反馈状态\n──\nfingerIndicator\n(FingerIndicatorState)" as gfs #A5D6A7
+        rectangle "GestureFeedbackState 手势反馈状态\n──\nfingerIndicator\n(InputActionFingerIndicator)\ntouchTrailPoints (OffsetF)\npressedKeys" as gfs #A5D6A7
 
-        rectangle "SwipePathInterpolator 滑行路径插值器\n──\ninterpolate(from, to)\n→ 贝塞尔曲线点列表" as interpolator #A5D6A7
+        rectangle "InputActionPathInterpolator 输入动作路径插值器\n──\ninterpolate(from: OffsetF, to: OffsetF)\n→ 贝塞尔曲线点列表 (OffsetF)" as interpolator #A5D6A7
 
-        rectangle "trailPoints 滑行轨迹点\n──\nStateFlow<List<Offset>>" as trail #A5D6A7
+        rectangle "trailPoints 滑行轨迹点\n──\nStateFlow<List<OffsetF>>\n归一化坐标" as trail #A5D6A7
     }
 }
 
-' ─── Visual Feedback ───────────────────────────────────────────────
+' ─── Built-in Visual Feedback ─────────────────────────────────────
 
-package "视觉反馈\nVisual Feedback" as visual #FFF9C4 {
+package "内置视觉反馈\nBuilt-in Feedback (GestureFeedbackPanel)" as visual #FFF9C4 {
 
-    rectangle "GestureFeedbackPanel\n反馈面板\n(FingerIndicator)" as gfp #FFF59D
-    rectangle "SwipeTrailOverlay\n滑行轨迹覆盖层" as trail_overlay #FFF59D
-    rectangle "FingerOverlay\n手指指示器覆盖层" as finger_overlay #FFF59D
+    rectangle "GestureFeedbackPanel\n反馈面板\nTouchTrail / KeyHighlight / FingerIndicator\n内置 showIndicator 机制" as gfp #FFF59D
 }
 
 ' ─── Engine State ──────────────────────────────────────────────────
@@ -80,26 +80,24 @@ package "引擎状态\nEngine State" as engine_state #FFF3E0 {
     rectangle "StateFlow<ImeState>" as ime_state #FFCC80
 }
 
-' ─── KeyboardPanel / KeyboardScreen ───────────────────────────────
+' ─── KeyboardHost ─────────────────────────────────────────────────
 
-package "KeyboardPanel (叠加模式)" as kp #E3F2FD {
-    rectangle "KeyGridPanel\n按键面板" as kp_kgp #BBDEFB
-    rectangle "GestureFeedbackPanel\n反馈面板" as kp_gfp #C8E6C9
-    rectangle "GestureInputPanel\n输入面板（空闲）" as kp_gip #FFCCBC
+package "KeyboardHost (Stacked 模式)" as kh_stacked #E3F2FD {
+    rectangle "KeyLayoutPanel\n按键面板" as kh_klp #BBDEFB
+    rectangle "GestureFeedbackPanel\n反馈面板" as kh_gfp #C8E6C9
+    rectangle "GestureInputPanel\n输入面板（空闲）" as kh_gip #FFCCBC
 }
 
-package "KeyboardScreen (全屏模式)" as ks #E8F5E9 {
-    rectangle "KeyGridPanel\n按键面板" as ks_kgp #A5D6A7
-    rectangle "GestureFeedbackPanel\n输入侧" as ks_gfp_input #C8E6C9
-    rectangle "GestureFeedbackPanel\n按键侧" as ks_gfp_key #C8E6C9
+package "KeyboardHost (Separated 模式)" as kh_separated #E8F5E9 {
+    rectangle "KeyLayoutPanel\n按键面板" as kh2_klp #A5D6A7
+    rectangle "GestureFeedbackPanel\nZone A" as kh2_gfp_a #C8E6C9
+    rectangle "GestureFeedbackPanel\nZone B" as kh2_gfp_b #C8E6C9
 }
 
-' ─── ExerciseScreen ────────────────────────────────────────────────
+' ─── KeyboardInputActionPlayerHost ────────────────────────────────
 
-package "ExerciseScreen\n输入练习演示页面" as exercise #F3E5F5 {
-    rectangle "TargetTextDisplay\n目标文本展示" as target_text #E1BEE7
-    rectangle "InputMethodSelector\n输入方式选择" as method_sel #E1BEE7
-    rectangle "KeyboardWithOverlay\n键盘 + 覆盖层" as kb_overlay #E1BEE7
+package "KeyboardInputActionPlayerHost\n输入动作播放宿主" as kiaph #F3E5F5 {
+    rectangle "KeyboardHost\n键盘宿主\n(内置指示器，无外部覆盖层)" as kiaph_kh #E1BEE7
     rectangle "ActionPlayerPanel\n播放控制面板" as player_panel #E1BEE7
 }
 
@@ -113,41 +111,38 @@ script --> control : "load(script)"
 control --> executor : "按时间轴调度"
 control --> state : "状态变更"
 
-executor ..> resolver : "1. 查询按键实时坐标"
+executor ..> resolver : "1. 查询按键归一化坐标\nOffsetF"
 resolver <.. compose_resolver : "实现"
 compose_resolver <.. kb_layout : "读取"
 compose_resolver <.. cand_layout : "读取"
+compose_resolver --> coord_norm : "归一化坐标转换"
 
 executor ..> kvm_intent : "2a. ImeIntent\n（PressKey / SelectCandidate / SwitchKeyboard）"
-executor ..> interpolator : "2b. 滑行路径计算\n（fromKey, toKey → 实时坐标）"
-interpolator --> trail : "贝塞尔曲线点"
-executor ..> gfs : "2c. 更新 fingerIndicator\n（位置、按下状态）"
+executor ..> interpolator : "2b. 路径计算\n（fromKey, toKey → 归一化坐标 OffsetF）"
+interpolator --> trail : "贝塞尔曲线点 (OffsetF)"
+executor ..> gfs : "2c. 更新 fingerIndicator\n（归一化位置、按下状态）\nshowIndicator 内置机制"
 
 kvm_intent --> engine : "handleIntent()"
 engine --> ime_state : "reduce()"
-ime_state --> kp_kgp : "StateFlow 驱动渲染"
-ime_state --> ks_kgp : "StateFlow 驱动渲染"
+ime_state --> kh_klp : "StateFlow 驱动渲染"
+ime_state --> kh2_klp : "StateFlow 驱动渲染"
 
-gfs --> gfp : "fingerIndicator\n→ FingerIndicator"
-trail --> trail_overlay : "轨迹点列表"
+gfs --> gfp : "fingerIndicator + touchTrailPoints\n→ 内置 TouchTrail / KeyHighlight / FingerIndicator"
 
-gfp --> kp_gfp : "叠加模式：单实例\n(OverlaySet)"
-gfp --> ks_gfp_input : "全屏模式：输入侧\n(FingerIndicator)"
-gfp --> ks_gfp_key : "全屏模式：按键侧\n(KeyHighlight)"
+gfp --> kh_gfp : "Stacked 模式：单实例\n(StackedSet)"
+gfp --> kh2_gfp_a : "Separated 模式：Zone A\n(KeyHighlight + FingerIndicator)"
+gfp --> kh2_gfp_b : "Separated 模式：Zone B\n(TouchTrail + KeyHighlight + FingerIndicator)"
 
-trail_overlay --> kb_overlay : "叠加"
-finger_overlay --> kb_overlay : "叠加"
-
-' ─── ExerciseScreen connections ────────────────────────────────────
+' ─── KeyboardInputActionPlayerHost connections ────────────────────
 
 script ..> player_panel : "显示脚本信息"
 state --> player_panel : "播放 / 暂停 / 停止按钮"
-kb_overlay --> kp : "内部组合 KeyboardPanel"
+kiaph_kh --> kh_stacked : "内部组合 KeyboardHost\n(或 Separated)"
 
 ' ─── Layout info provider ──────────────────────────────────────────
 
-kp_kgp ..> kb_layout : "onGloballyPositioned\n提供布局信息"
-ks_kgp ..> kb_layout : "onGloballyPositioned\n提供布局信息"
+kh_klp ..> kb_layout : "onGloballyPositioned\n提供布局状态"
+kh2_klp ..> kb_layout : "onGloballyPositioned\n提供布局状态"
 
 ' ─── Legend ─────────────────────────────────────────────────────────
 
@@ -156,9 +151,10 @@ legend right
     |<#F3E5F5>| 脚本来源与加载 |
     |<#FFF3E0>| 播放器与引擎 |
     |<#E8F5E9>| 坐标解析与反馈驱动 |
-    |<#E3F2FD>| KeyboardPanel (叠加模式) |
-    |<#E8F5E9>| KeyboardScreen (全屏模式) |
-    |<#FFF9C4>| 视觉反馈覆盖层 |
+    |<#E3F2FD>| KeyboardHost (Stacked) |
+    |<#E8F5E9>| KeyboardHost (Separated) |
+    |<#FFF9C4>| 内置视觉反馈 |
+    |<#F3E5F5>| KeyboardInputActionPlayerHost |
 endlegend
 
 @enduml

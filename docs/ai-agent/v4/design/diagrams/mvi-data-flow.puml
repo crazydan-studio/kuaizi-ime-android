@@ -53,14 +53,16 @@ package "主数据流：用户手势 → UI 渲染" as main_flow #F3E5F5 {
         note as sf_note
             keyboardState / inputList
             candidates / clipboard
-            favorites / config
+            config
         end note
     }
 
     rectangle "Compose UI\n界面渲染\n(:ime-ui)" as UI #E8F5E9 {
-        rectangle "KeyGridPanel\n按键渲染" as KGP #C8E6C9
+        rectangle "KeyLayoutPanel\n按键渲染" as KLP #C8E6C9
         rectangle "CandidateListPanel\n候选词" as CLP #C8E6C9
         rectangle "InputListPanel\n输入栏" as ILP #C8E6C9
+        rectangle "PopupTipPanel\n弹出提示" as PTP #C8E6C9
+        rectangle "ToolListPanel\n工具列表" as TLP #C8E6C9
     }
 
     user --> GIP : "触摸"
@@ -69,9 +71,11 @@ package "主数据流：用户手势 → UI 渲染" as main_flow #F3E5F5 {
     KVM --> II : "3. gestureToIntent()"
     II --> IE : "4. handleIntent()"
     IE --> SF : "5. _state.update"
-    SF --> KGP : "6. collectAsState"
+    SF --> KLP : "6. collectAsState"
     SF --> CLP : "6. collectAsState"
     SF --> ILP : "6. collectAsState"
+    SF --> PTP : "6. collectAsState"
+    SF --> TLP : "6. collectAsState"
 }
 
 ' ─── 输出流：ImeOutput → 桥梁 ────────────────────────────────────
@@ -114,17 +118,17 @@ package "输出流：ImeOutput → 编辑器" as output_flow #E3F2FD {
     Bridge --> Custom : "实现"
 }
 
-' ─── 反馈流：GestureFeedbackState ──────────────────────────────────
+' ─── 反馈流：GestureFeedbackState (Simplified) ─────────────────────
 
 package "反馈流：手势视觉反馈" as feedback_flow #E8F5E9 {
 
     rectangle "InputGesture\n手势事件" as IG2 #FFF3E0
 
-    rectangle "GestureFeedbackState\n反馈状态" as GFS #E8F5E9 {
+    rectangle "GestureFeedbackState\n反馈状态 (简化)" as GFS #E8F5E9 {
         note as gfs_note
-            touchTrailPoints / pressedKeys
-            keyPath / xPadPath
-            fingerIndicator
+            touchTrailPoints (OffsetF)
+            pressedKeys
+            fingerIndicator (InputActionFingerIndicator)
         end note
     }
 
@@ -132,11 +136,19 @@ package "反馈流：手势视觉反馈" as feedback_flow #E8F5E9 {
         note as gfp_note
             透明绘制层
             多实例 + FeedbackElementType 配置
+            内置 TouchTrail / KeyHighlight / FingerIndicator
         end note
     }
 
-    IG2 --> GFS : "GestureInputPanel 驱动"
-    GFS --> GFP : "collectAsState 渲染"
+    rectangle "CoordinateNormalizer\n坐标归一化器\n(:ime-ui)" as CN #FCE4EC {
+        note as cn_note
+            Offset → OffsetF (归一化)
+            OffsetF → Offset (反归一化)
+        end note
+    }
+
+    IG2 --> GFS : "GestureInputPanel 驱动\nCoordinateNormalizer 归一化"
+    GFS --> GFP : "collectAsState 渲染\nCoordinateNormalizer 反归一化"
 }
 
 ' ─── 程序化输入流 ─────────────────────────────────────────────────
@@ -145,11 +157,15 @@ package "程序化输入流：InputActionPlayer" as program_flow #FFF9C4 {
 
     rectangle "ActionScript\n输入脚本" as AS #FFF3E0
     rectangle "InputActionPlayer\n播放器" as IAP #E8F5E9
+    rectangle "InputActionPathInterpolator\n路径插值器" as IAPI #FFF9C4
     rectangle "KeyboardViewModel\n.handleIntent()" as KVM2 #E8F5E9
+    rectangle "CoordinateNormalizer\n坐标归一化" as CN2 #FCE4EC
 
     AS --> IAP : "执行"
+    IAP --> IAPI : "计算路径 (OffsetF)"
     IAP --> KVM2 : "viewModel.handleIntent(ImeIntent)"
-    IAP --> GFS : "feedbackState.setFingerIndicator"
+    IAP --> GFS : "feedbackState.setFingerIndicator\nshowIndicator 内置机制"
+    IAP --> CN2 : "归一化坐标转换"
 }
 
 ' ─── Legend ─────────────────────────────────────────────────────────
@@ -161,6 +177,7 @@ legend right
     |<#E3F2FD>| :app 层 |
     |<#F3E5F5>| 跨切面 / 架构 |
     |<#FFF9C4>| 程序化输入 |
+    |<#FCE4EC>| 坐标归一化 |
 endlegend
 
 @enduml

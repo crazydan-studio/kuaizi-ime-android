@@ -26,17 +26,22 @@ package "ViewModel 层" as vm_layer #F3E5F5 {
 
 package "集成组件\n一站式解决方案" as integration #E3F2FD {
 
-    rectangle "KeyboardPanel\n叠加模式完整输入法" as KP #E3F2FD {
-        note as kp_note
-            候选栏 + 输入栏 + 工具栏
-            + 三层面板叠加 (GestureInput + Feedback + KeyGrid)
+    rectangle "KeyboardHost\n键盘宿主 (Stacked/Separated)" as KH #E3F2FD {
+        note as kh_note
+            Zone A Container: KeyLayoutPanel + GestureFeedbackPanel
+            Zone B Container: 3 行布局
+              Row1: CandidateListPanel + PopupTipPanel
+              Row2: ToolListPanel / InputListPanel
+              Row3: KeyLayoutPanel + GestureFeedbackPanel + GestureInputPanel
         end note
     }
 
-    rectangle "KeyboardScreen\n全屏模式完整输入法" as KS #E3F2FD {
-        note as ks_note
-            候选栏 + 输入栏 + 工具栏
-            + 手势面板与按键面板分离布局
+    rectangle "KeyboardInputActionPlayerHost\n输入动作播放宿主" as KIAPH #E3F2FD {
+        note as kiaph_note
+            包含 KeyboardHost
+            包含 ActionPlayerPanel
+            内置指示器 (showIndicator)
+            无外部覆盖层
         end note
     }
 }
@@ -44,6 +49,25 @@ package "集成组件\n一站式解决方案" as integration #E3F2FD {
 ' ─── 面板组件 ──────────────────────────────────────────────────────
 
 package "面板组件\n可独立使用" as panel #E8F5E9 {
+
+    rectangle "KeyLayoutPanel\n按键布局层" as KLP #C8E6C9 {
+        note as klp_note
+            底层，纯展示
+            StandardKeyLayout / EmojiKeyLayout 等
+            含 XPad 策略
+            通过 onLayoutInfoChanged 提供布局
+            输出 KeyLayoutState
+        end note
+    }
+
+    rectangle "GestureFeedbackPanel\n透明反馈绘制层" as GFP #C8E6C9 {
+        note as gfp_note
+            多实例 + FeedbackElementType 配置
+            TouchTrail / KeyHighlight / FingerIndicator
+            内置轨迹 / 高亮 / 指示器
+            无外部覆盖层
+        end note
+    }
 
     rectangle "GestureInputPanel\n透明手势拦截层" as GIP #C8E6C9 {
         note as gip_note
@@ -53,26 +77,10 @@ package "面板组件\n可独立使用" as panel #E8F5E9 {
         end note
     }
 
-    rectangle "GestureFeedbackPanel\n透明反馈绘制层" as GFP #C8E6C9 {
-        note as gfp_note
-            多实例 + FeedbackElementType 配置
-            TouchTrail / KeyHighlight / KeyPath
-            XPadPathHighlight / FingerIndicator
-        end note
-    }
-
-    rectangle "KeyGridPanel\n按键渲染层" as KGP #C8E6C9 {
-        note as kgp_note
-            底层，纯展示
-            StandardKeyGridPanel / EmojiKeyGridPanel 等
-            通过 onLayoutInfoChanged 提供布局
-        end note
-    }
-
     rectangle "CandidateListPanel\n候选栏" as CLP #A5D6A7
+    rectangle "PopupTipPanel\n弹出提示面板" as PTP #A5D6A7
+    rectangle "ToolListPanel\n工具列表面板" as TLP #A5D6A7
     rectangle "InputListPanel\n输入栏" as ILP #A5D6A7
-    rectangle "FavoriteListPanel\n收藏面板" as FLP #A5D6A7
-    rectangle "XPadView\nX-Pad 六边形面板" as XPV #A5D6A7
     rectangle "ActionPlayerPanel\n播放控制面板" as APP #A5D6A7
 }
 
@@ -83,9 +91,8 @@ package "原子组件\n最小粒度" as atom #FFF3E0 {
     rectangle "KeyView\n按键渲染（纯展示）" as KV #FFE0B2
     rectangle "CandidateItem\n候选项" as CI #FFE0B2
     rectangle "CharInputItem / GapInputItem\n输入栏字符 / 间隙" as CII #FFE0B2
-    rectangle "ClipTipPopup\n剪贴板提示弹窗" as CTP #FFE0B2
-    rectangle "FavoriteItem\n收藏项（含滑动删除）" as FI #FFE0B2
-    rectangle "FingerOverlay\n手指指示器" as FO #FFE0B2
+    rectangle "PopupTipItem\n弹出提示项" as PTI #FFE0B2
+    rectangle "ToolItem\n工具项" as TI #FFE0B2
 }
 
 ' ─── 主题系统 ──────────────────────────────────────────────────────
@@ -98,26 +105,40 @@ package "主题系统" as theme #E8F5E9 {
     rectangle "LocalKeyboardColors\nCompositionLocal" as LKC #C8E6C9
 }
 
+' ─── 工具 ──────────────────────────────────────────────────────────
+
+package "工具\nUtility" as utility #FCE4EC {
+
+    rectangle "CoordinateNormalizer\n坐标归一化器" as CN #F8BBD0 {
+        note as cn_note
+            绝对坐标 Offset → 归一化坐标 OffsetF
+            归一化坐标 OffsetF → 绝对坐标 Offset
+            区域无关的坐标转换
+        end note
+    }
+}
+
 ' ─── Composition Relationships ─────────────────────────────────────
 
-KVM --> KP : "viewModel 参数"
-KVM --> KS : "viewModel 参数"
+KVM --> KH : "viewModel 参数"
+KVM --> KIAPH : "viewModel 参数"
 
-KP *-- CLP : "包含"
-KP *-- ILP : "包含"
-KP *-- GIP : "包含 (Box 顶层)"
-KP *-- GFP : "包含 (Box 中层)"
-KP *-- KGP : "包含 (Box 底层)"
+KH *-- KLP : "包含 (Zone A / Zone B Row3)"
+KH *-- GFP : "包含 (Zone A / Zone B Row3)"
+KH *-- GIP : "包含 (Zone B Row3)"
+KH *-- CLP : "包含 (Zone B Row1)"
+KH *-- PTP : "包含 (Zone B Row1)"
+KH *-- TLP : "包含 (Zone B Row2)"
+KH *-- ILP : "包含 (Zone B Row2)"
 
-KS *-- CLP : "包含"
-KS *-- ILP : "包含"
-KS *-- GIP : "包含 (独立区域)"
-KS *-- GFP : "包含 (多实例)"
-KS *-- KGP : "包含 (独立区域)"
+KIAPH *-- KH : "包含"
+KIAPH *-- APP : "包含"
 
-KGP *-- KV : "组合"
+KLP *-- KV : "组合"
 CLP *-- CI : "组合"
 ILP *-- CII : "组合"
+PTP *-- PTI : "组合"
+TLP *-- TI : "组合"
 
 KT --> KC : "使用"
 KT --> KTs : "提供"
@@ -131,6 +152,7 @@ legend right
     |<#E3F2FD>| 集成组件 |
     |<#E8F5E9>| 面板组件 |
     |<#FFF3E0>| 原子组件 |
+    |<#FCE4EC>| 工具 |
 endlegend
 
 @enduml

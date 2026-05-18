@@ -50,9 +50,9 @@ package "脚本模型\nScript Model\n[:ime-engine]" as script_pkg #FFF3E0 {
 
 ' ─── Playback State ────────────────────────────────────────────────
 
-package "播放状态\nPlayback State" as state_pkg #F3E5F5 {
+package "播放状态\nPlayback State\n[:ime-ui]" as state_pkg #F3E5F5 {
 
-    abstract class PlaybackState
+    abstract class InputActionPlaybackState
     class Idle
     class Ready {
         + script: ActionScript
@@ -75,15 +75,15 @@ package "播放器\nPlayer\n[:ime-ui]" as player_pkg #E8F5E9 {
     class InputActionPlayer {
         - viewModel: KeyboardViewModel
         - feedbackState: GestureFeedbackState
-        - positionResolver: KeyPositionResolver
+        - positionResolver: InputActionPositionResolver
         - scope: CoroutineScope
         - job: Job?
         - currentScript: ActionScript?
         - actionIndex: Int
-        - _trailPoints: MutableStateFlow<List<Offset>>
-        + playbackState: StateFlow<PlaybackState>
+        - _trailPoints: MutableStateFlow<List<OffsetF>>
+        + playbackState: StateFlow<InputActionPlaybackState>
         + speed: StateFlow<Float>
-        + trailPoints: StateFlow<List<Offset>>
+        + trailPoints: StateFlow<List<OffsetF>>
         + load(script: ActionScript)
         + play()
         + pause()
@@ -93,6 +93,7 @@ package "播放器\nPlayer\n[:ime-ui]" as player_pkg #E8F5E9 {
         + setSpeed(speed: Float)
         - executeAction(action: InputAction)
         - animateFingerAlongPath(feedbackState, path, duration)
+        - showIndicator(position: OffsetF, pressed: Boolean)
     }
 }
 
@@ -100,24 +101,42 @@ package "播放器\nPlayer\n[:ime-ui]" as player_pkg #E8F5E9 {
 
 package "坐标解析\nCoordinate Resolution\n[:ime-ui]" as coord_pkg #E3F2FD {
 
-    interface KeyPositionResolver {
-        + resolve(key: InputKey): Offset?
-        + resolveCandidatePosition(index: Int): Offset?
+    interface InputActionPositionResolver {
+        + resolve(key: InputKey): OffsetF?
+        + resolveCandidatePosition(index: Int): OffsetF?
     }
 
-    class ComposeKeyPositionResolver {
-        - keyboardLayoutProvider: () -> KeyboardLayoutInfo?
-        - candidateLayoutProvider: () -> CandidateLayoutInfo?
-        + resolve(key: InputKey): Offset?
-        + resolveCandidatePosition(index: Int): Offset?
+    class ComposeInputActionPositionResolver {
+        - keyLayoutProvider: () -> KeyLayoutState?
+        - candidateLayoutProvider: () -> CandidateListLayoutState?
+        - inputListLayoutProvider: () -> InputListLayoutState?
+        - coordinateNormalizer: CoordinateNormalizer
+        + resolve(key: InputKey): OffsetF?
+        + resolveCandidatePosition(index: Int): OffsetF?
     }
 
-    class KeyboardLayoutInfo {
+    class KeyLayoutState {
         + keyPositions: Map<InputKey, Rect>
     }
 
-    class CandidateLayoutInfo {
+    class CandidateListLayoutState {
         + candidatePositions: List<Rect>
+    }
+
+    class InputListLayoutState {
+        + itemPositions: List<Rect>
+    }
+}
+
+' ─── Coordinate Normalizer ────────────────────────────────────────
+
+package "坐标归一化\nCoordinate Normalizer\n[:ime-ui]" as norm_pkg #FCE4EC {
+
+    class CoordinateNormalizer {
+        + normalize(offset: Offset, bounds: Rect): OffsetF
+        + denormalize(offsetF: OffsetF, bounds: Rect): Offset
+        + 归一化坐标用于跨区域传递
+        + 绝对坐标用于实际绘制
     }
 }
 
@@ -125,8 +144,8 @@ package "坐标解析\nCoordinate Resolution\n[:ime-ui]" as coord_pkg #E3F2FD {
 
 package "路径插值\nPath Interpolation\n[:ime-ui]" as path_pkg #FFF9C4 {
 
-    class SwipePathInterpolator <<object>> {
-        + interpolate(from: Offset, to: Offset,\narcFactor: Float, steps: Int): List<Offset>
+    class InputActionPathInterpolator <<object>> {
+        + interpolate(from: OffsetF, to: OffsetF,\narcFactor: Float, steps: Int): List<OffsetF>
     }
 }
 
@@ -135,23 +154,29 @@ package "路径插值\nPath Interpolation\n[:ime-ui]" as path_pkg #FFF9C4 {
 package "反馈状态\nFeedback State\n[:ime-ui]" as feedback_pkg #FFE0B2 {
 
     class GestureFeedbackState {
-        - _touchTrailPoints: MutableStateFlow<List<Offset>>
+        - _touchTrailPoints: MutableStateFlow<List<OffsetF>>
         - _pressedKeys: MutableStateFlow<Set<InputKey>>
-        - _keyPath: MutableStateFlow<List<InputKey>>
-        - _xPadPath: MutableStateFlow<List<XPadZone>>
-        - _fingerIndicator: MutableStateFlow<FingerIndicatorState?>
-        + touchTrailPoints: StateFlow<List<Offset>>
+        - _fingerIndicator: MutableStateFlow<InputActionFingerIndicator?>
+        + touchTrailPoints: StateFlow<List<OffsetF>>
         + pressedKeys: StateFlow<Set<InputKey>>
-        + keyPath: StateFlow<List<InputKey>>
-        + xPadPath: StateFlow<List<XPadZone>>
-        + fingerIndicator: StateFlow<FingerIndicatorState?>
-        + setFingerIndicator(state: FingerIndicatorState?)
+        + fingerIndicator: StateFlow<InputActionFingerIndicator?>
+        + setFingerIndicator(state: InputActionFingerIndicator?)
+        + addTouchTrailPoint(normalizedOffset: OffsetF)
+        + setPressedKeys(keys: Set<InputKey>)
+        + clearPressedKeys()
+        + clearAll()
     }
 
-    class FingerIndicatorState {
-        + position: Offset
+    class InputActionFingerIndicator {
+        + position: OffsetF
         + pressed: Boolean
         + visible: Boolean
+    }
+
+    class InputActionRowIndicator {
+        + rowBounds: Rect
+        + active: Boolean
+        + highlightPosition: OffsetF
     }
 }
 
@@ -186,17 +211,11 @@ package "ViewModel\n[:ime-ui]" as vm_pkg #C8E6C9 {
 
 package "UI 组件\nUI Components\n[:ime-ui]" as ui_pkg #E3F2FD {
 
-    class ExerciseScreen <<@Composable>> {
-        + TargetTextDisplay
-        + InputMethodSelector
-        + KeyboardWithOverlay
+    class KeyboardInputActionPlayerHost <<@Composable>> {
+        + KeyboardHost
         + ActionPlayerPanel
-    }
-
-    class KeyboardWithOverlay <<@Composable>> {
-        + KeyboardPanel
-        + SwipeTrailOverlay
-        + FingerOverlay
+        + 内置指示器 (showIndicator)
+        + 无外部覆盖层
     }
 
     class ActionPlayerPanel <<@Composable>> {
@@ -205,33 +224,25 @@ package "UI 组件\nUI Components\n[:ime-ui]" as ui_pkg #E3F2FD {
         + 速度滑块
     }
 
-    class FingerOverlay <<@Composable>> {
-        + 渲染手指指示器
-        + 读取 GestureFeedbackState.fingerIndicator
-    }
-
-    class SwipeTrailOverlay <<@Composable>> {
-        + 渲染滑行轨迹
-        + 读取 trailPoints
+    class GestureFeedbackPanel <<@Composable>> {
+        + elements: Set<FeedbackElementType>
+        + 内置 TouchTrail / KeyHighlight / FingerIndicator
+        + 读取 GestureFeedbackState
+        + CoordinateNormalizer.denormalize() 绘制
     }
 }
 
-' ─── KeyboardPanel / KeyboardScreen ───────────────────────────────
+' ─── KeyboardHost ─────────────────────────────────────────────────
 
-package "KeyboardPanel\n叠加模式\n[:ime-ui]" as kp_pkg #BBDEFB {
-    class KeyboardPanel <<@Composable>> {
-        + 候选栏 + 输入栏 + 工具栏
-        + GestureInputPanel (顶层)
-        + GestureFeedbackPanel (中层)
-        + KeyGridPanel (底层)
-    }
-}
-
-package "KeyboardScreen\n全屏模式\n[:ime-ui]" as ks_pkg #A5D6A7 {
-    class KeyboardScreen <<@Composable>> {
-        + 候选栏 + 输入栏 + 工具栏
-        + GestureInputPanel + FeedbackPanel (输入侧)
-        + FeedbackPanel + KeyGridPanel (按键侧)
+package "KeyboardHost\n键盘宿主\n[:ime-ui]" as kh_pkg #BBDEFB {
+    class KeyboardHost <<@Composable>> {
+        + Zone A Container (Separated 模式)
+        + Zone B Container (三行布局)
+        + GestureInputPanel (Zone B Row3 顶层)
+        + GestureFeedbackPanel (多实例)
+        + KeyLayoutPanel (底层)
+        + CandidateListPanel + PopupTipPanel (Row1)
+        + ToolListPanel / InputListPanel (Row2)
     }
 }
 
@@ -244,44 +255,46 @@ InputAction <|-- Wait
 InputAction <|-- SelectCandidate
 InputAction <|-- SwitchKeyboard
 
-PlaybackState <|-- Idle
-PlaybackState <|-- Ready
-PlaybackState <|-- Playing
-PlaybackState <|-- Paused
-PlaybackState <|-- Finished
+InputActionPlaybackState <|-- Idle
+InputActionPlaybackState <|-- Ready
+InputActionPlaybackState <|-- Playing
+InputActionPlaybackState <|-- Paused
+InputActionPlaybackState <|-- Finished
 
-KeyPositionResolver <|.. ComposeKeyPositionResolver
+InputActionPositionResolver <|.. ComposeInputActionPositionResolver
 
 ' ─── Composition ───────────────────────────────────────────────────
 
-InputActionPlayer *-- PlaybackState : "播放状态"
+InputActionPlayer *-- InputActionPlaybackState : "播放状态"
 InputActionPlayer o-- ActionScript : "当前脚本"
 InputActionPlayer --> KeyboardViewModel : "发送 ImeIntent"
-InputActionPlayer --> GestureFeedbackState : "更新手指指示器"
-InputActionPlayer --> KeyPositionResolver : "查询按键位置"
-InputActionPlayer --> SwipePathInterpolator : "计算滑行路径"
-InputActionPlayer --> FingerIndicatorState : "创建"
+InputActionPlayer --> GestureFeedbackState : "更新手指指示器\nshowIndicator"
+InputActionPlayer --> InputActionPositionResolver : "查询归一化位置 OffsetF"
+InputActionPlayer --> InputActionPathInterpolator : "计算路径 (OffsetF)"
+InputActionPlayer --> InputActionFingerIndicator : "创建"
+InputActionPlayer --> InputActionRowIndicator : "创建"
 
-ComposeKeyPositionResolver --> KeyboardLayoutInfo : "读取"
-ComposeKeyPositionResolver --> CandidateLayoutInfo : "读取"
+ComposeInputActionPositionResolver --> KeyLayoutState : "读取"
+ComposeInputActionPositionResolver --> CandidateListLayoutState : "读取"
+ComposeInputActionPositionResolver --> InputListLayoutState : "读取"
+ComposeInputActionPositionResolver --> CoordinateNormalizer : "归一化坐标转换"
 
-GestureFeedbackState *-- FingerIndicatorState : "fingerIndicator"
+GestureFeedbackState *-- InputActionFingerIndicator : "fingerIndicator"
 
 ActionScriptLoader ..> ActionScript : "加载并解析"
 
 KeyboardViewModel *-- GestureFeedbackState : "持有"
 KeyboardViewModel --> ImeEngine : "持有引用"
 
-ExerciseScreen *-- KeyboardWithOverlay
-ExerciseScreen *-- ActionPlayerPanel
-KeyboardWithOverlay *-- KeyboardPanel
-KeyboardWithOverlay *-- SwipeTrailOverlay
-KeyboardWithOverlay *-- FingerOverlay
+KeyboardInputActionPlayerHost *-- KeyboardHost
+KeyboardInputActionPlayerHost *-- ActionPlayerPanel
 
 ActionPlayerPanel --> InputActionPlayer : "控制播放"
 
-KeyboardPanel ..> KeyboardLayoutInfo : "提供布局信息"
-KeyboardScreen ..> KeyboardLayoutInfo : "提供布局信息"
+KeyboardHost ..> KeyLayoutState : "提供布局状态"
+KeyboardHost ..> CandidateListLayoutState : "提供布局状态"
+
+GestureFeedbackPanel --> CoordinateNormalizer : "denormalize 绘制"
 
 ' ─── Legend ─────────────────────────────────────────────────────────
 
@@ -290,11 +303,11 @@ legend right
     |<#FFF3E0>| :ime-engine 脚本模型 |
     |<#E8F5E9>| :ime-ui 播放器 |
     |<#E3F2FD>| :ime-ui 坐标解析与 UI 组件 |
+    |<#FCE4EC>| :ime-ui 坐标归一化 |
     |<#FFE0B2>| :ime-ui 反馈状态 |
     |<#D1C4E9>| :app 脚本加载 |
     |<#FFF9C4>| :ime-ui 路径插值 |
-    |<#BBDEFB>| KeyboardPanel |
-    |<#A5D6A7>| KeyboardScreen |
+    |<#BBDEFB>| KeyboardHost |
 endlegend
 
 @enduml

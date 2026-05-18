@@ -5,79 +5,98 @@ skinparam shadowing false
 skinparam defaultFontSize 13
 skinparam classFontSize 13
 
-title 筷子输入法 - KeyboardPanel / KeyboardScreen 组合\nKeyboardPanel & KeyboardScreen Composition
+title 筷子输入法 - KeyboardHost 组合\nKeyboardHost Composition (Stacked / Separated)
 
-' ─── KeyboardPanel (Overlay Mode) ──────────────────────────────────
+' ─── KeyboardHost (Stacked Mode) ──────────────────────────────────
 
-package "KeyboardPanel\n键盘面板 (浮层模式 / Overlay Mode)" as KPOverlay #E3F2FD {
+package "KeyboardHost\n键盘宿主 (叠加模式 / Stacked Mode)" as KHStacked #E3F2FD {
 
-    rectangle "Column" as col1 {
-        rectangle "CandidateListPanel\n候选词面板" as clp1 #E8F5E9 {
-            rectangle "LazyRow { candidates }" as clp1_items
-        }
+    rectangle "Zone B Container\n三行布局" as zb_stacked {
 
-        rectangle "InputListPanel\n输入缓冲面板" as ilp1 #E8F5E9 {
-            rectangle "显示拼音缓冲 / composing text" as ilp1_content
-        }
-
-        rectangle "Box (层叠容器)" as box1 #FFF3E0 {
-            rectangle "KeyGridPanel\n按键网格 (底层)\n纯展示，ImeState 驱动" as kgp1 #BBDEFB {
-                rectangle "KeyboardLayout\n按键布局" as kl1
+        rectangle "Row 1" as s_row1 {
+            rectangle "CandidateListPanel\n候选词面板" as s_clp #E8F5E9 {
+                rectangle "LazyRow { candidates }" as s_clp_items
             }
-            rectangle "GestureFeedbackPanel\n手势反馈 (中层)\nOverlaySet.allElements" as gfp1 #C8E6C9 {
-                rectangle "TouchTrail + KeyHighlight + KeyPath\n+ XPadPathHighlight + FingerIndicator" as gf1
-            }
-            rectangle "GestureInputPanel\n手势输入 (顶层)\n透明手势拦截层" as gip1 #FFCCBC {
-                rectangle "pointerInput { detectGesture }\n触摸手势检测 → InputGesture" as gi1
+
+            rectangle "PopupTipPanel\n弹出提示面板" as s_ptp #E8F5E9 {
+                rectangle "剪贴板提示 / 输入建议" as s_ptp_items
             }
         }
 
-        rectangle "Toolbar\n工具栏" as tb1 #F3E5F5 {
-            rectangle "切换布局 / 设置 / 收藏" as tb1_items
+        rectangle "Row 2" as s_row2 {
+            rectangle "ToolListPanel\n工具列表面板" as s_tlp #F3E5F5 {
+                rectangle "切换布局 / 设置" as s_tlp_items
+            }
+
+            rectangle "InputListPanel\n输入缓冲面板" as s_ilp #E8F5E9 {
+                rectangle "显示拼音缓冲 / composing text" as s_ilp_content
+            }
+        }
+
+        rectangle "Row 3: Box (层叠容器)" as s_box #FFF3E0 {
+            rectangle "KeyLayoutPanel\n按键布局 (底层)\n纯展示，ImeState 驱动" as s_klp #BBDEFB {
+                rectangle "KeyboardLayout\n按键布局 (含 XPad 策略)" as s_kl
+            }
+            rectangle "GestureFeedbackPanel\n手势反馈 (中层)\nStackedSet.allElements\nTouchTrail + KeyHighlight + FingerIndicator" as s_gfp #C8E6C9
+            rectangle "GestureInputPanel\n手势输入 (顶层)\n透明手势拦截层" as s_gip #FFCCBC {
+                rectangle "pointerInput { detectGesture }\n触摸手势检测 → InputGesture" as s_gi
+            }
         }
     }
 
-    clp1 -down-> ilp1
-    ilp1 -down-> box1
-    box1 -down-> tb1
-    kgp1 -[hidden]up- gfp1
-    gfp1 -[hidden]up- gip1
+    s_row1 -down-> s_row2
+    s_row2 -down-> s_box
+    s_klp -[hidden]up- s_gfp
+    s_gfp -[hidden]up- s_gip
 }
 
-' ─── KeyboardScreen (Fullscreen Mode) ──────────────────────────────
+' ─── KeyboardHost (Separated Mode) ───────────────────────────────
 
-package "KeyboardScreen\n键盘屏幕 (全屏模式 / Fullscreen Mode)" as KSFull #E8F5E9 {
+package "KeyboardHost\n键盘宿主 (分离模式 / Separated Mode)" as KHSeparated #E8F5E9 {
 
-    rectangle "Box (全屏容器)" as box2_outer {
-        rectangle "Column" as col2 {
-            rectangle "CandidateListPanel\n候选词面板" as clp2 #E3F2FD {
-                rectangle "LazyRow { candidates }" as clp2_items
+    rectangle "Zone A Container\n手势+按键叠加区" as za_sep #E1BEE7 {
+        rectangle "Box (层叠容器)" as za_box #FFF3E0 {
+            rectangle "KeyLayoutPanel\n按键布局 (底层)\n纯展示，ImeState 驱动" as za_klp #BBDEFB {
+                rectangle "KeyboardLayout\n按键布局 (含 XPad 策略)" as za_kl
+            }
+            rectangle "GestureFeedbackPanel\n手势反馈 (中层)\nSeparatedSet.zoneAElements\nKeyHighlight + FingerIndicator" as za_gfp #C8E6C9
+        }
+    }
+
+    rectangle "Zone B Container\n三行布局" as zb_sep {
+
+        rectangle "Row 1" as p_row1 {
+            rectangle "CandidateListPanel\n候选词面板" as p_clp #E3F2FD {
+                rectangle "LazyRow { candidates }" as p_clp_items
             }
 
-            rectangle "InputListPanel\n输入缓冲面板" as ilp2 #E3F2FD {
-                rectangle "显示拼音缓冲 + 已提交文本" as ilp2_content
+            rectangle "PopupTipPanel\n弹出提示面板" as p_ptp #E3F2FD {
+                rectangle "剪贴板提示 / 输入建议" as p_ptp_items
+            }
+        }
+
+        rectangle "Row 2" as p_row2 {
+            rectangle "ToolListPanel\n工具列表面板" as p_tlp #F3E5F5 {
+                rectangle "切换布局 / 设置" as p_tlp_items
             }
 
-            rectangle "Box: GestureInputPanel + Feedback(输入侧)" as gip2_box #FFCCBC {
-                rectangle "GestureInputPanel\n手势输入 (顶层)" as gip2_outer
-                rectangle "GestureFeedbackPanel\n输入侧反馈 (底层)\nTouchTrail + FingerIndicator" as gfp2_input #C8E6C9
+            rectangle "InputListPanel\n输入缓冲面板" as p_ilp #E3F2FD {
+                rectangle "显示拼音缓冲 + 已提交文本" as p_ilp_content
             }
+        }
 
-            rectangle "Box: Feedback(按键侧) + KeyGridPanel" as kgp2_box #BBDEFB {
-                rectangle "GestureFeedbackPanel\n按键侧反馈 (底层)\nKeyHighlight + KeyPath + XPadPathHighlight" as gfp2_key #C8E6C9
-                rectangle "KeyGridPanel\n按键网格" as kgp2_outer
-            }
-
-            rectangle "Toolbar\n工具栏" as tb2 #F3E5F5 {
-                rectangle "切换布局 / 设置 / 收藏" as tb2_items
+        rectangle "Row 3: 三列布局" as p_row3 {
+            rectangle "KeyLayoutPanel\n按键布局" as p_klp #BBDEFB
+            rectangle "GestureFeedbackPanel\n手势反馈\nSeparatedSet.zoneBElements\nTouchTrail + KeyHighlight + FingerIndicator" as p_gfp #C8E6C9
+            rectangle "GestureInputPanel\n手势输入 (顶层)" as p_gip #FFCCBC {
+                rectangle "pointerInput { detectGesture }\n触摸手势检测 → InputGesture" as p_gi
             }
         }
     }
 
-    clp2 -down-> ilp2
-    ilp2 -down-> gip2_box
-    gip2_box -down-> kgp2_box
-    kgp2_box -down-> tb2
+    p_row1 -down-> p_row2
+    p_row2 -down-> p_row3
+    za_box -right- zb_sep : "并排\nSide by Side"
 }
 
 ' ─── Shared Components ─────────────────────────────────────────────
@@ -85,32 +104,37 @@ package "KeyboardScreen\n键盘屏幕 (全屏模式 / Fullscreen Mode)" as KSFul
 package "共享组件\nShared Components" as shared #F3E5F5 {
     component [KeyboardViewModel\n键盘视图模型\n(viewModel 为必填参数)] as KVM
     component [ImeEngine\n输入法引擎] as IE
-    component [GestureFeedbackState\n手势反馈状态] as GFS
-    component [KeyPositionResolver\n按键位置解析] as KPR
+    component [GestureFeedbackState\n手势反馈状态 (简化)\ntouchTrailPoints / pressedKeys / fingerIndicator] as GFS
+    component [InputActionPositionResolver\n输入动作位置解析] as IAPR
+    component [CoordinateNormalizer\n坐标归一化器] as CN
 
     KVM --> IE : "持有引用\n(不持有 InputConnectionBridge)"
     KVM --> GFS : "持有"
+    IAPR --> CN : "使用归一化坐标"
 }
 
 ' ─── Data Flow ─────────────────────────────────────────────────────
 
-gip1 ..> KVM : "InputGesture → handleGesture()"
-gip2_outer ..> KVM : "InputGesture → handleGesture()"
+s_gip ..> KVM : "InputGesture → handleGesture()"
+p_gip ..> KVM : "InputGesture → handleGesture()"
 KVM --> IE : "ImeIntent → handleIntent()"
-IE ..> clp1 : "StateFlow<ImeState>"
-IE ..> clp2 : "StateFlow<ImeState>"
-IE ..> kgp1 : "StateFlow<ImeState>"
-IE ..> kgp2_outer : "StateFlow<ImeState>"
-GFS ..> gfp1 : "反馈渲染"
-GFS ..> gfp2_input : "反馈渲染"
-GFS ..> gfp2_key : "反馈渲染"
+IE ..> s_clp : "StateFlow<ImeState>"
+IE ..> p_clp : "StateFlow<ImeState>"
+IE ..> s_klp : "StateFlow<ImeState>"
+IE ..> za_klp : "StateFlow<ImeState>"
+IE ..> p_klp : "StateFlow<ImeState>"
+GFS ..> s_gfp : "反馈渲染"
+GFS ..> za_gfp : "反馈渲染"
+GFS ..> p_gfp : "反馈渲染"
 
 ' ─── Comparison Notes ──────────────────────────────────────────────
 
-note bottom of KPOverlay
-    **浮层模式 (Overlay Mode)**
-    - 手势输入与按键面板叠加在 Box 中
-    - GestureFeedbackPanel 单实例 (OverlaySet)
+note bottom of KHStacked
+    **叠加模式 (Stacked Mode)**
+    - 仅 Zone B，无 Zone A
+    - 三行布局：候选+提示 / 工具+输入 / 按键叠加区
+    - GestureFeedbackPanel 单实例 (StackedSet)
+      - TouchTrail + KeyHighlight + FingerIndicator
     - 适用于普通输入场景
     - 占据屏幕底部区域
 
@@ -118,12 +142,15 @@ note bottom of KPOverlay
     InputConnectionBridge 不由 ViewModel 持有
 end note
 
-note bottom of KSFull
-    **全屏模式 (Fullscreen Mode)**
-    - 手势输入区域独立
-    - GestureFeedbackPanel 双实例 (FullScreenSet)
-      - 输入侧：TouchTrail + FingerIndicator
-      - 按键侧：KeyHighlight + KeyPath + XPadPathHighlight
+note bottom of KHSeparated
+    **分离模式 (Separated Mode)**
+    - Zone A (手势+按键) 与 Zone B (三行) 并排
+    - Zone A: KeyLayoutPanel + GestureFeedbackPanel
+      - SeparatedSet.zoneAElements
+    - Zone B Row3: 三列布局
+      - KeyLayoutPanel + GestureFeedbackPanel + GestureInputPanel
+      - SeparatedSet.zoneBElements
+    - GestureFeedbackPanel 双实例
     - 适用于横屏 / 平板场景
     - 占据更大屏幕区域
 end note
