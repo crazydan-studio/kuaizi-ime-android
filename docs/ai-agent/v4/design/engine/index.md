@@ -8,6 +8,7 @@
 |------|------|
 | [010-引擎库设计总览](010-engine-overview.md) | 模块定位与设计目标、核心 class 关系图、核心模型概览（ImeEngine/ImeConfig/ImeOutput/ImeIntent/ImeState 子状态类型） |
 | [020-键盘状态机](020-state-machine.md) | KeyboardState sealed class 层次结构、状态转换规则、Keyboard 组合模式、InputKey 体系、KeyboardStateHistory 有界历史栈 |
+| [025-ImeState 全局状态](025-ime-state.md) | ImeState 完整字段定义与 UI 映射、KeyboardType/KeyboardInputMode 枚举、KeyboardState 子状态数据细节、CandidateList 分页与过滤、Clipboard/FavoriteList 集成、PopupTipState/ToolListState、Feature 门控规则、状态不变式、与 Java 版本对照 |
 | [030-输入列表](030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion 类型、线程安全设计、撤销机制、游标管理、InputListEditor |
 | [040-字典系统](040-dict-system.md) | DictRepository + DAO 接口、Room 数据库与 Entity、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree 前缀树、HmmModel + ViterbiDecoder |
 | [050-X-Pad 核心](050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout 区域定义、KeyboardState.PinyinInput.XPadding 状态集成 |
