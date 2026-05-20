@@ -12,7 +12,7 @@ rectangle "GestureInputPanel\n手势输入面板（最上层）\n──\n• 透
 
 rectangle "GestureFeedbackPanel\n手势反馈面板（可多实例）\n──\n• 透明绘制层\n• 绘制输入轨迹（含按键间路径和 X-Pad 路径）\n• 绘制按键高亮\n• 绘制手指指示器 + 点击涟漪动画\n• 不处理任何触摸事件\n• 可与输入面板叠加，也可与按键面板叠加" as middle #C8E6C9
 
-rectangle "KeyLayoutPanel\n按键布局面板（最下层）\n──\n• 根据 InputMode 和 Keyboard.Type 渲染按键布局\n• 展示按键状态（按下/激活/禁用）\n• 提供布局状态供输入面板和反馈面板查询\n• 不处理任何触摸事件\n• 不绘制手势反馈" as bottom #BBDEFB
+rectangle "KeyLayoutPanel\n按键布局面板（最下层）\n──\n• 根据 KeyboardInputMode 和 KeyboardType 渲染按键布局\n• 展示按键状态（按下/激活/禁用）\n• 提供布局状态供输入面板和反馈面板查询\n• 不处理任何触摸事件\n• 不绘制手势反馈" as bottom #BBDEFB
 
 top -[hidden]down- middle
 middle -[hidden]down- bottom

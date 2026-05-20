@@ -4,7 +4,7 @@
 
 反馈面板是独立于输入面板和按键面板的透明层，支持多实例。这种设计使得反馈面板可以灵活地与输入面板、按键面板组合叠加——在堆叠（Stacked）布局模式下，三层面板完全重叠；在分离（Separated）布局模式下，反馈面板可以分别与输入面板和按键面板叠加，使手指轨迹在输入区域可见、按键高亮在按键区域可见。
 
-屏幕纵向划分为 Zone A（上半区）和 Zone B（下半区），Zone B 内部按三行结构组织面板。InputMode 与 Keyboard.Type 作为两个独立的正交维度，任意 InputMode 可与任意 Type 组合，通过 LayoutStrategy 分发不同的布局策略。所有坐标数据使用归一化形式存储，绘制时根据面板实际尺寸转换为像素坐标，使得同一份反馈数据可以正确地在不同 Zone 和不同尺寸的面板实例上渲染。
+屏幕纵向划分为 Zone A（上半区）和 Zone B（下半区），Zone B 内部按三行结构组织面板。KeyboardInputMode 与 KeyboardType 作为两个独立的正交维度，任意 KeyboardInputMode 可与任意 Type 组合，通过 KeyLayoutStrategy 分发不同的布局策略。所有坐标数据使用归一化形式存储，绘制时根据面板实际尺寸转换为像素坐标，使得同一份反馈数据可以正确地在不同 Zone 和不同尺寸的面板实例上渲染。
 
 ```plantuml
 @file:../diagrams/ui-panel-separation.puml
@@ -70,7 +70,7 @@ sealed class Keyboard {
 }
 ```
 
-### 1.3 LayoutMode -- 布局模式
+### 1.3 KeyboardLayoutMode -- 布局模式
 
 | 属性 | 说明 |
 |------|------|
@@ -80,7 +80,7 @@ sealed class Keyboard {
 | 关键属性 | Stacked（堆叠），Separated(zoneARatio)（分离） |
 | 所属包 | keyboard |
 
-LayoutMode 定义 Zone A 与 Zone B 的使用方式。Stacked 模式下，所有组件集中在 Zone B 内，三层面板叠加共享同一空间，适合紧凑布局和单手操作场景。Separated 模式下，输入区域占据 Zone B，按键展示区域占据 Zone A，手指在 Zone B 输入时不会被自身遮挡，按键在 Zone A 的更宽空间中展示，缩短了视觉搜索路径。两种模式可动态切换，切换时组件实例按实例策略表（见 §4.2）进行重新部署。
+KeyboardLayoutMode 定义 Zone A 与 Zone B 的使用方式。Stacked 模式下，所有组件集中在 Zone B 内，三层面板叠加共享同一空间，适合紧凑布局和单手操作场景。Separated 模式下，输入区域占据 Zone B，按键展示区域占据 Zone A，手指在 Zone B 输入时不会被自身遮挡，按键在 Zone A 的更宽空间中展示，缩短了视觉搜索路径。两种模式可动态切换，切换时组件实例按实例策略表（见 §4.2）进行重新部署。
 
 ```kotlin
 /**
@@ -91,7 +91,7 @@ LayoutMode 定义 Zone A 与 Zone B 的使用方式。Stacked 模式下，所有
  */
 sealed class Keyboard {
 
-    sealed class LayoutMode {
+    sealed class KeyboardLayoutMode {
 
         /**
          * 堆叠模式。
@@ -100,7 +100,7 @@ sealed class Keyboard {
          * 适合紧凑布局和单手操作场景。
          * KeyLayoutPanel 部署在 Zone B 的 Row 3。
          */
-        data object Stacked : LayoutMode()
+        data object Stacked : KeyboardLayoutMode()
 
         /**
          * 分离模式。
@@ -112,33 +112,36 @@ sealed class Keyboard {
         data class Separated(
             /** Zone A 占屏幕高度的比例，默认 0.4 */
             val zoneARatio: Float = 0.4f,
-        ) : LayoutMode()
+        ) : KeyboardLayoutMode()
     }
 }
 ```
 
-### 1.4 InputMode -- 输入模式
+### 1.4 KeyboardInputMode -- 输入模式
 
 | 属性 | 说明 |
 |------|------|
 | 角色 | 输入交互范式定义 |
 | 职责 | 决定按键的几何排列方式和手势交互方式 |
-| 约束 | 与 Keyboard.Type 正交，任意 InputMode 可与任意 Type 组合 |
+| 约束 | 与 KeyboardType 正交，任意 KeyboardInputMode 可与任意 Type 组合 |
 | 关键属性 | XPad, HexGrid, RectGrid, MultiZone |
-| 所属包 | keyboard |
+| 所属模块 | :ime-engine |
+| 所属包 | engine.core |
 
-InputMode 决定交互范式和布局几何，是独立于键盘内容类型的正交维度。X-Pad 模式采用六边形网格布局，手指在六边形区域间滑行选择声母韵母组合；HexGrid 模式采用六边形网格但交互方式不同于 X-Pad，适用于需要六边形紧密排列的场景；RectGrid 模式采用传统矩形网格布局，是最常见的 QWERTY 式按键排列；MultiZone 模式将键盘划分为多个独立区域，每个区域可独立交互，适用于需要分区操作的场景。InputMode 的选择直接影响 KeyLayoutPanel 的布局算法和 GestureInputPanel 的手势识别逻辑，同时也决定了输入轨迹的几何形状——不同 InputMode 下从起始按键到目标按键的轨迹曲线由 KeyLayoutPanel 动态计算，作为输入轨迹的一部分写入 GestureFeedbackState 的 touchTrailPoints。
+KeyboardInputMode 决定交互范式和布局几何，是独立于键盘内容类型的正交维度。X-Pad 模式采用六边形网格布局，手指在六边形区域间滑行选择声母韵母组合；HexGrid 模式采用六边形网格但交互方式不同于 X-Pad，适用于需要六边形紧密排列的场景；RectGrid 模式采用传统矩形网格布局，是最常见的 QWERTY 式按键排列；MultiZone 模式将键盘划分为多个独立区域，每个区域可独立交互，适用于需要分区操作的场景。KeyboardInputMode 的选择直接影响 KeyLayoutPanel 的布局算法和 GestureInputPanel 的手势识别逻辑，同时也决定了输入轨迹的几何形状——不同 KeyboardInputMode 下从起始按键到目标按键的轨迹曲线由 KeyLayoutPanel 动态计算，作为输入轨迹的一部分写入 GestureFeedbackState 的 touchTrailPoints。
 
 ```kotlin
 /**
  * 输入模式，决定交互范式和布局几何。
  *
- * InputMode 与 Keyboard.Type 正交：任意 InputMode 可与任意 Type 组合。
- * InputMode 影响按键的几何排列方式和手势交互方式。
+ * 属于 :ime-engine 模块的 engine.core 包。
+ * KeyboardInputMode 与 KeyboardType 正交：任意 KeyboardInputMode 可与任意 Type 组合。
+ * KeyboardInputMode 影响按键的几何排列方式和手势交互方式。
+ * KeyboardType 是引擎的键盘分类（Pinyin/Latin/Symbol 等），KeyboardInputMode 是输入交互范式分类（XPad/HexGrid/RectGrid/MultiZone），二者是不同的概念维度。
  */
 sealed class Keyboard {
 
-    enum class InputMode {
+    enum class KeyboardInputMode {
         /** X-Pad 六边形面板，手指在六边形区域间滑行 */
         XPad,
         /** 六边形网格布局，紧密排列 */
@@ -151,24 +154,24 @@ sealed class Keyboard {
 }
 ```
 
-### 1.5 Keyboard.Type -- 键盘类型
+### 1.5 KeyboardType -- 键盘类型
 
 | 属性 | 说明 |
 |------|------|
 | 角色 | 键盘内容类型定义 |
 | 职责 | 决定按键集合的语义内容和标签 |
-| 约束 | 与 InputMode 正交；编辑功能由 ToolListPanel 统一管理 |
+| 约束 | 与 KeyboardInputMode 正交；编辑功能由 ToolListPanel 统一管理 |
 | 关键属性 | Pinyin, Latin, Symbol, Emoji, Number, Math |
 | 所属包 | keyboard |
 
-Keyboard.Type 决定键盘的内容类型，即按键集合的语义分类。Pinyin 类型提供拼音输入的声母韵母按键，Latin 类型提供拉丁字母按键，Symbol/Emoji 类型提供符号和表情，Number 类型提供数字和基本运算符，Math 类型提供数学公式相关按键。Type 的选择决定了 KeyLayoutPanel 渲染哪些按键以及按键的标签内容，但不影响按键的几何排列方式——几何排列由 InputMode 决定。Editor 类型的编辑功能键（如全选、复制、粘贴、撤销等）由 ToolListPanel 统一管理，作为工具项展示，编辑功能在任何键盘类型下均可通过工具栏快速访问。
+KeyboardType 决定键盘的内容类型，即按键集合的语义分类。Pinyin 类型提供拼音输入的声母韵母按键，Latin 类型提供拉丁字母按键，Symbol/Emoji 类型提供符号和表情，Number 类型提供数字和基本运算符，Math 类型提供数学公式相关按键。Type 的选择决定了 KeyLayoutPanel 渲染哪些按键以及按键的标签内容，但不影响按键的几何排列方式——几何排列由 KeyboardInputMode 决定。Editor 类型的编辑功能键（如全选、复制、粘贴、撤销等）由 ToolListPanel 统一管理，作为工具项展示，编辑功能在任何键盘类型下均可通过工具栏快速访问。
 
 ```kotlin
 /**
  * 键盘类型，决定键盘的内容类型。
  *
- * Type 与 InputMode 正交：任意 Type 可与任意 InputMode 组合。
- * Type 决定按键集合的语义内容和标签，InputMode 决定按键的几何排列方式。
+ * Type 与 KeyboardInputMode 正交：任意 Type 可与任意 KeyboardInputMode 组合。
+ * Type 决定按键集合的语义内容和标签，KeyboardInputMode 决定按键的几何排列方式。
  * 编辑功能由 ToolListPanel 统一管理。
  */
 sealed class Keyboard {
@@ -184,9 +187,9 @@ sealed class Keyboard {
 }
 ```
 
-### 1.6 InputMode x Keyboard.Type 正交矩阵
+### 1.6 KeyboardInputMode x KeyboardType 正交矩阵
 
-InputMode 与 Keyboard.Type 是两个完全独立的正交维度，不存在互斥关系。任意 InputMode 可以与任意 Type 组合，产生不同的按键布局和交互体验。例如 Pinyin + XPad 组合产生六边形拼音滑行面板，Pinyin + RectGrid 组合产生传统 QWERTY 拼音键盘，Number + HexGrid 组合产生六边形数字面板。这种正交设计使得新增 InputMode 或 Type 时不需要修改已有组合的代码，只需在 KeyLayoutPanel 中为新的组合提供布局策略即可。
+KeyboardInputMode 与 KeyboardType 是两个完全独立的正交维度，不存在互斥关系。任意 KeyboardInputMode 可以与任意 Type 组合，产生不同的按键布局和交互体验。例如 Pinyin + XPad 组合产生六边形拼音滑行面板，Pinyin + RectGrid 组合产生传统 QWERTY 拼音键盘，Number + HexGrid 组合产生六边形数字面板。这种正交设计使得新增 KeyboardInputMode 或 Type 时不需要修改已有组合的代码，只需在 KeyLayoutPanel 中为新的组合提供布局策略即可。
 
 |  | Pinyin | Latin | Symbol/Emoji | Number | Math |
 |---|---|---|---|---|---|
@@ -201,7 +204,7 @@ InputMode 与 Keyboard.Type 是两个完全独立的正交维度，不存在互�
 
 ### 2.1 Zone A 与 Zone B 空间关系
 
-屏幕纵向划分为 Zone A（上半区）和 Zone B（下半区），两区比例由 LayoutMode 决定。在 Stacked 模式下，Zone A 不使用（高度为 0），Zone B 占据全部 IME 屏幕空间；在 Separated 模式下，Zone A 和 Zone B 按 zoneARatio 比例分配屏幕高度，默认 Zone A 占 40%、Zone B 占 60%。Zone A 的内容仅包含 KeyLayoutPanel 和 GestureFeedbackPanel 的叠加，用于展示按键布局和手势反馈轨迹。Zone B 包含完整的三行结构，承载所有交互面板。
+屏幕纵向划分为 Zone A（上半区）和 Zone B（下半区），两区比例由 KeyboardLayoutMode 决定。在 Stacked 模式下，Zone A 不使用（高度为 0），Zone B 占据全部 IME 屏幕空间；在 Separated 模式下，Zone A 和 Zone B 按 zoneARatio 比例分配屏幕高度，默认 Zone A 占 40%、Zone B 占 60%。Zone A 的内容仅包含 KeyLayoutPanel 和 GestureFeedbackPanel 的叠加，用于展示按键布局和手势反馈轨迹。Zone B 包含完整的三行结构，承载所有交互面板。
 
 ```plantuml
 @file:../diagrams/ui-screen-layout.puml
@@ -217,11 +220,11 @@ Zone B 纵向划分为三个行，每行承载不同类型的面板组件，行�
 
 在 Separated 模式下，Row 3 被进一步划分为三列，以充分利用分离布局带来的空间优势。左列和右列各放置常用输入功能按钮，如切换键盘、删除、空格、回车等功能键，这些按钮在分离模式下从 KeyLayoutPanel 的主键区中抽出，放置在两侧便于拇指快速触达。中列承载 GestureFeedbackPanel 和 GestureInputPanel 的叠加，是手势交互的核心区域。KeyLayoutPanel 在 Separated 模式下部署在 Zone A 而非 Zone B 的 Row 3，因此 Row 3 的三列布局中不包含 KeyLayoutPanel。
 
-三列布局的设计目的是利用分离模式下手指在 Zone B 操作、按键在 Zone A 展示的空间优势，将常用功能键分布在手指两侧，缩短拇指移动距离，提升输入效率。中列的 GestureInputPanel 接收触摸事件，GestureFeedbackPanel 绘制手势轨迹，二者叠加共享中列空间。左列和右列的功能按钮由 KeyboardViewModel 根据 Keyboard.Type 动态配置，不同类型键盘可能显示不同的功能按钮集合。
+三列布局的设计目的是利用分离模式下手指在 Zone B 操作、按键在 Zone A 展示的空间优势，将常用功能键分布在手指两侧，缩短拇指移动距离，提升输入效率。中列的 GestureInputPanel 接收触摸事件，GestureFeedbackPanel 绘制手势轨迹，二者叠加共享中列空间。左列和右列的功能按钮由 KeyboardViewModel 根据 KeyboardType 动态配置，不同类型键盘可能显示不同的功能按钮集合。
 
 ### 2.4 Zone A 内容
 
-Zone A 仅在 Separated 模式下被使用，其内容由 KeyLayoutPanel 和 GestureFeedbackPanel 叠加构成。KeyLayoutPanel 负责根据当前 InputMode 和 Keyboard.Type 渲染按键布局，GestureFeedbackPanel 负责绘制触摸轨迹、按键高亮等视觉反馈。两面板叠加共享 Zone A 的全部空间，叠加顺序从底到顶为：KeyLayoutPanel（底层渲染）-> GestureFeedbackPanel（透明反馈层）。Zone A 的容器支持指定尺寸和布局方向（居中、顶部对齐、底部对齐），面板组件自动填充容器提供的可用空间。
+Zone A 仅在 Separated 模式下被使用，其内容由 KeyLayoutPanel 和 GestureFeedbackPanel 叠加构成。KeyLayoutPanel 负责根据当前 KeyboardInputMode 和 KeyboardType 渲染按键布局，GestureFeedbackPanel 负责绘制触摸轨迹、按键高亮等视觉反馈。两面板叠加共享 Zone A 的全部空间，叠加顺序从底到顶为：KeyLayoutPanel（底层渲染）-> GestureFeedbackPanel（透明反馈层）。Zone A 的容器支持指定尺寸和布局方向（居中、顶部对齐、底部对齐），面板组件自动填充容器提供的可用空间。
 
 Zone A 中的 GestureFeedbackPanel 使用归一化坐标绘制反馈。由于 Zone A 和 Zone B 各有独立的 GestureFeedbackPanel 实例，它们的尺寸不同，但共享同一套归一化坐标数据。Zone A 实例的尺寸由 Zone A 面板容器决定，Zone B 实例的尺寸由 Zone B 面板容器决定。绘制时，各实例根据自身尺寸将归一化坐标转换为实际像素坐标。KeyLayoutPanel 只能出现在 Zone A（Separated 模式）或 Zone B（Stacked 模式）中的一个位置，不存在同时出现在两个 Zone 的情况，即 KeyLayoutPanel 是单实例组件。
 
@@ -237,7 +240,7 @@ Zone A 中的 GestureFeedbackPanel 使用归一化坐标绘制反馈。由于 Zo
 |------|------|
 | 角色 | 输入面板的手势输出模型 |
 | 职责 | 描述用户的输入意图，坐标无关 |
-| 约束 | 不包含任何绝对坐标，只包含按键的语义标识；包含 InputMode 参数以支持不同模式的手势识别策略 |
+| 约束 | 不包含任何绝对坐标，只包含按键的语义标识；包含 KeyboardInputMode 参数以支持不同模式的手势识别策略 |
 | 关键属性 | timestamp, Tap, LongPress, Swipe, Flip, XPadZonePath, CandidateTap |
 | 所属包 | gesture |
 
@@ -254,7 +257,7 @@ sealed class InputGesture {
     abstract val timestamp: Long
 
     /** 产生此手势的输入模式 */
-    abstract val inputMode: InputMode
+    abstract val inputMode: KeyboardInputMode
 
     /**
      * 点击按键。
@@ -263,7 +266,7 @@ sealed class InputGesture {
      */
     data class Tap(
         override val timestamp: Long,
-        override val inputMode: InputMode,
+        override val inputMode: KeyboardInputMode,
         val key: InputKey,
         /** 连续点击同一按键的次数（0=首次，1=双击，2=三击...） */
         val tick: Int = 0,
@@ -274,7 +277,7 @@ sealed class InputGesture {
      */
     data class LongPress(
         override val timestamp: Long,
-        override val inputMode: InputMode,
+        override val inputMode: KeyboardInputMode,
         val key: InputKey,
     ) : InputGesture()
 
@@ -288,7 +291,7 @@ sealed class InputGesture {
      */
     data class Swipe(
         override val timestamp: Long,
-        override val inputMode: InputMode,
+        override val inputMode: KeyboardInputMode,
         val startKey: InputKey,
         val endKey: InputKey,
         val visitedKeys: List<InputKey>,
@@ -300,7 +303,7 @@ sealed class InputGesture {
      */
     data class Flip(
         override val timestamp: Long,
-        override val inputMode: InputMode,
+        override val inputMode: KeyboardInputMode,
         val startKey: InputKey,
         val direction: FlipDirection,
     ) : InputGesture()
@@ -313,7 +316,7 @@ sealed class InputGesture {
      */
     data class XPadZonePath(
         override val timestamp: Long,
-        override val inputMode: InputMode,
+        override val inputMode: KeyboardInputMode,
         val startZone: XPadZone,
         val path: List<XPadZone>,
     ) : InputGesture()
@@ -323,7 +326,7 @@ sealed class InputGesture {
      */
     data class CandidateTap(
         override val timestamp: Long,
-        override val inputMode: InputMode,
+        override val inputMode: KeyboardInputMode,
         val candidateIndex: Int,
     ) : InputGesture()
 }
@@ -376,7 +379,7 @@ data class ImeState(
     // ... 现有字段 ...
 
     /** 当前输入模式，决定按键布局几何和交互范式 */
-    val inputMode: InputMode = InputMode.RectGrid,
+    val inputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
 
     /** 是否正在输入，控制 ToolListPanel/InputListPanel 的互斥切换 */
     val isInputting: Boolean = false,
@@ -405,7 +408,7 @@ data class ImeState(
 | 关键属性 | touchTrailPoints, pressedKeys, fingerIndicator |
 | 所属包 | feedback |
 
-GestureFeedbackState 经简化后仅保留纯粹的视觉反馈职责。弹出提示由 ImeState 管理（见 §3.2），按键间路径和 X-Pad 路径统一合并到 touchTrailPoints 中。合并的理由：按键间路径（keyPath）和 X-Pad 路径（xPadPath）本质上都是输入轨迹的组成部分，由 KeyLayoutPanel 根据 InputMode 计算起止按键间的平滑曲线后，作为 touchTrailPoints 中的插值路径点统一写入。这三类路径本质上都是手指移动的轨迹，不应作为独立反馈类型。简化后的 GestureFeedbackState 包含三类核心视觉反馈：触摸轨迹点（含计算后的平滑曲线）、按键高亮集合、手指指示器状态。
+GestureFeedbackState 经简化后仅保留纯粹的视觉反馈职责。弹出提示由 ImeState 管理（见 §3.2），按键间路径和 X-Pad 路径统一合并到 touchTrailPoints 中。合并的理由：按键间路径（keyPath）和 X-Pad 路径（xPadPath）本质上都是输入轨迹的组成部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线后，作为 touchTrailPoints 中的插值路径点统一写入。这三类路径本质上都是手指移动的轨迹，不应作为独立反馈类型。简化后的 GestureFeedbackState 包含三类核心视觉反馈：触摸轨迹点（含计算后的平滑曲线）、按键高亮集合、手指指示器状态。
 
 ```kotlin
 /**
@@ -415,7 +418,7 @@ GestureFeedbackState 经简化后仅保留纯粹的视觉反馈职责。弹出�
  *    绘制时由 GestureFeedbackPanel 根据面板实际尺寸转换为像素坐标。
  * 2. 移除 popupTip：弹出提示由 ImeState 管理，不属于视觉反馈。
  * 3. 移除 keyPath 和 xPadPath：按键间路径和 X-Pad 路径统一合并
- *    为输入轨迹的一部分，由 KeyLayoutPanel 根据 InputMode 计算
+ *    为输入轨迹的一部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算
  *    起止按键间的平滑曲线后，作为 touchTrailPoints 写入。
  *    这三类路径本质上都是手指移动的轨迹，不应作为独立反馈类型。
  */
@@ -430,7 +433,7 @@ class GestureFeedbackState {
      *
      * **轨迹计算说明**：touchTrailPoints 不仅包含手指的实际触摸点，
      * 还包含按键间路径和 X-Pad 路径的平滑曲线插值点。
-     * KeyLayoutPanel 根据 InputMode 动态计算起始按键到目标按键间的
+     * KeyLayoutPanel 根据 KeyboardInputMode 动态计算起始按键到目标按键间的
      * 轨迹形状（如 RectGrid 的直线路径、XPad 的弧形路径等），
      * 生成归一化坐标插值路径后写入 touchTrailPoints。
      * 这样触摸轨迹、按键间路径、X-Pad 路径统一为一种输入轨迹，
@@ -777,7 +780,7 @@ Zone B 三行结构中，不同行的面板组件遵循不同的共存规则。R
 
 ### 4.2 实例策略表
 
-不同 LayoutMode 下，组件实例的部署位置和数量不同。KeyLayoutPanel 作为单实例组件，在 Stacked 模式下部署在 Zone B Row 3，在 Separated 模式下部署在 Zone A。GestureFeedbackPanel 作为双实例组件，在 Stacked 模式下仅 Zone B 有一个实例，在 Separated 模式下 Zone A 和 Zone B 各有一个实例，分别绘制不同类型的反馈元素。GestureInputPanel 在两种模式下均仅存在于 Zone B Row 3。
+不同 KeyboardLayoutMode 下，组件实例的部署位置和数量不同。KeyLayoutPanel 作为单实例组件，在 Stacked 模式下部署在 Zone B Row 3，在 Separated 模式下部署在 Zone A。GestureFeedbackPanel 作为双实例组件，在 Stacked 模式下仅 Zone B 有一个实例，在 Separated 模式下 Zone A 和 Zone B 各有一个实例，分别绘制不同类型的反馈元素。GestureInputPanel 在两种模式下均仅存在于 Zone B Row 3。
 
 | 组件 | Stacked 模式实例数 | Stacked 部署位置 | Separated 模式实例数 | Separated 部署位置 |
 |---|---|---|---|---|
@@ -789,7 +792,7 @@ Zone B 三行结构中，不同行的面板组件遵循不同的共存规则。R
 | ToolListPanel | 1 | Zone B Row 2 | 1 | Zone B Row 2 |
 | InputListPanel | 1 | Zone B Row 2 | 1 | Zone B Row 2 |
 
-LayoutMode 动态切换时的实例迁移策略如下。从 Stacked 切换到 Separated 时：KeyLayoutPanel 从 Zone B Row 3 迁移到 Zone A；GestureFeedbackPanel 从 Zone B 的单实例拆分为 Zone A 和 Zone B 的双实例，反馈元素按 SeparatedSet 配置重新分配；GestureInputPanel 保持在 Zone B 但从整行宽度收缩到中列宽度；Zone A 的容器被创建并填充内容。从 Separated 切换到 Stacked 时执行反向操作：KeyLayoutPanel 从 Zone A 迁移回 Zone B Row 3；GestureFeedbackPanel 的双实例合并为 Zone B 单实例，反馈元素按 StackedSet 配置合并；GestureInputPanel 从中列宽度扩展到整行宽度；Zone A 的容器被移除。切换过程中，所有状态通过 GestureFeedbackState 和 ImeState 保持连续，不丢失任何手势或输入进度信息。
+KeyboardLayoutMode 动态切换时的实例迁移策略如下。从 Stacked 切换到 Separated 时：KeyLayoutPanel 从 Zone B Row 3 迁移到 Zone A；GestureFeedbackPanel 从 Zone B 的单实例拆分为 Zone A 和 Zone B 的双实例，反馈元素按 SeparatedSet 配置重新分配；GestureInputPanel 保持在 Zone B 但从整行宽度收缩到中列宽度；Zone A 的容器被创建并填充内容。从 Separated 切换到 Stacked 时执行反向操作：KeyLayoutPanel 从 Zone A 迁移回 Zone B Row 3；GestureFeedbackPanel 的双实例合并为 Zone B 单实例，反馈元素按 StackedSet 配置合并；GestureInputPanel 从中列宽度扩展到整行宽度；Zone A 的容器被移除。切换过程中，所有状态通过 GestureFeedbackState 和 ImeState 保持连续，不丢失任何手势或输入进度信息。
 
 ---
 
@@ -823,8 +826,8 @@ LayoutMode 动态切换时的实例迁移策略如下。从 Stacked 切换到 Se
 @Composable
 fun GestureInputPanel(
     keyLayoutState: KeyLayoutState,
-    inputMode: InputMode,
-    keyboardType: Keyboard.Type,
+    inputMode: KeyboardInputMode,
+    keyboardType: KeyboardType,
     feedbackState: GestureFeedbackState,
     onGesture: (InputGesture) -> Unit,
     modifier: Modifier = Modifier,
@@ -855,8 +858,8 @@ fun GestureInputPanel(
 @Composable
 fun GestureDetectorLayer(
     keyLayoutState: KeyLayoutState,
-    inputMode: InputMode,
-    keyboardType: Keyboard.Type,
+    inputMode: KeyboardInputMode,
+    keyboardType: KeyboardType,
     feedbackState: GestureFeedbackState,
     onGesture: (InputGesture) -> Unit,
     modifier: Modifier = Modifier,
@@ -882,7 +885,7 @@ fun GestureDetectorLayer(
 
                     when {
                         // X-Pad 模式：区域路径检测
-                        inputMode == InputMode.XPad -> {
+                        inputMode == KeyboardInputMode.XPad -> {
                             handleXPadGesture(
                                 downPosition = down.position,
                                 panelSize = panelSize,
@@ -931,7 +934,7 @@ private suspend fun PointerInputScope.handleStandardGesture(
     downTime: Long,
     panelSize: Size,
     keyLayoutState: KeyLayoutState,
-    inputMode: InputMode,
+    inputMode: KeyboardInputMode,
     feedbackState: GestureFeedbackState,
     onGesture: (InputGesture) -> Unit,
     haptics: HapticFeedback,
@@ -978,9 +981,9 @@ private suspend fun PointerInputScope.handleStandardGesture(
             // 更新反馈：当前按下的按键
             feedbackState.setPressedKeys(setOf(keyAtPosition))
 
-            // 由 KeyLayoutPanel 根据 InputMode 计算按键间插值轨迹，
+            // 由 KeyLayoutPanel 根据 KeyboardInputMode 计算按键间插值轨迹，
             // 将归一化坐标插值路径写入 touchTrailPoints
-            // （此处简化，实际由 LayoutStrategy 计算）
+            // （此处简化，实际由 KeyLayoutStrategy 计算）
         }
     } while (event.changes.any { it.pressed })
 
@@ -1028,7 +1031,7 @@ private suspend fun PointerInputScope.handleXPadGesture(
     downPosition: Offset,
     panelSize: Size,
     keyLayoutState: KeyLayoutState,
-    inputMode: InputMode,
+    inputMode: KeyboardInputMode,
     feedbackState: GestureFeedbackState,
     onGesture: (InputGesture) -> Unit,
     haptics: HapticFeedback,
@@ -1088,7 +1091,7 @@ private suspend fun PointerInputScope.handleXPadGesture(
 
 ### 6.2 FeedbackElementType
 
-简化后仅保留三种核心类型。KeyPath 和 XPadPathHighlight 已合并到 TouchTrail 中，因为按键间路径和 X-Pad 路径本质上都是输入轨迹的组成部分，由 KeyLayoutPanel 根据 InputMode 计算起止按键间的平滑曲线，统一作为 touchTrailPoints 写入 GestureFeedbackState。合并的理由：这三类路径本质上都是手指移动的轨迹，其视觉表现均为从起点到终点的曲线，仅曲线形状由 InputMode 决定（如 RectGrid 的直线、XPad 的弧线），没有必要作为独立反馈类型分别管理。
+简化后仅保留三种核心类型。KeyPath 和 XPadPathHighlight 已合并到 TouchTrail 中，因为按键间路径和 X-Pad 路径本质上都是输入轨迹的组成部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线，统一作为 touchTrailPoints 写入 GestureFeedbackState。合并的理由：这三类路径本质上都是手指移动的轨迹，其视觉表现均为从起点到终点的曲线，仅曲线形状由 KeyboardInputMode 决定（如 RectGrid 的直线、XPad 的弧线），没有必要作为独立反馈类型分别管理。
 
 | 属性 | 说明 |
 |------|------|
@@ -1109,10 +1112,10 @@ private suspend fun PointerInputScope.handleXPadGesture(
  *
  * KeyPath 和 XPadPathHighlight 已合并到 TouchTrail 中，
  * 因为按键间路径和 X-Pad 路径本质上都是输入轨迹的组成部分，
- * 由 KeyLayoutPanel 根据 InputMode 计算起止按键间的平滑曲线，
+ * 由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线，
  * 统一作为 touchTrailPoints 写入 GestureFeedbackState。
  * 这三类路径本质上都是手指移动的轨迹，其视觉表现均为
- * 从起点到终点的曲线，仅曲线形状由 InputMode 决定
+ * 从起点到终点的曲线，仅曲线形状由 KeyboardInputMode 决定
  * （如 RectGrid 的直线、XPad 的弧线），
  * 没有必要作为独立反馈类型分别管理。
  */
@@ -1164,7 +1167,7 @@ fun GestureFeedbackPanel(
 
         // 输入轨迹（包含按键间路径和 X-Pad 路径）：归一化坐标 -> 像素坐标
         // 按键间路径和 X-Pad 路径已合并为输入轨迹的一部分，
-        // 由 KeyLayoutPanel 根据 InputMode 计算轨迹形状后
+        // 由 KeyLayoutPanel 根据 KeyboardInputMode 计算轨迹形状后
         // 作为 touchTrailPoints 中的平滑曲线点写入
         if (FeedbackElementType.TouchTrail in elements && touchTrailPoints.size >= 2) {
             val pixelPoints = touchTrailPoints.map { it.denormalize(panelSize) }
@@ -1349,17 +1352,17 @@ private fun midpoint(a: Offset, b: Offset): Offset =
 
 ### 7.1 核心概念
 
-KeyLayoutPanel 是按键布局渲染层，强调其布局渲染职责而非仅网格渲染。根据 InputMode 和 Keyboard.Type 动态选择布局策略，渲染按键的常规外观和持续性状态。不处理触摸事件，不绘制手势反馈（由 GestureFeedbackPanel 负责）。
+KeyLayoutPanel 是按键布局渲染层，强调其布局渲染职责而非仅网格渲染。根据 KeyboardInputMode 和 KeyboardType 动态选择布局策略，渲染按键的常规外观和持续性状态。不处理触摸事件，不绘制手势反馈（由 GestureFeedbackPanel 负责）。
 
-KeyLayoutPanel 是单实例组件——在任意时刻仅存在一个实例，根据 LayoutMode 决定部署位置：Stacked 模式下部署在 Zone B Row 3，Separated 模式下部署在 Zone A。
+KeyLayoutPanel 是单实例组件——在任意时刻仅存在一个实例，根据 KeyboardLayoutMode 决定部署位置：Stacked 模式下部署在 Zone B Row 3，Separated 模式下部署在 Zone A。
 
-InputMode 与 Keyboard.Type 正交组合：任意 InputMode 可与任意 Type 组合，通过 LayoutStrategy 分发不同的布局策略实现。
+KeyboardInputMode 与 KeyboardType 正交组合：任意 KeyboardInputMode 可与任意 Type 组合，通过 KeyLayoutStrategy 分发不同的布局策略实现。
 
 | 属性 | 说明 |
 |------|------|
 | 角色 | Row 3 面板，按键布局渲染 |
-| 职责 | 根据 InputMode 和 Keyboard.Type 动态切换按键布局并渲染按键，提供布局状态供其他面板查询 |
-| 约束 | 单实例：同一时刻仅存在于 Zone A 或 Zone B 之一；InputMode x Type 正交组合 |
+| 职责 | 根据 KeyboardInputMode 和 KeyboardType 动态切换按键布局并渲染按键，提供布局状态供其他面板查询 |
+| 约束 | 单实例：同一时刻仅存在于 Zone A 或 Zone B 之一；KeyboardInputMode x Type 正交组合 |
 | 关键属性 | inputMode, keyboardType, onLayoutStateChanged, 计算归一化坐标 |
 | 所属包 | panel |
 
@@ -1369,17 +1372,17 @@ InputMode 与 Keyboard.Type 正交组合：任意 InputMode 可与任意 Type �
 /**
  * 按键布局面板。
  *
- * 根据 InputMode 和 Keyboard.Type 动态选择布局策略，
+ * 根据 KeyboardInputMode 和 KeyboardType 动态选择布局策略，
  * 渲染按键的常规外观和持续性状态。
  * 不处理触摸事件，不绘制手势反馈（由 GestureFeedbackPanel 负责）。
  *
  * **单实例约束**：KeyLayoutPanel 在任意时刻仅存在一个实例，
- * 根据 LayoutMode 决定部署位置：
+ * 根据 KeyboardLayoutMode 决定部署位置：
  * - Stacked 模式：部署在 Zone B Row 3
  * - Separated 模式：部署在 Zone A
  *
- * **InputMode x Type 正交组合**：
- * 任意 InputMode 可与任意 Type 组合，通过 LayoutStrategy 分发：
+ * **KeyboardInputMode x Type 正交组合**：
+ * 任意 KeyboardInputMode 可与任意 Type 组合，通过 KeyLayoutStrategy 分发：
  * - XPad + Pinyin -> XPadPinyinLayout
  * - RectGrid + Pinyin -> RectGridPinyinLayout
  * - HexGrid + Number -> HexGridNumberLayout
@@ -1387,15 +1390,15 @@ InputMode 与 Keyboard.Type 正交组合：任意 InputMode 可与任意 Type �
  */
 @Composable
 fun KeyLayoutPanel(
-    inputMode: InputMode,
-    keyboardType: Keyboard.Type,
+    inputMode: KeyboardInputMode,
+    keyboardType: KeyboardType,
     keyGrid: List<List<InputKey>>,
     keyboardState: KeyboardState,
     onLayoutStateChanged: (KeyLayoutState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val layoutStrategy = remember(inputMode, keyboardType) {
-        LayoutStrategy.resolve(inputMode, keyboardType)
+        KeyLayoutStrategy.resolve(inputMode, keyboardType)
     }
 
     layoutStrategy.Layout(
@@ -1407,18 +1410,18 @@ fun KeyLayoutPanel(
 }
 ```
 
-### 7.3 LayoutStrategy
+### 7.3 KeyLayoutStrategy
 
 ```kotlin
 /**
- * 布局策略，根据 InputMode x Type 组合分发。
+ * 布局策略，根据 KeyboardInputMode x Type 组合分发。
  *
- * 每种 InputMode x Type 组合对应一个 LayoutStrategy 实现，
+ * 每种 KeyboardInputMode x Type 组合对应一个 KeyLayoutStrategy 实现，
  * 负责按键的几何排列和 KeyLayoutState 的计算。
  * 策略内部将按键位置归一化后写入 KeyLayoutState，
  * 供 GestureInputPanel 和 GestureFeedbackPanel 查询。
  */
-interface LayoutStrategy {
+interface KeyLayoutStrategy {
     @Composable
     fun Layout(
         keyGrid: List<List<InputKey>>,
@@ -1429,16 +1432,16 @@ interface LayoutStrategy {
 
     companion object {
         /**
-         * 根据 InputMode 和 Type 解析对应的布局策略。
+         * 根据 KeyboardInputMode 和 Type 解析对应的布局策略。
          *
-         * 任意 InputMode 可与任意 Type 组合，不存在互斥关系。
+         * 任意 KeyboardInputMode 可与任意 Type 组合，不存在互斥关系。
          */
-        fun resolve(inputMode: InputMode, type: Keyboard.Type): LayoutStrategy {
+        fun resolve(inputMode: KeyboardInputMode, type: KeyboardType): KeyLayoutStrategy {
             return when (inputMode) {
-                InputMode.XPad -> XPadLayoutStrategy(type)
-                InputMode.HexGrid -> HexGridLayoutStrategy(type)
-                InputMode.RectGrid -> RectGridLayoutStrategy(type)
-                InputMode.MultiZone -> MultiZoneLayoutStrategy(type)
+                KeyboardInputMode.XPad -> XPadKeyLayoutStrategy(type)
+                KeyboardInputMode.HexGrid -> HexGridKeyLayoutStrategy(type)
+                KeyboardInputMode.RectGrid -> RectGridKeyLayoutStrategy(type)
+                KeyboardInputMode.MultiZone -> MultiZoneKeyLayoutStrategy(type)
             }
         }
     }
@@ -1896,22 +1899,22 @@ data class InputListLayoutState(
 
 ### 12.1 实现
 
-KeyboardHost 是顶层集成组件，根据 LayoutMode 组合 Zone A / Zone B 的面板组件，提供完整输入交互 UI，支持动态切换布局模式。KeyLayoutPanel 为单实例，同一时刻仅存在于 Zone A 或 Zone B 之一。KeyboardHost 提供「即插即用」的完整输入法 UI，第三方应用只需创建 KeyboardViewModel 并传入 KeyboardHost 即可获得完整的输入法界面。
+KeyboardHost 是顶层集成组件，根据 KeyboardLayoutMode 组合 Zone A / Zone B 的面板组件，提供完整输入交互 UI，支持动态切换布局模式。KeyLayoutPanel 为单实例，同一时刻仅存在于 Zone A 或 Zone B 之一。KeyboardHost 提供「即插即用」的完整输入法 UI，第三方应用只需创建 KeyboardViewModel 并传入 KeyboardHost 即可获得完整的输入法界面。
 
 | 属性 | 说明 |
 |------|------|
 | 角色 | 顶层集成组件 |
-| 职责 | 根据 LayoutMode 组合 Zone A / Zone B 的面板组件，提供完整输入交互 UI，支持动态切换布局模式 |
+| 职责 | 根据 KeyboardLayoutMode 组合 Zone A / Zone B 的面板组件，提供完整输入交互 UI，支持动态切换布局模式 |
 | 约束 | KeyLayoutPanel 为单实例，同一时刻仅存在于 Zone A 或 Zone B 之一 |
-| 关键属性 | layoutMode: State\<LayoutMode\>, viewModel: KeyboardViewModel |
+| 关键属性 | layoutMode: State\<KeyboardLayoutMode\>, viewModel: KeyboardViewModel |
 | 所属包 | integration |
 
 ```kotlin
 /**
  * 键盘宿主组件，顶层集成组件。
  *
- * 通过 LayoutMode 参数统一堆叠和分离两种布局模式的入口。
- * 支持运行时动态切换 LayoutMode，切换时按实例策略表重新部署组件。
+ * 通过 KeyboardLayoutMode 参数统一堆叠和分离两种布局模式的入口。
+ * 支持运行时动态切换 KeyboardLayoutMode，切换时按实例策略表重新部署组件。
  *
  * KeyboardHost 提供「即插即用」的完整输入法 UI，第三方应用只需：
  * ```kotlin
@@ -1931,9 +1934,9 @@ fun KeyboardHost(
 
     KeyboardTheme(themeType = state.config.ui.themeType) {
         when (layoutMode) {
-            is LayoutMode.Stacked -> StackedLayout(viewModel, state, feedbackState, keyLayoutState)
-            is LayoutMode.Separated -> SeparatedLayout(
-                viewModel, state, feedbackState, keyLayoutState, layoutMode as LayoutMode.Separated
+            is KeyboardLayoutMode.Stacked -> StackedLayout(viewModel, state, feedbackState, keyLayoutState)
+            is KeyboardLayoutMode.Separated -> SeparatedLayout(
+                viewModel, state, feedbackState, keyLayoutState, layoutMode as KeyboardLayoutMode.Separated
             )
         }
     }
@@ -2027,7 +2030,7 @@ private fun SeparatedLayout(
     state: ImeState,
     feedbackState: GestureFeedbackState,
     keyLayoutState: KeyLayoutState,
-    mode: LayoutMode.Separated,
+    mode: KeyboardLayoutMode.Separated,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         // Zone A：按键布局 + 按键侧反馈

@@ -52,7 +52,7 @@ package ":ime-engine" #FFF3E0 {
   class InputActionScript <<(D,#FFF3E0)>> {
     + name: String
     + description: String
-    + inputMethod: InputMethod
+    + inputActionMode: InputActionMode
     + actions: List<InputAction>
     + totalDuration: Long
   }
@@ -65,28 +65,28 @@ package ":ime-engine" #FFF3E0 {
     - compileXPadActions(...)
   }
 
-  abstract class InputActionPlaybackState <<(S,#FFF3E0)>> {
+  abstract class InputActionPlayerState <<(S,#E8F5E9)>> {
   }
-  class Idle <<(S,#FFF3E0)>> {
+  class Idle <<(S,#E8F5E9)>> {
   }
-  class Ready <<(S,#FFF3E0)>> {
+  class Ready <<(S,#E8F5E9)>> {
     + script: InputActionScript
   }
-  class Playing <<(S,#FFF3E0)>> {
+  class Playing <<(S,#E8F5E9)>> {
     + currentIndex: Int
     + totalActions: Int
   }
-  class Paused <<(S,#FFF3E0)>> {
+  class Paused <<(S,#E8F5E9)>> {
     + currentIndex: Int
     + totalActions: Int
   }
-  class Finished <<(S,#FFF3E0)>> {
+  class Finished <<(S,#E8F5E9)>> {
   }
-  InputActionPlaybackState <|-- Idle
-  InputActionPlaybackState <|-- Ready
-  InputActionPlaybackState <|-- Playing
-  InputActionPlaybackState <|-- Paused
-  InputActionPlaybackState <|-- Finished
+  InputActionPlayerState <|-- Idle
+  InputActionPlayerState <|-- Ready
+  InputActionPlayerState <|-- Playing
+  InputActionPlayerState <|-- Paused
+  InputActionPlayerState <|-- Finished
 
   class InputActionFingerIndicator <<(D,#FFF3E0)>> {
     + position: OffsetF
@@ -134,7 +134,7 @@ package ":ime-ui" #E8F5E9 {
     - feedbackState: GestureFeedbackState
     - positionResolver: InputActionPositionResolver
     - scope: CoroutineScope
-    + playbackState: StateFlow<InputActionPlaybackState>
+    + playbackState: StateFlow<InputActionPlayerState>
     + speed: StateFlow<Float>
     + row1IndicatorState: StateFlow<InputActionFingerIndicator?>
     + row2IndicatorState: StateFlow<InputActionFingerIndicator?>
@@ -219,6 +219,12 @@ package ":app" #E3F2FD {
     创建 InputConnectionBridge
     注入 KeyboardViewModel.Factory
   }
+  class ExerciseScreen <<(C,#E3F2FD)>> {
+    + 练习与演示界面
+  }
+  class InputActionPlayerPanel <<(C,#E3F2FD)>> {
+    + 输入练习播放控制面板
+  }
 }
 
 ' ===== 关系 =====
@@ -235,7 +241,7 @@ InputActionPositionResolver <|.. ComposeInputActionPositionResolver : :ime-ui �
 InputActionPlayer --> InputActionPositionResolver : 坐标解析
 InputActionPlayer --> GestureFeedbackState : 驱动反馈
 InputActionPlayer --> KeyboardViewModel : handleIntent
-InputActionPlayer *-- InputActionPlaybackState : 播放状态
+InputActionPlayer *-- InputActionPlayerState : 播放状态
 InputActionPlayer ..> InputActionFingerIndicator : 创建/更新
 InputActionPlayer ..> InputActionPathInterpolator : 路径插值
 InputActionPlayer ..> ClickAnimation : 创建涟漪
@@ -255,5 +261,8 @@ KeyboardInputActionPlayerHost ..> InputActionFingerIndicator : 传递 Row 1/2 �
 IMEService --> KeyboardViewModel : Factory(engine)
 
 InputActionScriptLoader ..> InputActionScript : 加载
+
+ExerciseScreen --> InputActionPlayerPanel : 使用
+InputActionPlayerPanel --> KeyboardInputActionPlayerHost : 组合
 
 @enduml

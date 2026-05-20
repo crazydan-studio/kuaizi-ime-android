@@ -9,7 +9,7 @@ v4 采用三层库架构：引擎库（`:ime-engine`）、UI 库（`:ime-ui`）�
 │                        Platform Layer  ← :app 模块               │
 │  IMEService (薄壳) → 创建 ImeEngine → 挂载 InputConnectionBridge  │
 │  ComposeView 桥接 → 注入 KeyboardViewModel.Factory(engine)      │
-│  配置持久化（DataStore）+ 设置页面 + 引导页面                     │
+│  配置持久化（DataStore）+ 设置页面 + 引导页面 + 输入练习 UI        │
 ├─────────────────────────────────────────────────────────────────┤
 │                   ViewModel Layer   ← :ime-ui 库                 │
 │  KeyboardViewModel：持有 ImeEngine，暴露 StateFlow<ImeState>     │
@@ -20,7 +20,7 @@ v4 采用三层库架构：引擎库（`:ime-engine`）、UI 库（`:ime-ui`）�
 │  Compose 缺省 UI：GestureInputPanel / KeyLayoutPanel / GestureFeedbackPanel    │
 │  CandidateListPanel / InputListPanel / EditTextBridge / KeyboardHost      │
 │  (KeyboardHost 统一叠加模式与全屏模式，内部包含候选栏+输入栏+工具栏+键盘区域)             │
-│  主题系统 / 剪贴板与收藏 UI / 输入练习 UI          │
+│  主题系统 / 剪贴板与收藏 UI          │
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
 │                       Domain Layer     ← :ime-engine 库          │

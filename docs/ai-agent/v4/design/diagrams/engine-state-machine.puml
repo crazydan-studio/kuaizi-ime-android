@@ -95,9 +95,9 @@ note right of Idle
   CommitOption → CommitOptionChoosing
 end note
 
-' ===== StateHistory =====
+' ===== KeyboardStateHistory =====
 note left of Idle
-  **StateHistory 有界历史栈**
+  **KeyboardStateHistory 有界历史栈**
   maxSize = 10
   键盘切换时清空
   同一键盘内子状态回退通过 pop()

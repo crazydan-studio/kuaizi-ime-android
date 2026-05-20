@@ -95,36 +95,36 @@ sealed class KeyboardState {
 ## 3. 状态转换规则
 
 ```kotlin
-sealed class KeyboardTransition {
+sealed class KeyboardStateTransition {
     // 拼音输入转换
-    data class InputPinyinChar(val char: Char) : KeyboardTransition()
-    data class BeginSlip(val startKey: CharKey) : KeyboardTransition()
-    data class BeginFlip(val startChar: Char) : KeyboardTransition()
-    data class BeginXPad(val zones: List<XPadZone>) : KeyboardTransition()
-    data class SelectSlipChar(val char: Char) : KeyboardTransition()
-    data class SelectFlipChar(val char: Char) : KeyboardTransition()
-    data class SelectXPadZone(val zone: XPadZone) : KeyboardTransition()
+    data class InputPinyinChar(val char: Char) : KeyboardStateTransition()
+    data class BeginSlip(val startKey: CharKey) : KeyboardStateTransition()
+    data class BeginFlip(val startChar: Char) : KeyboardStateTransition()
+    data class BeginXPad(val zones: List<XPadZone>) : KeyboardStateTransition()
+    data class SelectSlipChar(val char: Char) : KeyboardStateTransition()
+    data class SelectFlipChar(val char: Char) : KeyboardStateTransition()
+    data class SelectXPadZone(val zone: XPadZone) : KeyboardStateTransition()
 
     // 候选选择转换
-    data class LoadCandidates(val candidates: List<InputWord>) : KeyboardTransition()
-    data class FilterCandidates(val spell: String) : KeyboardTransition()
-    data class AdvanceFilterCandidates(val radical: String?, val tone: Int?) : KeyboardTransition()
-    data class PageCandidates(val direction: PageDirection) : KeyboardTransition()
+    data class LoadCandidates(val candidates: List<InputWord>) : KeyboardStateTransition()
+    data class FilterCandidates(val spell: String) : KeyboardStateTransition()
+    data class AdvanceFilterCandidates(val radical: String?, val tone: Int?) : KeyboardStateTransition()
+    data class PageCandidates(val direction: PageDirection) : KeyboardStateTransition()
 
     // 提交选项转换
-    data class LoadCommitOptions(val options: List<CommitOption>) : KeyboardTransition()
+    data class LoadCommitOptions(val options: List<CommitOption>) : KeyboardStateTransition()
 
     // 编辑器转换
-    data class MoveCursor(val position: Int) : KeyboardTransition()
-    data class SelectText(val start: Int, val end: Int) : KeyboardTransition()
+    data class MoveCursor(val position: Int) : KeyboardStateTransition()
+    data class SelectText(val start: Int, val end: Int) : KeyboardStateTransition()
 
     // 符号/Emoji 转换
-    data class OpenSymbolGroup(val groupId: String?) : KeyboardTransition()
-    data class OpenEmojiGroup(val groupId: String?) : KeyboardTransition()
+    data class OpenSymbolGroup(val groupId: String?) : KeyboardStateTransition()
+    data class OpenEmojiGroup(val groupId: String?) : KeyboardStateTransition()
 
     // 通用转换
-    data object ReturnToIdle : KeyboardTransition()
-    data object BackToPrevious : KeyboardTransition()
+    data object ReturnToIdle : KeyboardStateTransition()
+    data object BackToPrevious : KeyboardStateTransition()
 }
 ```
 
@@ -143,7 +143,7 @@ class KeyboardStateMachine(
     val state: KeyboardState get() = _state
     private val stateHistory = ArrayDeque<KeyboardState>(maxSize = 10)
 
-    fun transition(transition: KeyboardTransition): List<ImeIntent> {
+    fun transition(transition: KeyboardStateTransition): List<ImeIntent> {
         val (newState, sideEffects) = when (_state) {
             is KeyboardState.Idle -> handleFromIdle(transition)
             is KeyboardState.PinyinInput.Waiting -> handleFromPinyinWaiting(transition)
@@ -211,10 +211,10 @@ val KeyboardType.initialState: KeyboardState
 sealed class Keyboard {
     abstract val type: KeyboardType
     abstract val state: KeyboardState
-    abstract fun handleIntent(intent: ImeIntent): KeyboardResult
+    abstract fun handleIntent(intent: ImeIntent): KeyboardStateResult
 }
 
-data class KeyboardResult(
+data class KeyboardStateResult(
     val newState: KeyboardState,
     val sideEffects: List<ImeIntent> = emptyList(),
     val commitText: String? = null,
@@ -232,12 +232,12 @@ class PinyinKeyboard(
     override val type = KeyboardType.Pinyin
     override val state get() = stateMachine.state
 
-    override fun handleIntent(intent: ImeIntent): KeyboardResult {
+    override fun handleIntent(intent: ImeIntent): KeyboardStateResult {
         return when (intent) {
             is ImeIntent.PressKey -> handleKeyPress(intent)
             is ImeIntent.SelectCandidate -> handleCandidateSelection(intent)
             is ImeIntent.PageCandidate -> handleCandidatePaging(intent)
-            else -> KeyboardResult(state)
+            else -> KeyboardStateResult(state)
         }
     }
 }
@@ -385,10 +385,10 @@ data class KeyTableContext(
 
 ---
 
-## 8. StateHistory 有界历史栈
+## 8. KeyboardStateHistory 有界历史栈
 
 ```kotlin
-class StateHistory(maxSize: Int = 10) {
+class KeyboardStateHistory(maxSize: Int = 10) {
     private val stack = ArrayDeque<KeyboardState>(maxSize)
 
     fun push(state: KeyboardState) {

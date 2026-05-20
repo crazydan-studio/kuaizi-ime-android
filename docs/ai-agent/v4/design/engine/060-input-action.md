@@ -6,7 +6,7 @@
 
 **坐标无关设计**：动作脚本只记录按键的语义标识（如 `InputKey`），不存储任何绝对坐标。回放时，播放器根据当前键盘状态动态查找按键的实时位置，从而消除按键布局变更、屏幕尺寸变化、手模式切换等因素导致的回放失效问题。
 
-> 本文档涵盖 `:ime-engine` 模块中的核心数据模型、编译器、播放状态模型（`InputActionPlaybackState`）、指示器模型（`InputActionFingerIndicator`）、路径插值算法（`InputActionPathInterpolator`）、位置解析器接口（`InputActionPositionResolver`）以及归一化坐标基础类型（`OffsetF`、`RectF`）。播放器（`InputActionPlayer`）的主体逻辑和 UI 覆盖层（`FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay`）属于 `:ime-ui` / `:app` 模块，不在本文档范围内。
+> 本文档涵盖 `:ime-engine` 模块中的核心数据模型、编译器、指示器模型（`InputActionFingerIndicator`）、路径插值算法（`InputActionPathInterpolator`）、位置解析器接口（`InputActionPositionResolver`）以及归一化坐标基础类型（`OffsetF`、`RectF`）。播放状态模型（`InputActionPlayerState`）已移至 `:ime-ui` 模块，定义见 [ui/040-input-action-player.md](../ui/040-input-action-player.md)。播放器（`InputActionPlayer`）的主体逻辑和 UI 覆盖层（`FingerOverlay`、`SwipeTrailOverlay`、`KeyHighlightOverlay`）属于 `:ime-ui` / `:app` 模块，不在本文档范围内。
 
 ---
 
@@ -81,7 +81,7 @@ sealed class InputAction {
 data class InputActionScript(
     val name: String,
     val description: String,
-    val inputMethod: InputMethod,
+    val inputActionMode: InputActionMode,
     val actions: List<InputAction>,
     val totalDuration: Long,
 )
@@ -89,13 +89,13 @@ data class InputActionScript(
 
 ---
 
-## 4. InputMethod 输入方式
+## 4. InputActionMode 输入方式
 
 ```kotlin
 /**
  * 输入方式，决定脚本编译器如何将字符序列转为动作序列。
  */
-enum class InputMethod {
+enum class InputActionMode {
     /** 逐键点击：每个字符单独点击 */
     Tap,
     /** 滑行输入：在按键间滑行，自动识别声母韵母 */
@@ -104,11 +104,11 @@ enum class InputMethod {
     XPad,
 }
 
-val InputMethod.displayName: String
+val InputActionMode.displayName: String
     get() = when (this) {
-        InputMethod.Tap -> "点击"
-        InputMethod.Swipe -> "滑行"
-        InputMethod.XPad -> "X-Pad"
+        InputActionMode.Tap -> "点击"
+        InputActionMode.Swipe -> "滑行"
+        InputActionMode.XPad -> "X-Pad"
     }
 ```
 
@@ -149,16 +149,16 @@ class InputActionScriptCompiler(
      */
     fun compile(
         text: String,
-        method: InputMethod = InputMethod.Swipe,
+        method: InputActionMode = InputActionMode.Swipe,
         speed: Float = 1.0f,
     ): InputActionScript {
         val actions = mutableListOf<InputAction>()
         var currentTime = 0L
 
         when (method) {
-            InputMethod.Tap -> compileTapActions(text, actions) { currentTime = it }
-            InputMethod.Swipe -> compileSwipeActions(text, actions) { currentTime = it }
-            InputMethod.XPad -> compileXPadActions(text, actions) { currentTime = it }
+            InputActionMode.Tap -> compileTapActions(text, actions) { currentTime = it }
+            InputActionMode.Swipe -> compileSwipeActions(text, actions) { currentTime = it }
+            InputActionMode.XPad -> compileXPadActions(text, actions) { currentTime = it }
         }
 
         // 按速度调整时间轴
@@ -169,7 +169,7 @@ class InputActionScriptCompiler(
         return InputActionScript(
             name = "输入: $text",
             description = "以${method.displayName}方式输入「$text」",
-            inputMethod = method,
+            inputActionMode = method,
             actions = adjustedActions,
             totalDuration = adjustedActions.maxOfOrNull { it.startTime } ?: 0L,
         )
@@ -288,7 +288,7 @@ class InputActionScriptCompiler(
 {
   "name": "输入「你好」",
   "description": "以滑行方式演示输入「你好」",
-  "inputMethod": "Swipe",
+  "inputActionMode": "Swipe",
   "actions": [
     { "type": "KeyDown", "startTime": 0, "key": "char_n" },
     { "type": "SwipeTo", "startTime": 150, "fromKey": "char_n", "toKey": "char_i", "duration": 150 },
@@ -308,35 +308,11 @@ class InputActionScriptCompiler(
 
 ---
 
-## 8. 输入动作播放状态 (InputActionPlaybackState)
+## 8. 输入动作播放状态 (InputActionPlayerState) — 已移至 :ime-ui
 
-| 属性 | 说明 |
-|------|------|
-| 角色 | 输入动作播放生命周期状态模型 |
-| 职责 | 描述播放器的状态转换：Idle → Ready → Playing ↔ Paused → Finished |
-| 约束 | 纯数据模型，不持有 UI 引用，不依赖 Compose |
-| 所属模块 | 本文档（:ime-engine 模块）|
-
-```kotlin
-/**
- * 输入动作播放状态。
- *
- * 描述 InputActionPlayer 的播放生命周期状态。
- * 纯逻辑状态模型，不依赖 UI 层，定义见本文档。
- */
-sealed class InputActionPlaybackState {
-    /** 空闲状态，未加载脚本 */
-    data object Idle : InputActionPlaybackState()
-    /** 就绪状态，已加载脚本但未开始播放 */
-    data class Ready(val script: InputActionScript) : InputActionPlaybackState()
-    /** 播放中状态 */
-    data class Playing(val currentIndex: Int, val totalActions: Int) : InputActionPlaybackState()
-    /** 暂停状态 */
-    data class Paused(val currentIndex: Int, val totalActions: Int) : InputActionPlaybackState()
-    /** 播放完成状态 */
-    data object Finished : InputActionPlaybackState()
-}
-```
+> **注意**：`InputActionPlayerState`（原 `InputActionPlaybackState`）已从 `:ime-engine` 移至 `:ime-ui` 模块，完整定义见 [ui/040-input-action-player.md](../ui/040-input-action-player.md)。
+>
+> 播放状态模型描述播放器的状态转换：Idle → Ready → Playing ↔ Paused → Finished，属于 UI 层状态管理范畴，与 `InputActionPlayer` 同属 `:ime-ui` 模块。
 
 ---
 

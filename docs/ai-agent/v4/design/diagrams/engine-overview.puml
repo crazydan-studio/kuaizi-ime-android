@@ -71,7 +71,7 @@ package "核心模型" #FFE0B2 {
 package "状态类型" #C8E6C9 {
   class ImeState <<(D,#C8E6C9)>> {
     + keyboardType: KeyboardType
-    + inputMode: InputMode
+    + inputMode: KeyboardInputMode
     + isInputting: Boolean
     + keyboardState: KeyboardState
     + inputList: InputList
@@ -136,9 +136,6 @@ package "输入动作" #FFF3E0 {
   }
   class InputActionScriptCompiler <<(C,#FFF3E0)>> {
     + compile(text, method, speed): InputActionScript
-  }
-  class InputActionPlaybackState <<(S,#FFF3E0)>> {
-    Idle / Ready / Playing / Paused / Finished
   }
   class InputActionFingerIndicator <<(D,#FFF3E0)>> {
     + position: OffsetF

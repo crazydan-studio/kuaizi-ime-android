@@ -41,7 +41,7 @@ package ":ime-ui" #E8F5E9 {
     + state: StateFlow<ImeState>
     + config: ImeConfig
     + updateConfig(transform)
-    + setLayoutMode(mode)
+    + setKeyboardLayoutMode(mode)
   }
   class KeyboardHost <<(C,#E8F5E9)>> {
     订阅 viewModel.state

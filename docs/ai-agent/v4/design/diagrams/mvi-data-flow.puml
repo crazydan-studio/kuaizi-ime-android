@@ -80,7 +80,7 @@ end note
 note right of KVM
   gestureToIntent() 转换
   handleGesture() / handleIntent()
-  管理 LayoutMode
+  管理 KeyboardLayoutMode
   管理 GestureFeedbackState
   集成 InputActionPlayer
 end note

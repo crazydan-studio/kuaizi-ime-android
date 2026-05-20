@@ -86,7 +86,7 @@ end note
 
 note right of Script
   name, description
-  inputMethod: InputMethod
+  inputActionMode: InputActionMode
   actions: List<InputAction>
   totalDuration: Long
 end note

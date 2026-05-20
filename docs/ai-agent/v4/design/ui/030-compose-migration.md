@@ -74,7 +74,7 @@ fun KeyboardHost(viewModel: KeyboardViewModel) {
 }
 ```
 
-> **注意**：`KeyboardHost` 是 UI 库的统一集成组件，包含候选栏、输入栏、工具列表和三层面板叠加区域（GestureInputPanel / GestureFeedbackPanel / KeyLayoutPanel 直接叠加，无中间包装层），通过 `LayoutMode` 参数支持 Stacked/Separated 两种布局模式。
+> **注意**：`KeyboardHost` 是 UI 库的统一集成组件，包含候选栏、输入栏、工具列表和三层面板叠加区域（GestureInputPanel / GestureFeedbackPanel / KeyLayoutPanel 直接叠加，无中间包装层），通过 `KeyboardLayoutMode` 参数支持 Stacked/Separated 两种布局模式。
 
 ### 1.2 ComposeView 桥接
 

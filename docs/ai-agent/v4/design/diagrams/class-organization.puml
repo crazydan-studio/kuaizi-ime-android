@@ -50,7 +50,7 @@ package ":ime-engine" #FFF3E0 {
     }
     class ImeState <<(D,#FFF3E0)>> {
       + keyboardType: KeyboardType
-      + inputMode: InputMode
+      + inputMode: KeyboardInputMode
       + isInputting: Boolean
       + keyboardState: KeyboardState
       + inputList: InputList
@@ -123,7 +123,7 @@ package ":ime-engine" #FFF3E0 {
     class InputActionScript <<(D,#FFF3E0)>> {
       + name: String
       + description: String
-      + inputMethod: InputMethod
+      + inputActionMode: InputActionMode
       + actions: List<InputAction>
       + totalDuration: Long
     }
@@ -132,13 +132,6 @@ package ":ime-engine" #FFF3E0 {
       - compileTapActions(...)
       - compileSwipeActions(...)
       - compileXPadActions(...)
-    }
-    class InputActionPlaybackState <<(S,#FFF3E0)>> {
-      {static} Idle
-      {static} Ready(script)
-      {static} Playing(currentIndex, totalActions)
-      {static} Paused(currentIndex, totalActions)
-      {static} Finished
     }
     class InputActionFingerIndicator <<(D,#FFF3E0)>> {
       + position: OffsetF
@@ -281,12 +274,12 @@ package ":ime-ui" #E8F5E9 {
     class KeyboardViewModel <<(C,#E8F5E9)>> {
       + state: StateFlow<ImeState>
       + config: ImeConfig
-      + layoutMode: StateFlow<LayoutMode>
+      + layoutMode: StateFlow<KeyboardLayoutMode>
       + feedbackState: GestureFeedbackState
       + actionPlayer: InputActionPlayer
       + handleGesture(gesture)
       + handleIntent(intent)
-      + setLayoutMode(mode)
+      + setKeyboardLayoutMode(mode)
       + updateConfig(transform)
       + updateKeyLayoutState(state)
       + updateCandidateLayoutState(state)
@@ -325,7 +318,7 @@ package ":ime-ui" #E8F5E9 {
     class KeyLayoutPanel <<(C,#E8F5E9)>> {
       + 按键布局渲染层
       + onLayoutStateChanged 回调
-      + 根据 InputMode + Type 渲染
+      + 根据 KeyboardInputMode + Type 渲染
     }
     class GestureFeedbackPanel <<(C,#E8F5E9)>> {
       + 透明反馈绘制层
@@ -354,8 +347,15 @@ package ":ime-ui" #E8F5E9 {
   }
 
   package "ui.player" {
+    class InputActionPlayerState <<(S,#E8F5E9)>> {
+      {static} Idle
+      {static} Ready(script)
+      {static} Playing(currentIndex, totalActions)
+      {static} Paused(currentIndex, totalActions)
+      {static} Finished
+    }
     class InputActionPlayer <<(C,#E8F5E9)>> {
-      + playbackState: StateFlow<InputActionPlaybackState>
+      + playbackState: StateFlow<InputActionPlayerState>
       + row1IndicatorState: StateFlow<InputActionFingerIndicator?>
       + row2IndicatorState: StateFlow<InputActionFingerIndicator?>
       + load(script)
@@ -455,6 +455,9 @@ package ":app" #E3F2FD {
   class ExerciseScreen <<(C,#E3F2FD)>> {
     + 练习与演示界面
   }
+  class InputActionPlayerPanel <<(C,#E3F2FD)>> {
+    + 输入练习播放控制面板
+  }
 }
 
 ' ==================== 关键关系 ====================
@@ -473,6 +476,7 @@ DictRepository --> ViterbiDecoder
 
 KeyboardViewModel *-- GestureFeedbackState
 KeyboardViewModel *-- InputActionPlayer
+InputActionPlayer *-- InputActionPlayerState
 InputActionPlayer --> ComposeInputActionPositionResolver
 InputActionPlayer --> GestureFeedbackState
 InputActionScriptLoader --> InputActionScript
@@ -492,5 +496,7 @@ InputActionPathInterpolator ..> OffsetF : 输入输出
 IMEService --> KeyboardViewModel : Factory(engine)
 IMEService --> InputConnectionBridge : 创建并挂载
 ConfigDataStore --> ImeConfig : 持久化
+ExerciseScreen --> InputActionPlayerPanel : 使用
+InputActionPlayerPanel --> KeyboardInputActionPlayerHost : 组合
 
 @enduml

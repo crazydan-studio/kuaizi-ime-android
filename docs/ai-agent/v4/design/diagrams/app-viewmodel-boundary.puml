@@ -56,12 +56,12 @@ package ":ime-ui 模块" #E8F5E9 {
     - engine: ImeEngine
     + state: StateFlow<ImeState>
     + config: ImeConfig
-    + layoutMode: StateFlow<LayoutMode>
+    + layoutMode: StateFlow<KeyboardLayoutMode>
     + feedbackState: GestureFeedbackState
     + actionPlayer: InputActionPlayer
     + handleGesture(gesture)
     + handleIntent(intent)
-    + setLayoutMode(mode)
+    + setKeyboardLayoutMode(mode)
     + updateConfig(transform)
     + updateKeyLayoutState(state)
     + updateCandidateLayoutState(state)
@@ -146,7 +146,7 @@ note bottom of KeyboardViewModel
   三类 API:
   1. 状态读取: state, config, layoutMode, feedbackState, actionPlayer
   2. 意图分发: handleGesture(), handleIntent()
-  3. 运行时配置: updateConfig(), setLayoutMode(), updateKeyLayoutState()
+  3. 运行时配置: updateConfig(), setKeyboardLayoutMode(), updateKeyLayoutState()
 
   ViewModel 不感知:
   - InputConnectionBridge (由 :app 管理)

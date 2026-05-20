@@ -43,7 +43,7 @@ note right of GFP
 end note
 
 note right of KLP
-  根据 InputMode + Type 渲染按键
+  根据 KeyboardInputMode + Type 渲染按键
   展示按键状态 (按下/激活/禁用)
   提供 KeyLayoutState 供查询
   onLayoutStateChanged 回调

@@ -6,7 +6,7 @@ v4 版本将筷字输入法设计为三层库架构，支持其他程序以库�
 
 - **引擎库 `:ime-engine`**：引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等，提供核心输入引擎能力
 - **UI 库 `:ime-ui`**：基于 Compose 的缺省 UI 实现，对第三方应用开放，可作为即插即用的输入界面使用，也可被自定义 UI 替换
-- **应用模块 `:app`**：系统 IME 服务壳、设置页面、配置持久化，是库的官方消费者
+- **应用模块 `:app`**：系统 IME 服务壳、设置页面、输入练习 UI（ExerciseScreen、InputActionPlayerPanel）、配置持久化，是库的官方消费者
 
 库的核心价值在于：任何 Android 应用都可以通过引入 `:ime-engine` + `:ime-ui`，获得筷字输入法的完整输入能力和缺省 UI——拼音滑行、X-Pad 连续输入、候选选择、输入列表管理、撤销重做等——而无需依赖系统 IME 服务。仅需要引擎逻辑的场景（如文本预处理、自动化测试）可以只引入 `:ime-engine` 而不引入 UI 库。需要完全自定义 UI 的场景可以只引入 `:ime-engine` 并自行实现视图层。
 
@@ -22,7 +22,7 @@ v4 版本将筷字输入法设计为三层库架构，支持其他程序以库�
 |------|------|------|
 | `:ime-engine` | IME 核心引擎，逻辑层与 UI / 应用分离，方便第三方定制 UI 与交互 | Kotlin 标准库 + 协程 |
 | `:ime-ui` | Compose 缺省 UI + KeyboardViewModel，包含完整的输入法界面组件和 UI 协调逻辑 | `:ime-engine` + Compose + Material3 + Lifecycle ViewModel |
-| `:app` | 系统 IME 服务壳、ImeEngine 创建与 InputConnectionBridge 管理、配置持久化（DataStore）、设置页面 | `:ime-engine` + `:ime-ui` + DataStore + Lifecycle |
+| `:app` | 系统 IME 服务壳、ImeEngine 创建与 InputConnectionBridge 管理、配置持久化（DataStore）、设置页面、输入练习 UI（ExerciseScreen、InputActionPlayerPanel） | `:ime-engine` + `:ime-ui` + DataStore + Lifecycle |
 
 **依赖关系图**：
 
@@ -59,7 +59,7 @@ v4 版本将筷字输入法设计为三层库架构，支持其他程序以库�
 
 ## 5 UI 库设计
 
-UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方应用开放，遵循「缺省实现、可替换、可组合、可定制」四大设计原则。UI 库提供从原子组件（KeyView、CandidateItem）到面板组件（GestureInputPanel、KeyLayoutPanel、CandidateListPanel）再到集成组件（KeyboardHost）的完整组件层次，以及 `KeyboardViewModel` 作为 UI 协调中心和主题系统。
+UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方应用开放，遵循「缺省实现、可替换、可组合、可定制」四大设计原则。UI 库提供从原子组件（KeyView、CandidateItem）到面板组件（GestureInputPanel、KeyLayoutPanel、CandidateListPanel）再到集成组件（KeyboardHost）的完整组件层次，以及 `KeyboardViewModel` 作为 UI 协调中心和主题系统。输入练习 UI 层（`ExerciseScreen`、`InputActionPlayerPanel`）属于 `:app` 模块，不在 UI 库范围内。
 
 **输出桥接机制**（ImeOutputBridge 桥接模式）是引擎与目标编辑器之间的核心架构模式：引擎内部统一执行 `when(ImeOutput)` 分发，桥梁实现者只需实现语义方法。`ImeOutputBridge` 接口和 `BaseImeOutputBridge` 抽象类定义在 `:ime-engine`，`InputConnectionBridge`（系统输入连接）实现在 `:app`，`EditTextBridge`（EditText 类型）实现在 `:ime-ui`。
 

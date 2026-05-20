@@ -23,11 +23,11 @@
 | 文档 | 简述 |
 |------|------|
 | [010-引擎库设计总览](engine/010-engine-overview.md) | 模块定位与设计目标、核心 class 关系图、核心模型概览（ImeEngine/ImeConfig/ImeOutput/ImeIntent/ImeState） |
-| [020-键盘状态机](engine/020-state-machine.md) | KeyboardState sealed class、状态转换规则、Keyboard 组合模式、InputKey 体系、StateHistory 有界历史栈 |
+| [020-键盘状态机](engine/020-state-machine.md) | KeyboardState sealed class、状态转换规则、Keyboard 组合模式、InputKey 体系、KeyboardStateHistory 有界历史栈 |
 | [030-输入列表](engine/030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion、线程安全、撤销机制、游标管理 |
 | [040-字典系统](engine/040-dict-system.md) | DictRepository + Room 数据库、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree、HmmModel + ViterbiDecoder |
 | [050-X-Pad 核心](engine/050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout、X-Pad 状态集成 |
-| [060-输入动作程序化](engine/060-input-action.md) | InputAction sealed class、InputActionScript、InputActionScriptCompiler、InputActionPlaybackState、InputActionFingerIndicator、InputActionPathInterpolator、InputActionPositionResolver、OffsetF/RectF 归一化坐标类型 |
+| [060-输入动作程序化](engine/060-input-action.md) | InputAction sealed class、InputActionScript、InputActionScriptCompiler、InputActionFingerIndicator、InputActionPathInterpolator、InputActionPositionResolver、OffsetF/RectF 归一化坐标类型（InputActionPlayerState 已移至 :ime-ui） |
 | [070-剪贴板与收藏](engine/070-clipboard-and-favorites.md) | ClipboardService、FavoriteService、InputClip/InputFavorite 数据模型 |
 | [080-日志系统](engine/080-logging.md) | ImeLog 门面、ImeLogger、LogLevel、LogEntry、LogWriter 接口、LogStorage 文件存储、FileLogWriter 异步写入 |
 
@@ -40,17 +40,17 @@
 | 文档 | 简述 |
 |------|------|
 | [010-UI 库设计总览](ui/010-ui-library-overview.md) | UI 库设计目标（缺省实现、可替换、可组合、可定制）、组件清单、组件层次关系、与引擎库的依赖关系 |
-| [020-面板三层分离与屏幕布局](ui/020-panel-separation.md) | Zone A/B 屏幕分区、LayoutMode（Stacked/Separated）、InputMode 正交维度、三行/三列布局、面板三层分离、归一化坐标、GestureFeedbackState 简化、各面板组件规格 |
+| [020-面板三层分离与屏幕布局](ui/020-panel-separation.md) | Zone A/B 屏幕分区、KeyboardLayoutMode（Stacked/Separated）、KeyboardInputMode 正交维度、三行/三列布局、面板三层分离、归一化坐标、GestureFeedbackState 简化、各面板组件规格 |
 | [030-Compose 迁移](ui/030-compose-migration.md) | KeyboardHost Compose 实现、X-Pad Compose、滑行手势处理、性能验证 |
 | [040-输入动作播放](ui/040-input-action-player.md) | KeyboardInputActionPlayerHost、UseMode、ComposeInputActionPositionResolver、InputActionPlayer、指示器内建机制、InputActionScriptLoader |
 | [050-配置 UI 组件](ui/050-config-ui.md) | KeyboardPreview、ThemeSelector、HandModeToggle、QuickSettingsPopup |
-| [060-KeyboardViewModel](ui/060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 简化管理，LayoutMode 切换，InputActionPlayer 集成，布局状态缓存 |
+| [060-KeyboardViewModel](ui/060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 简化管理，KeyboardLayoutMode 切换，InputActionPlayer 集成，布局状态缓存 |
 
 ---
 
 ## `:app` 应用模块
 
-系统 IME 服务壳（创建引擎、管理 InputConnectionBridge）、配置持久化、设置界面。
+系统 IME 服务壳（创建引擎、管理 InputConnectionBridge）、配置持久化、设置界面、输入练习 UI（ExerciseScreen、InputActionPlayerPanel）。
 
 | 文档 | 简述 |
 |------|------|

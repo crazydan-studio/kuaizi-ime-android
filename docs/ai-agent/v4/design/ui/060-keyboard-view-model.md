@@ -1,6 +1,6 @@
 # KeyboardViewModel 设计
 
-`KeyboardViewModel` 划归 `:ime-ui` 模块的 `viewmodel/` 包，作为 UI 层的协调中心，桥接 Compose UI 组件与 `:ime-engine` 引擎。ViewModel 将 UI 手势（`InputGesture`）转换为引擎意图（`ImeIntent`），暴露引擎状态（`StateFlow<ImeState>`）供 Compose 订阅，管理手势反馈状态（`GestureFeedbackState`），提供运行时布局模式切换（`LayoutMode`），以及集成输入动作播放器（`InputActionPlayer`）。ViewModel 仅依赖引擎核心模型和公开 API，平台级职责由 `:app` 模块承担，确保 `:ime-ui` 作为纯 UI 库可被第三方应用即插即用。
+`KeyboardViewModel` 划归 `:ime-ui` 模块的 `viewmodel/` 包，作为 UI 层的协调中心，桥接 Compose UI 组件与 `:ime-engine` 引擎。ViewModel 将 UI 手势（`InputGesture`）转换为引擎意图（`ImeIntent`），暴露引擎状态（`StateFlow<ImeState>`）供 Compose 订阅，管理手势反馈状态（`GestureFeedbackState`），提供运行时布局模式切换（`KeyboardLayoutMode`），以及集成输入动作播放器（`InputActionPlayer`）。ViewModel 仅依赖引擎核心模型和公开 API，平台级职责由 `:app` 模块承担，确保 `:ime-ui` 作为纯 UI 库可被第三方应用即插即用。
 
 ---
 
@@ -14,7 +14,7 @@
 
 | 理由 | 说明 |
 |------|------|
-| **职能本质是 UI 协调** | ViewModel 将 UI 手势（`InputGesture`）转换为引擎意图（`ImeIntent`），暴露引擎状态（`StateFlow<ImeState>`）供 Compose 订阅，管理 `LayoutMode` 切换和布局状态缓存——这些职能完全属于 UI 层 |
+| **职能本质是 UI 协调** | ViewModel 将 UI 手势（`InputGesture`）转换为引擎意图（`ImeIntent`），暴露引擎状态（`StateFlow<ImeState>`）供 Compose 订阅，管理 `KeyboardLayoutMode` 切换和布局状态缓存——这些职能完全属于 UI 层 |
 | **仅依赖引擎公开 API** | ViewModel 仅持有 `ImeEngine` 引用，使用其 `handleIntent()`、`state`、`updateConfig()` 等公开 API，不依赖引擎内部实现 |
 | **第三方应用需要** | 任何引入 `:ime-engine` + `:ime-ui` 的第三方应用都需要 `KeyboardViewModel` 来驱动 UI。如果 ViewModel 在 `:app`，第三方应用必须自行实现等价组件，违背「即插即用」的设计目标 |
 | **集成组件的直接搭档** | `KeyboardHost`、`KeyboardInputActionPlayerHost` 等集成组件均以 ViewModel 为交互入口，二者同属 UI 层、同生同灭 |
@@ -36,7 +36,7 @@
 @file:../diagrams/app-viewmodel-boundary.puml
 ```
 
-`KeyboardViewModel` 与 `:app` 模块的交互仅通过构造参数注入的 `ImeEngine` 完成。ViewModel 暴露的 API 分为三类：第一类是状态读取（`state`、`config`、`layoutMode`、`feedbackState`、`actionPlayer`），由集成组件通过 `collectAsState()` 订阅；第二类是意图分发（`handleGesture()`、`handleIntent()`），由集成组件的用户交互回调触发；第三类是运行时配置（`updateConfig()`、`setLayoutMode()`、`updateKeyLayoutState()` 等），由集成组件的布局回调触发。`IMEService` 在 `onCreateInputView()` 中通过 `KeyboardViewModel.Factory(engine)` 注入预创建的引擎，ViewModel 不感知桥梁、持久化和服务生命周期。
+`KeyboardViewModel` 与 `:app` 模块的交互仅通过构造参数注入的 `ImeEngine` 完成。ViewModel 暴露的 API 分为三类：第一类是状态读取（`state`、`config`、`layoutMode`、`feedbackState`、`actionPlayer`），由集成组件通过 `collectAsState()` 订阅；第二类是意图分发（`handleGesture()`、`handleIntent()`），由集成组件的用户交互回调触发；第三类是运行时配置（`updateConfig()`、`setKeyboardLayoutMode()`、`updateKeyLayoutState()` 等），由集成组件的布局回调触发。`IMEService` 在 `onCreateInputView()` 中通过 `KeyboardViewModel.Factory(engine)` 注入预创建的引擎，ViewModel 不感知桥梁、持久化和服务生命周期。
 
 ---
 
@@ -49,8 +49,8 @@
 | 角色 | `:ime-ui` 模块的 UI 协调中心，桥接 Compose UI 与 `:ime-engine` |
 | 职责 | 手势/意图分发、状态暴露、布局模式管理、反馈状态持有、动作播放器集成、布局状态缓存、运行时配置修改 |
 | 约束 | 仅依赖引擎公开 API；不持有 `InputConnectionBridge`；不执行配置持久化；不创建/销毁引擎 |
-| 关键属性 | state: StateFlow\<ImeState\>, config: ImeConfig, layoutMode: StateFlow\<LayoutMode\>, feedbackState: GestureFeedbackState, actionPlayer: InputActionPlayer |
-| 关键方法 | handleGesture(), handleIntent(), setLayoutMode(), updateConfig(), updateKeyLayoutState(), updateCandidateLayoutState(), updateInputListLayoutState() |
+| 关键属性 | state: StateFlow\<ImeState\>, config: ImeConfig, layoutMode: StateFlow\<KeyboardLayoutMode\>, feedbackState: GestureFeedbackState, actionPlayer: InputActionPlayer |
+| 关键方法 | handleGesture(), handleIntent(), setKeyboardLayoutMode(), updateConfig(), updateKeyLayoutState(), updateCandidateLayoutState(), updateInputListLayoutState() |
 | 布局状态缓存 | _currentKeyLayoutState, _currentCandidateLayoutState, _currentInputListLayoutState |
 | 所属包 | org.crazydan.studio.ime.ui.viewmodel |
 | 所属模块 | :ime-ui |
@@ -67,7 +67,7 @@ package org.crazydan.studio.ime.ui.viewmodel
  * - 将 UI 手势（InputGesture）转换为引擎意图（ImeIntent）
  * - 暴露引擎状态（StateFlow<ImeState>）供 Compose 订阅
  * - 管理手势反馈状态（GestureFeedbackState）
- * - 管理运行时布局模式（LayoutMode）
+ * - 管理运行时布局模式（KeyboardLayoutMode）
  * - 提供输入动作播放器（InputActionPlayer）
  * - 缓存面板布局状态供播放器坐标解析
  *
@@ -109,12 +109,12 @@ class KeyboardViewModel(
      *
      * 由 ViewModel 管理，KeyboardHost 订阅此状态决定组件部署方式。
      * 支持 Stacked（堆叠）和 Separated（分离）两种模式，
-     * 可在运行时通过 setLayoutMode() 动态切换。
+     * 可在运行时通过 setKeyboardLayoutMode() 动态切换。
      * 切换时组件按实例策略表重新部署，所有状态通过
      * GestureFeedbackState 和 ImeState 保持连续。
      */
-    private val _layoutMode = MutableStateFlow<LayoutMode>(LayoutMode.Stacked)
-    val layoutMode: StateFlow<LayoutMode> = _layoutMode.asStateFlow()
+    private val _layoutMode = MutableStateFlow<KeyboardLayoutMode>(KeyboardLayoutMode.Stacked)
+    val layoutMode: StateFlow<KeyboardLayoutMode> = _layoutMode.asStateFlow()
 
     /**
      * 切换布局模式。
@@ -125,7 +125,7 @@ class KeyboardViewModel(
      * - Separated -> Stacked：反向操作
      * 切换过程中状态通过 GestureFeedbackState 和 ImeState 保持连续。
      */
-    fun setLayoutMode(mode: LayoutMode) {
+    fun setKeyboardLayoutMode(mode: KeyboardLayoutMode) {
         _layoutMode.value = mode
     }
 
@@ -326,7 +326,7 @@ class KeyboardViewModel(
 
 `GestureFeedbackState` 经过简化后，职责收窄为纯粹的视觉反馈。所有坐标数据以归一化形式 `[0,1]x[0,1]` 存储，绘制时由 `GestureFeedbackPanel` 根据面板实际尺寸转换为像素坐标。这使得同一份反馈数据可以正确地在不同尺寸的面板实例上渲染，包括 Zone A 和 Zone B 的双实例场景。
 
-简化后的状态包含三类核心视觉反馈：触摸轨迹点（`touchTrailPoints`，含按键间路径和 X-Pad 路径的插值点）、按键高亮集合（`pressedKeys`）、手指指示器状态（`fingerIndicator`）。弹出提示由 `ImeState` 管理。按键间路径和 X-Pad 路径统一合并到 `touchTrailPoints` 中，由 `KeyLayoutPanel` 根据 `InputMode` 计算起止按键间的平滑曲线后，作为插值路径点统一写入。
+简化后的状态包含三类核心视觉反馈：触摸轨迹点（`touchTrailPoints`，含按键间路径和 X-Pad 路径的插值点）、按键高亮集合（`pressedKeys`）、手指指示器状态（`fingerIndicator`）。弹出提示由 `ImeState` 管理。按键间路径和 X-Pad 路径统一合并到 `touchTrailPoints` 中，由 `KeyLayoutPanel` 根据 `KeyboardInputMode` 计算起止按键间的平滑曲线后，作为插值路径点统一写入。
 
 `InputActionFingerIndicator` 的类型定义在 [engine/060-input-action.md](../engine/060-input-action.md) 中，此处直接引用。
 
@@ -344,7 +344,7 @@ package org.crazydan.studio.ime.ui.viewmodel
  *    这使得同一份反馈数据可在不同 Zone、不同尺寸的面板实例上正确渲染。
  * 2. 移除 popupTip：弹出提示由 ImeState 管理，不属于视觉反馈。
  * 3. 移除 keyPath 和 xPadPath：按键间路径和 X-Pad 路径统一合并
- *    为输入轨迹的一部分，由 KeyLayoutPanel 根据 InputMode 计算
+ *    为输入轨迹的一部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算
  *    起止按键间的平滑曲线后，作为 touchTrailPoints 写入。
  *    这三类路径本质上都是手指移动的轨迹，不应作为独立反馈类型。
  */
@@ -359,7 +359,7 @@ class GestureFeedbackState {
      *
      * 轨迹计算说明：touchTrailPoints 不仅包含手指的实际触摸点，
      * 还包含按键间路径和 X-Pad 路径的平滑曲线插值点。
-     * KeyLayoutPanel 根据 InputMode 动态计算起始按键到目标按键间的
+     * KeyLayoutPanel 根据 KeyboardInputMode 动态计算起始按键到目标按键间的
      * 轨迹形状（如 RectGrid 的直线路径、XPad 的弧形路径等），
      * 生成归一化坐标插值路径后写入 touchTrailPoints。
      * 这样触摸轨迹、按键间路径、X-Pad 路径统一为一种输入轨迹，
@@ -470,7 +470,7 @@ class GestureFeedbackState {
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| inputMode | InputMode | RectGrid | 当前输入模式，决定布局几何和交互范式；与 Keyboard.Type 正交 |
+| inputMode | KeyboardInputMode | RectGrid | 当前输入模式，决定布局几何和交互范式；与 KeyboardType 正交 |
 | isInputting | Boolean | false | 是否正在输入，控制 Row 2 面板互斥切换 |
 | toolList | ToolListState | emptyList() | 工具列表状态，含编辑功能键 |
 | popupTip | PopupTipState? | null | 弹出提示状态，由引擎 reduce 写入，PopupTipPanel 消费 |
@@ -494,12 +494,12 @@ data class ImeState(
     /**
      * 当前输入模式，决定按键布局几何和交互范式。
      *
-     * InputMode 与 Keyboard.Type 正交组合：
-     * 任意 InputMode 可与任意 Type 组合，产生不同的按键布局和交互体验。
+     * KeyboardInputMode 与 KeyboardType 正交组合：
+     * 任意 KeyboardInputMode 可与任意 Type 组合，产生不同的按键布局和交互体验。
      * KeyLayoutPanel 根据 inputMode 选择布局策略，
      * GestureInputPanel 根据 inputMode 选择手势识别策略。
      */
-    val inputMode: InputMode = InputMode.RectGrid,
+    val inputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
 
     /**
      * 是否正在输入，控制 ToolListPanel/InputListPanel 的互斥切换。
@@ -590,8 +590,8 @@ data class ToolItem(
 /**
  * 键盘宿主组件，顶层集成组件。
  *
- * 通过 LayoutMode 参数统一两种布局模式的入口。
- * 支持运行时动态切换 LayoutMode，切换时按实例策略表重新部署组件。
+ * 通过 KeyboardLayoutMode 参数统一两种布局模式的入口。
+ * 支持运行时动态切换 KeyboardLayoutMode，切换时按实例策略表重新部署组件。
  */
 @Composable
 fun KeyboardHost(
@@ -605,10 +605,10 @@ fun KeyboardHost(
 
     KeyboardTheme(themeType = state.config.ui.themeType) {
         when (layoutMode) {
-            is LayoutMode.Stacked -> StackedLayout(viewModel, state, feedbackState, keyLayoutState)
-            is LayoutMode.Separated -> SeparatedLayout(
+            is KeyboardLayoutMode.Stacked -> StackedLayout(viewModel, state, feedbackState, keyLayoutState)
+            is KeyboardLayoutMode.Separated -> SeparatedLayout(
                 viewModel, state, feedbackState, keyLayoutState,
-                layoutMode as LayoutMode.Separated,
+                layoutMode as KeyboardLayoutMode.Separated,
             )
         }
     }
@@ -648,7 +648,7 @@ fun KeyboardInputActionPlayerHost(
 
     // 判断是否显示指示器：仅 Animation 模式下播放中才显示
     val showIndicators = useMode is KeyboardInputActionPlayerHost.UseMode.Animation
-            && playerState is InputActionPlaybackState.Playing
+            && playerState is InputActionPlayerState.Playing
 
     // 指示器状态（仅 Animation 模式下有意义）
     val row1Indicator = viewModel.actionPlayer.row1IndicatorState
@@ -674,7 +674,7 @@ fun KeyboardInputActionPlayerHost(
 }
 ```
 
-`KeyboardInputActionPlayerHost` 从 `viewModel.actionPlayer` 读取播放状态和指示器状态。三行均使用统一的 `InputActionFingerIndicator` 模型，职能相同——绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画。Row 1/2 的指示器通过面板的 `showIndicator` 和 `indicatorState` 参数内建绘制，无需外部覆盖层。Row 3 的指示器通过 `GestureFeedbackPanel` 绘制，从 `feedbackState.fingerIndicator` 读取归一化坐标后反归一化渲染。`InputActionPlaybackState`、`InputActionFingerIndicator` 的类型定义见 [engine/060-input-action.md](../engine/060-input-action.md)。
+`KeyboardInputActionPlayerHost` 从 `viewModel.actionPlayer` 读取播放状态和指示器状态。三行均使用统一的 `InputActionFingerIndicator` 模型，职能相同——绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画。Row 1/2 的指示器通过面板的 `showIndicator` 和 `indicatorState` 参数内建绘制，无需外部覆盖层。Row 3 的指示器通过 `GestureFeedbackPanel` 绘制，从 `feedbackState.fingerIndicator` 读取归一化坐标后反归一化渲染。`InputActionPlayerState`、`InputActionFingerIndicator` 的类型定义见 [ui/040-input-action-player.md](040-input-action-player.md)。
 
 ### 5.3 InputActionPlayer 协作
 
@@ -883,11 +883,11 @@ class IMEService : InputMethodService() {
 
 ### 7.3 布局模式切换数据流
 
-布局模式切换由 `viewModel.setLayoutMode()` 触发，`KeyboardHost` 订阅 `layoutMode` 状态后按实例策略表重新部署组件。切换过程中所有状态保持连续，不丢失手势或输入进度信息。
+布局模式切换由 `viewModel.setKeyboardLayoutMode()` 触发，`KeyboardHost` 订阅 `layoutMode` 状态后按实例策略表重新部署组件。切换过程中所有状态保持连续，不丢失手势或输入进度信息。
 
 ```
 用户/应用调用
-  | viewModel.setLayoutMode(LayoutMode.Separated)
+  | viewModel.setKeyboardLayoutMode(KeyboardLayoutMode.Separated)
   v
 KeyboardViewModel._layoutMode
   | MutableStateFlow 更新

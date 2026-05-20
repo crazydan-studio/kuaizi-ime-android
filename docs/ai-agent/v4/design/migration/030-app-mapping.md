@@ -161,7 +161,7 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 | `KeyboardView` | `KeyboardHost` | 明确容器角色；完整输入法组件（含候选栏 / 输入栏 / 工具栏 + 三层面板叠加） |
 | `CandidateBar` / `InputBar` | `CandidateListPanel` / `InputListPanel` | 统一 Panel 后缀，体现列表语义 |
 | `GuideScreen` | `MainScreen` | 准确反映主界面职能 |
-| `InputPracticeScreen` | `ExerciseScreen` | 合并练习与演示 |
+| `InputPracticeScreen` | `ExerciseScreen` | 合并练习与演示；划归 `:app` 模块 |
 | `FingerOverlayState` | `GestureFeedbackState.fingerIndicator` | 合并到反馈状态 |
 | `ImeEngineConfig` | `ImeConfig` | 合并引擎配置与应用配置 |
 | `Config` | `ImeConfig.UiConfig` | 应用配置合并到 ImeConfig |

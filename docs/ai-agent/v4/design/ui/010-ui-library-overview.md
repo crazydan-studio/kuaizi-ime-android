@@ -51,8 +51,8 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 
 | 组件 | 包路径 | 说明 |
 |------|--------|------|
-| `KeyboardHost` | `integration` | 统一集成组件，通过 LayoutMode 参数支持 Stacked/Separated 两种布局 |
-| `KeyboardInputActionPlayerHost` | `integration` | 演示集成组件，支持 Animation/DirectInput 两种 UseMode |
+| `KeyboardHost` | `integration` | 统一集成组件，通过 KeyboardLayoutMode 参数支持 Stacked/Separated 两种布局 |
+| `KeyboardInputActionPlayerHost` | `integration` | 演示集成组件，支持 Animation/DirectInput 两种 UseMode（注：输入练习 UI 层 ExerciseScreen、InputActionPlayerPanel 属于 `:app` 模块） |
 
 ### 2.4 ViewModel 组件
 
@@ -87,7 +87,7 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 @file:../diagrams/ui-component-hierarchy.puml
 ```
 
-KeyboardHost 通过 LayoutMode 统一 Stacked/Separated 入口。KeyboardInputActionPlayerHost 在 KeyboardHost 基础上叠加播放引擎，专用于输入动作演示。指示器已内建到 CandidateListPanel、InputListPanel、ToolListPanel 中，通过 showIndicator 参数控制，消除独立覆盖层。
+KeyboardHost 通过 KeyboardLayoutMode 统一 Stacked/Separated 入口。KeyboardInputActionPlayerHost 在 KeyboardHost 基础上叠加播放引擎，专用于输入动作演示。指示器已内建到 CandidateListPanel、InputListPanel、ToolListPanel 中，通过 showIndicator 参数控制，消除独立覆盖层。
 
 ---
 
@@ -102,8 +102,8 @@ UI 库的所有组件仅依赖 `:ime-engine` 的公开 API：
 | `ImeOutput` | 不直接使用（通过 `ImeOutputBridge` 分发） |
 | `ImeOutputBridge` / `BaseImeOutputBridge` | `EditTextBridge` 实现用于非系统 IME 场景 |
 | `ImeConfig` / `ImeConfig.UiConfig` | 主题系统、配置 UI 组件读取配置驱动界面呈现 |
-| `InputMode` 枚举 | KeyLayoutPanel 布局策略选择、GestureInputPanel 手势识别逻辑 |
-| `InputActionPlaybackState` | InputActionPlayer 播放状态管理 |
+| `KeyboardInputMode` 枚举 | KeyLayoutPanel 布局策略选择、GestureInputPanel 手势识别逻辑。KeyboardInputMode 与 KeyboardType 是 `:ime-engine` 中两个不同的概念：KeyboardType 是引擎的键盘分类（Pinyin/Latin/Symbol/Emoji/Number/Math），决定按键集合的语义内容；KeyboardInputMode 是输入交互范式分类（XPad/HexGrid/RectGrid/MultiZone），决定按键的几何排列和手势交互方式。二者正交组合 |
+| `InputActionPlayerState` | InputActionPlayer 播放状态管理 |
 | `InputActionFingerIndicator` | 手指指示器渲染，绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画（供 CandidateListPanel/InputListPanel/ToolListPanel 内建绘制及 GestureFeedbackPanel 绘制） |
 | `InputActionPathInterpolator` | InputActionPlayer 轨迹插值计算 |
 | `InputActionPositionResolver` | InputActionPlayer 坐标解析 |

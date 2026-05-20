@@ -6,7 +6,7 @@
 
 **两种使用模式**：Animation 模式用于演示/教学场景，访问真实字典数据但不提交到目标编辑器，显示完整的手指指示器动画；DirectInput 模式用于输入辅助场景，在完整输入流程上叠加动画效果，结果正常提交到编辑器，不显示 Row 1/2 的指示器。
 
-**本文档范围**：动画相关的数据模型（`InputActionPlaybackState`、`InputActionFingerIndicator`、`InputActionPathInterpolator`、`InputActionPositionResolver` 接口）均定义在 [engine/060-input-action.md](../engine/060-input-action.md)，此处不再重复定义。本文档覆盖 UI 层的实现：`KeyboardInputActionPlayerHost`、`ComposeInputActionPositionResolver`、`InputActionPlayer` 的使用方式和指示器内建机制。
+**本文档范围**：播放状态模型（`InputActionPlayerState`）定义在本文档（`:ime-ui` 模块）。动画相关的其余数据模型（`InputActionFingerIndicator`、`InputActionPathInterpolator`、`InputActionPositionResolver` 接口）定义在 [engine/060-input-action.md](../engine/060-input-action.md)，此处不再重复定义。本文档覆盖 UI 层的实现：`KeyboardInputActionPlayerHost`、`ComposeInputActionPositionResolver`、`InputActionPlayer` 的使用方式和指示器内建机制。
 
 ```plantuml
 @file:../diagrams/ui-input-action-data-flow.puml
@@ -68,7 +68,42 @@ Animation 模式和 DirectInput 模式的核心差异在于：
 
 ---
 
-## 2. KeyboardInputActionPlayerHost
+## 2. InputActionPlayerState 播放状态（:ime-ui 模块）
+
+| 属性 | 说明 |
+|------|------|
+| 角色 | 输入动作播放生命周期状态模型 |
+| 职责 | 描述播放器的状态转换：Idle → Ready → Playing ↔ Paused → Finished |
+| 约束 | 纯数据模型，不持有 UI 引用，不依赖 Compose；定义在 `:ime-ui` 模块 |
+| 所属模块 | :ime-ui（原属 `:ime-engine`，已移至 `:ime-ui`） |
+
+```kotlin
+/**
+ * 输入动作播放状态。
+ *
+ * 描述 InputActionPlayer 的播放生命周期状态。
+ * 纯逻辑状态模型，不依赖 UI 层，定义在 :ime-ui 模块。
+ *
+ * 原名 InputActionPlaybackState，已重命名为 InputActionPlayerState，
+ * 并从 :ime-engine 移至 :ime-ui 模块。
+ */
+sealed class InputActionPlayerState {
+    /** 空闲状态，未加载脚本 */
+    data object Idle : InputActionPlayerState()
+    /** 就绪状态，已加载脚本但未开始播放 */
+    data class Ready(val script: InputActionScript) : InputActionPlayerState()
+    /** 播放中状态 */
+    data class Playing(val currentIndex: Int, val totalActions: Int) : InputActionPlayerState()
+    /** 暂停状态 */
+    data class Paused(val currentIndex: Int, val totalActions: Int) : InputActionPlayerState()
+    /** 播放完成状态 */
+    data object Finished : InputActionPlayerState()
+}
+```
+
+---
+
+## 3. KeyboardInputActionPlayerHost
 
 | 属性 | 说明 |
 |------|------|
@@ -77,7 +112,7 @@ Animation 模式和 DirectInput 模式的核心差异在于：
 | 约束 | 仅用于演示/练习场景；Animation 模式访问真实字典数据但不提交到目标编辑器；DirectInput 模式不显示 Row 1/2 的指示器 |
 | 关键属性 | useMode: UseMode, viewModel: KeyboardViewModel |
 | 指示器控制 | Animation 模式：showIndicator=true，传递 InputActionFingerIndicator；DirectInput 模式：showIndicator=false |
-| 所属包 | integration |
+| 所属包 | integration（注：输入练习 UI 层 ExerciseScreen、InputActionPlayerPanel 属于 `:app` 模块） |
 
 `KeyboardInputActionPlayerHost` 是输入动作播放的集成组件，内部组合 `KeyboardHost` 和播放引擎，通过面板内建的 `showIndicator` 参数控制指示器在 Row 1 和 Row 2 的显示，Row 3 的指示器则通过 GestureFeedbackPanel 绘制。三行均使用统一的 `InputActionFingerIndicator` 模型。
 
@@ -94,7 +129,7 @@ Animation 模式和 DirectInput 模式的核心差异在于：
  *   不显示 Row 1/2 的指示器，仅通过 GestureFeedbackPanel 绘制手指指示器。
  *
  * 输入数据包括键盘输入模式 + 动作序列，针对不同输入对象（按键、输入列表、候选列表），
- * 但 UI 坐标无关。输入轨迹由 KeyLayoutPanel 的 InputMode 决定，
+ * 但 UI 坐标无关。输入轨迹由 KeyLayoutPanel 的 KeyboardInputMode 决定，
  * KeyLayoutPanel 动态计算按键位置和轨迹形状。
  *
  * 对于 InputListPanel 和 CandidateListPanel 的交互，仅需选择操作：
@@ -113,7 +148,7 @@ fun KeyboardInputActionPlayerHost(
 
     // 判断是否显示指示器：仅 Animation 模式下播放中才显示
     val showIndicators = useMode is KeyboardInputActionPlayerHost.UseMode.Animation
-            && playerState is InputActionPlaybackState.Playing
+            && playerState is InputActionPlayerState.Playing
 
     // 指示器状态（仅 Animation 模式下有意义）
     val row1Indicator = viewModel.actionPlayer.row1IndicatorState
@@ -163,7 +198,7 @@ private fun KeyboardHostWithIndicators(
 
 ---
 
-## 3. ComposeInputActionPositionResolver
+## 4. ComposeInputActionPositionResolver
 
 | 属性 | 说明 |
 |------|------|
@@ -247,7 +282,7 @@ class ComposeInputActionPositionResolver(
 
 ---
 
-## 4. InputActionPlayer
+## 5. InputActionPlayer
 
 | 属性 | 说明 |
 |------|------|
@@ -255,7 +290,7 @@ class ComposeInputActionPositionResolver(
 | 职责 | 按 InputActionScript 时间轴执行 InputAction，驱动 GestureFeedbackState 和 KeyboardViewModel |
 | 约束 | 坐标无关，所有位置通过 InputActionPositionResolver 实时查询归一化坐标 |
 | 构造参数 | viewModel: KeyboardViewModel, feedbackState: GestureFeedbackState, positionResolver: InputActionPositionResolver, scope: CoroutineScope |
-| 播放状态 | playbackState: StateFlow\<InputActionPlaybackState\>（定义在 engine/060） |
+| 播放状态 | playbackState: StateFlow\<InputActionPlayerState\>（定义在本文档，:ime-ui 模块） |
 | Row 1/2 指示器 | row1IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\>, row2IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\> |
 | 路径插值 | 使用 InputActionPathInterpolator.interpolate()（定义在 engine/060） |
 | 动作分发 | KeyDown → 设置手指指示器 + 启动点击涟漪动画 + 按键高亮 + 发送 PressKey；SwipeTo → 生成插值路径 + 动画移动手指 + 发送 PressKey；KeyUp → 更新手指状态 + 清除按键高亮；SelectCandidate → 更新 Row 1 指示器 + 发送 SelectCandidate；SwitchKeyboard → 发送 SwitchKeyboard |
@@ -287,8 +322,8 @@ class InputActionPlayer(
     private val scope: CoroutineScope,
 ) {
     private var job: Job? = null
-    private var _playbackState = MutableStateFlow<InputActionPlaybackState>(InputActionPlaybackState.Idle)
-    val playbackState: StateFlow<InputActionPlaybackState> = _playbackState.asStateFlow()
+    private var _playbackState = MutableStateFlow<InputActionPlayerState>(InputActionPlayerState.Idle)
+    val playbackState: StateFlow<InputActionPlayerState> = _playbackState.asStateFlow()
 
     private var _speed = MutableStateFlow(1.0f)
     val speed: StateFlow<Float> = _speed.asStateFlow()
@@ -308,14 +343,14 @@ class InputActionPlayer(
         stop()
         currentScript = script
         actionIndex = 0
-        _playbackState.value = InputActionPlaybackState.Ready(script)
+        _playbackState.value = InputActionPlayerState.Ready(script)
     }
 
     fun play() {
         val script = currentScript ?: return
-        if (_playbackState.value is InputActionPlaybackState.Playing) return
+        if (_playbackState.value is InputActionPlayerState.Playing) return
 
-        _playbackState.value = InputActionPlaybackState.Playing(
+        _playbackState.value = InputActionPlayerState.Playing(
             currentIndex = actionIndex,
             totalActions = script.actions.size,
         )
@@ -336,14 +371,14 @@ class InputActionPlayer(
                 if (delayMs > 0) delay(delayMs)
 
                 // 检查是否暂停
-                if (_playbackState.value is InputActionPlaybackState.Paused) break
+                if (_playbackState.value is InputActionPlayerState.Paused) break
 
                 // 执行动作
                 executeAction(action)
                 actionIndex++
 
                 // 更新播放进度
-                _playbackState.value = InputActionPlaybackState.Playing(
+                _playbackState.value = InputActionPlayerState.Playing(
                     currentIndex = actionIndex,
                     totalActions = actions.size,
                 )
@@ -352,14 +387,14 @@ class InputActionPlayer(
             feedbackState.setFingerIndicator(null)
             _row1IndicatorState.value = null
             _row2IndicatorState.value = null
-            _playbackState.value = InputActionPlaybackState.Finished
+            _playbackState.value = InputActionPlayerState.Finished
         }
     }
 
     fun pause() {
         job?.cancel()
         val script = currentScript ?: return
-        _playbackState.value = InputActionPlaybackState.Paused(
+        _playbackState.value = InputActionPlayerState.Paused(
             currentIndex = actionIndex,
             totalActions = script.actions.size,
         )
@@ -377,7 +412,7 @@ class InputActionPlayer(
         _row1IndicatorState.value = null
         _row2IndicatorState.value = null
         actionIndex = 0
-        _playbackState.value = InputActionPlaybackState.Idle
+        _playbackState.value = InputActionPlayerState.Idle
     }
 
     fun stepForward() {
@@ -561,7 +596,7 @@ class InputActionPlayer(
 
 ---
 
-## 5. 指示器内建机制
+## 6. 指示器内建机制
 
 Zone B 三行结构中，每行在播放动画时需要展示指示器。本设计将指示器从独立覆盖层改为内建到面板组件中，通过 `showIndicator` 布尔参数和 `indicatorState` 状态参数控制。这种内建设计消除了独立的覆盖层组件，简化了组件层次，同时使指示器的坐标与面板内容使用同一坐标系，避免了跨组件坐标对齐问题。三行均使用统一的 `InputActionFingerIndicator` 模型，职能相同：绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画。
 
@@ -622,7 +657,7 @@ InputListPanel 和 ToolListPanel 采用完全相同的内建指示器绘制模�
 
 ---
 
-## 6. 播放执行流程
+## 7. 播放执行流程
 
 输入动作播放的执行流程如下。播放器加载 InputActionScript 后，按时间轴依次执行 InputAction。对于不同类型的动作，播放器通过 `InputActionPositionResolver` 解析归一化坐标，通过 `InputActionPathInterpolator` 生成插值轨迹，更新 `GestureFeedbackState` 的手指指示器和触摸轨迹，同时管理各行的指示器状态。
 
@@ -642,7 +677,7 @@ InputListPanel 和 ToolListPanel 采用完全相同的内建指示器绘制模�
 
 ---
 
-## 7. InputActionScriptLoader
+## 8. InputActionScriptLoader
 
 | 属性 | 说明 |
 |------|------|
@@ -693,17 +728,17 @@ class InputActionScriptLoader(private val context: Context) {
 
 ---
 
-## 8. 数据流
+## 9. 数据流
 
 以下展示程序化输入的完整数据流，标注归一化坐标的转换节点。
 
-### 8.1 程序化输入数据流
+### 9.1 程序化输入数据流
 
 ```plantuml
 @file:../diagrams/ui-programmatic-input-data-flow.puml
 ```
 
-### 8.2 归一化坐标流详解
+### 9.2 归一化坐标流详解
 
 程序化输入中归一化坐标的流转路径如下：
 
@@ -712,7 +747,7 @@ class InputActionScriptLoader(private val context: Context) {
 3. **写入阶段**：归一化坐标写入 `GestureFeedbackState`（FingerIndicator、touchTrailPoints）或 Row 1/2 的 `InputActionFingerIndicator`（indicatorState）。
 4. **绘制阶段**：GestureFeedbackPanel 读取归一化坐标后根据面板尺寸反归一化绘制；面板内建指示器读取行相对归一化坐标后根据面板尺寸反归一化绘制。
 
-### 8.3 与用户手势输入数据流的关系
+### 9.3 与用户手势输入数据流的关系
 
 程序化输入与用户手势输入共享同一套 `GestureFeedbackState`，但写入来源不同：
 

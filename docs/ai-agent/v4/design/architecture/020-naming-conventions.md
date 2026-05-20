@@ -23,7 +23,7 @@
 | 后缀 | 含义 | 示例 |
 |------|------|------|
 | `Panel` | 容器 / 组合器（组合多个子组件） | `KeyboardHost`, `GestureInputPanel`, `CandidateListPanel`, `InputListPanel`, `KeyLayoutPanel`, `GestureFeedbackPanel` |
-| `Screen` | 全屏界面（应用层页面） | `SettingsScreen`, `MainScreen`, `ExerciseScreen` |
+| `Screen` | 全屏界面（应用层页面） | `SettingsScreen`, `MainScreen`, `ExerciseScreen`（:app 模块） |
 
 > **注意**：`KeyboardHost` 统一了叠加模式和全屏模式两种交互形式，内部包含候选栏、输入栏、工具栏和键盘区域。
 

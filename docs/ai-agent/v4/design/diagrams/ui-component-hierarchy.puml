@@ -16,12 +16,12 @@ package "ViewModel 层 [:ime-ui]" #E8F5E9 {
   class KeyboardViewModel <<ViewModel>> {
     + state: StateFlow<ImeState>
     + config: ImeConfig
-    + layoutMode: StateFlow<LayoutMode>
+    + layoutMode: StateFlow<KeyboardLayoutMode>
     + feedbackState: GestureFeedbackState
     + actionPlayer: InputActionPlayer
     + handleGesture(gesture)
     + handleIntent(intent)
-    + setLayoutMode(mode)
+    + setKeyboardLayoutMode(mode)
     + updateConfig(transform)
   }
   class GestureFeedbackState {
@@ -61,7 +61,7 @@ package "面板组件 [:ime-ui]" #E8F5E9 {
     }
     class KeyLayoutPanel <<面板>> {
       按键布局渲染层 (最下层)
-      根据 InputMode + Type 渲染
+      根据 KeyboardInputMode + Type 渲染
       onLayoutStateChanged 回调
     }
     class GestureFeedbackPanel <<面板>> {

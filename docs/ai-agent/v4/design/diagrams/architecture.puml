@@ -24,7 +24,7 @@ package ":app 模块\n(Platform Layer)" as app #E3F2FD {
   component [InputConnectionBridge] as ICB <<app>>
   component [ConfigDataStore] as CDS <<app>>
   component [LogExportScreen\nLogViewerScreen\nLogLevelSetting] as AppLogUI <<app>>
-  component [SettingsScreen\nMainScreen\nExerciseScreen] as AppScreens <<app>>
+  component [SettingsScreen\nMainScreen\nExerciseScreen\nInputActionPlayerPanel] as AppScreens <<app>>
 }
 
 package ":ime-ui 模块\n(UI Layer + ViewModel Layer)" as ui #E8F5E9 {
@@ -51,6 +51,7 @@ package ":ime-ui 模块\n(UI Layer + ViewModel Layer)" as ui #E8F5E9 {
     component [ComposeInputActionPositionResolver] as CIAPR <<ime_ui>>
     component [InputActionPlayer] as IAP <<ime_ui>>
     component [InputActionScriptLoader] as IASL <<ime_ui>>
+    component [InputActionPlayerState] as IAPS <<ime_ui>>
     component [EditTextBridge] as EB <<ime_ui>>
   }
 }
@@ -68,7 +69,6 @@ package ":ime-engine 模块\n(Domain Layer + Data Layer)" as engine #FFF3E0 {
     component [InputAction\n(Sealed Class)] as IA <<ime_engine>>
     component [InputActionScript] as IAS <<ime_engine>>
     component [InputActionScriptCompiler] as IASC <<ime_engine>>
-    component [InputActionPlaybackState] as IAPS <<ime_engine>>
     component [InputActionFingerIndicator] as IAFI <<ime_engine>>
     component [ClickAnimation] as CA <<ime_engine>>
     component [InputActionPathInterpolator] as IAPI <<ime_engine>>
