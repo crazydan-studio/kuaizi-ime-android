@@ -52,7 +52,8 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 | 组件 | 包路径 | 说明 |
 |------|--------|------|
 | `KeyboardHost` | `integration` | 统一集成组件，通过 KeyboardLayoutMode 参数支持 Stacked/Separated 两种布局 |
-| `KeyboardInputActionPlayerHost` | `integration` | 演示集成组件，支持 Animation/DirectInput 两种 UseMode（注：输入练习 UI 层 ExerciseScreen、InputActionPlayerPanel 属于 `:app` 模块） |
+| `KeyboardInputActionPlayerHost` | `integration` | 演示集成组件，支持 Animation/DirectInput 两种 UseMode |
+| `InputActionPlayerPanel` | `integration` | 输入练习播放控制面板（注：ExerciseScreen 属于 `:app` 模块） |
 
 ### 2.4 ViewModel 组件
 

@@ -177,6 +177,10 @@ package ":ime-ui" #E8F5E9 {
     row1/row2 Indicator 传递
   }
 
+  class InputActionPlayerPanel <<(C,#E8F5E9)>> {
+    + 输入练习播放控制面板
+  }
+
   class KeyboardHost <<(C,#E8F5E9)>> {
     + (Composable) KeyboardHost(viewModel)
     Stacked/Separated 布局
@@ -221,9 +225,6 @@ package ":app" #E3F2FD {
   }
   class ExerciseScreen <<(C,#E3F2FD)>> {
     + 练习与演示界面
-  }
-  class InputActionPlayerPanel <<(C,#E3F2FD)>> {
-    + 输入练习播放控制面板
   }
 }
 

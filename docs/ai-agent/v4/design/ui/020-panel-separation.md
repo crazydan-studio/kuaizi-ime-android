@@ -154,7 +154,7 @@ sealed class Keyboard {
 }
 ```
 
-### 1.5 KeyboardType -- 键盘类型
+### 1.5 KeyboardType -- 键盘类型（:ime-engine 模块）
 
 | 属性 | 说明 |
 |------|------|
@@ -163,6 +163,7 @@ sealed class Keyboard {
 | 约束 | 与 KeyboardInputMode 正交；编辑功能由 ToolListPanel 统一管理 |
 | 关键属性 | Pinyin, Latin, Symbol, Emoji, Number, Math |
 | 所属包 | keyboard |
+| 所属模块 | :ime-engine（与 KeyboardInputMode 同属 :ime-engine 模块） |
 
 KeyboardType 决定键盘的内容类型，即按键集合的语义分类。Pinyin 类型提供拼音输入的声母韵母按键，Latin 类型提供拉丁字母按键，Symbol/Emoji 类型提供符号和表情，Number 类型提供数字和基本运算符，Math 类型提供数学公式相关按键。Type 的选择决定了 KeyLayoutPanel 渲染哪些按键以及按键的标签内容，但不影响按键的几何排列方式——几何排列由 KeyboardInputMode 决定。Editor 类型的编辑功能键（如全选、复制、粘贴、撤销等）由 ToolListPanel 统一管理，作为工具项展示，编辑功能在任何键盘类型下均可通过工具栏快速访问。
 

@@ -112,7 +112,7 @@ sealed class InputActionPlayerState {
 | 约束 | 仅用于演示/练习场景；Animation 模式访问真实字典数据但不提交到目标编辑器；DirectInput 模式不显示 Row 1/2 的指示器 |
 | 关键属性 | useMode: UseMode, viewModel: KeyboardViewModel |
 | 指示器控制 | Animation 模式：showIndicator=true，传递 InputActionFingerIndicator；DirectInput 模式：showIndicator=false |
-| 所属包 | integration（注：输入练习 UI 层 ExerciseScreen、InputActionPlayerPanel 属于 `:app` 模块） |
+| 所属包 | integration（注：输入练习 UI 层 ExerciseScreen 属于 `:app` 模块，InputActionPlayerPanel 属于 `:ime-ui` 模块） |
 
 `KeyboardInputActionPlayerHost` 是输入动作播放的集成组件，内部组合 `KeyboardHost` 和播放引擎，通过面板内建的 `showIndicator` 参数控制指示器在 Row 1 和 Row 2 的显示，Row 3 的指示器则通过 GestureFeedbackPanel 绘制。三行均使用统一的 `InputActionFingerIndicator` 模型。
 

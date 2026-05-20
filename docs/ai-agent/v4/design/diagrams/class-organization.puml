@@ -83,6 +83,23 @@ package ":ime-engine" #FFF3E0 {
   }
 
   package "engine.state" {
+    class KeyboardType <<(E,#FFF3E0)>> {
+      Pinyin
+      Latin
+      Number
+      Symbol
+      Emoji
+      Math
+      Editor
+      Candidate
+      CommitOption
+    }
+    class KeyboardInputMode <<(E,#FFF3E0)>> {
+      XPad
+      HexGrid
+      RectGrid
+      MultiZone
+    }
     class KeyboardState <<(S,#FFF3E0)>> {
       {static} Idle
       {static} PinyinInput.Waiting
@@ -307,6 +324,9 @@ package ":ime-ui" #E8F5E9 {
       + UseMode.DirectInput
       + (Composable) KeyboardInputActionPlayerHost(viewModel, useMode)
     }
+    class InputActionPlayerPanel <<(C,#E8F5E9)>> {
+      + 输入练习播放控制面板
+    }
   }
 
   package "ui.panel" {
@@ -455,9 +475,6 @@ package ":app" #E3F2FD {
   class ExerciseScreen <<(C,#E3F2FD)>> {
     + 练习与演示界面
   }
-  class InputActionPlayerPanel <<(C,#E3F2FD)>> {
-    + 输入练习播放控制面板
-  }
 }
 
 ' ==================== 关键关系 ====================
@@ -469,6 +486,8 @@ InputActionPositionResolver <|.. ComposeInputActionPositionResolver : :ime-ui
 ImeEngine *-- KeyboardStateMachine
 ImeEngine *-- InputListOperator
 ImeEngine *-- FeatureRegistry
+ImeState *-- KeyboardType : keyboardType
+ImeState *-- KeyboardInputMode : inputMode
 ImeSqliteDictProvider *-- DictRepository
 ImeSqliteDictProvider *-- PinyinCharsTree
 ImeSqliteDictProvider *-- HmmModel

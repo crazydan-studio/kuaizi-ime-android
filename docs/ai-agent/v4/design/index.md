@@ -50,7 +50,7 @@
 
 ## `:app` 应用模块
 
-系统 IME 服务壳（创建引擎、管理 InputConnectionBridge）、配置持久化、设置界面、输入练习 UI（ExerciseScreen、InputActionPlayerPanel）。
+系统 IME 服务壳（创建引擎、管理 InputConnectionBridge）、配置持久化、设置界面、输入练习 UI（ExerciseScreen）。
 
 | 文档 | 简述 |
 |------|------|
