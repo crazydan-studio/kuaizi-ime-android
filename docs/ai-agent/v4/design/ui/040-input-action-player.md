@@ -290,8 +290,8 @@ class ComposeInputActionPositionResolver(
 | 职责 | 按 InputActionScript 时间轴执行 InputAction，驱动 GestureFeedbackState 和 KeyboardViewModel |
 | 约束 | 坐标无关，所有位置通过 InputActionPositionResolver 实时查询归一化坐标 |
 | 构造参数 | viewModel: KeyboardViewModel, feedbackState: GestureFeedbackState, positionResolver: InputActionPositionResolver, scope: CoroutineScope |
-| 播放状态 | playbackState: StateFlow\<InputActionPlayerState\>（定义在本文档，:ime-ui 模块） |
-| Row 1/2 指示器 | row1IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\>, row2IndicatorState: MutableStateFlow\<InputActionFingerIndicator?\> |
+| 播放状态 | `playbackState: StateFlow<InputActionPlayerState>`（定义在本文档，:ime-ui 模块） |
+| Row 1/2 指示器 | `row1IndicatorState: MutableStateFlow<InputActionFingerIndicator?>`, `row2IndicatorState: MutableStateFlow<InputActionFingerIndicator?>` |
 | 路径插值 | 使用 InputActionPathInterpolator.interpolate()（定义在 engine/060） |
 | 动作分发 | KeyDown → 设置手指指示器 + 启动点击涟漪动画 + 按键高亮 + 发送 PressKey；SwipeTo → 生成插值路径 + 动画移动手指 + 发送 PressKey；KeyUp → 更新手指状态 + 清除按键高亮；SelectCandidate → 更新 Row 1 指示器 + 发送 SelectCandidate；SwitchKeyboard → 发送 SwitchKeyboard |
 | 所属包 | player |

@@ -1898,7 +1898,7 @@ KeyboardHost 是顶层集成组件，根据 KeyboardLayoutMode 组合 Zone A / Z
 | 角色 | 顶层集成组件 |
 | 职责 | 根据 KeyboardLayoutMode 组合 Zone A / Zone B 的面板组件，提供完整输入交互 UI，支持动态切换布局模式 |
 | 约束 | KeyLayoutPanel 为单实例，同一时刻仅存在于 Zone A 或 Zone B 之一 |
-| 关键属性 | layoutMode: State\<KeyboardLayoutMode\>, viewModel: KeyboardViewModel |
+| 关键属性 | `layoutMode: State<KeyboardLayoutMode>`, `viewModel: KeyboardViewModel` |
 | 所属包 | integration |
 
 ```kotlin

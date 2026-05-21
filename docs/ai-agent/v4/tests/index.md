@@ -20,15 +20,15 @@
 
 | 开发计划 | 测试文档 | 测试范围 | 状态 |
 |----------|----------|----------|------|
-| （待创建） | （与计划同名） | 键盘状态机、Intent 处理、状态转换（对应设计 100） | 📋待编写 |
-| （待创建） | （与计划同名） | ImeEngine API、ImeConfig、ImeOutput、ImeDictProvider（对应设计 160） | 📋待编写 |
-| （待创建） | （与计划同名） | InputList 不可变操作、游标、撤销 / 重做（对应设计 200） | 📋待编写 |
-| （待创建） | （与计划同名） | Room DAO、ImeDictProvider 实现、字典查询、升级迁移（对应设计 300） | 📋待编写 |
-| （待创建） | （与计划同名） | ConfigRepository、ImeConfig 运行时优先、DataStore（对应设计 500） | 📋待编写 |
-| （待创建） | （与计划同名） | ClipboardProvider、FavoritesRepository、Feature 裁剪（对应设计 600） | 📋待编写 |
-| （待创建） | （与计划同名） | UserDataService、JSON 序列化、替换 / 合并、SAF（对应设计 800） | 📋待编写 |
-| （待创建） | （与计划同名） | ImeLog 分级、持久化、崩溃拦截（对应设计 900） | 📋待编写 |
-| （待创建） | （与计划同名） | InputActionPlayer、脚本编译、回放（对应设计 930） | 📋待编写 |
+| （待创建） | （与计划同名） | 键盘状态机、Intent 处理、状态转换（对应 [020-键盘状态机](../design/engine/020-state-machine.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | ImeEngine API、ImeConfig、ImeOutput、ImeDictProvider（对应 [010-引擎库设计总览](../design/engine/010-engine-overview.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | InputList 不可变操作、游标、撤销 / 重做（对应 [030-输入列表](../design/engine/030-input-list.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | Room DAO、ImeDictProvider 实现、字典查询、升级迁移（对应 [040-字典系统](../design/engine/040-dict-system.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | ConfigRepository、ImeConfig 运行时优先、DataStore（对应 [010-配置与设置](../design/app/010-config.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | ClipboardProvider、FavoritesRepository、Feature 裁剪（对应 [070-剪贴板与收藏](../design/engine/070-clipboard-and-favorites.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | UserDataService、JSON 序列化、替换 / 合并、SAF（对应 [040-用户数据导入导出](../design/app/040-user-data.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | ImeLog 分级、持久化、崩溃拦截（对应 [080-日志系统](../design/engine/080-logging.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | InputActionPlayer、脚本编译、回放（对应 [060-输入动作程序化](../design/engine/060-input-action.md)） | 📋待编写 |
 
 ---
 
@@ -94,4 +94,4 @@ code/
         └── logging/                        ← 日志系统测试
 ```
 
-> **注意**：截图对比测试（Paparazzi）和 UI 测试工具相关代码不属于单元测试范畴，其组织方式见设计文档 910。
+> **注意**：截图对比测试（Paparazzi）和 UI 测试工具相关代码不属于单元测试范畴，其组织方式见 [030-UI 测试方案](../design/app/030-ui-testing.md)。

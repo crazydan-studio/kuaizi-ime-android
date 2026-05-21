@@ -13,6 +13,7 @@
 | [Kotlin 最佳实践](kotlin-best-practices.md) | Kotlin 2.3.20 特性使用、惯用写法、避坑指南 |
 | [Jetpack Compose 最佳实践](compose-best-practices.md) | Compose BOM 2026.04.01 特性使用、IME 场景下的最佳实践 |
 | [代码规范](code-conventions.md) | 项目级代码规范：命名、格式、注释、错误处理等 |
+| [文档编写规范](writing-conventions.md) | Markdown / PlantUML 文档编写规范：中英文间距、语法注意事项等 |
 
 > **项目命名规范**：三层模块命名、UI 组件后缀、已更名对照等项目特定的命名规范，详见设计文档目录下的命名规范文档。
 

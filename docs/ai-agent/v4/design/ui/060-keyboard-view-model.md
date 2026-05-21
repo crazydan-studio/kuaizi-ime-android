@@ -49,9 +49,9 @@
 | 角色 | `:ime-ui` 模块的 UI 协调中心，桥接 Compose UI 与 `:ime-engine` |
 | 职责 | 手势/意图分发、状态暴露、布局模式管理、反馈状态持有、动作播放器集成、布局状态缓存、运行时配置修改 |
 | 约束 | 仅依赖引擎公开 API；不持有 `InputConnectionBridge`；不执行配置持久化；不创建/销毁引擎 |
-| 关键属性 | state: StateFlow<ImeState>, config: ImeConfig, layoutMode: StateFlow<KeyboardLayoutMode>, feedbackState: GestureFeedbackState, toolListState: StateFlow<ToolListState>, popupTipState: StateFlow<PopupTipState?>, isInputting: Boolean, actionPlayer: InputActionPlayer |
-| 关键方法 | handleGesture(), handleIntent(), setKeyboardLayoutMode(), updateConfig(), updateKeyLayoutState(), updateCandidateLayoutState(), updateInputListLayoutState() |
-| 布局状态缓存 | _currentKeyLayoutState, _currentCandidateLayoutState, _currentInputListLayoutState |
+| 关键属性 | `state: StateFlow<ImeState>`, `config: ImeConfig`, `layoutMode: StateFlow<KeyboardLayoutMode>`, `feedbackState: GestureFeedbackState`, `toolListState: StateFlow<ToolListState>`, `popupTipState: StateFlow<PopupTipState?>`, `isInputting: Boolean`, `actionPlayer: InputActionPlayer` |
+| 关键方法 | `handleGesture()`, `handleIntent()`, `setKeyboardLayoutMode()`, `updateConfig()`, `updateKeyLayoutState()`, `updateCandidateLayoutState()`, `updateInputListLayoutState()` |
+| 布局状态缓存 | `_currentKeyLayoutState`, `_currentCandidateLayoutState`, `_currentInputListLayoutState` |
 | 所属包 | org.crazydan.studio.ime.ui.viewmodel |
 | 所属模块 | :ime-ui |
 
@@ -409,8 +409,8 @@ class KeyboardViewModel(
 | 角色 | 手势视觉反馈状态管理，独立于 ImeState |
 | 职责 | 管理触摸轨迹、按键高亮、手指指示器三类纯视觉反馈数据 |
 | 约束 | 所有坐标使用归一化形式 [0,1]x[0,1]；不管理弹出提示（由 ImeState 管理）；不管理独立的按键间路径和 X-Pad 路径（统一合并到 touchTrailPoints） |
-| 状态字段 | touchTrailPoints: StateFlow\<List\<OffsetF\>\>, pressedKeys: StateFlow\<Set\<InputKey\>\>, fingerIndicator: StateFlow\<InputActionFingerIndicator?\> |
-| 更新方法 | addTouchTrailPoint(), setTouchTrailPoints(), clearTouchTrail(), setPressedKeys(), clearPressedKeys(), setFingerIndicator(), clearAll(), clear() |
+| 状态字段 | touchTrailPoints: `StateFlow<List<OffsetF>>`, pressedKeys: `StateFlow<Set<InputKey>>`, fingerIndicator: `StateFlow<InputActionFingerIndicator?>` |
+| 更新方法 | `addTouchTrailPoint()`, `setTouchTrailPoints()`, `clearTouchTrail()`, `setPressedKeys()`, `clearPressedKeys()`, `setFingerIndicator()`, `clearAll()`, `clear()` |
 | 所属包 | org.crazydan.studio.ime.ui.viewmodel |
 | 所属模块 | :ime-ui |
 
