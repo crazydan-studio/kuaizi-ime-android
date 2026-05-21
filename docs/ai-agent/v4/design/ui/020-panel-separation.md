@@ -376,7 +376,6 @@ ImeState 通过 `keyboard: Keyboard` 字段绑定键盘类型、输入模式和�
 /**
  * 键盘实例，绑定键盘类型、输入模式和键盘状态。
  *
- * 替代原 sealed class Keyboard 的数据绑定职能。
  * 不可变 data class，通过 copy() 生成新实例。
  */
 data class Keyboard(
@@ -423,23 +422,22 @@ data class ImeState(
 |------|------|
 | 角色 | 手势视觉反馈状态，独立于任何面板 |
 | 职责 | 管理触摸轨迹、按键高亮、手指指示器的视觉反馈数据 |
-| 约束 | 使用归一化坐标 [0,1]x[0,1]；不含 popupTip/keyPath/xPadPath（已简化合并） |
+| 约束 | 使用归一化坐标 [0,1]x[0,1]；仅含触摸轨迹、按键高亮、手指指示器 |
 | 关键属性 | touchTrailPoints, pressedKeys, fingerIndicator |
 | 所属包 | feedback |
 
-GestureFeedbackState 经简化后仅保留纯粹的视觉反馈职责。弹出提示由 ImeState 管理（见 §3.2），按键间路径和 X-Pad 路径统一合并到 touchTrailPoints 中。合并的理由：按键间路径（keyPath）和 X-Pad 路径（xPadPath）本质上都是输入轨迹的组成部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线后，作为 touchTrailPoints 中的插值路径点统一写入。这三类路径本质上都是手指移动的轨迹，不应作为独立反馈类型。简化后的 GestureFeedbackState 包含三类核心视觉反馈：触摸轨迹点（含计算后的平滑曲线）、按键高亮集合、手指指示器状态。
+GestureFeedbackState 负责纯粹的视觉反馈。弹出提示由 ImeState 管理（见 §3.2），按键间路径和 X-Pad 路径统一作为 touchTrailPoints 中的轨迹数据——由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线后，作为插值路径点写入。GestureFeedbackState 包含三类核心视觉反馈：触摸轨迹点（含计算后的平滑曲线）、按键高亮集合、手指指示器状态。
 
 ```kotlin
 /**
- * 手势反馈状态，使用归一化坐标，职责简化为纯视觉反馈。
+ * 手势反馈状态，使用归一化坐标，纯视觉反馈。
  *
  * 1. 所有坐标数据以归一化形式 [0,1]x[0,1] 存储，
  *    绘制时由 GestureFeedbackPanel 根据面板实际尺寸转换为像素坐标。
- * 2. 移除 popupTip：弹出提示由 ImeState 管理，不属于视觉反馈。
- * 3. 移除 keyPath 和 xPadPath：按键间路径和 X-Pad 路径统一合并
- *    为输入轨迹的一部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算
- *    起止按键间的平滑曲线后，作为 touchTrailPoints 写入。
- *    这三类路径本质上都是手指移动的轨迹，不应作为独立反馈类型。
+ * 2. 弹出提示由 ImeState 管理，不属于视觉反馈。
+ * 3. 按键间路径和 X-Pad 路径统一作为输入轨迹的一部分，
+ *    由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线后，
+ *    作为 touchTrailPoints 写入。
  */
 class GestureFeedbackState {
 
@@ -455,8 +453,7 @@ class GestureFeedbackState {
      * KeyLayoutPanel 根据 KeyboardInputMode 动态计算起始按键到目标按键间的
      * 轨迹形状（如 RectGrid 的直线路径、XPad 的弧形路径等），
      * 生成归一化坐标插值路径后写入 touchTrailPoints。
-     * 这样触摸轨迹、按键间路径、X-Pad 路径统一为一种输入轨迹，
-     * 简化了状态管理和绘制逻辑。
+     * 触摸轨迹、按键间路径、X-Pad 路径统一为一种输入轨迹。
      */
     private val _touchTrailPoints = MutableStateFlow<List<OffsetF>>(emptyList())
     val touchTrailPoints: StateFlow<List<OffsetF>> = _touchTrailPoints.asStateFlow()
@@ -1110,13 +1107,13 @@ private suspend fun PointerInputScope.handleXPadGesture(
 
 ### 6.2 FeedbackElementType
 
-简化后仅保留三种核心类型。KeyPath 和 XPadPathHighlight 已合并到 TouchTrail 中，因为按键间路径和 X-Pad 路径本质上都是输入轨迹的组成部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线，统一作为 touchTrailPoints 写入 GestureFeedbackState。合并的理由：这三类路径本质上都是手指移动的轨迹，其视觉表现均为从起点到终点的曲线，仅曲线形状由 KeyboardInputMode 决定（如 RectGrid 的直线、XPad 的弧线），没有必要作为独立反馈类型分别管理。
+FeedbackElementType 定义反馈面板可绘制的视觉反馈种类，共三种核心类型。TouchTrail 统一包含按键间路径和 X-Pad 路径——这两类路径本质上是输入轨迹的组成部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线（如 RectGrid 的直线、XPad 的弧线），统一作为 touchTrailPoints 写入 GestureFeedbackState。
 
 | 属性 | 说明 |
 |------|------|
 | 角色 | 反馈元素类型枚举 |
 | 职责 | 定义反馈面板可绘制的视觉反馈种类 |
-| 约束 | 仅三种类型（简化合并后） |
+| 约束 | 仅三种类型 |
 | 关键属性 | TouchTrail, KeyHighlight, FingerIndicator |
 | 所属包 | feedback |
 
@@ -1124,19 +1121,9 @@ private suspend fun PointerInputScope.handleXPadGesture(
 /**
  * 反馈元素类型。
  *
- * 简化后仅保留三种核心类型：
  * - TouchTrail：输入轨迹（包含按键间路径和 X-Pad 路径的平滑曲线）
  * - KeyHighlight：按键高亮（手势过程中按下的按键临时高亮）
  * - FingerIndicator：手指指示器（播放动画时显示手指位置）
- *
- * KeyPath 和 XPadPathHighlight 已合并到 TouchTrail 中，
- * 因为按键间路径和 X-Pad 路径本质上都是输入轨迹的组成部分，
- * 由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线，
- * 统一作为 touchTrailPoints 写入 GestureFeedbackState。
- * 这三类路径本质上都是手指移动的轨迹，其视觉表现均为
- * 从起点到终点的曲线，仅曲线形状由 KeyboardInputMode 决定
- * （如 RectGrid 的直线、XPad 的弧线），
- * 没有必要作为独立反馈类型分别管理。
  */
 enum class FeedbackElementType {
     /** 输入轨迹，包含按键间路径和 X-Pad 路径的平滑曲线 */
@@ -1185,7 +1172,7 @@ fun GestureFeedbackPanel(
         val panelSize = size
 
         // 输入轨迹（包含按键间路径和 X-Pad 路径）：归一化坐标 -> 像素坐标
-        // 按键间路径和 X-Pad 路径已合并为输入轨迹的一部分，
+        // 按键间路径和 X-Pad 路径统一作为输入轨迹的一部分，
         // 由 KeyLayoutPanel 根据 KeyboardInputMode 计算轨迹形状后
         // 作为 touchTrailPoints 中的平滑曲线点写入
         if (FeedbackElementType.TouchTrail in elements && touchTrailPoints.size >= 2) {
