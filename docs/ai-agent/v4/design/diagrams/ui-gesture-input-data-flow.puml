@@ -33,11 +33,11 @@ start
 :reduce(state, intent);
 
 |ImeState|
-:keyboardState / inputList\ncandidateList / config\ninputMode / isInputting\npopupTip / toolList;
+:keyboard.state / inputList\ncandidateList / config\nkeyboard.mode / isInputting\npopupTip / toolList;
 
 |Compose UI|
 :collectAsState() 驱动重组;
-:inputMode → KeyLayoutPanel\nisInputting → ToolListPanel/InputListPanel\npopupTip → PopupTipPanel\ntoolList → ToolListPanel\ncandidateList → CandidateListPanel\ninputList → InputListPanel;
+:keyboard.mode → KeyLayoutPanel\nisInputting → ToolListPanel/InputListPanel\npopupTip → PopupTipPanel\ntoolList → ToolListPanel\ncandidateList → CandidateListPanel\ninputList → InputListPanel;
 
 stop
 

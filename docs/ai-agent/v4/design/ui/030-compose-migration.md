@@ -41,9 +41,9 @@ fun KeyboardHost(viewModel: KeyboardViewModel) {
             Box {
                 // 底层：按键面板
                 KeyLayoutPanel(
-                    keyboardType = state.keyboardType,
+                    keyboardType = state.keyboard.type,
                     keyGrid = state.keyGrid,
-                    keyboardState = state.keyboardState,
+                    keyboardState = state.keyboard.state,
                     onLayoutStateChanged = { keyLayoutState = it },
                 )
 
@@ -57,7 +57,7 @@ fun KeyboardHost(viewModel: KeyboardViewModel) {
                 // 顶层：输入面板
                 GestureInputPanel(
                     keyLayoutState = keyLayoutState,
-                    keyboardType = state.keyboardType,
+                    keyboardType = state.keyboard.type,
                     feedbackState = feedbackState,
                     onGesture = { viewModel.handleGesture(it) },
                 )
@@ -65,7 +65,7 @@ fun KeyboardHost(viewModel: KeyboardViewModel) {
 
             // 工具列表
             ToolListPanel(
-                keyboardType = state.keyboardType,
+                keyboardType = state.keyboard.type,
                 config = state.config,
                 onSwitchKeyboard = { viewModel.handleIntent(ImeIntent.SwitchKeyboard(it)) },
             )
@@ -162,7 +162,7 @@ KeyView 在 v4 中是纯展示组件，不处理触摸事件，也不绘制手�
 /**
  * 按键视图（纯展示，无触摸处理，无手势反馈）。
  *
- * 按键的"按下"视觉状态由 keyboardState 驱动（持续性状态），
+ * 按键的"按下"视觉状态由 keyboard.state 驱动（持续性状态），
  * 手势触发的临时高亮由 GestureFeedbackPanel 绘制。
  */
 @Composable
@@ -373,7 +373,7 @@ Modifier.pointerInput(zones) {
 
 ```kotlin
 // GestureInputPanel 中的手势检测核心逻辑
-Modifier.pointerInput(keyLayoutState, keyboardType) {
+Modifier.pointerInput(keyLayoutState, state.keyboard.type) {
     awaitEachGesture {
         val down = awaitFirstDown(requireUnconsumed = false)
         // 根据 keyLayoutState 查找触摸位置对应的按键

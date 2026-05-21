@@ -17,14 +17,10 @@ ImeState 是 v4 版本 MVI 架构中的**单一状态树根节点**，作为 `Im
  * 状态变更的唯一路径：ImeIntent → reduce(state, intent) → ImeState。
  */
 data class ImeState(
-    /** 当前键盘类型，决定按键集合的语义内容 */
-    val keyboardType: KeyboardType = KeyboardType.Pinyin,
-    /** 当前输入模式，决定按键的几何排列和交互方式 */
-    val inputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+    /** 当前键盘实例，绑定类型、输入模式和状态 */
+    val keyboard: Keyboard = Keyboard(),
     /** 是否正在输入（有未确认的拼音/拉丁字符），控制 Row 2 面板切换 */
     val isInputting: Boolean = false,
-    /** 键盘状态机当前状态 */
-    val keyboardState: KeyboardState = KeyboardState.Idle,
     /** 输入列表 */
     val inputList: InputList = InputList(),
     /** 候选列表 */
@@ -46,10 +42,10 @@ data class ImeState(
 
 | 字段 | 消费面板 | 驱动行为 |
 |------|---------|---------|
-| `keyboardType` | `KeyLayoutPanel` | 选择按键集合（拼音/拉丁/数字/符号/表情/数学/编辑） |
-| `inputMode` | `KeyLayoutPanel`, `GestureInputPanel` | 选择布局几何（XPad/HexGrid/RectGrid/MultiZone）和手势识别策略 |
+| `keyboard.type` | `KeyLayoutPanel` | 选择按键集合（拼音/拉丁/数字/符号/表情/数学/编辑） |
+| `keyboard.mode` | `KeyLayoutPanel`, `GestureInputPanel` | 选择布局几何（XPad/HexGrid/RectGrid/MultiZone）和手势识别策略 |
 | `isInputting` | Row 2 面板切换 | `true` → `InputListPanel`；`false` → `ToolListPanel` |
-| `keyboardState` | `KeyboardViewModel`, `GestureInputPanel` | 决定手势识别逻辑（滑行/翻动/XPad/候选选择/编辑） |
+| `keyboard.state` | `KeyboardViewModel`, `GestureInputPanel` | 决定手势识别逻辑（滑行/翻动/XPad/候选选择/编辑） |
 | `inputList` | `InputListPanel` | 渲染输入字符序列和光标 |
 | `candidateList` | `CandidateListPanel` | 渲染候选词列表和翻页控制 |
 | `clipboard` | `PopupTipPanel`, `ToolListPanel` | 剪贴板提示和粘贴操作 |
@@ -60,9 +56,9 @@ data class ImeState(
 
 ### 1.2 状态不变式
 
-1. **keyboardType 与 keyboardState 一致性**：`keyboardState` 必须与 `keyboardType` 的初始状态兼容。例如 `keyboardType == Symbol` 时 `keyboardState` 应为 `SymbolChoosing`，`keyboardType == Pinyin` 时 `keyboardState` 应为 `PinyinInput.*` 或 `CandidateSelection.*`。
+1. **keyboard.type 与 keyboard.state 一致性**：`keyboard.state` 必须与 `keyboard.type` 的初始状态兼容。例如 `keyboard.type == Symbol` 时 `keyboard.state` 应为 `SymbolChoosing`，`keyboard.type == Pinyin` 时 `keyboard.state` 应为 `PinyinInput.*` 或 `CandidateSelection.*`。
 2. **isInputting 与 inputList 一致性**：当 `inputList` 中存在未确认的拼音字符（`pending != null` 且非空）时，`isInputting` 必须为 `true`；当 `inputList` 为空或所有输入均已确认时，`isInputting` 可为 `false`。
-3. **candidateList 非空前提**：`candidateList.candidates` 非空当且仅当 `keyboardState` 处于 `CandidateSelection.*` 状态。
+3. **candidateList 非空前提**：`candidateList.candidates` 非空当且仅当 `keyboard.state` 处于 `CandidateSelection.*` 状态。
 4. **toolList 仅在非输入态有效**：`toolList` 的内容在 `isInputting == true` 时无意义，UI 层应忽略。
 5. **popupTip 短暂性**：`popupTip` 不应在连续两个 ImeState 中保持相同 `timestamp`，UI 层应自动dismiss。
 
@@ -72,12 +68,15 @@ data class ImeState(
 
 ### 2.1 KeyboardType 枚举（:ime-engine 模块）
 
+> **注意**：`KeyboardType` 和 `KeyboardInputMode` 现在通过 `Keyboard` data class 组合，而非作为 `ImeState` 的直接字段。访问方式为 `state.keyboard.type` 和 `state.keyboard.mode`。
+
 ```kotlin
 /**
  * 键盘内容类型，决定按键集合的语义内容和标签。
  *
  * 与 KeyboardInputMode 正交：任意 KeyboardType 可与任意 KeyboardInputMode 组合。
  * 定义在 :ime-engine 模块，作为引擎公开 API 的一部分。
+ * 通过 Keyboard data class 组合到 ImeState 中。
  */
 enum class KeyboardType {
     /** 拼音输入键盘（主键盘） */
@@ -612,7 +611,7 @@ PopupTipState 通过以下机制自动消失：
 
 1. **时间驱动**：UI 层在 `PopupTipPanel` 中启动定时器，默认超时 3000ms 后自动将 `popupTip` 设为 `null`
 2. **Intent 驱动**：下一个 ImeIntent 到来时，reduce 函数检查 `popupTip.timestamp`，若超过超时阈值则自动清除
-3. **状态驱动**：当 `keyboardState` 发生状态转换时，已有的 `popupTip` 被清除（避免提示与当前状态不一致）
+3. **状态驱动**：当 `keyboard.state` 发生状态转换时，已有的 `popupTip` 被清除（避免提示与当前状态不一致）
 
 超时阈值通过 `ImeConfig.ui.popupTipTimeout` 配置，默认 3000ms。
 
@@ -640,7 +639,7 @@ data class ToolItem(
 
 ### 9.1 工具项动态配置
 
-工具栏的内容由 `KeyboardViewModel` 根据 `keyboardType` 和 `keyboardState` 动态配置：
+工具栏的内容由 `KeyboardViewModel` 根据 `keyboard.type` 和 `keyboard.state` 动态配置：
 
 | 键盘类型 | 工具项 |
 |---------|--------|

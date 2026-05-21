@@ -72,7 +72,7 @@ class ImeEngine internal constructor(
 val engine = ImeEngine.create(
     config = ImeConfig(
         engine = ImeConfig.EngineConfig(
-            keyboardType = KeyboardType.Pinyin,
+            keyboard = Keyboard(type = KeyboardType.Pinyin),
             handMode = HandMode.Right,
             features = setOf(Feature.Clipboard, Feature.Favorites),
         ),
@@ -109,7 +109,7 @@ data class ImeConfig(
     val runtimeOverrides: Set<ConfigField> = emptySet(),
 ) {
     data class EngineConfig(
-        val keyboardType: KeyboardType = KeyboardType.Pinyin,
+        val keyboardType: KeyboardType = KeyboardType.Pinyin, // 初始键盘类型，运行时通过 ImeState.keyboard.type 访问
         val handMode: HandMode = HandMode.Right,
         val features: Set<Feature> = Feature.DefaultSet,
         val candidatePredictionEnabled: Boolean = true,
@@ -252,7 +252,7 @@ data class FavoriteList(
 
 | 文档 | 说明 |
 |------|------|
-| [020-键盘状态机](020-state-machine.md) | KeyboardState sealed class 层次结构、状态转换规则、Keyboard 组合模式、InputKey 体系、KeyboardStateHistory 有界历史栈 |
+| [020-键盘状态机](020-state-machine.md) | KeyboardState sealed class 层次结构、状态转换规则、KeyboardIntentHandler + Keyboard data class、InputKey 体系、KeyboardStateHistory 有界历史栈 |
 | [030-输入列表](030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion 类型、线程安全设计、撤销机制、游标管理、InputListEditor |
 | [040-字典系统](040-dict-system.md) | DictRepository + DAO 接口、Room 数据库与 Entity、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree 前缀树、HmmModel + ViterbiDecoder |
 | [050-X-Pad 核心](050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout 区域定义、KeyboardState.PinyinInput.XPadding 状态集成 |

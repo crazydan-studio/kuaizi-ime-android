@@ -33,7 +33,7 @@ fun KeyboardPreview(config: ImeConfig) {
                 Box(modifier = Modifier.scale(0.5f).fillMaxSize()) {
                     StandardKeyLayoutPanel(
                         keyGrid = pinyinKeyGridPreview(config.engine.handMode),
-                        keyboardState = KeyboardState.Idle,
+                        keyboard = Keyboard(state = KeyboardState.Idle),
                     )
                 }
             }

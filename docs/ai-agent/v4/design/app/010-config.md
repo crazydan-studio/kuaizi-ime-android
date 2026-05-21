@@ -27,7 +27,7 @@ class ConfigDataStore(private val context: Context) {
     val config: Flow<ImeConfig> = context.dataStore.data.map { prefs ->
         ImeConfig(
             engine = ImeConfig.EngineConfig(
-                keyboardType = KeyboardType.entries[prefs[KEYBOARD_TYPE] ?: KeyboardType.Pinyin.ordinal],
+                keyboardType = KeyboardType.entries[prefs[KEYBOARD_TYPE] ?: KeyboardType.Pinyin.ordinal], // 初始键盘类型，运行时通过 ImeState.keyboard.type 访问
                 handMode = HandMode.entries[prefs[HAND_MODE] ?: HandMode.Right.ordinal],
                 features = parseFeatures(prefs),
                 candidatePredictionEnabled = prefs[CANDIDATE_PREDICTION] ?: true,
@@ -62,7 +62,7 @@ class ConfigDataStore(private val context: Context) {
             val current = config.first()
             val new = transform(current)
             // 持久化引擎配置
-            prefs[KEYBOARD_TYPE] = new.engine.keyboardType.ordinal
+            prefs[KEYBOARD_TYPE] = new.engine.keyboardType.ordinal // 持久化初始键盘类型
             prefs[HAND_MODE] = new.engine.handMode.ordinal
             prefs[CANDIDATE_PREDICTION] = new.engine.candidatePredictionEnabled
             prefs[SINGLE_LINE_INPUT] = new.engine.singleLineInput

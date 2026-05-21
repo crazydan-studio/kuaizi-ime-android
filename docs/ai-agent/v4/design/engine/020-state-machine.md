@@ -6,7 +6,7 @@
 
 ## 1. 概述
 
-键盘状态机是筷字输入法的核心逻辑，管理键盘在不同输入模式下的状态转换。v4 版本采用 **sealed class 层级**表达有限状态集，通过 **KeyboardStateTransition** 描述触发转换的原子事件，由 **KeyboardStateMachine** 集中执行转换规则并产生副作用。各键盘子类（PinyinKeyboard、LatinKeyboard 等）通过组合模式持有 KeyboardStateMachine，根据自身业务逻辑将 ImeIntent 映射为 KeyboardStateTransition。
+键盘状态机是筷字输入法的核心逻辑，管理键盘在不同输入模式下的状态转换。v4 版本采用 **sealed class 层级**表达有限状态集，通过 **KeyboardStateTransition** 描述触发转换的原子事件，由 **KeyboardStateMachine** 集中执行转换规则并产生副作用。各 KeyboardIntentHandler 子类（PinyinKeyboardIntentHandler、NumberKeyboardIntentHandler 等）按不同 KeyboardType 创建，各自处理从 ImeIntent 到 KeyboardStateTransition 的转换，状态由 KeyboardStateMachine 集中管理。
 
 ### 1.1 设计目标
 
@@ -24,7 +24,7 @@
 
 2. **KeyboardStateMachine 提取为独立组件**：Java 版本的状态管理逻辑分散在 `BaseKeyboard.change_State_To()`、`change_State_to_Init()`、`change_State_to_Previous()` 等方法中。v4 将状态转换逻辑提取为独立的 `KeyboardStateMachine` 组件，集中管理转换规则和副作用。
 
-3. **三层映射模型**：`ImeIntent → KeyboardStateTransition → KeyboardState`。键盘子类负责将 ImeIntent 映射为 KeyboardStateTransition，KeyboardStateMachine 执行转换产生新 KeyboardState 和副作用列表。这种分层使得 Intent 的语义与状态转换规则解耦。
+3. **三层映射模型**：`ImeIntent → KeyboardStateTransition → KeyboardState`。KeyboardIntentHandler 子类负责将 ImeIntent 映射为 KeyboardStateTransition，KeyboardStateMachine 执行转换产生新 KeyboardState 和副作用列表。这种分层使得 Intent 的语义与状态转换规则解耦。
 
 4. **KeyboardStateHistory 有界栈**：Java 版本使用 `State.previous` 链表实现无限深度的状态回退，可能导致内存泄漏。v4 使用 `ArrayDeque<KeyboardState>(maxSize = 10)` 有界栈，并在键盘类型切换时清空历史。
 
@@ -321,42 +321,77 @@ enum class KeyboardType {
 
 ---
 
-## 6. Keyboard 组合模式
+## 6. KeyboardIntentHandler + Keyboard data class
 
-### 6.1 键盘 sealed class 接口设计
+### 6.1 KeyboardIntentHandler 接口
 
 ```kotlin
-sealed class Keyboard {
-    abstract val type: KeyboardType
-    abstract val state: KeyboardState
-    abstract fun handleIntent(intent: ImeIntent): KeyboardStateResult
+/**
+ * 键盘意图处理器，按不同 KeyboardType 创建子类，
+ * 各自处理从 ImeIntent 到 KeyboardStateTransition 的转换。
+ *
+ * 替代原 sealed class Keyboard 的意图处理职能。
+ * 各子类是无状态的策略对象，状态由 KeyboardStateMachine 集中管理。
+ */
+interface KeyboardIntentHandler {
+    /** 该处理器对应的键盘类型 */
+    val type: KeyboardType
+
+    /**
+     * 处理用户意图，将其转换为 KeyboardStateTransition 并委托状态机执行。
+     *
+     * @param intent 用户意图
+     * @param state 当前键盘状态
+     * @return 处理结果，包含新状态和副作用意图列表
+     */
+    fun handleIntent(intent: ImeIntent, state: KeyboardState): KeyboardStateResult
 }
 ```
 
-各键盘子类通过组合模式持有 `KeyboardStateMachine`、字典引用、配置引用等独立组件，而非通过继承共享行为。键盘子类的 `handleIntent()` 方法负责将 `ImeIntent` 映射为 `KeyboardStateTransition`，再由 `KeyboardStateMachine` 执行转换。
+各 KeyboardIntentHandler 子类是无状态的策略对象，根据不同 KeyboardType 实现意图转换逻辑。它们通过组合模式持有 `KeyboardStateMachine`、字典引用、配置引用等独立组件，而非通过继承共享行为。各子类的 `handleIntent()` 方法负责将 `ImeIntent` 映射为 `KeyboardStateTransition`，再由 `KeyboardStateMachine` 执行转换。
 
-### 6.2 键盘继承层次
+### 6.2 Keyboard data class
 
-Java 版本采用深层继承（`BaseKeyboard → EditorEditKeyboard → PinyinKeyboard`），v4 采用组合模式替代继承，但保留键盘类型的层次结构用于组织逻辑。键盘子类层次如下：
+```kotlin
+/**
+ * 键盘实例，绑定键盘类型、输入模式和键盘状态。
+ *
+ * 替代原 sealed class Keyboard 的数据绑定职能。
+ * 不可变 data class，通过 copy() 生成新实例。
+ */
+data class Keyboard(
+    /** 键盘类型，决定按键集合的语义内容 */
+    val type: KeyboardType = KeyboardType.Pinyin,
+    /** 输入模式，决定按键的几何排列和交互方式 */
+    val mode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+    /** 键盘状态机当前状态 */
+    val state: KeyboardState = KeyboardState.Idle,
+)
+```
+
+### 6.3 KeyboardIntentHandler 子类层次
+
+Java 版本采用深层继承（`BaseKeyboard → EditorEditKeyboard → PinyinKeyboard`），v4 采用组合模式替代继承，但保留键盘类型的层次结构用于组织逻辑。KeyboardIntentHandler 子类层次如下：
 
 ```
-Keyboard (sealed class)
-├── PinyinKeyboard          — 拼音键盘（主键盘）
-├── LatinKeyboard           — 拉丁键盘（主键盘）
-├── NumberKeyboard          — 数字键盘（主键盘）
-├── MathKeyboard            — 数学键盘（临时键盘）
-├── SymbolKeyboard          — 符号键盘（临时键盘）
-├── EmojiKeyboard           — Emoji 键盘（临时键盘）
-├── EditorKeyboard          — 编辑键盘（临时键盘）
-├── PinyinCandidateKeyboard — 拼音候选键盘（超临时键盘）
-├── InputListCommitOptionKeyboard — 提交选项键盘（超临时键盘）
+KeyboardIntentHandler (interface)
+├── PinyinKeyboardIntentHandler          — 拼音键盘意图处理（主键盘），同时处理 Latin
+├── NumberKeyboardIntentHandler          — 数字键盘意图处理（主键盘）
+├── MathKeyboardIntentHandler            — 数学键盘意图处理（临时键盘）
+├── SymbolKeyboardIntentHandler          — 符号键盘意图处理（临时键盘）
+├── EmojiKeyboardIntentHandler           — Emoji 键盘意图处理（临时键盘）
+├── EditorKeyboardIntentHandler          — 编辑键盘意图处理（临时键盘）
+├── CandidateKeyboardIntentHandler       — 候选键盘意图处理（超临时键盘）
+├── CommitOptionKeyboardIntentHandler    — 提交选项键盘意图处理（超临时键盘）
 ```
 
-### 6.3 各键盘子类的职责和 intent 处理逻辑
+注意：`PinyinKeyboardIntentHandler` 同时处理 `KeyboardType.Pinyin` 和 `KeyboardType.Latin`，因为拉丁键盘复用拼音的滑行/X-Pad 模式。
 
-#### 6.3.1 PinyinKeyboard
+### 6.4 各 KeyboardIntentHandler 子类的职责和 intent 处理逻辑
 
-**职责**：拼音输入的核心键盘，支持四种输入模式（点击、滑行、翻动、X-Pad），管理拼音字符输入、候选字查询和输入补全。
+#### 6.4.1 PinyinKeyboardIntentHandler（含 LatinKeyboard）
+
+**职责**：拼音输入的核心意图处理器，支持四种输入模式（点击、滑行、翻动、X-Pad），管理拼音字符输入、候选字查询和输入补全。同时处理 `KeyboardType.Latin` 的意图转换，因为拉丁键盘复用拼音的滑行/X-Pad 模式。
 
 **处理的 ImeIntent**：
 
@@ -392,9 +427,9 @@ Keyboard (sealed class)
 7. 手指停止移动时（`FingerMoving_Stop`），结束滑行输入
 8. 若拼音有效则确认 pending，否则丢弃
 
-#### 6.3.2 LatinKeyboard
+#### 6.4.2 Latin 键盘的意图处理（由 PinyinKeyboardIntentHandler 统一处理）
 
-**职责**：拉丁字母键盘，支持直接输入模式（点击即提交到编辑器）和输入列表模式（输入列表非空时在列表中操作）。复用拼音的输入补全机制。
+**职责**：拉丁字母键盘的意图处理，支持直接输入模式（点击即提交到编辑器）和输入列表模式（输入列表非空时在列表中操作）。复用拼音的输入补全机制。
 
 **处理的 ImeIntent**：
 
@@ -403,11 +438,11 @@ Keyboard (sealed class)
 | `PressKey(CharKey.Alphabet/Number)` | 单字符输入，输入列表为空时直输，否则追加到 pending | `InputPinyinChar` |
 | `LongPressKey(CharKey.Alphabet/Number)` | 连续输入（长按 tick 视为连续单击） | 同 `PressKey` |
 
-**与 PinyinKeyboard 的差异**：LatinKeyboard 不支持滑行输入、翻动输入和 X-Pad 输入，仅支持逐键点击。输入列表为空时，按键直接提交到编辑器（直输模式），不在输入列表中停留和预处理。
+**与 Pinyin 键盘意图处理的差异**：Latin 模式不支持滑行输入、翻动输入和 X-Pad 输入，仅支持逐键点击。输入列表为空时，按键直接提交到编辑器（直输模式），不在输入列表中停留和预处理。
 
-#### 6.3.3 NumberKeyboard
+#### 6.4.3 NumberKeyboardIntentHandler
 
-**职责**：纯数字键盘，支持数字和部分符号（+、-、#、*）的直接输入。与 LatinKeyboard 类似，支持直输和输入列表两种模式。
+**职责**：纯数字键盘的意图处理，支持数字和部分符号（+、-、#、*）的直接输入。与 Latin 键盘类似，支持直输和输入列表两种模式。
 
 **处理的 ImeIntent**：
 
@@ -422,7 +457,7 @@ Keyboard (sealed class)
 - 在 X-Pad 输入中切换过来时，显示退出按钮以回到原键盘
 - 长按提交按键被禁用（`disable_Msg_On_CtrlKey_Commit_InputList`），避免意外进入提交选项键盘
 
-#### 6.3.4 MathKeyboard
+#### 6.4.4 MathKeyboardIntentHandler
 
 **职责**：数学表达式键盘，管理嵌套的数学 InputList，支持数字、运算符和括号的输入，自动计算表达式结果。
 
@@ -445,7 +480,7 @@ Keyboard (sealed class)
 2. 在父输入列表中创建或选中 `MathExprInput`，获取其嵌套的数学 InputList
 3. 停止时，确保当前的算术输入列表已被确认
 
-#### 6.3.5 SymbolKeyboard
+#### 6.4.5 SymbolKeyboardIntentHandler
 
 **职责**：符号选择键盘，提供分组浏览和翻页选择符号的能力。支持配对符号输入（如括号、引号）。
 
@@ -466,7 +501,7 @@ Keyboard (sealed class)
 
 **分组逻辑**：默认根据前一键盘类型选择分组——从拼音键盘切换过来默认显示中文符号（han 分组），否则显示拉丁符号（latin 分组）。
 
-#### 6.3.6 EmojiKeyboard
+#### 6.4.6 EmojiKeyboardIntentHandler
 
 **职责**：Emoji 选择键盘，提供分组浏览和翻页选择 Emoji 的能力。
 
@@ -481,7 +516,7 @@ Keyboard (sealed class)
 
 **常用分组**：默认显示常用分组，若常用分组为空则自动切换到第二个分组。常用分组的数据从用户输入数据字典中查询。
 
-#### 6.3.7 EditorKeyboard
+#### 6.4.7 EditorKeyboardIntentHandler
 
 **职责**：文本编辑功能键盘，提供光标移动、文本选择、复制、粘贴等编辑操作。
 
@@ -498,7 +533,7 @@ Keyboard (sealed class)
 - 长按提交按键被禁用，避免意外进入提交选项键盘
 - 光标定位按键的处理由 EditorEditKeyboard 的基类逻辑接管，EditorKeyboard 屏蔽基类的处理
 
-#### 6.3.8 PinyinCandidateKeyboard
+#### 6.4.8 CandidateKeyboardIntentHandler
 
 **职责**：拼音候选字选择键盘，提供候选词浏览、拼音过滤、高级过滤（部首/声调）和候选字确认。是使用频率最高的超临时键盘。
 
@@ -527,7 +562,7 @@ Keyboard (sealed class)
 2. 按部首或拼写进行过滤
 3. 确认过滤条件后，将过滤结果回传给候选选择状态，退出高级过滤
 
-#### 6.3.9 InputListCommitOptionKeyboard
+#### 6.4.9 CommitOptionKeyboardIntentHandler
 
 **职责**：输入列表提交选项键盘，控制提交到目标编辑器的内容形式（拼音拼写模式、繁简变体）。
 
@@ -547,39 +582,47 @@ Keyboard (sealed class)
 
 **退出逻辑**：退出时恢复输入列表的 InputOption 至切换前的状态（若为 Exit 操作）。
 
-### 6.4 Keyboard 注册表机制
+### 6.5 KeyboardIntentHandler 注册表机制
 
-ImeEngine 维护一个 `Map<KeyboardType, Keyboard>` 注册表，根据 `keyboardType` 选择对应的 Keyboard 实现：
+ImeEngine 维护一个 `Map<KeyboardType, KeyboardIntentHandler>` 注册表，根据当前 `Keyboard.type` 选择对应的 KeyboardIntentHandler 实现：
 
 ```kotlin
 class ImeEngine internal constructor(
-    private val keyboards: Map<KeyboardType, Keyboard>,
+    private val handlers: Map<KeyboardType, KeyboardIntentHandler>,
     // ...
 ) {
-    private var currentKeyboard: Keyboard = keyboards[KeyboardType.Pinyin]!!
-
     fun handleIntent(intent: ImeIntent) {
         when (intent) {
             is ImeIntent.SwitchKeyboard -> {
-                val targetKeyboard = keyboards[intent.type]
-                if (targetKeyboard != null) {
-                    currentKeyboard = targetKeyboard
-                    stateMachine.resetTo(intent.type.initialState)
+                val handler = handlers[intent.type]
+                if (handler != null) {
+                    val newKeyboard = _state.value.keyboard.copy(
+                        type = intent.type,
+                        state = intent.type.initialState,
+                    )
+                    _state.update { it.copy(keyboard = newKeyboard) }
                 }
             }
             else -> {
-                currentKeyboard.handleIntent(intent)
+                val handler = handlers[_state.value.keyboard.type] ?: return
+                val result = handler.handleIntent(intent, _state.value.keyboard.state)
+                val newKeyboard = _state.value.keyboard.copy(state = result.newState)
+                _state.update { it.copy(keyboard = newKeyboard) }
+                // 异步处理副作用
+                result.sideEffects.forEach { sideEffect ->
+                    handleIntent(sideEffect)
+                }
             }
         }
     }
 }
 ```
 
-### 6.5 键盘子类之间的切换逻辑
+### 6.6 键盘类型之间的切换逻辑
 
 键盘切换遵循**主键盘 → 临时键盘 → 超临时键盘**的层级关系，回退方向为反向。
 
-#### 6.5.1 切换场景
+#### 6.6.1 切换场景
 
 | 触发场景 | 切换方向 | 说明 |
 |---------|---------|------|
@@ -590,7 +633,7 @@ class ImeEngine internal constructor(
 | 选中符号/表情输入 | 主键盘 → 临时键盘 | → Symbol/Emoji |
 | 双击光标定位按键 | 主键盘 → 临时键盘 | → Editor |
 
-#### 6.5.2 回退逻辑
+#### 6.6.2 回退逻辑
 
 | 当前键盘 | 退出行为 | 说明 |
 |---------|---------|------|
@@ -598,7 +641,7 @@ class ImeEngine internal constructor(
 | 临时键盘（Math/Symbol/Emoji/Editor） | 退出时回到切换前的主键盘 | `switch_Keyboard_to_Previous` |
 | 主键盘 | 无回退 | 常驻性键盘 |
 
-#### 6.5.3 状态历史与键盘切换的交互
+#### 6.6.3 状态历史与键盘切换的交互
 
 - **键盘类型切换时清空历史栈**：不同键盘类型之间无回退关系，切换时清空 KeyboardStateHistory
 - **同一键盘内的子状态回退**：通过 `stateHistory.pop()` 实现，如 EditorEditing → Waiting
@@ -616,7 +659,7 @@ class ImeEngine internal constructor(
 ImeIntent → KeyboardStateTransition → KeyboardState
 ```
 
-- **第一层（ImeIntent → KeyboardStateTransition）**：由 Keyboard 子类的 `handleIntent()` 方法负责。各键盘子类根据自身业务逻辑，将 ImeIntent 映射为零或多个 KeyboardStateTransition。例如 PinyinKeyboard 将 `PressKey(CharKey.Alphabet)` + `FingerMoving` 映射为 `BeginSlip`，而 LatinKeyboard 对同一 Intent 不产生任何 Transition。
+- **第一层（ImeIntent → KeyboardStateTransition）**：由 KeyboardIntentHandler 子类的 `handleIntent()` 方法负责。各处理器根据自身业务逻辑，将 ImeIntent 映射为零或多个 KeyboardStateTransition。例如 PinyinKeyboardIntentHandler 将 `PressKey(CharKey.Alphabet)` + `FingerMoving` 映射为 `BeginSlip`，而 Latin 模式下对同一 Intent 不产生任何 Transition。
 
 - **第二层（KeyboardStateTransition → KeyboardState）**：由 `KeyboardStateMachine.transition()` 集中处理。根据当前状态和转换类型，确定新状态和副作用列表。
 
@@ -763,7 +806,7 @@ ImeIntent → KeyboardStateTransition → KeyboardState
 | `ImeIntent.DeleteInput` | 删除输入 | 通过 InputListEditor 操作输入列表 |
 | `ImeIntent.PerformEdit(EditorAction)` | 编辑器操作 | 通过 ImeOutputBridge 输出编辑指令 |
 | `ImeIntent.UpdateConfig(...)` | 切换手模式/主题 | 更新 ImeConfig |
-| `ImeIntent.SwitchKeyboard(...)` | 切换键盘类型 | 改变 keyboardType 和当前 Keyboard |
+| `ImeIntent.SwitchKeyboard(...)` | 切换键盘类型 | 改变 keyboard.type 并选择对应的 KeyboardIntentHandler |
 
 ---
 
@@ -998,8 +1041,8 @@ interface KeyTableGenerator {
 data class KeyTableContext(
     val config: ImeConfig,
     val inputList: InputList,
-    val keyboardState: KeyboardState,
-    val candidates: List<InputWord>,
+    val keyboard: Keyboard,
+    val candidateList: CandidateList,
 )
 ```
 

@@ -41,19 +41,19 @@ Java 版本采用自定义消息驱动的 MVP 架构，v4 采用 MVI + StateFlow
 | `KeyFactory` | `InputKey` 的 companion factory | 按键工厂，不再独立类 |
 | `Input` | `InputKey` / `InputWord` | 拆分为按键和字词两个维度，职责更清晰 |
 | `InputFactory` | `InputWord` 的 companion factory | 输入工厂，不再独立类 |
-| `Keyboard` | `Keyboard`（`:ime-engine` domain） | sealed class 组合模式替代继承树 |
-| `BaseKeyboard` | `Keyboard` sealed class 基类 | 行为从多层继承提取为独立共享组件 |
-| `PinyinKeyboard` | `PinyinKeyboard`（domain） | 组合模式：注入 `PinyinDict`、`ImeConfig`、`KeyboardStateMachine` |
-| `LatinKeyboard` | `LatinKeyboard`（domain） | 复用拼音的滑行 / X-Pad 模式 |
-| `NumberKeyboard` | `NumberKeyboard`（domain） | 无子状态 |
-| `SymbolKeyboard` | `SymbolKeyboard`（domain） | 直接迁移 |
-| `EditorKeyboard` | `EditorKeyboard`（domain） | 直接迁移 |
-| `EditorEditKeyboard` | `EditorEditKeyboard`（domain） | 直接迁移 |
-| `MathKeyboard` | `MathKeyboard`（domain） | 嵌套 InputList |
-| `EmojiKeyboard` | `EmojiKeyboard`（domain） | 直接迁移 |
-| `PinyinCandidateKeyboard` | `PinyinCandidateKeyboard`（domain） | 直接迁移 |
-| `InputCandidateKeyboard` | `InputCandidateKeyboard`（domain） | 直接迁移 |
-| `InputListCommitOptionKeyboard` | `InputListCommitOptionKeyboard`（domain） | 直接迁移 |
+| `Keyboard` | `Keyboard`（`:ime-engine` domain） | sealed class 改为 data class，意图处理职能提取为 KeyboardIntentHandler 接口 |
+| `BaseKeyboard` | `KeyboardIntentHandler` 接口 + `Keyboard` data class | 行为从多层继承提取为独立共享组件，意图处理提取为 KeyboardIntentHandler |
+| `PinyinKeyboard` | `PinyinKeyboardIntentHandler`（domain） | 组合模式：注入 `PinyinDict`、`ImeConfig`、`KeyboardStateMachine`；同时处理 Latin |
+| `LatinKeyboard` | `PinyinKeyboardIntentHandler`（Latin 由拼音处理器统一处理） | 复用拼音的滑行 / X-Pad 模式 |
+| `NumberKeyboard` | `NumberKeyboardIntentHandler`（domain） | 无子状态 |
+| `SymbolKeyboard` | `SymbolKeyboardIntentHandler`（domain） | 直接迁移 |
+| `EditorKeyboard` | `EditorKeyboardIntentHandler`（domain） | 直接迁移 |
+| `EditorEditKeyboard` | `EditorKeyboardIntentHandler`（domain） | 直接迁移 |
+| `MathKeyboard` | `MathKeyboardIntentHandler`（domain） | 嵌套 InputList |
+| `EmojiKeyboard` | `EmojiKeyboardIntentHandler`（domain） | 直接迁移 |
+| `PinyinCandidateKeyboard` | `CandidateKeyboardIntentHandler`（domain） | 直接迁移 |
+| `InputCandidateKeyboard` | `CandidateKeyboardIntentHandler`（domain） | 直接迁移 |
+| `InputListCommitOptionKeyboard` | `CommitOptionKeyboardIntentHandler`（domain） | 直接迁移 |
 | `InputList` | `InputList`（domain） | 不可变数据模型重构，1100+ 行可变类 → data class + `copy()` |
 | `Inputboard` | `Inputboard`（domain） | 直接迁移 |
 | `Favoriteboard` | `Favoriteboard`（domain） | 直接迁移（但功能拆分为 `ClipboardService` + `FavoriteService`） |

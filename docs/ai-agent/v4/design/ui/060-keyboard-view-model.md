@@ -470,7 +470,7 @@ class GestureFeedbackState {
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| inputMode | KeyboardInputMode | RectGrid | 当前输入模式，决定布局几何和交互范式；与 KeyboardType 正交 |
+| inputMode | KeyboardInputMode | RectGrid | 当前输入模式，决定布局几何和交互范式；与 KeyboardType 正交；通过 `state.keyboard.mode` 访问 |
 | isInputting | Boolean | false | 是否正在输入，控制 Row 2 面板互斥切换 |
 | toolList | ToolListState | emptyList() | 工具列表状态，含编辑功能键 |
 | popupTip | PopupTipState? | null | 弹出提示状态，由引擎 reduce 写入，PopupTipPanel 消费 |
@@ -489,7 +489,7 @@ class GestureFeedbackState {
  * UI 层通过 collectAsState() 订阅后驱动面板的部署和切换。
  */
 data class ImeState(
-    // ... 现有字段（keyboardType, keyGrid, keyboardState, candidateList, inputList, config 等） ...
+    // ... 现有字段（keyboard, keyGrid, candidateList, inputList, config 等） ...
 
     /**
      * 当前输入模式，决定按键布局几何和交互范式。
@@ -498,8 +498,10 @@ data class ImeState(
      * 任意 KeyboardInputMode 可与任意 Type 组合，产生不同的按键布局和交互体验。
      * KeyLayoutPanel 根据 inputMode 选择布局策略，
      * GestureInputPanel 根据 inputMode 选择手势识别策略。
+     * 注意：inputMode 现在通过 Keyboard data class 组合到 ImeState 中，
+     * 访问方式为 state.keyboard.mode。
      */
-    val inputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+    val inputMode: KeyboardInputMode = KeyboardInputMode.RectGrid, // 已移至 Keyboard.mode
 
     /**
      * 是否正在输入，控制 ToolListPanel/InputListPanel 的互斥切换。

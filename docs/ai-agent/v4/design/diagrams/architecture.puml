@@ -138,8 +138,9 @@ IE --> IDP : 字典查询
 ISDP *-- DR : 委托
 ISDP *-- PCT : 组合
 ISDP *-- HMM : 组合
-IS *-- KT : keyboardType
-IS *-- KIM : inputMode
+IS *-- K : keyboard
+K *-- KT : type
+K *-- KIM : mode
 IASC --> IAS : 编译生成
 IAS *-- IA : 包含
 IAFI *-- CA : 包含\n(clickAnimation)

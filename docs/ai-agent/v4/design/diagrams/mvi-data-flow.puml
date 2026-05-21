@@ -120,8 +120,8 @@ note right of IE
 end note
 
 note right of IS
-  inputMode, isInputting
-  keyboardState
+  keyboard.mode, isInputting
+  keyboard.state
   candidateList, inputList
   popupTip, toolList
   config

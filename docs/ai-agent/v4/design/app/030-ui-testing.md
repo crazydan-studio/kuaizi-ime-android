@@ -591,8 +591,7 @@ class PinyinKeyboardScreenshotTest {
             KeyboardTheme(themeType = ThemeType.Light) {
                 KeyboardHost(
                     state = ImeState(
-                        keyboardType = KeyboardType.Pinyin,
-                        keyboardState = KeyboardState.Idle,
+                        keyboard = Keyboard(type = KeyboardType.Pinyin, state = KeyboardState.Idle),
                     ),
                     intentHandler = {},
                 )
@@ -606,8 +605,7 @@ class PinyinKeyboardScreenshotTest {
             KeyboardTheme(themeType = ThemeType.Light) {
                 KeyboardHost(
                     state = ImeState(
-                        keyboardType = KeyboardType.Pinyin,
-                        keyboardState = KeyboardState.PinyinInput.Waiting(
+                        keyboard = Keyboard(type = KeyboardType.Pinyin, state = KeyboardState.PinyinInput.Waiting(
                             inputChars = listOf(charInput('n'), charInput('i')),
                             candidates = testCandidates,
                         ),

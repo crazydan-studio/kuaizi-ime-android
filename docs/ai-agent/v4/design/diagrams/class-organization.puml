@@ -49,15 +49,18 @@ package ":ime-engine" #FFF3E0 {
       {static} PerformEdit(action)
     }
     class ImeState <<(D,#FFF3E0)>> {
-      + keyboardType: KeyboardType
-      + inputMode: KeyboardInputMode
+      + keyboard: Keyboard
       + isInputting: Boolean
-      + keyboardState: KeyboardState
       + inputList: InputList
       + candidateList: CandidateList
       + popupTip: PopupTipState?
       + toolList: ToolListState
       + config: ImeConfig
+    }
+    class Keyboard <<(D,#FFF3E0)>> {
+      + type: KeyboardType
+      + mode: KeyboardInputMode
+      + state: KeyboardState
     }
   }
 
@@ -486,8 +489,9 @@ InputActionPositionResolver <|.. ComposeInputActionPositionResolver : :ime-ui
 ImeEngine *-- KeyboardStateMachine
 ImeEngine *-- InputListOperator
 ImeEngine *-- FeatureRegistry
-ImeState *-- KeyboardType : keyboardType
-ImeState *-- KeyboardInputMode : inputMode
+ImeState *-- Keyboard : keyboard
+Keyboard *-- KeyboardType : type
+Keyboard *-- KeyboardInputMode : mode
 ImeSqliteDictProvider *-- DictRepository
 ImeSqliteDictProvider *-- PinyinCharsTree
 ImeSqliteDictProvider *-- HmmModel

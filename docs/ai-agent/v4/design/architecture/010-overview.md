@@ -71,7 +71,7 @@ v4 采用 MVI（Model-View-Intent）架构，核心数据流如下：
 4. ImeIntent → KeyboardViewModel.handleIntent() → ImeEngine.handleIntent()
    ↓
 5. reduce(state, intent)
-   ├─ 更新 keyboardState（状态机转换）
+   ├─ 更新 keyboard.state（状态机转换）
    ├─ 查询 PinyinDict（协程）
    ├─ 更新 candidates
    └─ 更新 inputList

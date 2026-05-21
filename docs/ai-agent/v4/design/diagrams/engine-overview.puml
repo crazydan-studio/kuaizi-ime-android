@@ -70,15 +70,18 @@ package "核心模型" #FFE0B2 {
 ' ===== 状态类型 (绿色) =====
 package "状态类型" #C8E6C9 {
   class ImeState <<(D,#C8E6C9)>> {
-    + keyboardType: KeyboardType
-    + inputMode: KeyboardInputMode
+    + keyboard: Keyboard
     + isInputting: Boolean
-    + keyboardState: KeyboardState
     + inputList: InputList
     + candidateList: CandidateList
     + popupTip: PopupTipState?
     + toolList: ToolListState
     + config: ImeConfig
+  }
+  class Keyboard <<(D,#C8E6C9)>> {
+    + type: KeyboardType
+    + mode: KeyboardInputMode
+    + state: KeyboardState
   }
   class InputList <<(D,#C8E6C9)>> {
     + inputs: List<InputItem>
@@ -200,6 +203,9 @@ ImeOutputBridge <|-- BaseImeOutputBridge
 KeyboardStateMachine --> KeyAudioPlayer : 使用
 KeyboardStateMachine --> InputListOperator : 使用
 
+ImeState *-- Keyboard
+Keyboard *-- KeyboardType : type
+Keyboard *-- KeyboardInputMode : mode
 ImeState *-- InputList
 ImeState *-- CandidateList
 ImeState *-- Clipboard

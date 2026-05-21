@@ -364,7 +364,7 @@ fun handleGesture(gesture: InputGesture) {
 | 角色 | 输入法全局状态 |
 | 职责 | 承载键盘逻辑状态，驱动所有面板的渲染和切换 |
 | 约束 | 由引擎 reduce 逻辑计算，UI 层只读；弹出提示归属 ImeState |
-| 关键属性 | inputMode, isInputting, popupTip, toolList, keyboardType, keyGrid, keyboardState, candidateList, inputList |
+| 关键属性 | keyboard.mode, isInputting, popupTip, toolList, keyboard.type, keyGrid, keyboard.state, candidateList, inputList |
 | 所属包 | state |
 
 ImeState 需要扩展以支持屏幕布局模型相关概念。新增 inputMode 字段表示当前输入模式，isInputting 字段表示是否正在输入（控制 ToolListPanel 和 InputListPanel 的互斥切换），popupTip 字段由 ImeState 管理弹出提示（弹出提示是引擎处理意图后更新 ImeState 触发的展示，属于输入状态变化而非视觉反馈），toolList 字段管理工具列表状态（含 Editor 类型的编辑功能键）。这些扩展仅涉及 UI 层状态的暴露，不改变引擎的核心 reduce 逻辑——引擎仍然通过 ImeIntent 驱动状态转换，UI 层从 ImeState 中读取新增字段来决定面板的部署和切换。
@@ -806,7 +806,7 @@ KeyboardLayoutMode 动态切换时的实例迁移策略如下。从 Stacked 切�
 | 角色 | Row 3 面板（顶层），触摸事件接收 |
 | 职责 | 仅接收输入事件（透明触摸层），识别手势类型，输出 InputGesture，驱动 GestureFeedbackState |
 | 约束 | 始终为最上层面板，不绘制任何视觉内容；仅在 Zone B 中存在实例 |
-| 关键属性 | keyLayoutState, inputMode, keyboardType, feedbackState, onGesture |
+| 关键属性 | keyLayoutState, keyboard.mode, keyboard.type, feedbackState, onGesture |
 | 所属包 | panel |
 
 ```kotlin
@@ -1364,7 +1364,7 @@ KeyboardInputMode 与 KeyboardType 正交组合：任意 KeyboardInputMode 可�
 | 角色 | Row 3 面板，按键布局渲染 |
 | 职责 | 根据 KeyboardInputMode 和 KeyboardType 动态切换按键布局并渲染按键，提供布局状态供其他面板查询 |
 | 约束 | 单实例：同一时刻仅存在于 Zone A 或 Zone B 之一；KeyboardInputMode x Type 正交组合 |
-| 关键属性 | inputMode, keyboardType, onLayoutStateChanged, 计算归一化坐标 |
+| 关键属性 | keyboard.mode, keyboard.type, onLayoutStateChanged, 计算归一化坐标 |
 | 所属包 | panel |
 
 ### 7.2 KeyLayoutPanel 实现
@@ -1527,13 +1527,13 @@ data class OffsetF(val x: Float, val y: Float)
 
 ### 7.5 KeyView
 
-按键面板中的 `KeyView` 不处理触摸事件，也不绘制手势反馈，只负责按键的常规状态渲染。按键的"按下"视觉状态由 keyboardState 驱动（持续性状态），手势触发的临时高亮由 GestureFeedbackPanel 绘制。
+按键面板中的 `KeyView` 不处理触摸事件，也不绘制手势反馈，只负责按键的常规状态渲染。按键的"按下"视觉状态由 keyboard.state 驱动（持续性状态），手势触发的临时高亮由 GestureFeedbackPanel 绘制。
 
 ```kotlin
 /**
  * 按键视图（纯展示，无触摸处理，无手势反馈）。
  *
- * 按键的"按下"视觉状态由 keyboardState 驱动（持续性状态），
+ * 按键的"按下"视觉状态由 keyboard.state 驱动（持续性状态），
  * 手势触发的临时高亮由 GestureFeedbackPanel 绘制。
  */
 @Composable
@@ -1991,10 +1991,10 @@ private fun StackedLayout(
         // Row 3: 三层面板叠加
         Box(modifier = Modifier.weight(RowWeight.R3)) {
             KeyLayoutPanel(
-                inputMode = state.inputMode,
-                keyboardType = state.keyboardType,
+                inputMode = state.keyboard.mode,
+                keyboardType = state.keyboard.type,
                 keyGrid = state.keyGrid,
-                keyboardState = state.keyboardState,
+                keyboardState = state.keyboard.state,
                 onLayoutStateChanged = { keyLayoutState = it },
             )
             GestureFeedbackPanel(
@@ -2004,8 +2004,8 @@ private fun StackedLayout(
             )
             GestureInputPanel(
                 keyLayoutState = keyLayoutState,
-                inputMode = state.inputMode,
-                keyboardType = state.keyboardType,
+                inputMode = state.keyboard.mode,
+                keyboardType = state.keyboard.type,
                 feedbackState = feedbackState,
                 onGesture = { viewModel.handleGesture(it) },
             )
@@ -2042,10 +2042,10 @@ private fun SeparatedLayout(
                 .align(CenterHorizontally),
         ) {
             KeyLayoutPanel(
-                inputMode = state.inputMode,
-                keyboardType = state.keyboardType,
+                inputMode = state.keyboard.mode,
+                keyboardType = state.keyboard.type,
                 keyGrid = state.keyGrid,
-                keyboardState = state.keyboardState,
+                keyboardState = state.keyboard.state,
                 onLayoutStateChanged = { keyLayoutState = it },
             )
             GestureFeedbackPanel(
@@ -2090,7 +2090,7 @@ private fun SeparatedLayout(
             Row(modifier = Modifier.weight(RowWeight.R3)) {
                 // 左列：功能按钮
                 LeftFunctionColumn(
-                    keyboardType = state.keyboardType,
+                    keyboardType = state.keyboard.type,
                     onAction = { viewModel.handleIntent(it) },
                     modifier = Modifier.weight(1f),
                 )
@@ -2104,8 +2104,8 @@ private fun SeparatedLayout(
                     )
                     GestureInputPanel(
                         keyLayoutState = keyLayoutState,
-                        inputMode = state.inputMode,
-                        keyboardType = state.keyboardType,
+                        inputMode = state.keyboard.mode,
+                        keyboardType = state.keyboard.type,
                         feedbackState = feedbackState,
                         onGesture = { viewModel.handleGesture(it) },
                     )
@@ -2113,7 +2113,7 @@ private fun SeparatedLayout(
 
                 // 右列：功能按钮
                 RightFunctionColumn(
-                    keyboardType = state.keyboardType,
+                    keyboardType = state.keyboard.type,
                     onAction = { viewModel.handleIntent(it) },
                     modifier = Modifier.weight(1f),
                 )

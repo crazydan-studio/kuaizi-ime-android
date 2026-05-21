@@ -63,7 +63,7 @@ package ":app" #E3F2FD {
     + updateConfig(transform)
     --
     持久化 EngineConfig:
-      keyboardType, handMode, features,
+      keyboardType (→ Keyboard.type), handMode, features,
       candidatePredictionEnabled, singleLineInput
     持久化 UiConfig:
       themeType, xPadEnabled, audioFeedback,
