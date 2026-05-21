@@ -47,10 +47,10 @@
 | 角色 | 屏幕空间分区定义 |
 | 职责 | 将 IME 屏幕纵向划分为两个功能区，分配交互职责 |
 | 约束 | Zone A 仅在 Separated 模式下使用；Zone B 在两种模式下始终使用 |
-| 关键属性 | LayoutZoneA（上半区），LayoutZoneB（下半区） |
+| 关键属性 | LayoutZone.A（上半区），LayoutZone.B（下半区） |
 | 所属包 | keyboard |
 
-IME 将屏幕纵向划分为两个 Zone，每个 Zone 承担不同的交互职责。Zone A（Keyboard.LayoutZoneA）占据屏幕上半区，仅在 Separated 模式下承载 KeyLayoutPanel 和 GestureFeedbackPanel，用于展示按键布局和手势反馈。Zone B（Keyboard.LayoutZoneB）占据屏幕下半区，是所有交互的核心区域，无论 Stacked 还是 Separated 模式，Zone B 始终包含完整的三行结构。Zone 的划分使得输入区域和按键展示区域在物理上分离成为可能，从而解决手指遮挡按键视野的问题，同时保持两种模式在组件层面的统一性。
+IME 将屏幕纵向划分为两个 Zone，每个 Zone 承担不同的交互职责。Zone A（LayoutZone.A）占据屏幕上半区，仅在 Separated 模式下承载 KeyLayoutPanel 和 GestureFeedbackPanel，用于展示按键布局和手势反馈。Zone B（LayoutZone.B）占据屏幕下半区，是所有交互的核心区域，无论 Stacked 还是 Separated 模式，Zone B 始终包含完整的三行结构。Zone 的划分使得输入区域和按键展示区域在物理上分离成为可能，从而解决手指遮挡按键视野的问题，同时保持两种模式在组件层面的统一性。
 
 ```kotlin
 /**
@@ -60,13 +60,13 @@ IME 将屏幕纵向划分为两个 Zone，每个 Zone 承担不同的交互职�
  * Zone A 占据屏幕上半区，Zone B 占据屏幕下半区。
  * 在 Stacked 模式下，仅使用 Zone B；在 Separated 模式下，Zone A 和 Zone B 均被使用。
  */
-sealed class Keyboard {
+sealed class LayoutZone {
 
     /** 屏幕上半区，Separated 模式下展示按键布局和手势反馈 */
-    data object LayoutZoneA : Keyboard()
+    data object A : LayoutZone()
 
     /** 屏幕下半区，所有交互的核心区域，包含三行结构 */
-    data object LayoutZoneB : Keyboard()
+    data object B : LayoutZone()
 }
 ```
 
@@ -89,31 +89,28 @@ KeyboardLayoutMode 定义 Zone A 与 Zone B 的使用方式。Stacked 模式下�
  * Stacked 模式：所有组件集中在 Zone B 内。
  * Separated 模式：输入区域在 Zone B，按键展示在 Zone A。
  */
-sealed class Keyboard {
+sealed class KeyboardLayoutMode {
 
-    sealed class KeyboardLayoutMode {
+    /**
+     * 堆叠模式。
+     *
+     * 所有交互组件集中在 Zone B，三层面板叠加共享同一空间。
+     * 适合紧凑布局和单手操作场景。
+     * KeyLayoutPanel 部署在 Zone B 的 Row 3。
+     */
+    data object Stacked : KeyboardLayoutMode()
 
-        /**
-         * 堆叠模式。
-         *
-         * 所有交互组件集中在 Zone B，三层面板叠加共享同一空间。
-         * 适合紧凑布局和单手操作场景。
-         * KeyLayoutPanel 部署在 Zone B 的 Row 3。
-         */
-        data object Stacked : KeyboardLayoutMode()
-
-        /**
-         * 分离模式。
-         *
-         * 输入区域占据 Zone B，按键展示区域占据 Zone A。
-         * 提供更宽的按键视野，避免手指遮挡，缩短输入路径。
-         * KeyLayoutPanel 部署在 Zone A，GestureInputPanel 部署在 Zone B 的 Row 3 中列。
-         */
-        data class Separated(
-            /** Zone A 占屏幕高度的比例，默认 0.4 */
-            val zoneARatio: Float = 0.4f,
-        ) : KeyboardLayoutMode()
-    }
+    /**
+     * 分离模式。
+     *
+     * 输入区域占据 Zone B，按键展示区域占据 Zone A。
+     * 提供更宽的按键视野，避免手指遮挡，缩短输入路径。
+     * KeyLayoutPanel 部署在 Zone A，GestureInputPanel 部署在 Zone B 的 Row 3 中列。
+     */
+    data class Separated(
+        /** Zone A 占屏幕高度的比例，默认 0.4 */
+        val zoneARatio: Float = 0.4f,
+    ) : KeyboardLayoutMode()
 }
 ```
 
@@ -132,25 +129,22 @@ KeyboardInputMode 决定交互范式和布局几何，是独立于键盘内容�
 
 ```kotlin
 /**
- * 输入模式，决定交互范式和布局几何。
+ * 输入交互范式，决定按键的几何排列和交互方式。
  *
  * 属于 :ime-engine 模块的 engine.core 包。
- * KeyboardInputMode 与 KeyboardType 正交：任意 KeyboardInputMode 可与任意 Type 组合。
+ * KeyboardInputMode 与 KeyboardType 正交：任意 KeyboardInputMode 可与任意 KeyboardType 组合。
  * KeyboardInputMode 影响按键的几何排列方式和手势交互方式。
  * KeyboardType 是引擎的键盘分类（Pinyin/Latin/Symbol 等），KeyboardInputMode 是输入交互范式分类（XPad/HexGrid/RectGrid/MultiZone），二者是不同的概念维度。
  */
-sealed class Keyboard {
-
-    enum class KeyboardInputMode {
-        /** X-Pad 六边形面板，手指在六边形区域间滑行 */
-        XPad,
-        /** 六边形网格布局，紧密排列 */
-        HexGrid,
-        /** 矩形网格布局，传统 QWERTY 式排列 */
-        RectGrid,
-        /** 多区域布局，键盘划分为多个独立交互区域 */
-        MultiZone,
-    }
+enum class KeyboardInputMode {
+    /** X-Pad 六边形面板，手指在六边形区域间滑行 */
+    XPad,
+    /** 六边形网格布局，紧密排列 */
+    HexGrid,
+    /** 矩形网格布局，传统 QWERTY 式排列 */
+    RectGrid,
+    /** 多区域布局，键盘划分为多个独立交互区域 */
+    MultiZone,
 }
 ```
 
@@ -161,30 +155,39 @@ sealed class Keyboard {
 | 角色 | 键盘内容类型定义 |
 | 职责 | 决定按键集合的语义内容和标签 |
 | 约束 | 与 KeyboardInputMode 正交；编辑功能由 ToolListPanel 统一管理 |
-| 关键属性 | Pinyin, Latin, Symbol, Emoji, Number, Math |
-| 所属包 | keyboard |
+| 关键属性 | Pinyin, Latin, Symbol, Emoji, Number, Math, Editor, Candidate, CommitOption |
+| 所属包 | engine.core |
 | 所属模块 | :ime-engine（与 KeyboardInputMode 同属 :ime-engine 模块） |
 
 KeyboardType 决定键盘的内容类型，即按键集合的语义分类。Pinyin 类型提供拼音输入的声母韵母按键，Latin 类型提供拉丁字母按键，Symbol/Emoji 类型提供符号和表情，Number 类型提供数字和基本运算符，Math 类型提供数学公式相关按键。Type 的选择决定了 KeyLayoutPanel 渲染哪些按键以及按键的标签内容，但不影响按键的几何排列方式——几何排列由 KeyboardInputMode 决定。Editor 类型的编辑功能键（如全选、复制、粘贴、撤销等）由 ToolListPanel 统一管理，作为工具项展示，编辑功能在任何键盘类型下均可通过工具栏快速访问。
 
 ```kotlin
 /**
- * 键盘类型，决定键盘的内容类型。
+ * 键盘内容类型，决定按键集合的语义内容和标签。
  *
- * Type 与 KeyboardInputMode 正交：任意 Type 可与任意 KeyboardInputMode 组合。
- * Type 决定按键集合的语义内容和标签，KeyboardInputMode 决定按键的几何排列方式。
- * 编辑功能由 ToolListPanel 统一管理。
+ * 与 KeyboardInputMode 正交：任意 KeyboardType 可与任意 KeyboardInputMode 组合。
+ * 定义在 :ime-engine 模块，作为引擎公开 API 的一部分。
+ * 通过 Keyboard data class 组合到 ImeState 中。
  */
-sealed class Keyboard {
-
-    enum class Type {
-        Pinyin,
-        Latin,
-        Symbol,
-        Emoji,
-        Number,
-        Math,
-    }
+enum class KeyboardType {
+    /** 拼音输入键盘（主键盘） */
+    Pinyin,
+    /** 拉丁字母键盘（主键盘） */
+    Latin,
+    /** 数字键盘 */
+    Number,
+    /** 数学表达式键盘 */
+    Math,
+    /** 符号选择键盘 */
+    Symbol,
+    /** 表情选择键盘 */
+    Emoji,
+    /** 编辑功能键盘（光标移动、文本选择、复制粘贴等） */
+    Editor,
+    /** 候选词选择键盘（临时键盘，选择后返回主键盘） */
+    Candidate,
+    /** 提交选项键盘（临时键盘，选择后返回主键盘） */
+    CommitOption,
 }
 ```
 
@@ -367,9 +370,24 @@ fun handleGesture(gesture: InputGesture) {
 | 关键属性 | keyboard.mode, isInputting, popupTip, toolList, keyboard.type, keyGrid, keyboard.state, candidateList, inputList |
 | 所属包 | state |
 
-ImeState 需要扩展以支持屏幕布局模型相关概念。新增 inputMode 字段表示当前输入模式，isInputting 字段表示是否正在输入（控制 ToolListPanel 和 InputListPanel 的互斥切换），popupTip 字段由 ImeState 管理弹出提示（弹出提示是引擎处理意图后更新 ImeState 触发的展示，属于输入状态变化而非视觉反馈），toolList 字段管理工具列表状态（含 Editor 类型的编辑功能键）。这些扩展仅涉及 UI 层状态的暴露，不改变引擎的核心 reduce 逻辑——引擎仍然通过 ImeIntent 驱动状态转换，UI 层从 ImeState 中读取新增字段来决定面板的部署和切换。
+ImeState 通过 `keyboard: Keyboard` 字段绑定键盘类型、输入模式和键盘状态，UI 层通过 `state.keyboard.type`、`state.keyboard.mode`、`state.keyboard.state` 访问各子维度。isInputting 字段表示是否正在输入（控制 ToolListPanel 和 InputListPanel 的互斥切换），popupTip 字段由 ImeState 管理弹出提示（弹出提示是引擎处理意图后更新 ImeState 触发的展示，属于输入状态变化而非视觉反馈），toolList 字段管理工具列表状态（含 Editor 类型的编辑功能键）。这些扩展仅涉及 UI 层状态的暴露，不改变引擎的核心 reduce 逻辑——引擎仍然通过 ImeIntent 驱动状态转换，UI 层从 ImeState 中读取新增字段来决定面板的部署和切换。
 
 ```kotlin
+/**
+ * 键盘实例，绑定键盘类型、输入模式和键盘状态。
+ *
+ * 替代原 sealed class Keyboard 的数据绑定职能。
+ * 不可变 data class，通过 copy() 生成新实例。
+ */
+data class Keyboard(
+    /** 键盘类型，决定按键集合的语义内容 */
+    val type: KeyboardType = KeyboardType.Pinyin,
+    /** 输入模式，决定按键的几何排列和交互方式 */
+    val mode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+    /** 键盘状态机当前状态 */
+    val state: KeyboardState = KeyboardState.Idle,
+)
+
 /**
  * ImeState 的 UI 层扩展字段。
  *
@@ -379,8 +397,8 @@ ImeState 需要扩展以支持屏幕布局模型相关概念。新增 inputMode 
 data class ImeState(
     // ... 现有字段 ...
 
-    /** 当前输入模式，决定按键布局几何和交互范式 */
-    val inputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+    /** 键盘实例，绑定类型、输入模式和状态 */
+    val keyboard: Keyboard = Keyboard(),
 
     /** 是否正在输入，控制 ToolListPanel/InputListPanel 的互斥切换 */
     val isInputting: Boolean = false,
