@@ -38,6 +38,7 @@ package "Domain Layer [:ime-engine]" #FFF3E0 {
   rectangle "ImeEngine\n(核心引擎)" as IE #FFE0B2
   rectangle "ImeIntent\n(用户意图)" as II #FFE0B2
   rectangle "ImeState\n(不可变状态)" as IS #FFE0B2
+  rectangle "ImeEffect\n(一次性效果)" as IEF #FFE0B2
   rectangle "ImeOutput\n(编辑输出)" as IO #FFE0B2
 }
 
@@ -53,6 +54,7 @@ GIP -down-> KVM : InputGesture
 KVM -down-> II : ImeIntent\n(手势→意图转换)
 II -down-> IE : handleIntent()
 IE -down-> IS : reduce\nStateFlow 更新
+IE -down-> IEF : ImeEffect\nSharedFlow 发射
 
 ' ===== 反馈流 =====
 GFS -[#FFF9C4]-> GFP : collectAsState()\n反归一化绘制
@@ -60,6 +62,9 @@ GFS -[#FFF9C4]-> GFP : collectAsState()\n反归一化绘制
 ' ===== 状态流 =====
 IS -[#E1F5FE]-> UI : collectAsState()\n驱动面板重组
 IS -[#E1F5FE]-> KVM : state 引用
+
+' ===== 效果流 =====
+IEF -[#FCE4EC]-> KVM : collect\nPopupTip / PlayAudio
 
 ' ===== 输出流 =====
 IE -[#F3E5F5]-> IO : ImeOutput
@@ -82,6 +87,8 @@ note right of KVM
   handleGesture() / handleIntent()
   管理 KeyboardLayoutMode
   管理 GestureFeedbackState
+  维护 ToolListState (local)
+  订阅 ImeEffect → PopupTipState
   集成 InputActionPlayer
 end note
 
@@ -120,10 +127,9 @@ note right of IE
 end note
 
 note right of IS
-  keyboard.mode, isInputting
+  keyboard.mode
   keyboard.state
   candidateList, inputList
-  popupTip, toolList
   config
 end note
 

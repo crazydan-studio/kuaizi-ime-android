@@ -33,11 +33,17 @@ start
 :reduce(state, intent);
 
 |ImeState|
-:keyboard.state / inputList\ncandidateList / config\nkeyboard.mode / isInputting\npopupTip / toolList;
+:keyboard.state / inputList\ncandidateList / config\nkeyboard.mode;
+
+|ImeEffect|
+:PopupTip / PlayAudio\nConfirmFavorite;
+
+|KeyboardViewModel|
+:订阅 ImeEffect → PopupTipState\n派生 isInputting (inputList.hasPending)\n维护 ToolListState (local);
 
 |Compose UI|
 :collectAsState() 驱动重组;
-:keyboard.mode → KeyLayoutPanel\nisInputting → ToolListPanel/InputListPanel\npopupTip → PopupTipPanel\ntoolList → ToolListPanel\ncandidateList → CandidateListPanel\ninputList → InputListPanel;
+:keyboard.mode → KeyLayoutPanel\nisInputting → ToolListPanel/InputListPanel\npopupTipState → PopupTipPanel\ntoolListState → ToolListPanel\ncandidateList → CandidateListPanel\ninputList → InputListPanel;
 
 stop
 

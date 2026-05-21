@@ -19,8 +19,6 @@ ImeState 是 v4 版本 MVI 架构中的**单一状态树根节点**，作为 `Im
 data class ImeState(
     /** 当前键盘实例，绑定类型、输入模式和状态 */
     val keyboard: Keyboard = Keyboard(),
-    /** 是否正在输入（有未确认的拼音/拉丁字符），控制 Row 2 面板切换 */
-    val isInputting: Boolean = false,
     /** 输入列表 */
     val inputList: InputList = InputList(),
     /** 候选列表 */
@@ -29,10 +27,6 @@ data class ImeState(
     val clipboard: Clipboard = Clipboard(),
     /** 收藏列表状态 */
     val favoriteList: FavoriteList = FavoriteList(),
-    /** 弹出提示状态，null 表示无提示 */
-    val popupTip: PopupTipState? = null,
-    /** 工具栏状态（仅 isInputting=false 时显示） */
-    val toolList: ToolListState = ToolListState(emptyList()),
     /** 当前运行时配置 */
     val config: ImeConfig = ImeConfig(),
 )
@@ -44,23 +38,19 @@ data class ImeState(
 |------|---------|---------|
 | `keyboard.type` | `KeyLayoutPanel` | 选择按键集合（拼音/拉丁/数字/符号/表情/数学/编辑） |
 | `keyboard.mode` | `KeyLayoutPanel`, `GestureInputPanel` | 选择布局几何（XPad/HexGrid/RectGrid/MultiZone）和手势识别策略 |
-| `isInputting` | Row 2 面板切换 | `true` → `InputListPanel`；`false` → `ToolListPanel` |
 | `keyboard.state` | `KeyboardViewModel`, `GestureInputPanel` | 决定手势识别逻辑（滑行/翻动/XPad/候选选择/编辑） |
 | `inputList` | `InputListPanel` | 渲染输入字符序列和光标 |
 | `candidateList` | `CandidateListPanel` | 渲染候选词列表和翻页控制 |
-| `clipboard` | `PopupTipPanel`, `ToolListPanel` | 剪贴板提示和粘贴操作 |
+| `clipboard` | `ToolListPanel` | 剪贴板粘贴操作 |
 | `favoriteList` | `ToolListPanel` | 收藏快捷操作 |
-| `popupTip` | `PopupTipPanel` (Row 1) | 短暂提示叠加层 |
-| `toolList` | `ToolListPanel` (Row 2) | 工具按钮（编辑功能键、剪贴板、收藏） |
 | `config` | 主题系统、配置 UI | 驱动颜色、尺寸、功能开关 |
+
+> **注意**：`isInputting`、`toolList`、`popupTip` 不再属于 ImeState。`isInputting` 由 KeyboardViewModel 从 `inputList.pending` 直接派生；`toolList` 由 KeyboardViewModel 维护本地 `StateFlow<ToolListState>`；弹出提示通过 ImeEffect 副作用通道实现。详见 [060-KeyboardViewModel](../ui/060-keyboard-view-model.md)。
 
 ### 1.2 状态不变式
 
 1. **keyboard.type 与 keyboard.state 一致性**：`keyboard.state` 必须与 `keyboard.type` 的初始状态兼容。例如 `keyboard.type == Symbol` 时 `keyboard.state` 应为 `SymbolChoosing`，`keyboard.type == Pinyin` 时 `keyboard.state` 应为 `PinyinInput.*` 或 `CandidateSelection.*`。
-2. **isInputting 与 inputList 一致性**：当 `inputList` 中存在未确认的拼音字符（`pending != null` 且非空）时，`isInputting` 必须为 `true`；当 `inputList` 为空或所有输入均已确认时，`isInputting` 可为 `false`。
-3. **candidateList 非空前提**：`candidateList.candidates` 非空当且仅当 `keyboard.state` 处于 `CandidateSelection.*` 状态。
-4. **toolList 仅在非输入态有效**：`toolList` 的内容在 `isInputting == true` 时无意义，UI 层应忽略。
-5. **popupTip 短暂性**：`popupTip` 不应在连续两个 ImeState 中保持相同 `timestamp`，UI 层应自动dismiss。
+2. **candidateList 非空前提**：`candidateList.candidates` 非空当且仅当 `keyboard.state` 处于 `CandidateSelection.*` 状态。
 
 ---
 
@@ -263,8 +253,8 @@ sealed class CommitOption {
 
 InputList 和 KeyboardState 通过 ImeEngine 的 reduce 函数协调变更：
 
-1. **PinyinInput.Waiting** → 用户按下拼音键 → 更新 `InputList.pending` + 设置 `isInputting = true`
-2. **CandidateSelection.Choosing** → 用户选择候选词 → `InputList` 确认 pending 字符 + 设置候选词 → `isInputting` 可能变为 `false`
+1. **PinyinInput.Waiting** → 用户按下拼音键 → 更新 `InputList.pending`
+2. **CandidateSelection.Choosing** → 用户选择候选词 → `InputList` 确认 pending 字符 + 设置候选词
 3. **CommitOptionChoosing** → 用户选择选项 → 更新 `InputList.inputOption` 或替换输入词 → 返回 `Waiting`
 4. **EditorEditing** → 光标移动/范围选择 → 更新 `InputList.gapIndex`（光标位置）
 
@@ -579,22 +569,53 @@ data class InputFavorite(
 
 ---
 
-## 8 PopupTipState 弹出提示状态
+## 8 ImeEffect 副作用通道
+
+ImeEffect 是 ImeEngine 的副作用通道，用于向 UI 层发送一次性效果信号。与 ImeState 的持续状态不同，ImeEffect 表达的是「发生了某件事」的事件语义——引擎发出信号后不维护其状态，UI 层消费后即丢弃。
+
+### 8.1 设计动机
+
+在 v4 的 MVI 架构中，ImeState 承载持续性的状态数据，UI 层通过 `StateFlow<ImeState>` 订阅后驱动重组。然而，某些引擎行为属于一次性效果而非持续性状态，例如弹出操作提示、播放音效、显示收藏确认等。将这些一次性效果放入 ImeState 会导致以下问题：
+
+- **状态清理负担**：弹出提示需要自动 dismiss，引擎或 ViewModel 必须在适当时机清除状态，增加了状态管理的复杂度
+- **语义不匹配**：「显示一个提示」是事件语义而非状态语义，提示的显示是一次性的，不应在状态快照中持续存在
+- **重复消费风险**：配置变更或进程重建导致 StateFlow 重新发射时，已消费过的一次性效果可能被重新消费
+
+引入 ImeEffect 通道后，一次性效果通过 `SharedFlow<ImeEffect>` 发射，UI 层收集后立即消费，不存在重复消费和状态清理问题。ImeState 专注于持续性状态，ImeEffect 专注于一次性效果，两者共同构成引擎的完整输出。
+
+### 8.2 ImeEffect 定义
 
 ```kotlin
-data class PopupTipState(
-    /** 提示消息文本 */
-    val message: String,
-    /** 创建时间戳，用于自动 dismiss */
-    val timestamp: Long = System.currentTimeMillis(),
-    /** 提示类型 */
-    val type: PopupTipType = PopupTipType.Info,
-)
-```
+/**
+ * 引擎副作用，表达一次性效果信号。
+ *
+ * 引擎通过 ImeEffect 通道向 UI 层发送一次性效果信号，
+ * UI 层消费后即丢弃，不需要维护状态。
+ * 与 ImeState 的持续状态不同，ImeEffect 表达的是「发生了某件事」的事件语义。
+ */
+sealed class ImeEffect {
+    /** 弹出提示 */
+    data class PopupTip(
+        /** 提示消息 */
+        val message: String,
+        /** 提示类型 */
+        val type: PopupTipType = PopupTipType.Info,
+    ) : ImeEffect()
 
-### 8.1 PopupTipType 提示类型
+    /** 播放音效 */
+    data class PlayAudio(
+        /** 音效类型 */
+        val type: AudioType,
+    ) : ImeEffect()
 
-```kotlin
+    /** 显示收藏确认 */
+    data class ConfirmFavorite(
+        /** 待收藏的内容 */
+        val content: String,
+    ) : ImeEffect()
+}
+
+/** 弹出提示类型 */
 enum class PopupTipType {
     /** 信息提示（如切换键盘类型） */
     Info,
@@ -603,23 +624,115 @@ enum class PopupTipType {
     /** 编辑器操作提示（光标移动/范围选择） */
     Editor,
 }
+
+/** 音效类型 */
+enum class AudioType {
+    /** 按键音 */
+    KeyPress,
+    /** 滑行输入音 */
+    Slip,
+    /** 候选选择音 */
+    CandidateSelect,
+    /** 翻页音 */
+    PageFlip,
+}
 ```
 
-### 8.2 自动 Dismiss 机制
+### 8.3 ImeEffect 通道集成
 
-PopupTipState 通过以下机制自动消失：
+ImeEngine 在 `handleIntent()` 处理过程中，通过内部 `MutableSharedFlow<ImeEffect>` 发射副作用信号，对外暴露只读 `SharedFlow<ImeEffect>` 供 UI 层订阅：
 
-1. **时间驱动**：UI 层在 `PopupTipPanel` 中启动定时器，默认超时 3000ms 后自动将 `popupTip` 设为 `null`
-2. **Intent 驱动**：下一个 ImeIntent 到来时，reduce 函数检查 `popupTip.timestamp`，若超过超时阈值则自动清除
-3. **状态驱动**：当 `keyboard.state` 发生状态转换时，已有的 `popupTip` 被清除（避免提示与当前状态不一致）
+```kotlin
+class ImeEngine internal constructor(
+    // ...
+) {
+    private val _state = MutableStateFlow(ImeState())
+    val state: StateFlow<ImeState> = _state.asStateFlow()
 
-超时阈值通过 `ImeConfig.ui.popupTipTimeout` 配置，默认 3000ms。
+    private val _effect = MutableSharedFlow<ImeEffect>(extraBufferCapacity = 16)
+    val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
+
+    fun handleIntent(intent: ImeIntent) {
+        // ... reduce 逻辑 ...
+        // 在状态转换过程中发射副作用
+        _effect.tryEmit(ImeEffect.PopupTip(message = "已切换到拉丁键盘"))
+    }
+}
+```
+
+KeyboardViewModel 订阅引擎的 `effect` 通道，根据 ImeEffect 类型驱动对应的 UI 行为：
+
+```kotlin
+class KeyboardViewModel(
+    private val engine: ImeEngine,
+) : ViewModel() {
+    init {
+        // 订阅引擎副作用
+        viewModelScope.launch {
+            engine.effect.collect { effect ->
+                when (effect) {
+                    is ImeEffect.PopupTip -> {
+                        _popupTipState.value = PopupTipState(effect.message, effect.type)
+                        // 启动自动 dismiss 定时器
+                        viewModelScope.launch {
+                            delay(effect.type.timeoutMs)
+                            _popupTipState.value = null
+                        }
+                    }
+                    is ImeEffect.PlayAudio -> {
+                        // 交由音频播放器处理
+                    }
+                    is ImeEffect.ConfirmFavorite -> {
+                        // 交由收藏确认 UI 处理
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+### 8.4 ImeEffect 与 ImeState 的职责划分
+
+| 维度 | ImeState | ImeEffect |
+|------|---------|-----------|
+| 语义 | 持续性状态（「当前是什么」） | 一次性效果（「发生了什么事」） |
+| 通道 | `StateFlow<ImeState>` | `SharedFlow<ImeEffect>` |
+| 消费模式 | 每次重组都读取最新值 | 收集后消费一次，不重复消费 |
+| 生命周期 | 持续存在于状态流中 | 发射后即丢弃 |
+| 典型场景 | 键盘类型、输入列表、候选列表 | 弹出提示、音效、确认对话框 |
+
+### 8.5 自动 Dismiss 机制
+
+弹出提示的自动消失由 KeyboardViewModel 在 UI 层管理：
+
+1. **ViewModel 定时器**：ViewModel 收到 `ImeEffect.PopupTip` 后，启动 `delay(timeoutMs)` 协程，超时后自动将 `_popupTipState` 置为 `null`
+2. **新 Effect 替换**：新的 PopupTip Effect 到来时，取消前一个定时器，启动新的定时器
+3. **状态转换清除**：ViewModel 监听 `keyboard.state` 变更，状态转换时清除当前提示
+
+超时阈值通过 `ImeConfig.ui.popupTipTimeout` 配置，默认 3000ms。PopupTipType 可覆盖默认超时：
+
+```kotlin
+enum class PopupTipType(val timeoutMs: Long = 3000L) {
+    Info(3000L),
+    Clipboard(5000L),
+    Editor(3000L),
+}
+```
 
 ---
 
 ## 9 ToolListState 工具栏状态
 
+> **注意**：ToolListState 不再属于 ImeState，由 KeyboardViewModel 维护本地 `StateFlow<ToolListState>`。工具栏内容根据 `keyboard.type`、`keyboard.state` 和 Feature 门控动态配置。类型定义保留在 `:ime-ui` 模块中，详见 [060-KeyboardViewModel](../ui/060-keyboard-view-model.md)。
+
 ```kotlin
+/**
+ * 工具列表状态，由 KeyboardViewModel 维护。
+ *
+ * 工具栏内容根据 keyboard.type 和 Feature 门控动态配置。
+ * 不属于 ImeState，避免引擎维护 UI 层的展示状态。
+ */
 data class ToolListState(
     /** 工具项列表 */
     val tools: List<ToolItem>,
@@ -670,7 +783,7 @@ User Gesture → InputGesture → KeyboardViewModel → ImeIntent → ImeEngine.
                                                               Panels re-compose
 ```
 
-`ImeEngine.reduce(state: ImeState, intent: ImeIntent): ImeState` 是状态变更的唯一入口，纯函数，无副作用。副作用（如字典查询、剪贴板读取）通过返回 `List<ImeIntent>` 的副作用列表交由 ImeEngine 异步处理。
+`ImeEngine.reduce(state: ImeState, intent: ImeIntent): ImeState` 是状态变更的唯一入口，纯函数，无副作用。副作用分为两类：需要异步处理的操作（如字典查询、剪贴板读取）通过 `KeyboardStateTransition.Result.sideEffects` 返回 `List<ImeIntent>` 交由 ImeEngine 异步处理；一次性 UI 效果（如弹出提示、音效）通过 `ImeEffect` 通道发射，由 UI 层订阅消费。
 
 ### 10.2 高频状态与低频状态分离
 
@@ -679,7 +792,9 @@ User Gesture → InputGesture → KeyboardViewModel → ImeIntent → ImeEngine.
 | 状态 | 更新频率 | 所属 |
 |------|---------|------|
 | ImeState | 按键级（ms 级） | `:ime-engine` |
+| ImeEffect | 按键级（ms 级） | `:ime-engine` |
 | GestureFeedbackState | 帧级（16ms 级） | `:ime-ui` |
+| ToolListState | 键盘切换级（秒级） | `:ime-ui` (ViewModel local) |
 | InputActionPlayerState | 播放控制级（秒级） | `:ime-ui` |
 | KeyLayoutState | 布局变更级（秒级） | `:ime-ui` |
 

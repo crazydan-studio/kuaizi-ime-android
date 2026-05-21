@@ -53,6 +53,9 @@ class ImeEngine internal constructor(
     private val _state = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()
 
+    private val _effect = MutableSharedFlow<ImeEffect>(extraBufferCapacity = 16)
+    val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
+
     private var _outputBridge: ImeOutputBridge? = null
 
     fun attachOutputBridge(bridge: ImeOutputBridge)
@@ -212,7 +215,7 @@ sealed class ImeIntent {
 
 ### 3.5 ImeState 子状态类型
 
-`ImeState` 中引用的子状态类型均为 `data class`，不可变，通过 `copy()` 模式创建新实例。
+`ImeState` 中引用的子状态类型均为 `data class`，不可变，通过 `copy()` 模式创建新实例。`isInputting`、`toolList`、`popupTip` 不再属于 ImeState——`isInputting` 由 KeyboardViewModel 从 `inputList.pending` 直接派生，`toolList` 由 KeyboardViewModel 维护本地 `StateFlow<ToolListState>`，弹出提示通过 ImeEffect 副作用通道实现。ImeEffect 的完整设计见 [025-ImeState](025-ime-state.md) §8。
 
 ```kotlin
 data class InputList(

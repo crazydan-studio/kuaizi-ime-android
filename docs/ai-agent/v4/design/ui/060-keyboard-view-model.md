@@ -49,7 +49,7 @@
 | 角色 | `:ime-ui` 模块的 UI 协调中心，桥接 Compose UI 与 `:ime-engine` |
 | 职责 | 手势/意图分发、状态暴露、布局模式管理、反馈状态持有、动作播放器集成、布局状态缓存、运行时配置修改 |
 | 约束 | 仅依赖引擎公开 API；不持有 `InputConnectionBridge`；不执行配置持久化；不创建/销毁引擎 |
-| 关键属性 | state: StateFlow\<ImeState\>, config: ImeConfig, layoutMode: StateFlow\<KeyboardLayoutMode\>, feedbackState: GestureFeedbackState, actionPlayer: InputActionPlayer |
+| 关键属性 | state: StateFlow<ImeState>, config: ImeConfig, layoutMode: StateFlow<KeyboardLayoutMode>, feedbackState: GestureFeedbackState, toolListState: StateFlow<ToolListState>, popupTipState: StateFlow<PopupTipState?>, isInputting: Boolean, actionPlayer: InputActionPlayer |
 | 关键方法 | handleGesture(), handleIntent(), setKeyboardLayoutMode(), updateConfig(), updateKeyLayoutState(), updateCandidateLayoutState(), updateInputListLayoutState() |
 | 布局状态缓存 | _currentKeyLayoutState, _currentCandidateLayoutState, _currentInputListLayoutState |
 | 所属包 | org.crazydan.studio.ime.ui.viewmodel |
@@ -68,6 +68,9 @@ package org.crazydan.studio.ime.ui.viewmodel
  * - 暴露引擎状态（StateFlow<ImeState>）供 Compose 订阅
  * - 管理手势反馈状态（GestureFeedbackState）
  * - 管理运行时布局模式（KeyboardLayoutMode）
+ * - 维护本地工具列表状态（StateFlow<ToolListState>）
+ * - 维护弹出提示状态（StateFlow<PopupTipState?>），订阅引擎 ImeEffect 通道
+ * - 派生 isInputting 状态，控制 ToolListPanel/InputListPanel 互斥切换
  * - 提供输入动作播放器（InputActionPlayer）
  * - 缓存面板布局状态供播放器坐标解析
  *
@@ -101,6 +104,40 @@ class KeyboardViewModel(
 
     /** 当前 ImeConfig 快照，便于 UI 组件快速访问 */
     val config: ImeConfig get() = state.value.config
+
+    // ─── 工具列表状态 ────────────────────────────────────────────
+
+    /**
+     * 工具列表状态，由 ViewModel 本地维护。
+     *
+     * 根据 keyboard.type、keyboard.state 和 Feature 门控动态配置工具项。
+     * 不属于 ImeState，避免引擎维护 UI 层的展示状态。
+     * 当 keyboard.type 或 keyboard.state 变更时，自动重新计算工具列表。
+     */
+    private val _toolListState = MutableStateFlow(ToolListState(emptyList()))
+    val toolListState: StateFlow<ToolListState> = _toolListState.asStateFlow()
+
+    // ─── 弹出提示状态 ────────────────────────────────────────────
+
+    /**
+     * 弹出提示状态，由 ViewModel 本地维护。
+     *
+     * 订阅引擎的 ImeEffect 通道，收到 ImeEffect.PopupTip 效果后更新此状态，
+     * 并启动自动 dismiss 定时器。
+     * 弹出提示属于一次性效果而非持续性状态，
+     * 因此不应由 ImeState 管理。
+     */
+    private val _popupTipState = MutableStateFlow<PopupTipState?>(null)
+    val popupTipState: StateFlow<PopupTipState?> = _popupTipState.asStateFlow()
+
+    /**
+     * 是否正在输入，由 inputList.pending 直接派生。
+     *
+     * 不属于 ImeState，避免引擎维护 UI 层的展示状态。
+     * 控制 ToolListPanel 和 InputListPanel 的互斥切换。
+     */
+    val isInputting: Boolean
+        get() = state.value.inputList.hasPending
 
     // ─── 布局模式 ────────────────────────────────────────────────
 
@@ -249,6 +286,37 @@ class KeyboardViewModel(
 
     // ─── 生命周期 ────────────────────────────────────────────────
 
+    init {
+        // 订阅引擎副作用通道
+        viewModelScope.launch {
+            engine.effect.collect { effect ->
+                when (effect) {
+                    is ImeEffect.PopupTip -> {
+                        _popupTipState.value = PopupTipState(effect.message, effect.type)
+                        // 启动自动 dismiss 定时器
+                        viewModelScope.launch {
+                            delay(effect.type.timeoutMs)
+                            _popupTipState.value = null
+                        }
+                    }
+                    is ImeEffect.PlayAudio -> {
+                        // 交由音频播放器处理
+                    }
+                    is ImeEffect.ConfirmFavorite -> {
+                        // 交由收藏确认 UI 处理
+                    }
+                }
+            }
+        }
+
+        // 订阅引擎状态变更，动态更新工具列表
+        viewModelScope.launch {
+            engine.state.collect { state ->
+                _toolListState.value = computeToolList(state)
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         // ViewModel 不负责销毁引擎——引擎的生命周期由 :app 管理
@@ -282,6 +350,30 @@ class KeyboardViewModel(
                 /* 根据 gesture.index 从当前候选列表中获取 */
             )
         }
+    }
+
+    /**
+     * 根据 ImeState 动态计算工具列表。
+     *
+     * 工具列表的内容随 keyboard.type 和 Feature 门控变化。
+     */
+    private fun computeToolList(state: ImeState): ToolListState {
+        val tools = when (state.keyboard.type) {
+            KeyboardType.Pinyin, KeyboardType.Latin -> listOf(
+                // 全选、复制、粘贴、剪贴板、撤销、重做
+            )
+            KeyboardType.Editor -> listOf(
+                // 全选、复制、剪切、粘贴、撤销
+            )
+            KeyboardType.Symbol, KeyboardType.Emoji -> listOf(
+                // 全选、复制、粘贴
+            )
+            KeyboardType.Number, KeyboardType.Math -> listOf(
+                // 全选、复制、粘贴
+            )
+            else -> emptyList()
+        }
+        return ToolListState(tools)
     }
 
     // ─── 工厂 ────────────────────────────────────────────────────
@@ -342,7 +434,7 @@ package org.crazydan.studio.ime.ui.viewmodel
  * 1. 所有坐标数据以归一化形式 [0,1]x[0,1] 存储，
  *    绘制时由 GestureFeedbackPanel 根据面板实际尺寸转换为像素坐标。
  *    这使得同一份反馈数据可在不同 Zone、不同尺寸的面板实例上正确渲染。
- * 2. 移除 popupTip：弹出提示由 ImeState 管理，不属于视觉反馈。
+ * 2. 弹出提示由 ImeEffect 副作用通道驱动，ViewModel 订阅后管理 PopupTipState，不属于视觉反馈。
  * 3. 移除 keyPath 和 xPadPath：按键间路径和 X-Pad 路径统一合并
  *    为输入轨迹的一部分，由 KeyLayoutPanel 根据 KeyboardInputMode 计算
  *    起止按键间的平滑曲线后，作为 touchTrailPoints 写入。
@@ -471,93 +563,64 @@ class GestureFeedbackState {
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | inputMode | KeyboardInputMode | RectGrid | 当前输入模式，决定布局几何和交互范式；与 KeyboardType 正交；通过 `state.keyboard.mode` 访问 |
-| isInputting | Boolean | false | 是否正在输入，控制 Row 2 面板互斥切换 |
-| toolList | ToolListState | emptyList() | 工具列表状态，含编辑功能键 |
-| popupTip | PopupTipState? | null | 弹出提示状态，由引擎 reduce 写入，PopupTipPanel 消费 |
 
 ### 4.1 设计说明
 
-`ImeState` 需要扩展以支持新的 UI 层概念。新增 `inputMode` 字段表示当前输入模式（决定按键布局几何和交互范式），`isInputting` 字段表示是否正在输入（控制 `ToolListPanel` 和 `InputListPanel` 的互斥切换），`toolList` 字段提供工具列表状态（含编辑功能键），以及 `popupTip` 字段提供弹出提示状态（弹出提示由引擎处理意图后更新 ImeState 触发显示）。这些扩展仅涉及 UI 层状态的暴露，不改变 `:ime-engine` 的核心 reduce 逻辑——引擎仍然通过 `ImeIntent` 驱动状态转换，UI 层从 `ImeState` 中读取新增字段来决定面板的部署和切换。
+`ImeState` 通过 `keyboard: Keyboard` 字段绑定键盘类型、输入模式和键盘状态，UI 层通过 `state.keyboard.type`、`state.keyboard.mode`、`state.keyboard.state` 访问各子维度。`isInputting` 由 KeyboardViewModel 从 `state.inputList.pending` 直接派生，控制 ToolListPanel 和 InputListPanel 的互斥切换。弹出提示通过引擎的 ImeEffect 副作用通道实现，引擎在需要时发出 `ImeEffect.PopupTip` 效果信号，ViewModel 订阅后驱动 PopupTipPanel 显示。`toolList` 由 KeyboardViewModel 维护本地 `StateFlow<ToolListState>`，根据 `keyboard.type` 和 Feature 门控动态配置。这种分离确保 ImeState 仅承载引擎领域逻辑的持续性状态，而 UI 层的展示状态和一次性效果由 ViewModel 独立管理。
 
-### 4.2 扩展字段定义
+### 4.2 ImeState 定义（不含 UI 展示状态）
 
 ```kotlin
 /**
- * ImeState 的 UI 层扩展字段。
+ * IME 全局状态。
  *
- * 这些字段由引擎的 reduce 逻辑计算并写入 ImeState，
- * UI 层通过 collectAsState() 订阅后驱动面板的部署和切换。
+ * 不可变 data class，所有变更通过 copy() 生成新实例。
+ * ImeEngine 持有 MutableStateFlow<ImeState>，对外暴露只读 StateFlow。
+ * 状态变更的唯一路径：ImeIntent → reduce(state, intent) → ImeState。
+ *
+ * 注意：isInputting、toolList、popupTip 不再属于 ImeState。
+ * - isInputting：由 KeyboardViewModel 从 inputList.pending 直接派生
+ * - toolList：由 KeyboardViewModel 维护本地 StateFlow<ToolListState>
+ * - popupTip：通过 ImeEffect 副作用通道实现
  */
 data class ImeState(
-    // ... 现有字段（keyboard, keyGrid, candidateList, inputList, config 等） ...
-
-    /**
-     * 当前输入模式，决定按键布局几何和交互范式。
-     *
-     * KeyboardInputMode 与 KeyboardType 正交组合：
-     * 任意 KeyboardInputMode 可与任意 Type 组合，产生不同的按键布局和交互体验。
-     * KeyLayoutPanel 根据 inputMode 选择布局策略，
-     * GestureInputPanel 根据 inputMode 选择手势识别策略。
-     * 注意：inputMode 现在通过 Keyboard data class 组合到 ImeState 中，
-     * 访问方式为 state.keyboard.mode。
-     */
-    val inputMode: KeyboardInputMode = KeyboardInputMode.RectGrid, // 已移至 Keyboard.mode
-
-    /**
-     * 是否正在输入，控制 ToolListPanel/InputListPanel 的互斥切换。
-     *
-     * isInputting == true 时显示 InputListPanel，
-     * isInputting == false 时显示 ToolListPanel。
-     */
-    val isInputting: Boolean = false,
-
-    /**
-     * 工具列表状态（含编辑功能键）。
-     *
-     * 编辑功能键（如全选、复制、粘贴、
-     * 剪切、撤销、重做等）统一由 ToolListPanel 中作为 ToolItem 管理，
-     * 在任何键盘类型下均可通过工具栏快速访问。
-     */
-    val toolList: ToolListState = ToolListState(emptyList()),
-
-    /**
-     * 弹出提示状态。
-     *
-     * 由引擎处理意图后更新 ImeState 触发显示。
-     * PopupTipPanel 从 ImeState.popupTip 读取提示内容。
-     * 弹出提示属于输入状态变化触发的展示，不属于视觉反馈。
-     */
-    val popupTip: PopupTipState? = null,
+    val keyboard: Keyboard = Keyboard(),
+    val inputList: InputList = InputList(),
+    val candidateList: CandidateList = CandidateList(),
+    val clipboard: Clipboard = Clipboard(),
+    val favoriteList: FavoriteList = FavoriteList(),
+    val config: ImeConfig = ImeConfig(),
 )
 ```
 
-### 4.3 弹出提示状态
+### 4.3 弹出提示状态（ViewModel 本地维护）
 
 ```kotlin
 /**
- * 弹出提示状态。
+ * 弹出提示状态，由 KeyboardViewModel 管理。
  *
- * 短暂显示操作信息（如按键操作结果、已输入字符、功能切换提示等）。
- * PopupTipPanel 叠加在 CandidateListPanel 上方，短暂浮现后自动消失。
- *
- * 弹出提示由 ImeState 管理。
+ * 引擎通过 ImeEffect.PopupTip 发出一次性效果信号，
+ * ViewModel 订阅后更新此状态，驱动 PopupTipPanel 显示。
+ * ViewModel 启动自动 dismiss 定时器，超时后清除状态。
  */
 data class PopupTipState(
     /** 提示消息内容 */
     val message: String,
-    /** 创建时间戳，用于控制自动消失 */
-    val timestamp: Long = System.currentTimeMillis(),
+    /** 提示类型 */
+    val type: PopupTipType = PopupTipType.Info,
 )
 ```
 
-### 4.4 工具列表状态
+PopupTipType 和 ImeEffect 通道的完整设计见 [025-ImeState](../engine/025-ime-state.md) §8。
+
+### 4.4 工具列表状态（ViewModel 本地维护）
 
 ```kotlin
 /**
- * 工具列表状态。
+ * 工具列表状态，由 KeyboardViewModel 维护。
  *
- * 空闲时展示固定工具按钮（剪贴板粘贴、收藏管理、设置、键盘切换、
- * 编辑功能等）。编辑功能键统一由 ToolListPanel 管理。
+ * 工具栏内容根据 keyboard.type 和 Feature 门控动态配置。
+ * 不属于 ImeState，避免引擎维护 UI 层的展示状态。
  */
 data class ToolListState(
     /** 工具项列表 */
@@ -617,7 +680,7 @@ fun KeyboardHost(
 }
 ```
 
-`StackedLayout` 中，所有组件集中在 Zone B，三层面板叠加共享 Row 3 空间。`KeyLayoutPanel` 部署在 Zone B Row 3，`GestureFeedbackPanel` 和 `GestureInputPanel` 叠加在其上方。Row 1 承载 `CandidateListPanel` 和 `PopupTipPanel` 的叠加，Row 2 根据 `state.isInputting` 互斥切换 `ToolListPanel` 和 `InputListPanel`。
+`StackedLayout` 中，所有组件集中在 Zone B，三层面板叠加共享 Row 3 空间。`KeyLayoutPanel` 部署在 Zone B Row 3，`GestureFeedbackPanel` 和 `GestureInputPanel` 叠加在其上方。Row 1 承载 `CandidateListPanel` 和 `PopupTipPanel` 的叠加，Row 2 根据 ViewModel 的 `isInputting` 派生状态互斥切换 `ToolListPanel` 和 `InputListPanel`。
 
 `SeparatedLayout` 中，Zone A 承载 `KeyLayoutPanel` 和 `GestureFeedbackPanel` 的叠加，Zone B 包含三行结构。Row 3 被进一步划分为三列：左列和右列放置功能按钮，中列承载 `GestureFeedbackPanel` 和 `GestureInputPanel` 的叠加。
 

@@ -366,11 +366,11 @@ fun handleGesture(gesture: InputGesture) {
 |------|------|
 | 角色 | 输入法全局状态 |
 | 职责 | 承载键盘逻辑状态，驱动所有面板的渲染和切换 |
-| 约束 | 由引擎 reduce 逻辑计算，UI 层只读；弹出提示归属 ImeState |
-| 关键属性 | keyboard.mode, isInputting, popupTip, toolList, keyboard.type, keyGrid, keyboard.state, candidateList, inputList |
+| 约束 | 由引擎 reduce 逻辑计算，UI 层只读；弹出提示通过 ImeEffect 通道实现 |
+| 关键属性 | keyboard.type, keyboard.mode, keyboard.state, candidateList, inputList, config |
 | 所属包 | state |
 
-ImeState 通过 `keyboard: Keyboard` 字段绑定键盘类型、输入模式和键盘状态，UI 层通过 `state.keyboard.type`、`state.keyboard.mode`、`state.keyboard.state` 访问各子维度。isInputting 字段表示是否正在输入（控制 ToolListPanel 和 InputListPanel 的互斥切换），popupTip 字段由 ImeState 管理弹出提示（弹出提示是引擎处理意图后更新 ImeState 触发的展示，属于输入状态变化而非视觉反馈），toolList 字段管理工具列表状态（含 Editor 类型的编辑功能键）。这些扩展仅涉及 UI 层状态的暴露，不改变引擎的核心 reduce 逻辑——引擎仍然通过 ImeIntent 驱动状态转换，UI 层从 ImeState 中读取新增字段来决定面板的部署和切换。
+ImeState 通过 `keyboard: Keyboard` 字段绑定键盘类型、输入模式和键盘状态，UI 层通过 `state.keyboard.type`、`state.keyboard.mode`、`state.keyboard.state` 访问各子维度。`isInputting` 由 KeyboardViewModel 从 `state.inputList.pending` 直接派生，控制 ToolListPanel 和 InputListPanel 的互斥切换。弹出提示通过引擎的 ImeEffect 副作用通道实现，引擎在需要时发出 `ImeEffect.PopupTip` 效果信号，ViewModel 订阅后驱动 PopupTipPanel 显示。`toolList` 由 KeyboardViewModel 维护本地 `StateFlow<ToolListState>`，根据 `keyboard.type` 和 Feature 门控动态配置。这种分离确保 ImeState 仅承载引擎领域逻辑的持续性状态，而 UI 层的展示状态和一次性效果由 ViewModel 独立管理。
 
 ```kotlin
 /**
@@ -398,21 +398,6 @@ data class ImeState(
 
     /** 键盘实例，绑定类型、输入模式和状态 */
     val keyboard: Keyboard = Keyboard(),
-
-    /** 是否正在输入，控制 ToolListPanel/InputListPanel 的互斥切换 */
-    val isInputting: Boolean = false,
-
-    /** 工具列表状态（含 Editor 类型的编辑功能键） */
-    val toolList: ToolListState = ToolListState(emptyList()),
-
-    /**
-     * 弹出提示状态。
-     *
-     * 由引擎处理意图后更新 ImeState 触发显示。
-     * PopupTipPanel 从 ImeState.popupTip 读取提示内容。
-     * 弹出提示属于输入状态变化触发的展示，不属于视觉反馈。
-     */
-    val popupTip: PopupTipState? = null,
 )
 ```
 
@@ -426,7 +411,7 @@ data class ImeState(
 | 关键属性 | touchTrailPoints, pressedKeys, fingerIndicator |
 | 所属包 | feedback |
 
-GestureFeedbackState 负责纯粹的视觉反馈。弹出提示由 ImeState 管理（见 §3.2），按键间路径和 X-Pad 路径统一作为 touchTrailPoints 中的轨迹数据——由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线后，作为插值路径点写入。GestureFeedbackState 包含三类核心视觉反馈：触摸轨迹点（含计算后的平滑曲线）、按键高亮集合、手指指示器状态。
+GestureFeedbackState 负责纯粹的视觉反馈。弹出提示通过引擎 ImeEffect 副作用通道实现，由 KeyboardViewModel 管理（见 §3.4），按键间路径和 X-Pad 路径统一作为 touchTrailPoints 中的轨迹数据——由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线后，作为插值路径点写入。GestureFeedbackState 包含三类核心视觉反馈：触摸轨迹点（含计算后的平滑曲线）、按键高亮集合、手指指示器状态。
 
 ```kotlin
 /**
@@ -434,7 +419,7 @@ GestureFeedbackState 负责纯粹的视觉反馈。弹出提示由 ImeState 管�
  *
  * 1. 所有坐标数据以归一化形式 [0,1]x[0,1] 存储，
  *    绘制时由 GestureFeedbackPanel 根据面板实际尺寸转换为像素坐标。
- * 2. 弹出提示由 ImeState 管理，不属于视觉反馈。
+ * 2. 弹出提示通过 ImeEffect 副作用通道驱动，由 KeyboardViewModel 管理，不属于视觉反馈。
  * 3. 按键间路径和 X-Pad 路径统一作为输入轨迹的一部分，
  *    由 KeyLayoutPanel 根据 KeyboardInputMode 计算起止按键间的平滑曲线后，
  *    作为 touchTrailPoints 写入。
@@ -532,27 +517,29 @@ data class InputActionFingerIndicator(
 |------|------|
 | 角色 | 弹出提示状态模型 |
 | 职责 | 承载短暂弹出提示的展示内容 |
-| 约束 | 归属 ImeState；短暂显示后自动消失 |
+| 约束 | 归属 KeyboardViewModel；短暂显示后自动消失 |
 | 关键属性 | message, timestamp |
 | 所属包 | state |
 
-弹出提示状态，由引擎处理意图后更新 ImeState 触发显示。PopupTipPanel 从 ImeState.popupTip 读取提示内容。弹出提示属于输入状态变化触发的展示，不属于手势视觉反馈。
+弹出提示通过引擎的 ImeEffect 副作用通道实现。引擎在需要时发出 `ImeEffect.PopupTip` 效果信号，KeyboardViewModel 订阅引擎的 `effect: SharedFlow<ImeEffect>` 通道，收到 PopupTip 效果后更新本地 `_popupTipState: MutableStateFlow<PopupTipState?>`，驱动 PopupTipPanel 显示。弹出提示属于一次性效果而非持续性状态，因此不应由 ImeState 管理——ImeState 专注于引擎领域逻辑的持续性状态。
 
 ```kotlin
 /**
- * 弹出提示状态。
+ * 弹出提示状态，由 KeyboardViewModel 管理。
  *
- * 由引擎处理意图后更新 ImeState.popupTip 触发显示。
- * 弹出提示是输入状态变化的结果展示，不属于手势视觉反馈，
- * 因此不应由 GestureFeedbackState 管理。
+ * 引擎通过 ImeEffect.PopupTip 发出一次性效果信号，
+ * ViewModel 订阅后更新此状态，驱动 PopupTipPanel 显示。
+ * ViewModel 启动自动 dismiss 定时器，超时后清除状态。
  */
 data class PopupTipState(
     /** 提示消息内容 */
     val message: String,
-    /** 提示生成时间戳（毫秒） */
-    val timestamp: Long = System.currentTimeMillis(),
+    /** 提示类型 */
+    val type: PopupTipType = PopupTipType.Info,
 )
 ```
+
+PopupTipState 的类型定义和 ImeEffect 通道的完整设计见 [025-ImeState](../engine/025-ime-state.md) §8。
 
 ### 3.5 KeyLayoutState
 
@@ -790,7 +777,7 @@ fun OffsetF.denormalize(targetSize: Size): Offset =
 
 ### 4.1 叠加与互斥共存
 
-Zone B 三行结构中，不同行的面板组件遵循不同的共存规则。Row 1 的 CandidateListPanel 和 PopupTipPanel 采用叠加共存，二者共享同一空间，PopupTipPanel 短暂浮现覆盖在 CandidateListPanel 之上。Row 2 的 ToolListPanel 和 InputListPanel 采用互斥共存，同一时刻仅显示其中一个，由 ImeState.isInputting 状态控制切换。Row 3 的 KeyLayoutPanel、GestureFeedbackPanel 和 GestureInputPanel 采用叠加共存，三者始终同时存在，分别负责渲染、反馈和触摸，叠加顺序从底到顶为 KeyLayoutPanel -> GestureFeedbackPanel -> GestureInputPanel。在输入动作播放期间，Row 1 和 Row 2 的面板通过内建的 showIndicator 参数在自身绘制区域内叠加指示器动画，不再需要独立的覆盖层组件。
+Zone B 三行结构中，不同行的面板组件遵循不同的共存规则。Row 1 的 CandidateListPanel 和 PopupTipPanel 采用叠加共存，二者共享同一空间，PopupTipPanel 短暂浮现覆盖在 CandidateListPanel 之上。Row 2 的 ToolListPanel 和 InputListPanel 采用互斥共存，同一时刻仅显示其中一个，由 KeyboardViewModel 从 `inputList.pending` 派生的 `isInputting` 状态控制切换。Row 3 的 KeyLayoutPanel、GestureFeedbackPanel 和 GestureInputPanel 采用叠加共存，三者始终同时存在，分别负责渲染、反馈和触摸，叠加顺序从底到顶为 KeyLayoutPanel -> GestureFeedbackPanel -> GestureInputPanel。在输入动作播放期间，Row 1 和 Row 2 的面板通过内建的 showIndicator 参数在自身绘制区域内叠加指示器动画，不再需要独立的覆盖层组件。
 
 叠加共存与互斥共存的核心区别在于：叠加共存的面板同时渲染在同一空间，通过透明度和 Z 轴顺序实现视觉分层；互斥共存的面板同一时刻仅渲染其中一个，切换时存在短暂的进入/退出动画。Row 1 的叠加方式允许 PopupTipPanel 在不影响 CandidateListPanel 布局的情况下短暂浮现，提示消失后候选列表自然可见。Row 2 的互斥方式确保工具栏和输入栏不会视觉冲突，用户在输入时看到输入内容，空闲时看到工具选项。Row 3 的叠加方式延续了三层分离设计，确保触摸/反馈/渲染三层的独立性。指示器动画通过面板内建的 showIndicator 参数控制在面板内部绘制，与面板的常规渲染内容叠加共存，不影响其他行的布局。
 
@@ -1684,17 +1671,16 @@ PopupTipPanel 从 ImeState 读取弹出提示状态。弹出提示是引擎处�
  * 覆盖在 CandidateListPanel 上方。
  * 显示后经短暂延时自动消失，不遮挡候选列表的持续使用。
  *
- * 从 ImeState 读取弹出提示状态。
- * 弹出提示是引擎处理意图后更新 ImeState 触发的，
- * 属于输入状态变化而非视觉反馈，
- * 因此由 ImeState 管理。
+ * 从 KeyboardViewModel 的 popupTipState 读取弹出提示状态。
+ * 弹出提示通过引擎 ImeEffect 副作用通道触发，
+ * ViewModel 订阅后更新本地 popupTipState，
+ * 并启动自动 dismiss 定时器。
  */
 @Composable
 fun PopupTipPanel(
-    state: ImeState,
+    tipState: PopupTipState?,
     modifier: Modifier = Modifier,
 ) {
-    val tipState = state.popupTip
 
     AnimatedVisibility(
         visible = tipState != null,
@@ -1724,7 +1710,7 @@ fun PopupTipPanel(
 
 ## 10. ToolListPanel（工具列表面板）
 
-ToolListPanel 空闲时展示固定 ToolItem 按钮（剪贴板粘贴、收藏管理、设置、键盘切换等），输入时收缩为仅显示切换按钮。与 InputListPanel 互斥共享 Row 2 空间，由 ImeState.isInputting 控制切换。
+ToolListPanel 空闲时展示固定 ToolItem 按钮（剪贴板粘贴、收藏管理、设置、键盘切换等），输入时收缩为仅显示切换按钮。与 InputListPanel 互斥共享 Row 2 空间，由 KeyboardViewModel 从 `inputList.pending` 派生的 `isInputting` 状态控制切换。
 
 Editor 类型的编辑功能键（如全选、复制、粘贴、剪切、撤销、重做等）由 ToolListPanel 统一管理，作为 ToolItem 展示。编辑功能在任何键盘类型下均可通过工具栏快速访问。
 
@@ -1732,7 +1718,7 @@ Editor 类型的编辑功能键（如全选、复制、粘贴、剪切、撤销�
 |------|------|
 | 角色 | Row 2 面板（空闲时），展示工具按钮（含 Editor 类型的编辑功能键） |
 | 职责 | 空闲时展示固定 ToolItem 按钮，输入时仅显示切换按钮；内建指示器动画 |
-| 约束 | 与 InputListPanel 互斥共享 Row 2 空间，由 isInputting 状态控制切换 |
+| 约束 | 与 InputListPanel 互斥共享 Row 2 空间，由 ViewModel 的 isInputting 派生状态控制切换 |
 | 关键属性 | state, onToolSelected, showIndicator, indicatorState |
 | 所属包 | panel |
 
@@ -1742,7 +1728,7 @@ Editor 类型的编辑功能键（如全选、复制、粘贴、剪切、撤销�
  *
  * 空闲时展示固定 ToolItem 按钮（剪贴板粘贴、收藏管理、设置、键盘切换等），
  * 输入时收缩为仅显示切换按钮（从 InputListPanel 切回 ToolListPanel）。
- * 与 InputListPanel 互斥共享 Row 2 空间，由 ImeState.isInputting 控制切换。
+ * 与 InputListPanel 互斥共享 Row 2 空间，由 ViewModel 的 isInputting 派生状态控制切换。
  *
  * **Editor 功能说明**：编辑功能键（如全选、复制、粘贴、剪切、撤销、重做等）
  * 由 ToolListPanel 统一管理，作为 ToolItem 展示。
@@ -1974,12 +1960,13 @@ private fun StackedLayout(
                 state = state.candidateList,
                 onCandidateSelected = { viewModel.handleIntent(ImeIntent.SelectCandidate(it)) },
             )
-            PopupTipPanel(state = state)
+            PopupTipPanel(tipState = viewModel.popupTipState.collectAsState().value)
         }
 
         // Row 2: 工具栏 / 输入栏（互斥）
         Box(modifier = Modifier.weight(RowWeight.R2)) {
-            if (state.isInputting) {
+            val isInputting = state.inputList.hasPending
+            if (isInputting) {
                 InputListPanel(
                     state = state.inputList,
                     onGapTapped = { viewModel.handleIntent(ImeIntent.MoveCursorTo(it)) },
@@ -1987,7 +1974,7 @@ private fun StackedLayout(
                 )
             } else {
                 ToolListPanel(
-                    state = state.toolList,
+                    state = viewModel.toolListState.collectAsState().value,
                     onToolSelected = { viewModel.handleIntent(it) },
                 )
             }
@@ -2072,12 +2059,13 @@ private fun SeparatedLayout(
                     state = state.candidateList,
                     onCandidateSelected = { viewModel.handleIntent(ImeIntent.SelectCandidate(it)) },
                 )
-                PopupTipPanel(state = state)
+                PopupTipPanel(tipState = viewModel.popupTipState.collectAsState().value)
             }
 
             // Row 2: 工具栏 / 输入栏（互斥）
             Box(modifier = Modifier.weight(RowWeight.R2)) {
-                if (state.isInputting) {
+                val isInputting = state.inputList.hasPending
+                if (isInputting) {
                     InputListPanel(
                         state = state.inputList,
                         onGapTapped = { viewModel.handleIntent(ImeIntent.MoveCursorTo(it)) },
@@ -2085,7 +2073,7 @@ private fun SeparatedLayout(
                     )
                 } else {
                     ToolListPanel(
-                        state = state.toolList,
+                        state = viewModel.toolListState.collectAsState().value,
                         onToolSelected = { viewModel.handleIntent(it) },
                     )
                 }

@@ -71,11 +71,8 @@ package "核心模型" #FFE0B2 {
 package "状态类型" #C8E6C9 {
   class ImeState <<(D,#C8E6C9)>> {
     + keyboard: Keyboard
-    + isInputting: Boolean
     + inputList: InputList
     + candidateList: CandidateList
-    + popupTip: PopupTipState?
-    + toolList: ToolListState
     + config: ImeConfig
   }
   class Keyboard <<(D,#C8E6C9)>> {

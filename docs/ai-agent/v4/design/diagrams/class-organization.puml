@@ -50,11 +50,8 @@ package ":ime-engine" #FFF3E0 {
     }
     class ImeState <<(D,#FFF3E0)>> {
       + keyboard: Keyboard
-      + isInputting: Boolean
       + inputList: InputList
       + candidateList: CandidateList
-      + popupTip: PopupTipState?
-      + toolList: ToolListState
       + config: ImeConfig
     }
     class Keyboard <<(D,#FFF3E0)>> {

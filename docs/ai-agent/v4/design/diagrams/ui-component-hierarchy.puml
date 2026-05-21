@@ -79,7 +79,7 @@ package "面板组件 [:ime-ui]" #E8F5E9 {
     }
     class PopupTipPanel <<面板>> {
       弹出提示面板
-      从 ImeState.popupTip 读取
+      从 viewModel.popupTipState 读取
       叠加在 CandidateListPanel 上方
     }
   }

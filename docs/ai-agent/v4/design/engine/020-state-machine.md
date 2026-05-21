@@ -228,7 +228,7 @@ class KeyboardStateMachine(
     val state: KeyboardState get() = _state
     private val stateHistory = KeyboardStateHistory(maxSize = 10)
 
-    fun transition(transition: KeyboardStateTransition): KeyboardStateResult {
+    fun transition(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         val (newState, sideEffects) = when (_state) {
             is KeyboardState.Idle -> handleFromIdle(transition)
             is KeyboardState.PinyinInput.Waiting -> handleFromPinyinWaiting(transition)
@@ -249,7 +249,7 @@ class KeyboardStateMachine(
             stateHistory.push(_state)
             _state = newState
         }
-        return KeyboardStateResult(newState, sideEffects)
+        return KeyboardStateTransition.Result(newState, sideEffects)
     }
 
     fun backToPrevious() {
@@ -268,16 +268,25 @@ class KeyboardStateMachine(
 }
 ```
 
-### 4.1 KeyboardStateResult
+### 4.1 KeyboardStateTransition.Result
 
 ```kotlin
-data class KeyboardStateResult(
-    val newState: KeyboardState,
-    val sideEffects: List<ImeIntent> = emptyList(),
-)
+sealed class KeyboardStateTransition {
+    // ... 转换类型定义见 §3 ...
+
+    /**
+     * 状态转换结果。
+     *
+     * 包含新的键盘状态和需要异步处理的副作用意图列表。
+     */
+    data class Result(
+        val newState: KeyboardState,
+        val sideEffects: List<ImeIntent> = emptyList(),
+    )
+}
 ```
 
-`sideEffects` 是状态转换产生的副作用列表，包含需要异步处理的操作（如字典查询、音频播放、输出桥接等）。KeyboardStateMachine 本身是纯函数，不直接执行副作用，而是通过返回副作用列表交由 ImeEngine 异步处理。
+`sideEffects` 是状态转换产生的副作用意图列表，包含需要异步处理的操作（如字典查询、音频播放、输出桥接等）。KeyboardStateMachine 本身是纯函数，不直接执行副作用，而是通过返回副作用列表交由 ImeEngine 异步处理。`Result` 作为 `KeyboardStateTransition` 的嵌套类型，表达转换与结果之间的归属关系。
 
 ---
 
@@ -344,7 +353,7 @@ interface KeyboardIntentHandler {
      * @param state 当前键盘状态
      * @return 处理结果，包含新状态和副作用意图列表
      */
-    fun handleIntent(intent: ImeIntent, state: KeyboardState): KeyboardStateResult
+    fun handleIntent(intent: ImeIntent, state: KeyboardState): KeyboardStateTransition.Result
 }
 ```
 
@@ -796,7 +805,7 @@ ImeIntent → KeyboardStateTransition → KeyboardState
 
 ### 7.4 sideEffects 的含义和处理方式
 
-`KeyboardStateResult.sideEffects` 是状态转换产生的副作用列表，类型为 `List<ImeIntent>`。副作用不直接由 KeyboardStateMachine 执行，而是返回给 ImeEngine 异步处理。
+`KeyboardStateTransition.Result.sideEffects` 是状态转换产生的副作用意图列表，类型为 `List<ImeIntent>`。副作用不直接由 KeyboardStateMachine 执行，而是返回给 ImeEngine 异步处理。
 
 典型的副作用类型：
 

@@ -24,7 +24,7 @@
 |------|------|
 | [010-引擎库设计总览](engine/010-engine-overview.md) | 模块定位与设计目标、核心 class 关系图、核心模型概览（ImeEngine/ImeConfig/ImeOutput/ImeIntent/ImeState） |
 | [020-键盘状态机](engine/020-state-machine.md) | KeyboardState sealed class、状态转换规则、Keyboard 组合模式、InputKey 体系、KeyboardStateHistory 有界历史栈 |
-| [025-ImeState 全局状态](engine/025-ime-state.md) | ImeState 完整字段定义、KeyboardType/KeyboardInputMode 枚举、KeyboardState 子状态数据细节、CandidateList 分页与过滤、Clipboard/FavoriteList 集成、PopupTipState/ToolListState、Feature 门控、与 Java 版本对照 |
+| [025-ImeState 全局状态](engine/025-ime-state.md) | ImeState 完整字段定义、KeyboardType/KeyboardInputMode 枚举、KeyboardState 子状态数据细节、CandidateList 分页与过滤、Clipboard/FavoriteList 集成、ImeEffect 副作用通道、Feature 门控、与 Java 版本对照 |
 | [030-输入列表](engine/030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion、线程安全、撤销机制、游标管理 |
 | [040-字典系统](engine/040-dict-system.md) | DictRepository + Room 数据库、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree、HmmModel + ViterbiDecoder |
 | [050-X-Pad 核心](engine/050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout、X-Pad 状态集成 |
@@ -45,7 +45,7 @@
 | [030-Compose 迁移](ui/030-compose-migration.md) | KeyboardHost Compose 实现、X-Pad Compose、滑行手势处理、性能验证 |
 | [040-输入动作播放](ui/040-input-action-player.md) | KeyboardInputActionPlayerHost、UseMode、ComposeInputActionPositionResolver、InputActionPlayer、指示器内建机制、InputActionScriptLoader |
 | [050-配置 UI 组件](ui/050-config-ui.md) | KeyboardPreview、ThemeSelector、HandModeToggle、QuickSettingsPopup |
-| [060-KeyboardViewModel](ui/060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 简化管理，KeyboardLayoutMode 切换，InputActionPlayer 集成，布局状态缓存 |
+| [060-KeyboardViewModel](ui/060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，InputGesture→ImeIntent 转换，GestureFeedbackState 简化管理，KeyboardLayoutMode 切换，ToolListState 本地维护，PopupTipState 订阅 ImeEffect 通道，isInputting 派生状态，InputActionPlayer 集成，布局状态缓存 |
 
 ---
 
