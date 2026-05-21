@@ -93,27 +93,38 @@ package ":ime-engine" #FFF3E0 {
     + pressed: Boolean
     + visible: Boolean = true
     + clickAnimation: ClickAnimation?
-    note "绘制手指图形 + 跟随滑行轨迹\n+ 点击动画" as N1
   }
+  note right of InputActionFingerIndicator
+    绘制手指图形 + 跟随滑行轨迹
+    + 点击动画
+  end note
 
   class ClickAnimation <<(D,#FFF3E0)>> {
     + progress: Float
     + maxRadius: Float = 0.05f
     + color: Long = 0x332196F3L
-    note "按键点击涟漪动画" as N2
   }
+  note right of ClickAnimation
+    按键点击涟漪动画
+  end note
 
   class InputActionPathInterpolator <<(O,#FFF3E0)>> {
     + interpolate(from, to, arcFactor, steps): List<OffsetF>
-    note "二次贝塞尔曲线插值\n归一化坐标输入输出" as N3
   }
+  note right of InputActionPathInterpolator
+    二次贝塞尔曲线插值
+    归一化坐标输入输出
+  end note
 
   interface InputActionPositionResolver <<(I,#FFF3E0)>> {
     + resolve(key): OffsetF?
     + resolveCandidatePosition(index): OffsetF?
     + resolveInputItemPosition(index): OffsetF?
-    note "接口定义在 :ime-engine\n实现在 :ime-ui" as N4
   }
+  note right of InputActionPositionResolver
+    接口定义在 :ime-engine
+    实现在 :ime-ui
+  end note
 
   class OffsetF <<(D,#FFF3E0)>> {
     + x: Float

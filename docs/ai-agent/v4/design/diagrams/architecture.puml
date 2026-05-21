@@ -65,6 +65,7 @@ package ":ime-engine 模块\n(Domain Layer + Data Layer)" as engine #FFF3E0 {
     component [ImeOutput] as IO <<ime_engine>>
     component [ImeOutputBridge\nBaseImeOutputBridge] as IOB <<ime_engine>>
     component [ImeState\n+ 子状态] as IS <<ime_engine>>
+    component [Keyboard\n(type, mode, state)] as K <<ime_engine>>
     component [KeyboardType\n(枚举)] as KT <<ime_engine>>
     component [KeyboardInputMode\n(枚举)] as KIM <<ime_engine>>
   }
