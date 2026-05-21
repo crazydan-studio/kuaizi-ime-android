@@ -72,7 +72,30 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 | `KeyboardTheme` | `theme` | 主题 Composable（支持跟随系统） |
 | `LocalKeyboardColors` | `theme` | CompositionLocal 提供颜色 |
 
-### 2.6 工具组件
+### 2.6 按键生成组件
+
+| 组件 | 包路径 | 说明 |
+|------|--------|------|
+| `KeyTableGenerator` | `keyboard` | 按键布局生成器接口，根据键盘类型、输入模式、键盘状态和相关数据生成按键布局矩阵 |
+| `KeyTableContext` | `keyboard` | 按键生成上下文，包含 `config`、`keyboard`、`inputList`、`candidateList` |
+
+`KeyTableGenerator` 从 `:ime-engine` 模块移至 `:ime-ui` 模块，因为按键布局是 UI 关注点，由 UI 层根据键盘状态决定按键的排列和显示。
+
+```kotlin
+// :ime-ui 模块
+interface KeyTableGenerator {
+    fun generate(context: KeyTableContext): List<List<InputKey>>
+}
+
+data class KeyTableContext(
+    val config: ImeConfig,
+    val keyboard: Keyboard,       // 使用 Keyboard data class
+    val inputList: InputList,
+    val candidateList: CandidateList,
+)
+```
+
+### 2.7 工具组件
 
 | 组件 | 包路径 | 说明 |
 |------|--------|------|

@@ -20,8 +20,8 @@ v4 版本将筷字输入法设计为三层库架构，支持其他程序以库�
 
 | 模块 | 职责 | 依赖 |
 |------|------|------|
-| `:ime-engine` | IME 核心引擎，逻辑层与 UI / 应用分离，方便第三方定制 UI 与交互 | Kotlin 标准库 + 协程 |
-| `:ime-ui` | Compose 缺省 UI + KeyboardViewModel，包含完整的输入法界面组件和 UI 协调逻辑 | `:ime-engine` + Compose + Material3 + Lifecycle ViewModel |
+| `:ime-engine` | IME 核心引擎，逻辑层与 UI / 应用分离，方便第三方定制 UI 与交互。注意：KeyTableGenerator 已移至 :ime-ui 模块 | Kotlin 标准库 + 协程 |
+| `:ime-ui` | Compose 缺省 UI + KeyboardViewModel，包含完整的输入法界面组件、UI 协调逻辑和按键布局生成（KeyTableGenerator） | `:ime-engine` + Compose + Material3 + Lifecycle ViewModel |
 | `:app` | 系统 IME 服务壳、ImeEngine 创建与 InputConnectionBridge 管理、配置持久化（DataStore）、设置页面、输入练习 UI（ExerciseScreen） | `:ime-engine` + `:ime-ui` + DataStore + Lifecycle |
 
 **依赖关系图**：

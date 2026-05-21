@@ -424,6 +424,15 @@ package ":ime-ui" #E8F5E9 {
   }
 
   package "ui.keyboard" {
+    class KeyTableGenerator <<(I,#E8F5E9)>> {
+      + generate(context): List<List<InputKey>>
+    }
+    class KeyTableContext <<(D,#E8F5E9)>> {
+      + config: ImeConfig
+      + keyboard: Keyboard
+      + inputList: InputList
+      + candidateList: CandidateList
+    }
     class KeyLayoutState <<(D,#E8F5E9)>> {
       + keyPositions: Map<InputKey, RectF>
       + xPadLayoutInfo: XPadLayoutInfo?
@@ -499,6 +508,11 @@ DictRepository --> ViterbiDecoder
 
 KeyboardViewModel *-- GestureFeedbackState
 KeyboardViewModel *-- InputActionPlayer
+KeyTableGenerator <|.. PinyinKeyTable : :ime-ui
+KeyTableGenerator <|.. SymbolEmojiKeyTable : :ime-ui
+KeyTableContext *-- Keyboard : keyboard
+KeyTableContext *-- InputList : inputList
+KeyTableContext *-- CandidateList : candidateList
 InputActionPlayer *-- InputActionPlayerState
 InputActionPlayer --> ComposeInputActionPositionResolver
 InputActionPlayer --> GestureFeedbackState

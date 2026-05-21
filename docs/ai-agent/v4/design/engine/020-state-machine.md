@@ -1029,19 +1029,23 @@ sealed class InputKey {
 
 ---
 
-## 11. 按键生成器
+## 11. 按键生成器（已移至 :ime-ui 模块）
 
-按键生成器根据当前键盘状态和配置，生成按键布局矩阵。
+> **注意**：`KeyTableGenerator` 接口和 `KeyTableContext` 数据类已从 `:ime-engine` 模块移至 `:ime-ui` 模块。按键布局是 UI 关注点，由 UI 层根据键盘类型、输入模式、键盘状态和相关数据决定按键布局。详细设计见 [010-UI 库设计总览](../ui/010-ui-library-overview.md)。
+
+以下是历史定义（已废弃）：
 
 ```kotlin
+// 已移至 :ime-ui 模块
 interface KeyTableGenerator {
     fun generate(context: KeyTableContext): List<List<InputKey>>
 }
 
+// 已移至 :ime-ui 模块
 data class KeyTableContext(
     val config: ImeConfig,
-    val inputList: InputList,
     val keyboard: Keyboard,
+    val inputList: InputList,
     val candidateList: CandidateList,
 )
 ```
