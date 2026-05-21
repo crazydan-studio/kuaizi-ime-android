@@ -1,14 +1,16 @@
-# :ime-ui 模块设计文档
+# `:ime-ui` UI 库设计文档
 
-本目录包含 `:ime-ui` 模块的所有设计文档，涵盖 KeyboardViewModel、键盘 UI 的三层面板分离、Compose 迁移、输入动作程序化及配置界面等核心设计。
+本目录包含 `:ime-ui` UI 库的完整设计文档，按照业务分层和功能模块组织。UI 库提供基于 Jetpack Compose 的缺省输入法界面实现，可被第三方应用直接使用或替换。
 
-## 文档索引
+---
 
-| 文档 | 说明 |
-|------|------|
-| [010-UI 库设计总览](010-ui-library-overview.md) | UI 库设计目标（缺省实现、可替换、可组合、可定制）、组件清单（原子 / 面板 / 集成 / ViewModel / 主题）、组件层次关系、与引擎库的依赖关系 |
-| [020-面板三层分离与屏幕布局设计](020-panel-separation.md) | Zone A/B 屏幕分区、KeyboardLayoutMode（Stacked/Separated）、KeyboardInputMode（XPad/HexGrid/RectGrid/MultiZone）、三行/三列布局、面板三层分离架构（GestureInputPanel/GestureFeedbackPanel/KeyLayoutPanel）、归一化坐标体系、GestureFeedbackState 简化、各面板组件规格 |
-| [030-Compose UI 迁移](030-compose-migration.md) | Jetpack Compose 组件架构、KeyboardHost、候选栏 / 输入栏、X-Pad Compose 实现、滑行手势处理、性能验证计划 |
-| [040-输入动作播放设计](040-input-action-player.md) | InputActionPlayerState（:ime-ui 模块定义）、KeyboardInputActionPlayerHost、UseMode（Animation/DirectInput）、InputActionPositionResolver、ComposeInputActionPositionResolver、InputActionPlayer、InputActionPlayerPanel、指示器内建机制、InputActionScriptLoader、程序化输入数据流（注：输入练习 UI 层 ExerciseScreen 属于 :app 模块，InputActionPlayerPanel 属于 :ime-ui 模块） |
-| [050-配置界面](050-config-ui.md) | KeyboardPreview 组件、ThemeSelector、HandModeToggle、QuickSettingsPopup 等配置相关 UI 组件 |
-| [060-KeyboardViewModel](060-keyboard-view-model.md) | UI 层协调中心，持有 ImeEngine，暴露 `StateFlow<ImeState>`，InputGesture→ImeIntent 转换，GestureFeedbackState 简化管理，KeyboardLayoutMode 运行时切换，InputActionPlayer 集成，ImeState UI 扩展，布局状态缓存，完整数据流 |
+## 文档列表
+
+| 编号 | 文档 | 说明 |
+|------|------|------|
+| 010 | [UI 库架构总览](010-ui-library-overview.md) | 设计目标（缺省实现、可替换、可组合、可定制）、组件清单、组件层次关系、引擎依赖、KeyTableGenerator 接口 |
+| 020 | [面板三层分离与屏幕布局](020-panel-separation.md) | 三层分离架构、InputGesture 坐标无关逻辑手势、InputGesture→ImeIntent 转换、GestureFeedbackState 手势反馈状态、屏幕分区模型、Zone B 三行结构、归一化坐标体系、布局状态模型 |
+| 030 | [键盘视图模型](030-keyboard-view-model.md) | KeyboardViewModel 定位与完整类定义、PopupTipState（Message/Action）弹出提示状态、ToolListState 工具列表、ImeEffect 订阅与处理、GestureFeedbackState 生产者-消费者、KeyboardHost 集成组件、IMEService 装配流程 |
+| 040 | [Compose 组件](040-compose-components.md) | KeyboardHost 集成组件、KeyLayoutPanel 按键布局面板、KeyView 按键视图、GestureInputPanel 手势输入面板、GestureFeedbackPanel 手势反馈面板、CandidateListPanel 候选列表面板、InputListPanel 输入列表面板、PopupTipPanel 弹出提示面板、ToolListPanel 工具列表面板、主题系统 |
+| 050 | [输入动作播放](050-input-action-player.md) | UseMode 使用模式、InputActionPlayerState 播放状态、InputActionPlayer 播放器、ComposeInputActionPositionResolver 位置解析器、InputActionScriptLoader 脚本加载器、指示器内建机制、归一化坐标流 |
+| 060 | [配置界面](060-config-ui.md) | KeyboardPreview 键盘预览、ThemeSelector 主题选择器、HandModeToggle 单手模式切换、QuickSettingsPopup 快捷设置弹窗 |

@@ -1,0 +1,57 @@
+@startuml engine-mvi-data-flow
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 13
+skinparam ArrowColor #444444
+skinparam RectangleBorderColor #888888
+skinparam NoteBorderColor #AAAAAA
+skinparam NoteBackgroundColor #F5F5F5
+
+title 引擎 MVI 数据流
+
+rectangle "用户操作" as user #FFF3E0 {
+  card "InputGesture" as gesture
+}
+
+rectangle "UI 层" as ui #E8F5E9 {
+  card "KeyboardViewModel" as vm
+  card "Compose UI" as compose
+}
+
+rectangle "引擎层 (:ime-engine)" as engine #E3F2FD {
+  card "ImeEngine" as imeEngine
+  card "KeyboardIntentHandler" as handler
+  card "KeyboardStateMachine" as sm
+  card "reduce" as reduce
+  
+  rectangle "状态" as states #FFF9C4 {
+    card "ImeState\n(StateFlow)" as state
+    card "ImeEffect\n(SharedFlow)" as effect
+  }
+}
+
+rectangle "输出" as output #FCE4EC {
+  card "ImeOutputBridge" as bridge
+  card "目标编辑器" as editor
+}
+
+' 输入流
+gesture -down-> vm : 用户手势
+vm -down-> imeEngine : ImeIntent\n(handleIntent)
+imeEngine -down-> handler : 1. ImeIntent →\nKeyboardStateTransition
+handler -down-> sm : 2. Transition →\nnew KeyboardState + sideEffects
+sm -down-> reduce : 3. sideEffects →\n异步 Intent
+reduce -down-> state : 4. copy() 更新 ImeState
+
+' 输出流
+imeEngine -right-> bridge : 5. ImeOutput\n(dispatchToTarget)
+bridge -right-> editor : 语义方法调用
+
+' 副作用流
+imeEngine -right-> effect : 6. ImeEffect\n(tryEmit)
+
+' UI 订阅
+state -up-> compose : StateFlow\n(collectAsState)
+effect -up-> vm : SharedFlow\n(collect)
+
+@enduml

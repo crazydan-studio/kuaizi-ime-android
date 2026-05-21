@@ -1,18 +1,19 @@
-# `:ime-engine` 模块设计文档
+# `:ime-engine` 引擎库设计文档
 
-`ime-engine` 是筷字输入法的引擎库，提供核心 IME 引擎能力。引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等。
+本目录包含 `:ime-engine` 引擎库的完整设计文档，按照业务分层和功能模块组织。引擎库提供核心 IME 引擎能力，独立于 UI 框架和平台。
 
-## 文档索引
+---
 
-| 文档 | 说明 |
-|------|------|
-| [010-引擎库设计总览](010-engine-overview.md) | 模块定位与设计目标、核心 class 关系图、核心模型概览（ImeEngine/ImeConfig/ImeOutput/ImeIntent/ImeState 子状态类型） |
-| [020-键盘状态机](020-state-machine.md) | KeyboardState sealed class 层次结构、状态转换规则、Keyboard 组合模式、InputKey 体系、KeyboardStateHistory 有界历史栈 |
-| [025-ImeState 全局状态](025-ime-state.md) | ImeState 完整字段定义与 UI 映射、KeyboardType/KeyboardInputMode 枚举、KeyboardState 子状态数据细节、CandidateList 分页与过滤、Clipboard/FavoriteList 集成、PopupTipState/ToolListState、Feature 门控规则、状态不变式、与 Java 版本对照 |
-| [030-输入列表](030-input-list.md) | InputList 不可变数据模型、InputItem/InputWord/InputCompletion 类型、线程安全设计、撤销机制、游标管理、InputListEditor |
-| [040-字典系统](040-dict-system.md) | DictRepository + DAO 接口、Room 数据库与 Entity、ImeDictProvider/ImeSqliteDictProvider、PinyinCharsTree 前缀树、HmmModel + ViterbiDecoder |
-| [050-X-Pad 核心](050-xpad-core.md) | HexGrid 六边形网格计算、XPadZone/XPadLayout 区域定义、KeyboardState.PinyinInput.XPadding 状态集成 |
-| [060-输入动作程序化](060-input-action.md) | InputAction sealed class、InputActionScript、InputActionMode 枚举、PinyinSegment、InputActionScriptCompiler 脚本编译器、InputActionFingerIndicator 指示器模型、InputActionPathInterpolator 路径插值算法、InputActionPositionResolver 位置解析接口、OffsetF/RectF 归一化坐标基础类型（InputActionPlayerState 已移至 :ime-ui，见 ui/040） |
-| [070-剪贴板与收藏](070-clipboard-and-favorites.md) | ClipboardService 剪贴板监听与类型检测、FavoriteService 收藏管理、InputClip/InputFavorite 数据模型 |
-| [080-日志系统](080-logging.md) | ImeLog 门面、ImeLogger 带标签记录器、LogLevel 枚举、LogEntry 不可变条目、LogWriter 接口、LogStorage 文件存储管理、FileLogWriter 异步文件写入、LogcatWriter Android Logcat 输出、CrashInterceptor 崩溃拦截 |
-| [090-输出桥接机制](090-output-bridge.md) | ImeOutputBridge 桥接模式、BaseImeOutputBridge 抽象类、InputConnectionBridge 系统输入连接、EditTextBridge EditText 桥接 |
+## 文档列表
+
+| 编号 | 文档 | 说明 |
+|------|------|------|
+| 010 | [引擎架构总览](010-engine-overview.md) | 模块定位与设计目标、核心 API 面、MVI 数据流、ImeEngine 完整类定义、ImeConfig 配置模型、Feature 门控机制、reduce 函数核心逻辑 |
+| 020 | [全局状态模型](020-ime-state.md) | ImeState 完整字段定义、Keyboard/CandidateList/Clipboard/FavoriteList 子状态、ImeEffect 副作用通道（PopupTip.Message/Action）、ToolListState、Feature 门控规则、状态不变式、状态频率分层 |
+| 030 | [键盘状态机](030-keyboard-state-machine.md) | KeyboardState sealed class 层次结构、KeyboardStateTransition 转换体系、KeyboardStateMachine 状态机、KeyboardIntentHandler 接口与实现、Keyboard 组合模式、完整状态转换规则、有界历史栈、三层映射模型 |
+| 040 | [输入列表](040-input-list.md) | InputList 不可变数据模型、InputItem 层次结构、PendingInput 待确认输入、InputCompletion 补全、PairSymbol 配对符号、InputListEditor 撤销/重做、InputListOperator 操作器、间距规则 |
+| 050 | [候选与字典](050-candidate-and-dict.md) | CandidateList 候选列表模型、InputWord 层次体系、PinyinWordFilter 过滤器、ImeDictProvider 字典接口、DictRepository 字典仓库、PinyinCharsTree 前缀树、HmmModel 隐马尔可夫模型、查询流程 |
+| 060 | [意图、输出与桥接](060-intent-output-bridge.md) | ImeIntent 用户意图体系、ImeOutput 编辑输出体系、ImeOutputBridge 输出桥接接口、BaseImeOutputBridge 抽象类、InputConnectionBridge 系统输入连接、EditTextBridge 编辑框桥接、数据流转全景 |
+| 070 | [剪贴板与收藏](070-clipboard-and-favorites.md) | InputClip 剪贴内容、InputTextType 文本类型检测、ClipboardService 剪贴板服务、InputFavorite 收藏项、FavoriteService 收藏服务、与 ImeEffect 的协作 |
+| 080 | [输入动作程序化](080-input-action.md) | InputAction 动作体系、InputActionScript 动作脚本、InputActionMode 输入模式、InputActionScriptCompiler 脚本编译器、InputActionFingerIndicator 指示器、InputActionPathInterpolator 路径插值、InputActionPositionResolver 位置解析接口、归一化坐标类型 |
+| 090 | [日志系统](090-logging.md) | 日志架构概述、LogLevel 日志等级、LogEntry 日志条目、LogWriter 写入接口、ImeLog 门面、ImeLogger 带标签记录器、LogStorage 文件存储、FileLogWriter 异步文件写入、LogcatWriter、CrashInterceptor 崩溃拦截 |
