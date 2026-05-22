@@ -273,7 +273,7 @@ data class InputFavorite(
 ```kotlin
 sealed class ImeEffect {
     sealed class PopupTip : ImeEffect() {
-        /** 消息提醒：短暂停留的提示信息，如输入字符、键盘切换、编辑动作提示 */
+        /** 消息提醒：短暂停留的提示信息，如输入字符、键盘切换、编辑器操作提示 */
         data class Message(
             val message: String,
             val timeoutMs: Long = 3000L,
@@ -307,7 +307,7 @@ enum class HapticType {
 
 ### 6.2 Message 提示
 
-`Message` 提示是最简单的 PopupTip 类型，用于展示短暂的纯信息性消息。默认超时 3000ms（3 秒），超时后自动消失。典型场景包括：键盘类型切换提示（如「已切换到拉丁键盘」）、输入字符反馈（如输入特殊符号时的字符名称提示）、编辑动作反馈（如「已全选」）。`Message` 提示不携带任何交互操作，用户无法点击它触发动作，仅作为视觉反馈存在。UI 层收到 `Message` 提示后显示 Toast 风格的浮动文字条，超时后自动 dismiss。
+`Message` 提示是最简单的 PopupTip 类型，用于展示短暂的纯信息性消息。默认超时 3000ms（3 秒），超时后自动消失。典型场景包括：键盘类型切换提示（如「已切换到拉丁键盘」）、输入字符反馈（如输入特殊符号时的字符名称提示）、编辑器操作反馈（如「已全选」）。`Message` 提示不携带任何交互操作，用户无法点击它触发动作，仅作为视觉反馈存在。UI 层收到 `Message` 提示后显示 Toast 风格的浮动文字条，超时后自动 dismiss。
 
 ### 6.3 Action 提示
 

@@ -47,9 +47,9 @@ v4 版本将筷字输入法设计为三层库架构，支持其他程序以库�
 
 引擎库的核心模型定义了 `:ime-engine` 与 `:ime-ui`、`:app` 之间的核心契约，包括：
 
-- **ImeEngine**：引擎核心入口点，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeEditorBridge` 分发编辑动作
+- **ImeEngine**：引擎核心入口点，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeEditorBridge` 分发编辑器操作
 - **ImeConfig**：统一运行时配置，含引擎配置（`EngineConfig`）和 UI 配置（`UiConfig`）的明确隔离
-- **EditorAction**：引擎编辑动作的 sealed class 表达，由引擎统一分发到桥梁
+- **EditorAction**：引擎编辑器操作的 sealed class 表达，由引擎统一分发到桥梁
 - **ImeIntent**：用户意图的 sealed class 表达，所有用户操作统一为 Intent
 - **ImeState 子状态类型**：`InputList`、`CandidateList`、`Clipboard`、`FavoriteList` 等
 - **KeyboardType**：键盘内容类型枚举（Pinyin/Latin/Symbol/Emoji/Number/Math/Editor/Candidate/CommitOption），决定按键集合的语义内容
@@ -67,4 +67,4 @@ UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方�
 
 详细设计分别见：
 - UI 库设计目标与组件清单：[010-UI 库设计总览](../ui/010-ui-library-overview.md)
-- 编辑器桥接机制：[060-意图、编辑动作与桥接](../engine/060-intent-editor-action-bridge.md)
+- 编辑器桥接机制：[060-意图、编辑器操作与桥接](../engine/060-intent-editor-action-bridge.md)

@@ -90,7 +90,7 @@ Java 版本有三套消息体系（共 53+ 种消息类型），v4 统一为 Int
 |-----------|---------|----------|
 | `UserKeyMsg` / `UserKeyMsgType` / `UserKeyMsgData`（7 种） | `InputGesture` | 统一为坐标无关的逻辑手势描述（Tap/LongPress/Swipe/Flip/XPadZonePath/CandidateTap） |
 | `UserInputMsg` / `UserInputMsgType` / `UserInputMsgData`（11 种） | `ImeIntent` | 统一为用户意图（PressKey/SelectCandidate/PageCandidate/SwitchKeyboard/CommitInput/DeleteInput 等 16 种） |
-| `InputMsg` / `InputMsgType` / `InputMsgData`（35+ 种） | `EditorAction` | 统一为引擎编辑动作（CommitText/RevokeCommit/InsertPairedSymbols/MoveCursor/SelectRange/PerformEdit 6 种） |
+| `InputMsg` / `InputMsgType` / `InputMsgData`（35+ 种） | `EditorAction` | 统一为引擎编辑器操作（CommitText/RevokeCommit/InsertPairedSymbols/MoveCursor/SelectRange/PerformEdit 6 种） |
 | `InputMsgListener` | `ImeEditorBridge` | 桥接模式替代监听器。桥梁实现者只需实现语义方法，无需理解 EditorAction 类型体系 |
 | `UserMsgListener` | （已废弃） | 引擎内部统一 `dispatchEditorAction()` 自动分发 |
 | `BaseMsg` | （已废弃） | v4 不使用通用消息基类 |

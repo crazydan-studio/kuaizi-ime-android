@@ -27,7 +27,7 @@
 |------|----------|---------|
 | 消息路由 | UserMsg → IMEditor, InputMsg → IMEditorView | 不再路由，引擎内部通过 `reduce()` 处理 Intent |
 | InputConnection 操作 | 在 IMEService 中手动处理 | 委托 `InputConnectionBridge` |
-| 编辑动作分发 | 手动 when 分发（2 处重复） | `ImeEngine.dispatchEditorAction()` 自动分发到桥梁 |
+| 编辑器操作分发 | 手动 when 分发（2 处重复） | `ImeEngine.dispatchEditorAction()` 自动分发到桥梁 |
 | 输入视图 | `MainboardView`（自定义 View） | `KeyboardHost`（Compose） |
 | 配置管理 | `Config` + `SharedPreferences` | `ConfigDataStore` + DataStore |
 

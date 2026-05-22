@@ -9,14 +9,14 @@
 | 定位 | 说明 |
 |------|------|
 | **逻辑与 UI 分离** | 引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等 |
-| **MVI 驱动** | 通过 `StateFlow<ImeState>` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeEditorBridge` 输出编辑动作 |
+| **MVI 驱动** | 通过 `StateFlow<ImeState>` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeEditorBridge` 输出编辑器操作 |
 | **可嵌入** | 第三方应用只需引入 `:ime-engine` 即可获得完整输入法能力，无需系统 IME 服务 |
 | **可扩展** | 字典接口与实现分离（`ImeDictProvider`），编辑器桥接可自定义（`ImeEditorBridge`），功能可裁剪（`Feature`） |
 | **Fail Fast** | 非法操作（如禁用收藏后调用收藏功能）立即抛出异常而非静默忽略 |
 
 引擎库的「逻辑与 UI 分离」定位意味着第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能，也可以仅引入 `:ime-engine` 自行实现视图层和交互逻辑。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来消除 Android 依赖。
 
-「MVI 驱动」定位是引擎与 UI 完全分离的技术基础。引擎不依赖任何 UI 框架，所有状态变更通过 `StateFlow` 暴露，所有用户操作通过 `ImeIntent` 接收，所有编辑动作通过 `ImeEditorBridge` 输出。这种单向数据流使得引擎可以被任意 UI 框架（Compose、View、Web、游戏引擎等）消费，而不需要引擎感知 UI 的存在。
+「MVI 驱动」定位是引擎与 UI 完全分离的技术基础。引擎不依赖任何 UI 框架，所有状态变更通过 `StateFlow` 暴露，所有用户操作通过 `ImeIntent` 接收，所有编辑器操作通过 `ImeEditorBridge` 输出。这种单向数据流使得引擎可以被任意 UI 框架（Compose、View、Web、游戏引擎等）消费，而不需要引擎感知 UI 的存在。
 
 「可嵌入」定位使得 `:ime-engine` 可以在多种场景下使用：作为系统输入法引擎、嵌入到应用内的自定义输入组件中、甚至作为纯 JVM 环境下的输入法逻辑核心。引擎的创建和销毁完全由宿主控制，不持有任何全局状态或单例。
 
@@ -32,7 +32,7 @@
 
 ### 2.1 ImeEngine
 
-`ImeEngine` 是引擎库的核心入口点，提供完整的输入法能力。引擎不依赖任何 UI 框架，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收用户操作，通过 `ImeEditorBridge` 输出编辑动作。完整类定义见本文档 §5。
+`ImeEngine` 是引擎库的核心入口点，提供完整的输入法能力。引擎不依赖任何 UI 框架，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收用户操作，通过 `ImeEditorBridge` 输出编辑器操作。完整类定义见本文档 §5。
 
 ### 2.2 ImeConfig
 
@@ -81,7 +81,7 @@ sealed class ImeIntent {
 
 ### 2.4 EditorAction
 
-引擎的编辑动作。`EditorAction` 由引擎内部的 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`，桥梁实现者无需理解 `EditorAction` 类型体系。
+引擎的编辑器操作。`EditorAction` 由引擎内部的 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`，桥梁实现者无需理解 `EditorAction` 类型体系。
 
 ```kotlin
 sealed class EditorAction {
@@ -185,7 +185,7 @@ MVI 数据流由四条通道构成，每条通道有明确的语义和方向：
 
 - **输入通道**：`ImeIntent` → `ImeEngine.handleIntent()` → `reduce(state, intent)` → 新 `ImeState`。用户操作统一编码为 `ImeIntent`，由 `ImeEngine` 的 `handleIntent()` 方法接收。`reduce` 函数是纯函数，接收当前 `ImeState` 和 `ImeIntent`，返回新的 `ImeState`，不产生副作用。
 - **状态通道**：`ImeState` 通过 `StateFlow<ImeState>` 暴露。UI 层订阅 `StateFlow`，状态变更自动驱动重组。`StateFlow` 保证值的原子性和一致性——订阅者始终读取到最新的完整状态快照，不存在部分更新的问题。
-- **编辑动作通道**：`EditorAction` 由 `ImeEngine` 的 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`。桥梁实现者只需实现语义方法，无需理解 `EditorAction` 类型体系。编辑动作通道承担所有对目标编辑器的操作（提交文本、移动光标、插入配对符号等）。
+- **编辑器操作通道**：`EditorAction` 由 `ImeEngine` 的 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`。桥梁实现者只需实现语义方法，无需理解 `EditorAction` 类型体系。编辑器操作通道承担所有对目标编辑器的操作（提交文本、移动光标、插入配对符号等）。
 - **副作用通道**：`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射。一次性效果（弹出提示、音效、确认对话框）通过此通道传递，UI 层消费后即丢弃。副作用通道与状态通道的分离确保了一次性效果不会在配置变更或进程重建时被重复消费。
 
 ### 3.2 数据流图
@@ -269,7 +269,7 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 ## 5. ImeEngine 完整类定义
 
-`ImeEngine` 是引擎库的核心入口点，提供完整的输入法能力。引擎不依赖任何 UI 框架，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收用户操作，通过 `ImeEditorBridge` 输出编辑动作。`ImeEngine` 的构造函数标记为 `internal`，强制通过 `Companion.create()` 工厂方法创建实例，确保所有依赖项正确初始化。
+`ImeEngine` 是引擎库的核心入口点，提供完整的输入法能力。引擎不依赖任何 UI 框架，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收用户操作，通过 `ImeEditorBridge` 输出编辑器操作。`ImeEngine` 的构造函数标记为 `internal`，强制通过 `Companion.create()` 工厂方法创建实例，确保所有依赖项正确初始化。
 
 ```kotlin
 class ImeEngine internal constructor(
@@ -314,7 +314,7 @@ class ImeEngine internal constructor(
 
 ### 5.3 编辑器桥接
 
-`_editorBridges` 是 `MutableList<ImeEditorBridge>`，通过 `attachEditorBridge()` 注册桥接，`detachEditorBridge()` 注销指定桥接。引擎在分发 `EditorAction` 时遍历所有已注册桥接，逐个调用对应的语义方法；若桥接列表为空则静默跳过。这种设计允许引擎在没有桥接的情况下正常运行（例如纯逻辑测试场景），也支持同时向多个编辑器分发编辑动作。
+`_editorBridges` 是 `MutableList<ImeEditorBridge>`，通过 `attachEditorBridge()` 注册桥接，`detachEditorBridge()` 注销指定桥接。引擎在分发 `EditorAction` 时遍历所有已注册桥接，逐个调用对应的语义方法；若桥接列表为空则静默跳过。这种设计允许引擎在没有桥接的情况下正常运行（例如纯逻辑测试场景），也支持同时向多个编辑器分发编辑器操作。
 
 ### 5.4 工厂方法
 
@@ -486,7 +486,7 @@ class FeatureRegistry(private val features: Set<Feature>) {
 
 ## 8. reduce 函数的核心逻辑
 
-`handleIntent()` 是 `ImeEngine` 处理用户意图的核心方法，内部通过六步处理链将 `ImeIntent` 转化为状态变更、编辑动作和副作用信号。整个处理链在主线程上同步执行，异步操作通过 `sideEffects` 列表延迟到独立协程中处理，确保 `reduce` 函数的纯函数特性。
+`handleIntent()` 是 `ImeEngine` 处理用户意图的核心方法，内部通过六步处理链将 `ImeIntent` 转化为状态变更、编辑器操作和副作用信号。整个处理链在主线程上同步执行，异步操作通过 `sideEffects` 列表延迟到独立协程中处理，确保 `reduce` 函数的纯函数特性。
 
 ### 8.1 处理链六步
 

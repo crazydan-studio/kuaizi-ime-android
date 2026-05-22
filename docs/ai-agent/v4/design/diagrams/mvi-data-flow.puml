@@ -39,7 +39,7 @@ package "Domain Layer [:ime-engine]" #FFF3E0 {
   rectangle "ImeIntent\n(用户意图)" as II #FFE0B2
   rectangle "ImeState\n(不可变状态)" as IS #FFE0B2
   rectangle "ImeEffect\n(一次性效果)" as IEF #FFE0B2
-  rectangle "EditorAction\n(编辑动作)" as IO #FFE0B2
+  rectangle "EditorAction\n(编辑器操作)" as IO #FFE0B2
 }
 
 package "Platform Layer [:app]" #E3F2FD {

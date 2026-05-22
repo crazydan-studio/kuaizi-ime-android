@@ -57,7 +57,7 @@ v4 采用 MVI（Model-View-Intent）架构，核心数据流如下：
 - **ImeIntent**：用户意图的 sealed class 表达。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)
 - **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)
 - **三层面板分离**：GestureInputPanel（手势拦截层）→ GestureFeedbackPanel（反馈绘制层）→ KeyLayoutPanel（按键渲染层）。完整设计见 [020-面板三层分离设计](../ui/020-panel-separation.md)
-- **EditorAction**：引擎编辑动作 sealed class，通过 ImeEditorBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)，桥接机制见 [060-意图、编辑动作与桥接](../engine/060-intent-editor-action-bridge.md)
+- **EditorAction**：引擎编辑器操作 sealed class，通过 ImeEditorBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)，桥接机制见 [060-意图、编辑器操作与桥接](../engine/060-intent-editor-action-bridge.md)
 
 ### 2.1 按键输入完整流程
 

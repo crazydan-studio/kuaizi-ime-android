@@ -1,4 +1,4 @@
-# 意图、编辑动作与桥接
+# 意图、编辑器操作与桥接
 
 ## 1. ImeIntent 用户意图体系
 
@@ -33,7 +33,7 @@ sealed class ImeIntent {
     /** 移动游标意图：用户将游标移动到指定位置 */
     data class MoveCursorTo(val index: Int) : ImeIntent()
 
-    /** 执行编辑动作意图：用户触发编辑操作（全选、复制、剪切、粘贴、撤销、重做等） */
+    /** 执行编辑器编辑操作意图：用户触发编辑器编辑操作（全选、复制、剪切、粘贴、撤销、重做等） */
     data class PerformEdit(val action: EditorEditAction) : ImeIntent()
 
     /** 粘贴剪贴板意图：用户粘贴剪贴板内容 */
@@ -69,9 +69,9 @@ sealed class ImeIntent {
 
 `CommitInput`、`DeleteInput`、`CleanInput` 和 `MoveCursorTo` 是输入列表的四种操作意图。`CommitInput` 确认当前 `pending` 中的待选字符，将选中内容追加到 `inputs` 中并输出到目标编辑器。`DeleteInput` 撤销最近一次确认输入，通过 `ImeEditorBridge.revokeCommit()` 恢复编辑器文本。`CleanInput` 清空整个输入列表，重置 `InputList` 为初始状态。`MoveCursorTo` 移动游标到指定位置，仅更新 `gapIndex`，不触发输出操作。
 
-### 1.4 编辑动作意图
+### 1.4 编辑器编辑操作意图
 
-`PerformEdit` 携带 `EditorEditAction` 枚举值，触发目标编辑器的编辑操作。`EditorEditAction` 包含 `BACKSPACE`、`SELECT_ALL`、`COPY`、`CUT`、`PASTE`、`UNDO`、`REDO` 七种动作。引擎收到 `PerformEdit` 后，根据 `EditorEditAction` 类型执行对应的操作：破坏性编辑动作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空 `BaseImeEditorBridge` 的撤销快照，非破坏性动作（`SELECT_ALL`、`COPY`）不影响撤销快照。收藏功能独立于编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`。
+`PerformEdit` 携带 `EditorEditAction` 枚举值，触发目标编辑器的编辑器编辑操作。`EditorEditAction` 包含 `BACKSPACE`、`SELECT_ALL`、`COPY`、`CUT`、`PASTE`、`UNDO`、`REDO` 七种操作。引擎收到 `PerformEdit` 后，根据 `EditorEditAction` 类型执行对应的操作：破坏性编辑器编辑操作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空 `BaseImeEditorBridge` 的撤销快照，非破坏性操作（`SELECT_ALL`、`COPY`）不影响撤销快照。收藏功能独立于编辑器编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`。
 
 ### 1.5 剪贴板、收藏与配置意图
 
@@ -79,9 +79,9 @@ sealed class ImeIntent {
 
 ---
 
-## 2. EditorAction 编辑动作体系
+## 2. EditorAction 编辑器操作体系
 
-`EditorAction` 是引擎向目标编辑器输出的编辑动作，以 `sealed class` 表达所有可能的动作类型。与 `ImeIntent` 表达用户意图不同，`EditorAction` 表达引擎对编辑器的操作动作——提交文本、撤销提交、插入配对符号、移动光标、扩展选区、执行编辑动作。`EditorAction` 由引擎的 `reduce` 函数在处理 `ImeIntent` 时产生，通过 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`。`sealed class` 的穷举性确保引擎在分发编辑动作时编译期覆盖所有类型。
+`EditorAction` 是引擎向目标编辑器输出的编辑器操作，以 `sealed class` 表达所有可能的操作类型。与 `ImeIntent` 表达用户意图不同，`EditorAction` 表达引擎对编辑器的操作动作——提交文本、撤销提交、插入配对符号、移动光标、扩展选区、执行编辑器编辑操作。`EditorAction` 由引擎的 `reduce` 函数在处理 `ImeIntent` 时产生，通过 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`。`sealed class` 的穷举性确保引擎在分发编辑器操作时编译期覆盖所有类型。
 
 ```kotlin
 sealed class EditorAction {
@@ -118,7 +118,7 @@ sealed class EditorAction {
         val direction: CursorDirection,
     ) : EditorAction()
 
-    /** 执行编辑动作：触发目标编辑器的编辑操作 */
+    /** 执行编辑器操作：触发目标编辑器的编辑器编辑操作 */
     data class PerformEdit(
         override val timestamp: Long,
         val action: EditorEditAction,
@@ -144,9 +144,9 @@ sealed class EditorAction {
 
 `MoveCursor` 和 `SelectRange` 分别触发光标移动和选区扩展操作，携带 `CursorDirection` 参数指定方向。`CursorDirection` 枚举包含 `Left`、`Right`、`Up`、`Down` 四个方向。这两种输出类型在用户通过键盘工具栏或编辑操作意图触发光标操作时产生，桥梁实现将方向参数映射为平台特定的光标操作 API 调用。
 
-### 2.5 PerformEdit 执行编辑动作
+### 2.5 PerformEdit 执行编辑器操作
 
-`PerformEdit` 携带 `EditorEditAction` 枚举值，触发目标编辑器的编辑操作。桥梁实现根据 `EditorEditAction` 类型调用平台特定的编辑 API——例如在 `InputConnectionBridge` 中，`SELECT_ALL` 调用 `InputConnection.performContextMenuAction(android.R.id.selectAll)`，`COPY` 调用 `InputConnection.performContextMenuAction(android.R.id.copy)`。破坏性编辑动作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空撤销快照，非破坏性动作（`SELECT_ALL`、`COPY`）不影响快照。
+`PerformEdit` 携带 `EditorEditAction` 枚举值，触发目标编辑器的编辑器编辑操作。桥梁实现根据 `EditorEditAction` 类型调用平台特定的编辑 API——例如在 `InputConnectionBridge` 中，`SELECT_ALL` 调用 `InputConnection.performContextMenuAction(android.R.id.selectAll)`，`COPY` 调用 `InputConnection.performContextMenuAction(android.R.id.copy)`。破坏性编辑器编辑操作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空撤销快照，非破坏性操作（`SELECT_ALL`、`COPY`）不影响快照。
 
 ---
 
@@ -176,7 +176,7 @@ interface ImeEditorBridge {
     /** 扩展选区 */
     fun selectRange(direction: CursorDirection)
 
-    /** 执行编辑动作（全选、复制、剪切、粘贴等） */
+    /** 执行编辑器编辑操作（全选、复制、剪切、粘贴等） */
     fun performEdit(action: EditorEditAction)
 
     /** 实时获取目标当前文本 */
@@ -187,7 +187,7 @@ interface ImeEditorBridge {
 }
 ```
 
-接口的七个方法覆盖了 IME 对目标编辑器的全部操作：`commitText()` 提交文本（支持替换轮换），`revokeCommit()` 撤销最近输入，`insertPairedSymbols()` 插入配对符号，`moveCursor()` 移动光标，`selectRange()` 扩展选区，`performEdit()` 执行编辑动作，`getText()` 和 `getSelection()` 读取编辑器状态。所有方法在主线程调用以保证线程安全。`getText()` 和 `getSelection()` 是桥梁实现从目标编辑器读取状态的唯二方法，引擎在需要获取编辑器当前文本和选区信息时调用这两个方法。
+接口的七个方法覆盖了 IME 对目标编辑器的全部操作：`commitText()` 提交文本（支持替换轮换），`revokeCommit()` 撤销最近输入，`insertPairedSymbols()` 插入配对符号，`moveCursor()` 移动光标，`selectRange()` 扩展选区，`performEdit()` 执行编辑器编辑操作，`getText()` 和 `getSelection()` 读取编辑器状态。所有方法在主线程调用以保证线程安全。`getText()` 和 `getSelection()` 是桥梁实现从目标编辑器读取状态的唯二方法，引擎在需要获取编辑器当前文本和选区信息时调用这两个方法。
 
 ### 3.1 BaseImeEditorBridge 抽象基类
 
@@ -509,15 +509,15 @@ class EditTextBridge(
 }
 ```
 
-`EditTextBridge` 直接操作 `EditText` 的 `Editable` 文本接口，提供了比 `InputConnection` 更精细的文本操控能力。`doNormalCommitText()` 使用 `Editable.replace()` 替换当前选区文本，自动处理选区重叠和文本长度变化。替换轮换逻辑（`doReplaceableCommitText()`）通过 `substring()` 获取光标前文本进行检查，匹配时使用 `replace()` 执行替换。配对符号插入时，若无选中文本，插入左右符号后通过 `setSelection()` 将光标置于两者之间；若有选中文本，将选中文本包裹在左右符号之间。编辑动作的实现使用 `EditText` 的原生 API（`selectAll()`、`ClipboardManager` 等），`UNDO` 和 `REDO` 动作为空操作（`EditText` 无内置撤销/重做支持）。收藏功能独立于编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`，无需在桥梁中处理。
+`EditTextBridge` 直接操作 `EditText` 的 `Editable` 文本接口，提供了比 `InputConnection` 更精细的文本操控能力。`doNormalCommitText()` 使用 `Editable.replace()` 替换当前选区文本，自动处理选区重叠和文本长度变化。替换轮换逻辑（`doReplaceableCommitText()`）通过 `substring()` 获取光标前文本进行检查，匹配时使用 `replace()` 执行替换。配对符号插入时，若无选中文本，插入左右符号后通过 `setSelection()` 将光标置于两者之间；若有选中文本，将选中文本包裹在左右符号之间。编辑器编辑操作的实现使用 `EditText` 的原生 API（`selectAll()`、`ClipboardManager` 等），`UNDO` 和 `REDO` 操作为空操作（`EditText` 无内置撤销/重做支持）。收藏功能独立于编辑器编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`，无需在桥梁中处理。
 
-`EditTextBridge` 适用于应用内嵌入输入法的场景——例如应用内有一个自定义的文本编辑器，需要使用筷字输入法的引擎能力，但不通过系统 IME 服务。在这种场景下，`EditTextBridge` 将引擎的编辑动作直接映射到 `EditText` 的文本操作，无需经过 `InputConnection` 的中转层。两个桥梁实现的选择由宿主模块决定：`:app` 模块中的 `IMEService` 使用 `InputConnectionBridge`，`:ime-ui` 模块中的嵌入式输入组件使用 `EditTextBridge`。
+`EditTextBridge` 适用于应用内嵌入输入法的场景——例如应用内有一个自定义的文本编辑器，需要使用筷字输入法的引擎能力，但不通过系统 IME 服务。在这种场景下，`EditTextBridge` 将引擎的编辑器操作直接映射到 `EditText` 的文本操作，无需经过 `InputConnection` 的中转层。两个桥梁实现的选择由宿主模块决定：`:app` 模块中的 `IMEService` 使用 `InputConnectionBridge`，`:ime-ui` 模块中的嵌入式输入组件使用 `EditTextBridge`。
 
 ---
 
 ## 6. 数据流转全景图
 
-引擎的数据流由三条核心通道构成：Intent 通道（用户操作 → 引擎处理）、State 通道（引擎状态 → UI 渲染）、EditorAction 通道（引擎编辑动作 → 目标编辑器）。三条通道通过 `ImeEngine` 的 `handleIntent()` 方法串联，形成严格的单向数据流。此外还有 Effect 通道（一次性效果 → UI 消费），与 State 通道并行但语义不同——State 表达持续性状态，Effect 表达一次性事件。
+引擎的数据流由三条核心通道构成：Intent 通道（用户操作 → 引擎处理）、State 通道（引擎状态 → UI 渲染）、EditorAction 通道（引擎编辑器操作 → 目标编辑器）。三条通道通过 `ImeEngine` 的 `handleIntent()` 方法串联，形成严格的单向数据流。此外还有 Effect 通道（一次性效果 → UI 消费），与 State 通道并行但语义不同——State 表达持续性状态，Effect 表达一次性事件。
 
 ```plantuml
 @file:../diagrams/engine-editor-action-bridge.puml
@@ -541,7 +541,7 @@ class EditTextBridge(
 
 4. **State 通道**：新 `ImeState` 通过 `StateFlow<ImeState>` 原子更新，UI 层通过 `collectAsState()` 订阅状态驱动 Compose 重组。状态更新是即时且持续的——订阅者始终读取到最新的完整状态快照。
 
-5. **EditorAction 通道**：`EditorAction` 由 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`，桥梁实现将语义操作翻译为平台特定 API 调用。编辑动作通道承担所有对目标编辑器的操作——提交文本、移动光标、插入配对符号、执行编辑动作等。
+5. **EditorAction 通道**：`EditorAction` 由 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`，桥梁实现将语义操作翻译为平台特定 API 调用。编辑器操作通道承担所有对目标编辑器的操作——提交文本、移动光标、插入配对符号、执行编辑器编辑操作等。
 
 6. **Effect 通道**：`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，UI 层收集后立即消费。一次性效果（弹出提示、音效播放、确认对话框）通过此通道传递，消费后即丢弃，不存在状态清理和重复消费问题。
 
@@ -557,7 +557,7 @@ class EditTextBridge(
 | `DeleteInput` | `RevokeCommit` | 撤销最近一次提交 |
 | `PressKey` (配对符号) | `InsertPairedSymbols` | 输入配对符号时插入左右符号 |
 | `MoveCursorTo` | `MoveCursor` | 移动光标到指定位置 |
-| `PerformEdit` | `PerformEdit` | 执行编辑动作 |
+| `PerformEdit` | `PerformEdit` | 执行编辑器操作 |
 | `PasteClip` | `CommitText` | 粘贴剪贴板内容 |
 | `SwitchKeyboard` | 无 `EditorAction` | 仅状态变更，无编辑器操作 |
 | `PageCandidate` | 无 `EditorAction` | 仅分页变更，无编辑器操作 |
@@ -567,7 +567,7 @@ class EditTextBridge(
 
 ### 6.3 桥梁选择与注册
 
-`ImeEditorBridge` 的注册由宿主模块在创建 `ImeEngine` 后执行：`:app` 模块通过 `engine.attachEditorBridge(InputConnectionBridge { currentInputConnection })` 注册系统输入连接桥梁，`:ime-ui` 模块通过 `engine.attachEditorBridge(EditTextBridge { currentEditText })` 注册编辑框桥梁。多个桥梁可以同时挂载——引擎将 `EditorAction` 分发到所有已挂载的桥梁，每个桥梁独立接收相同的编辑动作。`detachEditorBridge(bridge)` 注销指定的桥梁，`attachEditorBridge(bridge)` 注册新桥梁。若 `ImeEngine` 的 `_editorBridges` 为空，分发被静默跳过。这种设计允许引擎在没有桥梁的情况下正常运行（例如纯逻辑测试场景），编辑动作被自动跳过。
+`ImeEditorBridge` 的注册由宿主模块在创建 `ImeEngine` 后执行：`:app` 模块通过 `engine.attachEditorBridge(InputConnectionBridge { currentInputConnection })` 注册系统输入连接桥梁，`:ime-ui` 模块通过 `engine.attachEditorBridge(EditTextBridge { currentEditText })` 注册编辑框桥梁。多个桥梁可以同时挂载——引擎将 `EditorAction` 分发到所有已挂载的桥梁，每个桥梁独立接收相同的编辑器操作。`detachEditorBridge(bridge)` 注销指定的桥梁，`attachEditorBridge(bridge)` 注册新桥梁。若 `ImeEngine` 的 `_editorBridges` 为空，分发被静默跳过。这种设计允许引擎在没有桥梁的情况下正常运行（例如纯逻辑测试场景），编辑器操作被自动跳过。
 
 ```kotlin
 class ImeEngine internal constructor(
@@ -596,6 +596,6 @@ class ImeEngine internal constructor(
 }
 ```
 
-`dispatchEditorAction()` 遍历 `_editorBridges` 中的所有桥梁，对每个桥梁调用与 `EditorAction` 子类型对应的语义方法。若 `_editorBridges` 为空，分发被静默跳过。多个桥梁独立运作——每个桥梁独立接收相同的 `EditorAction` 分发，互不干扰。第三方应用可以挂载多个桥梁，将同一引擎的编辑动作同时分发到不同的编辑器目标。
+`dispatchEditorAction()` 遍历 `_editorBridges` 中的所有桥梁，对每个桥梁调用与 `EditorAction` 子类型对应的语义方法。若 `_editorBridges` 为空，分发被静默跳过。多个桥梁独立运作——每个桥梁独立接收相同的 `EditorAction` 分发，互不干扰。第三方应用可以挂载多个桥梁，将同一引擎的编辑器操作同时分发到不同的编辑器目标。
 
 第三方应用可以创建自定义桥梁实现，将 IME 引擎接入任意编辑器目标：简单场景直接实现 `ImeEditorBridge` 接口，需要撤销支持则继承 `BaseImeEditorBridge`。接口保持最小化和平台无关，新增桥梁无需理解引擎内部类型——引擎内部的 `EditorAction` 类型体系通过 `dispatchEditorAction()` 翻译为桥梁的语义方法调用，桥梁实现者只需关注「做什么」，无需理解引擎内部的动作类型分发逻辑。
