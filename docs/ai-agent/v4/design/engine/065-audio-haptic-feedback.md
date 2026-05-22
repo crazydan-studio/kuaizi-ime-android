@@ -392,7 +392,7 @@ class IMEService : InputMethodService() {
         audioPlayer?.release()
         audioPlayer = null
         hapticPlayer = null
-        engine?.detachEditorBridge()
+        engine?.detachEditorBridge(bridge!!)
         engine = null
         bridge = null
         composeView?.disposeComposition()

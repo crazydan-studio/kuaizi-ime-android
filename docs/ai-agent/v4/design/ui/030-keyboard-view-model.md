@@ -602,7 +602,7 @@ class IMEService : InputMethodService() {
         audioPlayer = null
         hapticPlayer = null
         // 断开桥梁并销毁引擎
-        engine?.detachEditorBridge()
+        engine?.detachEditorBridge(bridge!!)
         engine = null
         bridge = null
         composeView?.disposeComposition()
