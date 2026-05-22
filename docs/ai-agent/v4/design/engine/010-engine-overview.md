@@ -9,18 +9,18 @@
 | 定位 | 说明 |
 |------|------|
 | **逻辑与 UI 分离** | 引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等 |
-| **MVI 驱动** | 通过 `StateFlow<ImeState>` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeOutputBridge` 输出编辑指令 |
+| **MVI 驱动** | 通过 `StateFlow<ImeState>` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeEditorBridge` 输出编辑动作 |
 | **可嵌入** | 第三方应用只需引入 `:ime-engine` 即可获得完整输入法能力，无需系统 IME 服务 |
-| **可扩展** | 字典接口与实现分离（`ImeDictProvider`），输出桥接可自定义（`ImeOutputBridge`），功能可裁剪（`Feature`） |
+| **可扩展** | 字典接口与实现分离（`ImeDictProvider`），编辑器桥接可自定义（`ImeEditorBridge`），功能可裁剪（`Feature`） |
 | **Fail Fast** | 非法操作（如禁用收藏后调用收藏功能）立即抛出异常而非静默忽略 |
 
 引擎库的「逻辑与 UI 分离」定位意味着第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能，也可以仅引入 `:ime-engine` 自行实现视图层和交互逻辑。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来消除 Android 依赖。
 
-「MVI 驱动」定位是引擎与 UI 完全分离的技术基础。引擎不依赖任何 UI 框架，所有状态变更通过 `StateFlow` 暴露，所有用户操作通过 `ImeIntent` 接收，所有编辑指令通过 `ImeOutputBridge` 输出。这种单向数据流使得引擎可以被任意 UI 框架（Compose、View、Web、游戏引擎等）消费，而不需要引擎感知 UI 的存在。
+「MVI 驱动」定位是引擎与 UI 完全分离的技术基础。引擎不依赖任何 UI 框架，所有状态变更通过 `StateFlow` 暴露，所有用户操作通过 `ImeIntent` 接收，所有编辑动作通过 `ImeEditorBridge` 输出。这种单向数据流使得引擎可以被任意 UI 框架（Compose、View、Web、游戏引擎等）消费，而不需要引擎感知 UI 的存在。
 
 「可嵌入」定位使得 `:ime-engine` 可以在多种场景下使用：作为系统输入法引擎、嵌入到应用内的自定义输入组件中、甚至作为纯 JVM 环境下的输入法逻辑核心。引擎的创建和销毁完全由宿主控制，不持有任何全局状态或单例。
 
-「可扩展」定位通过三个扩展点实现：`ImeDictProvider` 允许替换整个字典层（例如使用远程字典服务替代本地 SQLite）；`ImeOutputBridge` 允许替换输出目标（例如接入 WebView 编辑器或游戏引擎文本框）；`Feature` 枚举允许裁剪功能（例如禁用剪贴板功能以减少权限需求）。
+「可扩展」定位通过三个扩展点实现：`ImeDictProvider` 允许替换整个字典层（例如使用远程字典服务替代本地 SQLite）；`ImeEditorBridge` 允许替换输出目标（例如接入 WebView 编辑器或游戏引擎文本框）；`Feature` 枚举允许裁剪功能（例如禁用剪贴板功能以减少权限需求）。
 
 「Fail Fast」定位确保引擎在运行时检测到非法操作时立即抛出异常，而非静默忽略或产生不确定行为。典型的非法操作包括：在 `Feature.Clipboard` 禁用时调用 `ImeIntent.PasteClip`、在 `Feature.Favorites` 禁用时调用 `ImeIntent.SaveFavorite`、在无效状态下执行不合法的 `KeyboardStateTransition` 等。Fail Fast 原则帮助开发者在开发阶段尽早发现错误，避免错误在调用链中传播后难以定位。
 
@@ -32,7 +32,7 @@
 
 ### 2.1 ImeEngine
 
-`ImeEngine` 是引擎库的核心入口点，提供完整的输入法能力。引擎不依赖任何 UI 框架，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收用户操作，通过 `ImeOutputBridge` 输出编辑指令。完整类定义见本文档 §5。
+`ImeEngine` 是引擎库的核心入口点，提供完整的输入法能力。引擎不依赖任何 UI 框架，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收用户操作，通过 `ImeEditorBridge` 输出编辑动作。完整类定义见本文档 §5。
 
 ### 2.2 ImeConfig
 
@@ -79,46 +79,46 @@ sealed class ImeIntent {
 
 `ImeIntent` 的设计遵循「意图与手势分离」原则：`ImeIntent` 表达业务语义（如「提交输入」），而非底层手势细节（如「手指抬起」）。手势到意图的映射由 `KeyboardViewModel` 完成，引擎只消费意图，不感知手势。这种分层使得引擎可以在不同的输入模式下复用相同的意图处理逻辑——无论是真实手指操作还是 `InputAction` 的程序化回放，最终都通过 `ImeIntent` 驱动引擎。
 
-### 2.4 ImeOutput
+### 2.4 EditorAction
 
-引擎的编辑输出。`ImeOutput` 由引擎内部的 `dispatchToTarget()` 统一分发到 `ImeOutputBridge`，桥梁实现者无需理解 `ImeOutput` 类型体系。
+引擎的编辑动作。`EditorAction` 由引擎内部的 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`，桥梁实现者无需理解 `EditorAction` 类型体系。
 
 ```kotlin
-sealed class ImeOutput {
+sealed class EditorAction {
     abstract val timestamp: Long
 
     data class CommitText(
         override val timestamp: Long,
         val text: String,
         val replacements: List<String>? = null,
-    ) : ImeOutput()
+    ) : EditorAction()
 
-    data class RevokeCommit(override val timestamp: Long) : ImeOutput()
+    data class RevokeCommit(override val timestamp: Long) : EditorAction()
 
     data class InsertPairedSymbols(
         override val timestamp: Long,
         val left: String,
         val right: String,
-    ) : ImeOutput()
+    ) : EditorAction()
 
     data class MoveCursor(
         override val timestamp: Long,
         val direction: CursorDirection,
-    ) : ImeOutput()
+    ) : EditorAction()
 
     data class SelectRange(
         override val timestamp: Long,
         val direction: CursorDirection,
-    ) : ImeOutput()
+    ) : EditorAction()
 
     data class PerformEdit(
         override val timestamp: Long,
         val action: EditorEditAction,
-    ) : ImeOutput()
+    ) : EditorAction()
 }
 ```
 
-`ImeOutput` 的 sealed class 层次确保引擎在分发输出时穷举所有类型，编译期保证类型安全。每种输出类型携带时间戳，用于日志记录和调试追踪。`CommitText` 的 `replacements` 参数支持直输模式下的字符轮换——默认采用双击按键方式触发，桥梁实现需检查光标前文本是否匹配替换列表，匹配时执行替换而非插入。
+`EditorAction` 的 sealed class 层次确保引擎在分发输出时穷举所有类型，编译期保证类型安全。每种输出类型携带时间戳，用于日志记录和调试追踪。`CommitText` 的 `replacements` 参数支持直输模式下的字符轮换——默认采用双击按键方式触发，桥梁实现需检查光标前文本是否匹配替换列表，匹配时执行替换而非插入。
 
 ### 2.5 ImeState
 
@@ -185,7 +185,7 @@ MVI 数据流由四条通道构成，每条通道有明确的语义和方向：
 
 - **输入通道**：`ImeIntent` → `ImeEngine.handleIntent()` → `reduce(state, intent)` → 新 `ImeState`。用户操作统一编码为 `ImeIntent`，由 `ImeEngine` 的 `handleIntent()` 方法接收。`reduce` 函数是纯函数，接收当前 `ImeState` 和 `ImeIntent`，返回新的 `ImeState`，不产生副作用。
 - **状态通道**：`ImeState` 通过 `StateFlow<ImeState>` 暴露。UI 层订阅 `StateFlow`，状态变更自动驱动重组。`StateFlow` 保证值的原子性和一致性——订阅者始终读取到最新的完整状态快照，不存在部分更新的问题。
-- **输出通道**：`ImeOutput` 由 `ImeEngine` 的 `dispatchToTarget()` 统一分发到 `ImeOutputBridge`。桥梁实现者只需实现语义方法，无需理解 `ImeOutput` 类型体系。输出通道承担所有对目标编辑器的操作（提交文本、移动光标、插入配对符号等）。
+- **编辑动作通道**：`EditorAction` 由 `ImeEngine` 的 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`。桥梁实现者只需实现语义方法，无需理解 `EditorAction` 类型体系。编辑动作通道承担所有对目标编辑器的操作（提交文本、移动光标、插入配对符号等）。
 - **副作用通道**：`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射。一次性效果（弹出提示、音效、确认对话框）通过此通道传递，UI 层消费后即丢弃。副作用通道与状态通道的分离确保了一次性效果不会在配置变更或进程重建时被重复消费。
 
 ### 3.2 数据流图
@@ -194,14 +194,14 @@ MVI 数据流由四条通道构成，每条通道有明确的语义和方向：
 @file:../diagrams/engine-mvi-data-flow.puml
 ```
 
-上图展示了引擎的 MVI 数据流全景。用户操作（`InputGesture`）经 `KeyboardViewModel` 转换为 `ImeIntent`，由 `ImeEngine.handleIntent()` 接收。引擎内部经过 `KeyboardIntentHandler` → `KeyboardStateMachine` → `reduce` 的处理链，产生新的 `ImeState`（通过 `StateFlow` 暴露）、`ImeOutput`（通过 `ImeOutputBridge` 分发）和 `ImeEffect`（通过 `SharedFlow` 发射）。UI 层同时订阅 `StateFlow<ImeState>` 和 `SharedFlow<ImeEffect>`，分别驱动界面重组和一次性效果展示。
+上图展示了引擎的 MVI 数据流全景。用户操作（`InputGesture`）经 `KeyboardViewModel` 转换为 `ImeIntent`，由 `ImeEngine.handleIntent()` 接收。引擎内部经过 `KeyboardIntentHandler` → `KeyboardStateMachine` → `reduce` 的处理链，产生新的 `ImeState`（通过 `StateFlow` 暴露）、`EditorAction`（通过 `ImeEditorBridge` 分发）和 `ImeEffect`（通过 `SharedFlow` 发射）。UI 层同时订阅 `StateFlow<ImeState>` 和 `SharedFlow<ImeEffect>`，分别驱动界面重组和一次性效果展示。
 
 ### 3.3 数据流不变式
 
 MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测性：
 
 1. **单一状态源**：`ImeState` 是引擎对外的唯一状态源，不存在其他状态通道或旁路。UI 层的所有渲染数据均来自 `StateFlow<ImeState>`，不持有独立的业务状态副本。
-2. **单向数据流**：数据从 `ImeIntent` 流向 `ImeState`/`ImeOutput`/`ImeEffect`，不存在反向依赖。`ImeState` 的变更不触发新的 `ImeIntent`——状态变更是 reduce 的结果而非原因。
+2. **单向数据流**：数据从 `ImeIntent` 流向 `ImeState`/`EditorAction`/`ImeEffect`，不存在反向依赖。`ImeState` 的变更不触发新的 `ImeIntent`——状态变更是 reduce 的结果而非原因。
 3. **纯函数 reduce**：`reduce(state, intent)` 是纯函数，相同输入始终产生相同输出，不依赖外部状态，不产生副作用。异步操作（如字典查询）通过 `sideEffects` 列表延迟执行。
 4. **副作用隔离**：需要异步处理的操作通过 `KeyboardStateTransition.Result.sideEffects` 返回 `List<ImeIntent>`，由 `ImeEngine` 异步处理。一次性 UI 效果通过 `ImeEffect` 通道发射。两种副作用机制互不干扰。
 
@@ -235,11 +235,11 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 详见 [050-候选与字典](050-candidate-and-dict.md)。
 
-### 4.5 输出桥接
+### 4.5 编辑器桥接
 
-`ImeOutputBridge` 是引擎与目标编辑器之间的桥梁接口，采用桥接模式实现输出目标与引擎的解耦。`BaseImeOutputBridge` 提供单快照撤销机制的抽象基类，`InputConnectionBridge` 和 `EditTextBridge` 分别面向系统输入连接和 `EditText` 目标的实现。
+`ImeEditorBridge` 是引擎与目标编辑器之间的桥梁接口，采用桥接模式实现输出目标与引擎的解耦。`BaseImeEditorBridge` 提供单快照撤销机制的抽象基类，`InputConnectionBridge` 和 `EditTextBridge` 分别面向系统输入连接和 `EditText` 目标的实现。
 
-详见 [060-输出桥接](060-intent-output-bridge.md)。
+详见 [060-编辑器桥接](060-intent-editor-action-bridge.md)。
 
 ### 4.6 音效与触觉反馈
 
@@ -269,7 +269,7 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 ## 5. ImeEngine 完整类定义
 
-`ImeEngine` 是引擎库的核心入口点，提供完整的输入法能力。引擎不依赖任何 UI 框架，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收用户操作，通过 `ImeOutputBridge` 输出编辑指令。`ImeEngine` 的构造函数标记为 `internal`，强制通过 `Companion.create()` 工厂方法创建实例，确保所有依赖项正确初始化。
+`ImeEngine` 是引擎库的核心入口点，提供完整的输入法能力。引擎不依赖任何 UI 框架，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收用户操作，通过 `ImeEditorBridge` 输出编辑动作。`ImeEngine` 的构造函数标记为 `internal`，强制通过 `Companion.create()` 工厂方法创建实例，确保所有依赖项正确初始化。
 
 ```kotlin
 class ImeEngine internal constructor(
@@ -285,10 +285,10 @@ class ImeEngine internal constructor(
     private val _effect = MutableSharedFlow<ImeEffect>(extraBufferCapacity = 16)
     val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
 
-    private var _outputBridge: ImeOutputBridge? = null
+    private val _editorBridges = mutableListOf<ImeEditorBridge>()
 
-    fun attachOutputBridge(bridge: ImeOutputBridge) { ... }
-    fun detachOutputBridge() { ... }
+    fun attachEditorBridge(bridge: ImeEditorBridge) { ... }
+    fun detachEditorBridge(bridge: ImeEditorBridge) { ... }
     fun handleIntent(intent: ImeIntent) { ... }
     fun updateConfig(block: (ImeConfig) -> ImeConfig) { ... }
 
@@ -312,9 +312,9 @@ class ImeEngine internal constructor(
 
 `_state` 是内部的 `MutableStateFlow<ImeState>`，对外暴露只读的 `StateFlow<ImeState>`。`StateFlow` 保证值的原子性——订阅者始终读取到最新的完整状态快照。`_effect` 是内部的 `MutableSharedFlow<ImeEffect>`，`extraBufferCapacity = 16` 确保高频率发射时不会因订阅者处理慢而丢弃事件。对外暴露只读的 `SharedFlow<ImeEffect>`。
 
-### 5.3 输出桥接
+### 5.3 编辑器桥接
 
-`_outputBridge` 是可空的 `ImeOutputBridge?`，通过 `attachOutputBridge()` 注册，`detachOutputBridge()` 注销。引擎在分发 `ImeOutput` 时检查桥接是否存在：若存在则调用对应的语义方法，若不存在则静默忽略。这种设计允许引擎在没有桥接的情况下正常运行（例如纯逻辑测试场景），输出操作被自动跳过。
+`_editorBridges` 是 `MutableList<ImeEditorBridge>`，通过 `attachEditorBridge()` 注册桥接，`detachEditorBridge()` 注销指定桥接。引擎在分发 `EditorAction` 时遍历所有已注册桥接，逐个调用对应的语义方法；若桥接列表为空则静默跳过。这种设计允许引擎在没有桥接的情况下正常运行（例如纯逻辑测试场景），也支持同时向多个编辑器分发编辑动作。
 
 ### 5.4 工厂方法
 
@@ -336,7 +336,7 @@ val engine = ImeEngine.create(
 
 // 接入桥接
 val bridge = InputConnectionBridge { currentInputConnection }
-engine.attachOutputBridge(bridge)
+engine.attachEditorBridge(bridge)
 
 // 订阅状态
 engine.state.collect { state -> updateUI(state) }
@@ -486,7 +486,7 @@ class FeatureRegistry(private val features: Set<Feature>) {
 
 ## 8. reduce 函数的核心逻辑
 
-`handleIntent()` 是 `ImeEngine` 处理用户意图的核心方法，内部通过六步处理链将 `ImeIntent` 转化为状态变更、编辑输出和副作用信号。整个处理链在主线程上同步执行，异步操作通过 `sideEffects` 列表延迟到独立协程中处理，确保 `reduce` 函数的纯函数特性。
+`handleIntent()` 是 `ImeEngine` 处理用户意图的核心方法，内部通过六步处理链将 `ImeIntent` 转化为状态变更、编辑动作和副作用信号。整个处理链在主线程上同步执行，异步操作通过 `sideEffects` 列表延迟到独立协程中处理，确保 `reduce` 函数的纯函数特性。
 
 ### 8.1 处理链六步
 
@@ -506,7 +506,7 @@ Step 3: 处理 sideEffects（异步意图如字典查询）
 Step 4: 通过 copy() 模式更新 ImeState
   │
   ▼
-Step 5: 分发 ImeOutput 到 ImeOutputBridge
+Step 5: 分发 EditorAction 到 ImeEditorBridge
   │
   ▼
 Step 6: 发射 ImeEffect 到 SharedFlow
@@ -523,7 +523,7 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 `KeyboardStateMachine.transition()` 是状态转换的集中处理器，接收 `KeyboardStateTransition`，根据当前状态执行转换规则，返回 `KeyboardStateTransition.Result`。`Result` 包含两个部分：
 
 - `newState: KeyboardState`：转换后的新状态。若转换在当前状态下不合法，`newState` 等于原状态（Fail-safe 行为）。
-- `sideEffects: List<ImeIntent>`：转换产生的副作用意图列表，包含需要异步处理的操作（如字典查询、音频播放、输出桥接等）。`KeyboardStateMachine` 本身是纯函数，不直接执行副作用，而是通过返回副作用列表交由 `ImeEngine` 异步处理。
+- `sideEffects: List<ImeIntent>`：转换产生的副作用意图列表，包含需要异步处理的操作（如字典查询、音频播放、编辑器桥接等）。`KeyboardStateMachine` 本身是纯函数，不直接执行副作用，而是通过返回副作用列表交由 `ImeEngine` 异步处理。
 
 若 `newState` 与原状态不同，`KeyboardStateMachine` 将原状态推入 `KeyboardStateHistory` 有界栈（最大 10 层），供后续回退使用。
 
@@ -532,8 +532,8 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 `sideEffects` 是 `KeyboardStateTransition.Result` 中返回的 `List<ImeIntent>`，包含状态转换产生的异步操作意图。`ImeEngine` 逐个处理 `sideEffects` 中的 `ImeIntent`，通过递归调用 `handleIntent()` 执行。典型的副作用意图包括：
 
 - `ImeIntent.SelectCandidate(...)`：候选词选中后触发字典查询和输入列表确认
-- `ImeIntent.CommitInput`：输入提交后触发 `ImeOutput.CommitText` 输出
-- `ImeIntent.DeleteInput`：输入删除后触发 `ImeOutput.RevokeCommit` 输出
+- `ImeIntent.CommitInput`：输入提交后触发 `EditorAction.CommitText` 输出
+- `ImeIntent.DeleteInput`：输入删除后触发 `EditorAction.RevokeCommit` 输出
 
 副作用处理的递归深度受引擎内部保护，超过阈值时抛出异常，防止无限递归。
 
@@ -549,18 +549,18 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 
 各子状态的变更通过一次 `copy()` 操作原子完成，不存在中间状态被外部观察到的风险。
 
-### 8.6 Step 5：分发 ImeOutput 到 ImeOutputBridge
+### 8.6 Step 5：分发 EditorAction 到 ImeEditorBridge
 
-`ImeEngine` 在 `reduce` 过程中收集需要输出的 `ImeOutput` 实例，在状态更新完成后统一分发到 `ImeOutputBridge`。分发通过 `dispatchToTarget()` 方法实现，内部使用 `when(ImeOutput)` 穷举所有输出类型，调用桥接的对应语义方法：
+`ImeEngine` 在 `reduce` 过程中收集需要输出的 `EditorAction` 实例，在状态更新完成后统一分发到所有已注册的 `ImeEditorBridge`。分发通过 `dispatchEditorAction()` 方法实现，遍历 `_editorBridges` 中的所有桥接，对每个桥接使用 `when(EditorAction)` 穷举所有动作类型，调用桥接的对应语义方法：
 
-- `ImeOutput.CommitText` → `bridge.commitText(text, replacements)`
-- `ImeOutput.RevokeCommit` → `bridge.revokeCommit()`
-- `ImeOutput.InsertPairedSymbols` → `bridge.insertPairedSymbols(left, right)`
-- `ImeOutput.MoveCursor` → `bridge.moveCursor(direction)`
-- `ImeOutput.SelectRange` → `bridge.selectRange(direction)`
-- `ImeOutput.PerformEdit` → `bridge.performEdit(action)`
+- `EditorAction.CommitText` → `bridge.commitText(text, replacements)`
+- `EditorAction.RevokeCommit` → `bridge.revokeCommit()`
+- `EditorAction.InsertPairedSymbols` → `bridge.insertPairedSymbols(left, right)`
+- `EditorAction.MoveCursor` → `bridge.moveCursor(direction)`
+- `EditorAction.SelectRange` → `bridge.selectRange(direction)`
+- `EditorAction.PerformEdit` → `bridge.performEdit(action)`
 
-若 `_outputBridge` 为 `null`，分发操作被跳过。所有桥接方法在主线程调用，确保线程安全。
+若 `_editorBridges` 为空，分发操作被静默跳过。所有桥接方法在主线程调用，确保线程安全。
 
 ### 8.7 Step 6：发射 ImeEffect 到 SharedFlow
 

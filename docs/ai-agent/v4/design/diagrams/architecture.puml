@@ -62,8 +62,8 @@ package ":ime-engine 模块\n(Domain Layer + Data Layer)" as engine #FFF3E0 {
     component [ImeEngine] as IE <<ime_engine>>
     component [ImeConfig] as IC <<ime_engine>>
     component [ImeIntent] as II <<ime_engine>>
-    component [ImeOutput] as IO <<ime_engine>>
-    component [ImeOutputBridge\nBaseImeOutputBridge] as IOB <<ime_engine>>
+    component [EditorAction] as IO <<ime_engine>>
+    component [ImeEditorBridge\nBaseImeEditorBridge] as IOB <<ime_engine>>
     component [ImeState\n+ 子状态] as IS <<ime_engine>>
     component [Keyboard\n(type, mode, state)] as K <<ime_engine>>
     component [KeyboardType\n(枚举)] as KT <<ime_engine>>

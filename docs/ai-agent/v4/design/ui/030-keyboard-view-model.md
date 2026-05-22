@@ -571,9 +571,9 @@ class IMEService : InputMethodService() {
             config = ImeConfig(),
             dictProvider = ImeSqliteDictProvider(this),
         )
-        // 创建并挂载输出桥梁（与 ViewModel 无关）
+        // 创建并挂载编辑器桥梁（与 ViewModel 无关）
         bridge = InputConnectionBridge { currentInputConnection }
-        engine?.attachOutputBridge(bridge!!)
+        engine?.attachEditorBridge(bridge!!)
         // 创建感官反馈播放器
         audioPlayer = AndroidAudioPlayer(this)
         hapticPlayer = AndroidHapticPlayer(this)
@@ -602,7 +602,7 @@ class IMEService : InputMethodService() {
         audioPlayer = null
         hapticPlayer = null
         // 断开桥梁并销毁引擎
-        engine?.detachOutputBridge()
+        engine?.detachEditorBridge()
         engine = null
         bridge = null
         composeView?.disposeComposition()
@@ -616,7 +616,7 @@ class IMEService : InputMethodService() {
 
 1. **引擎创建**：`IMEService.onCreate()` 中调用 `ImeEngine.create()` 创建引擎实例，传入 `ImeConfig` 和 `ImeSqliteDictProvider`。引擎创建是应用层职责，因为 `ImeDictProvider` 需要 Android `Context` 访问 SQLite 数据库。
 
-2. **桥梁挂载**：`IMEService.onCreate()` 中创建 `InputConnectionBridge`，传入 `currentInputConnection` 的提供者，然后通过 `engine.attachOutputBridge()` 挂载。桥梁的挂载与 ViewModel 无关——桥梁直接与引擎交互，将 `ImeOutput` 分发到 `InputConnection`。
+2. **桥梁挂载**：`IMEService.onCreate()` 中创建 `InputConnectionBridge`，传入 `currentInputConnection` 的提供者，然后通过 `engine.attachEditorBridge()` 挂载。桥梁的挂载与 ViewModel 无关——桥梁直接与引擎交互，将 `EditorAction` 分发到 `InputConnection`。
 
 3. **播放器创建**：`IMEService.onCreate()` 中创建 `AndroidAudioPlayer` 和 `AndroidHapticPlayer`，传入 `Context` 用于加载音频资源和获取 `Vibrator` 服务。播放器的生命周期与 `IMEService` 相同，不随 `InputConnection` 变更而重建。
 

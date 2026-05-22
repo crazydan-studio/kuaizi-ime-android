@@ -232,8 +232,8 @@ fun `should commit text when CommitInput intent processed with non-empty input l
     // Assert：验证结果
     val output = engine.output.tryReceive().getOrNull()
     assertNotNull(output)
-    assertEquals(ImeOutput.CommitText::class, output!!::class)
-    assertEquals("你", (output as ImeOutput.CommitText).text)
+    assertEquals(EditorAction.CommitText::class, output!!::class)
+    assertEquals("你", (output as EditorAction.CommitText).text)
 }
 ```
 

@@ -6,11 +6,11 @@ IME 的交互反馈分为两类：视觉反馈（按键动画、滑行轨迹、�
 
 ## 1. 设计决策：为何不采用桥接模式
 
-音效播放和触觉振动都属于交互反馈，不属于编辑器操作。虽然 `ImeOutputBridge` 提供了引擎与外部交互的桥接模式，但感官反馈不适合采用同一模式，原因如下：
+音效播放和触觉振动都属于交互反馈，不属于编辑器操作。虽然 `ImeEditorBridge` 提供了引擎与外部交互的桥接模式，但感官反馈不适合采用同一模式，原因如下：
 
-**语义差异**：`ImeOutputBridge` 的语义是「引擎对目标编辑器的操作指令」——提交文本、撤销输入、移动光标，这些操作具有同步协调语义，引擎需要确保操作成功执行且状态一致。而感官反馈的语义是「引擎通知 UI 层发生了某件事」——按键音、振动，这些是 fire-and-forget 信号，不需要确认和回滚。
+**语义差异**：`ImeEditorBridge` 的语义是「引擎对目标编辑器的操作指令」——提交文本、撤销输入、移动光标，这些操作具有同步协调语义，引擎需要确保操作成功执行且状态一致。而感官反馈的语义是「引擎通知 UI 层发生了某件事」——按键音、振动，这些是 fire-and-forget 信号，不需要确认和回滚。
 
-**架构分层原则**：v4 设计的状态频率分层明确指出「引擎只拥有逻辑状态，UI 拥有展示状态和交互反馈状态」。音效和触觉属于交互反馈，应由 UI 层管理其播放策略和平台实现。引擎仅通过 `ImeEffect` 通道发出信号，不持有播放器实例，不管理播放器生命周期——这与 `ImeOutputBridge` 直接持有桥梁实例、引擎内部调用桥梁方法的设计模式根本不同。
+**架构分层原则**：v4 设计的状态频率分层明确指出「引擎只拥有逻辑状态，UI 拥有展示状态和交互反馈状态」。音效和触觉属于交互反馈，应由 UI 层管理其播放策略和平台实现。引擎仅通过 `ImeEffect` 通道发出信号，不持有播放器实例，不管理播放器生命周期——这与 `ImeEditorBridge` 直接持有桥梁实例、引擎内部调用桥梁方法的设计模式根本不同。
 
 **扩展性考量**：如果为音效引入 `ImeAudioBridge`，为触觉引入 `ImeHapticBridge`，引擎需要管理越来越多的桥接接口（`attachAudioBridge` / `detachAudioBridge` / `attachHapticBridge` / `detachHapticBridge` ...），每次新增反馈类型都要修改引擎 API。而通过 `ImeEffect` 通道发送信号的方式，新增反馈类型只需在 `ImeEffect` 中添加子类型，引擎 API 无需任何变更。
 
@@ -366,7 +366,7 @@ class IMEService : InputMethodService() {
             dictProvider = ImeSqliteDictProvider(this),
         )
         bridge = InputConnectionBridge { currentInputConnection }
-        engine?.attachOutputBridge(bridge!!)
+        engine?.attachEditorBridge(bridge!!)
         audioPlayer = AndroidAudioPlayer(this)
         hapticPlayer = AndroidHapticPlayer(this)
     }
@@ -392,7 +392,7 @@ class IMEService : InputMethodService() {
         audioPlayer?.release()
         audioPlayer = null
         hapticPlayer = null
-        engine?.detachOutputBridge()
+        engine?.detachEditorBridge()
         engine = null
         bridge = null
         composeView?.disposeComposition()

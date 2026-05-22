@@ -20,7 +20,7 @@ Java 版本采用自定义消息驱动的 MVP 架构，v4 采用 MVI + StateFlow
 | 配置 | SharedPreferences | DataStore + Flow | 类型安全、异步、响应式 |
 | 数据库 | 手写 SQLiteOpenHelper | Room | 类型安全、编译期检查、官方推荐 |
 | 依赖管理 | 手动构造 | 手动构造注入（同 Java，但更简洁） | 项目规模适中，手动注入足够 |
-| 输出桥接 | 手动 when 分发（2 处重复） | ImeOutputBridge 语义化桥接（1 处分发） | 消除重复，桥梁实现者无需理解 ImeOutput 类型体系 |
+| 编辑器桥接 | 手动 when 分发（2 处重复） | ImeEditorBridge 语义化桥接（1 处分发） | 消除重复，桥梁实现者无需理解 EditorAction 类型体系 |
 | 日志 | Logger（仅 DEBUG 生效） | ImeLog（分级 + 持久化 + 崩溃拦截 + 查看导出） | release 也可用。核心基础设施在 :ime-engine，Android 特有实现在 :app |
 
 **历史原因**：Java 版本的 MVP + 手动消息路由虽然实现了单向数据流，但三套消息体系（共 53+ 种消息类型）导致理解成本高、分发易出错。IMEService 职责过重，既是消息路由器又负责 InputConnection 操作和生命周期管理。v4 将消息路由职责内化到引擎的 `reduce()` 函数，通过 StateFlow 自动传播状态变更，消除了手动分发。
@@ -33,7 +33,7 @@ Java 版本采用自定义消息驱动的 MVP 架构，v4 采用 MVI + StateFlow
 
 | Java Class | v4 对应 | 变更说明 |
 |-----------|---------|----------|
-| `IMEditor` | `ImeEngine` | 引擎核心入口点，MVI 模式替代消息中介。提供 `state`、`handleGesture()`、`handleIntent()`、`updateConfig()`、`attachOutputBridge()` |
+| `IMEditor` | `ImeEngine` | 引擎核心入口点，MVI 模式替代消息中介。提供 `state`、`handleGesture()`、`handleIntent()`、`updateConfig()`、`attachEditorBridge()` |
 | `IMEditorView` | （已废弃） | View 层职责由 `:ime-ui` 的 Compose 组件承担，引擎不依赖 View |
 | `IMEditorDict` | `ImeDictProvider` / `ImeSqliteDictProvider` | 不再单例，由引擎使用者显式创建并注入。内置 SQLite 实现从 `assets/dict/` 加载预构建数据库 |
 | `IMEConfig` | `ImeConfig` | 统一配置，合并原引擎配置（`ImeEngineConfig`）与应用配置（`Config`），含 `EngineConfig` 和 `UiConfig` 明确隔离 |
@@ -90,23 +90,23 @@ Java 版本有三套消息体系（共 53+ 种消息类型），v4 统一为 Int
 |-----------|---------|----------|
 | `UserKeyMsg` / `UserKeyMsgType` / `UserKeyMsgData`（7 种） | `InputGesture` | 统一为坐标无关的逻辑手势描述（Tap/LongPress/Swipe/Flip/XPadZonePath/CandidateTap） |
 | `UserInputMsg` / `UserInputMsgType` / `UserInputMsgData`（11 种） | `ImeIntent` | 统一为用户意图（PressKey/SelectCandidate/PageCandidate/SwitchKeyboard/CommitInput/DeleteInput 等 16 种） |
-| `InputMsg` / `InputMsgType` / `InputMsgData`（35+ 种） | `ImeOutput` | 统一为引擎编辑输出（CommitText/RevokeCommit/InsertPairedSymbols/MoveCursor/SelectRange/PerformEdit 6 种） |
-| `InputMsgListener` | `ImeOutputBridge` | 桥接模式替代监听器。桥梁实现者只需实现语义方法，无需理解 ImeOutput 类型体系 |
-| `UserMsgListener` | （已废弃） | 引擎内部统一 `dispatchToTarget()` 自动分发 |
+| `InputMsg` / `InputMsgType` / `InputMsgData`（35+ 种） | `EditorAction` | 统一为引擎编辑动作（CommitText/RevokeCommit/InsertPairedSymbols/MoveCursor/SelectRange/PerformEdit 6 种） |
+| `InputMsgListener` | `ImeEditorBridge` | 桥接模式替代监听器。桥梁实现者只需实现语义方法，无需理解 EditorAction 类型体系 |
+| `UserMsgListener` | （已废弃） | 引擎内部统一 `dispatchEditorAction()` 自动分发 |
 | `BaseMsg` | （已废弃） | v4 不使用通用消息基类 |
 
-**历史原因**：Java 版本的三套消息体系导致了 IMEService 职责过重——它既是消息路由器（UserMsg → IMEditor, InputMsg → IMEditorView），又负责 InputConnection 操作。`InputMsgType` 枚举膨胀至 35+ 值，不同关注点混在一个枚举中。v4 将上行消息（UserKeyMsg + UserInputMsg）统一为 `ImeIntent`，将下行消息（InputMsg）替换为 StateFlow 自动传播 + `ImeOutput` 语义化输出，彻底消除了手动消息分发。
+**历史原因**：Java 版本的三套消息体系导致了 IMEService 职责过重——它既是消息路由器（UserMsg → IMEditor, InputMsg → IMEditorView），又负责 InputConnection 操作。`InputMsgType` 枚举膨胀至 35+ 值，不同关注点混在一个枚举中。v4 将上行消息（UserKeyMsg + UserInputMsg）统一为 `ImeIntent`，将下行消息（InputMsg）替换为 StateFlow 自动传播 + `EditorAction` 语义化动作，彻底消除了手动消息分发。
 
-### ImeOutput 与 InputMsg 的映射
+### EditorAction 与 InputMsg 的映射
 
-| InputMsgType（Java） | ImeOutput（v4） | 说明 |
+| InputMsgType（Java） | EditorAction（v4） | 说明 |
 |---------------------|----------------|------|
-| `InputList_Commit_Doing` | `ImeOutput.CommitText` | 提交文本，支持可替换字符列表 |
-| `InputList_Committed_Revoke_Doing` | `ImeOutput.RevokeCommit` | 撤销提交，由桥梁根据选区快照恢复 |
-| `InputList_PairSymbol_Commit_Doing` | `ImeOutput.InsertPairedSymbols` | 插入成对符号 |
-| `Editor_Cursor_Move_Doing` | `ImeOutput.MoveCursor` | 移动光标 |
-| `Editor_Range_Select_Doing` | `ImeOutput.SelectRange` | 扩展选区 |
-| `Editor_Edit_Doing` | `ImeOutput.PerformEdit` | 编辑操作（退格、全选、复制、粘贴、剪切、撤销、重做） |
+| `InputList_Commit_Doing` | `EditorAction.CommitText` | 提交文本，支持可替换字符列表 |
+| `InputList_Committed_Revoke_Doing` | `EditorAction.RevokeCommit` | 撤销提交，由桥梁根据选区快照恢复 |
+| `InputList_PairSymbol_Commit_Doing` | `EditorAction.InsertPairedSymbols` | 插入成对符号 |
+| `Editor_Cursor_Move_Doing` | `EditorAction.MoveCursor` | 移动光标 |
+| `Editor_Range_Select_Doing` | `EditorAction.SelectRange` | 扩展选区 |
+| `Editor_Edit_Doing` | `EditorAction.PerformEdit` | 编辑操作（退格、全选、复制、粘贴、剪切、撤销、重做） |
 
 ---
 

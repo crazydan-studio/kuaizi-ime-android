@@ -21,7 +21,7 @@
 | 开发计划 | 测试文档 | 测试范围 | 状态 |
 |----------|----------|----------|------|
 | （待创建） | （与计划同名） | 键盘状态机、Intent 处理、状态转换（对应 [030-键盘状态机](../design/engine/030-keyboard-state-machine.md)） | 📋待编写 |
-| （待创建） | （与计划同名） | ImeEngine API、ImeConfig、ImeOutput、ImeDictProvider（对应 [010-引擎库设计总览](../design/engine/010-engine-overview.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | ImeEngine API、ImeConfig、EditorAction、ImeDictProvider（对应 [010-引擎库设计总览](../design/engine/010-engine-overview.md)） | 📋待编写 |
 | （待创建） | （与计划同名） | InputList 不可变操作、游标、撤销 / 重做（对应 [040-输入列表](../design/engine/040-input-list.md)） | 📋待编写 |
 | （待创建） | （与计划同名） | Room DAO、ImeDictProvider 实现、字典查询、升级迁移（对应 [050-候选与字典](../design/engine/050-candidate-and-dict.md)） | 📋待编写 |
 | （待创建） | （与计划同名） | ConfigRepository、ImeConfig 运行时优先、DataStore（对应 [010-配置与设置](../design/app/010-config.md)） | 📋待编写 |
@@ -71,7 +71,7 @@ code/
 │       ├── api/                            ← 引擎公开 API 测试
 │       │   ├── ImeEngineTest.kt
 │       │   ├── ImeConfigTest.kt
-│       │   └── ImeOutputTest.kt
+│       │   └── EditorActionTest.kt
 │       ├── domain/                         ← 领域逻辑测试
 │       │   ├── KeyboardStateMachineTest.kt
 │       │   ├── InputListTest.kt

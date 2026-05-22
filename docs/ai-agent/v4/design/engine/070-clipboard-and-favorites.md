@@ -314,7 +314,7 @@ ImeEffect.PopupTip.Action(
 )
 ```
 
-`persistent = true` 表示该提示持续显示直到用户开始输入，不会因超时自动消失。这是剪贴板提示的合理策略：用户可能在阅读输入内容后再决定是否粘贴，此时提示应持续可见。`action` 字段绑定 `ImeIntent.PasteClip(text)`，用户点击「粘贴」按钮后，该 `ImeIntent` 被 `ImeEngine.handleIntent()` 接收并处理，最终通过 `ImeOutputBridge` 将文本提交到目标编辑器。
+`persistent = true` 表示该提示持续显示直到用户开始输入，不会因超时自动消失。这是剪贴板提示的合理策略：用户可能在阅读输入内容后再决定是否粘贴，此时提示应持续可见。`action` 字段绑定 `ImeIntent.PasteClip(text)`，用户点击「粘贴」按钮后，该 `ImeIntent` 被 `ImeEngine.handleIntent()` 接收并处理，最终通过 `ImeEditorBridge` 将文本提交到目标编辑器。
 
 ### 6.2 输入提交触发收藏 Action 提示
 
@@ -340,7 +340,7 @@ ImeEffect.PopupTip.Action(
 @file:../diagrams/engine-clipboard-favorites.puml
 ```
 
-上图展示了剪贴板检测与收藏操作与 `ImeEffect` 的完整协作流程。系统剪贴板变更时，`ClipboardService` 更新内部 `StateFlow`，`ImeEngine` 在 reduce 过程中读取服务状态并更新 `ImeState.clipboard`，同时发射 `ImeEffect.PopupTip.Action` 提示。用户点击提示中的「粘贴」按钮后，`ImeIntent.PasteClip` 被 `ImeEngine` 处理，文本通过 `ImeOutputBridge` 提交到编辑器。收藏流程：用户输入提交后，引擎检查已提交文本是否已收藏；若未收藏，发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示；用户点击「收藏」按钮后，`ImeIntent.SaveFavorite` 被 `ImeEngine` 处理，`FavoriteService` 执行保存，引擎发射 `ImeEffect.PopupTip.Message("已收藏")` 确认提示。
+上图展示了剪贴板检测与收藏操作与 `ImeEffect` 的完整协作流程。系统剪贴板变更时，`ClipboardService` 更新内部 `StateFlow`，`ImeEngine` 在 reduce 过程中读取服务状态并更新 `ImeState.clipboard`，同时发射 `ImeEffect.PopupTip.Action` 提示。用户点击提示中的「粘贴」按钮后，`ImeIntent.PasteClip` 被 `ImeEngine` 处理，文本通过 `ImeEditorBridge` 提交到编辑器。收藏流程：用户输入提交后，引擎检查已提交文本是否已收藏；若未收藏，发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示；用户点击「收藏」按钮后，`ImeIntent.SaveFavorite` 被 `ImeEngine` 处理，`FavoriteService` 执行保存，引擎发射 `ImeEffect.PopupTip.Message("已收藏")` 确认提示。
 
 ### 6.4 Feature 门控与副作用
 

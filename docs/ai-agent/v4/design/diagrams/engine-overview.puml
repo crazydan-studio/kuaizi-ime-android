@@ -20,9 +20,9 @@ package "核心模型" #FFE0B2 {
   class ImeEngine <<(C,#FFE0B2)>> {
     - state: MutableStateFlow<ImeState>
     + state: StateFlow<ImeState>
-    - _outputBridge: ImeOutputBridge?
-    + attachOutputBridge(bridge)
-    + detachOutputBridge()
+    - _editorBridges: MutableList<ImeEditorBridge>
+    + attachEditorBridge(bridge)
+    + detachEditorBridge(bridge)
     + handleIntent(intent)
     + updateConfig(block)
     + {static} create(config, dictProvider): ImeEngine
@@ -41,7 +41,7 @@ package "核心模型" #FFE0B2 {
     PerformEdit(action)
     UpdateConfig(config)
   }
-  class ImeOutput <<(S,#FFE0B2)>> {
+  class EditorAction <<(S,#FFE0B2)>> {
     CommitText(text, replacements?)
     RevokeCommit
     InsertPairedSymbols(left, right)
@@ -49,7 +49,7 @@ package "核心模型" #FFE0B2 {
     SelectRange(direction)
     PerformEdit(action)
   }
-  interface ImeOutputBridge <<(I,#FFE0B2)>> {
+  interface ImeEditorBridge <<(I,#FFE0B2)>> {
     commitText(text, replacements?)
     revokeCommit()
     insertPairedSymbols(left, right)
@@ -59,7 +59,7 @@ package "核心模型" #FFE0B2 {
     getText(): CharSequence
     getSelection(): TextRange
   }
-  abstract class BaseImeOutputBridge <<(A,#FFE0B2)>> {
+  abstract class BaseImeEditorBridge <<(A,#FFE0B2)>> {
     # revertion: SelectionSnapshot?
     # resetRevertion()
     # recordRevertion(...)
@@ -191,12 +191,12 @@ ImeEngine *-- InputListOperator : 组合
 ImeEngine *-- FeatureRegistry : 组合
 ImeEngine *-- KeyAudioPlayer : 组合
 ImeEngine --> ImeIntent : 处理
-ImeEngine --> ImeOutput : 生成
-ImeEngine --> ImeOutputBridge : 分发
+ImeEngine --> EditorAction : 生成
+ImeEngine --> ImeEditorBridge : 分发
 ImeEngine --> ImeState : 更新
 ImeEngine --> ImeConfig : 持有
 
-ImeOutputBridge <|-- BaseImeOutputBridge
+ImeEditorBridge <|-- BaseImeEditorBridge
 KeyboardStateMachine --> KeyAudioPlayer : 使用
 KeyboardStateMachine --> InputListOperator : 使用
 

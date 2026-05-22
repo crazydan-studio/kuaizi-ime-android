@@ -1,6 +1,6 @@
 # UI 库架构总览
 
-UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方应用开放。第三方应用可以直接使用库中的 Compose 组件和 `KeyboardViewModel` 构建完整的输入法界面，无需自行实现视图层或 ViewModel。同时，UI 库的设计遵循「可替换」原则：所有 UI 组件仅依赖 `:ime-engine` 的公开 API（`StateFlow`、`ImeIntent`、`ImeOutput`），不依赖引擎内部实现，因此第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能。
+UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方应用开放。第三方应用可以直接使用库中的 Compose 组件和 `KeyboardViewModel` 构建完整的输入法界面，无需自行实现视图层或 ViewModel。同时，UI 库的设计遵循「可替换」原则：所有 UI 组件仅依赖 `:ime-engine` 的公开 API（`StateFlow`、`ImeIntent`、`EditorAction`），不依赖引擎内部实现，因此第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能。
 
 ---
 
@@ -165,8 +165,8 @@ UI 库的所有组件仅依赖 `:ime-engine` 的公开 API：
 | `ImeEngine.state: StateFlow<ImeState>` | 所有 Compose 组件通过 `collectAsState()` 订阅状态驱动重组 |
 | `ImeEngine.effect: SharedFlow<ImeEffect>` | `KeyboardViewModel` 订阅副作用通道，驱动 `PopupTipState`、音效播放、触觉振动；收藏确认通过 `PopupTip.Action` 实现 |
 | `ImeIntent` | `KeyboardViewModel` 将 `InputGesture` 转换为 `ImeIntent` 后发送给引擎，`ToolItem` 点击直接发送 `ImeIntent`，`PopupTipState.Action` 点击触发 `ImeIntent` |
-| `ImeOutput` | 不直接使用（通过 `ImeOutputBridge` 分发） |
-| `ImeOutputBridge` / `BaseImeOutputBridge` | `EditTextBridge` 实现用于非系统 IME 场景 |
+| `EditorAction` | 不直接使用（通过 `ImeEditorBridge` 分发） |
+| `ImeEditorBridge` / `BaseImeEditorBridge` | `EditTextBridge` 实现用于非系统 IME 场景 |
 | `ImeEffect` | `KeyboardViewModel` 订阅引擎副作用通道，处理 `PopupTip.Message`、`PopupTip.Action`、`PlayAudio`、`PlayHaptic`；收藏确认通过 `PopupTip.Action` 实现 |
 | `ImeConfig` / `ImeConfig.UiConfig` | 主题系统、配置 UI 组件读取配置驱动界面呈现 |
 | `KeyboardInputMode` 枚举 | `KeyLayoutPanel` 布局策略选择、`GestureInputPanel` 手势识别逻辑。`KeyboardInputMode` 与 `KeyboardType` 是 `:ime-engine` 中两个不同的概念：`KeyboardType` 是引擎的键盘分类（`Pinyin`/`Latin`/`Symbol`/`Emoji`/`Number`/`Math`），决定按键集合的语义内容；`KeyboardInputMode` 是输入交互范式分类（`HexGrid`/`RectGrid`），决定按键的几何排列和手势交互方式。二者正交组合 |

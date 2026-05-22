@@ -66,7 +66,7 @@ Markdown 文档、PlantUML 图表中的标签和注释、源码中的注释和�
 类成员中的多行方法体不能直接换行书写，需用 `\n` 转义为单行字符串，如：
 
 ```
-dispatchToTarget(output) : {\n  when(output) {\n    ...\n  }\n}
+dispatchEditorAction(output) : {\n  when(output) {\n    ...\n  }\n}
 ```
 
 ### 外部文件导入

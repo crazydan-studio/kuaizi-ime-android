@@ -31,7 +31,7 @@ rectangle "引擎层 (:ime-engine)" as engine #E3F2FD {
 }
 
 rectangle "输出" as output #FCE4EC {
-  card "ImeOutputBridge" as bridge
+  card "ImeEditorBridge" as bridge
   card "目标编辑器" as editor
 }
 
@@ -44,7 +44,7 @@ sm -down-> reduce : 3. sideEffects →\n异步 Intent
 reduce -down-> state : 4. copy() 更新 ImeState
 
 ' 输出流
-imeEngine -right-> bridge : 5. ImeOutput\n(dispatchToTarget)
+imeEngine -right-> bridge : 5. EditorAction\n(dispatchEditorAction)
 bridge -right-> editor : 语义方法调用
 
 ' 副作用流

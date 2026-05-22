@@ -1,4 +1,4 @@
-# 意图、输出与桥接
+# 意图、编辑动作与桥接
 
 ## 1. ImeIntent 用户意图体系
 
@@ -63,15 +63,15 @@ sealed class ImeIntent {
 
 ### 1.2 候选意图
 
-`SelectCandidate` 和 `PageCandidate` 是候选相关的两种意图。`SelectCandidate` 携带用户选中的 `InputWord` 实例，引擎收到后执行候选词确认逻辑：将候选词追加到 `InputList.inputs` 中，清空 `pending`，通过 `ImeOutputBridge.commitText()` 输出文本到目标编辑器，通过 `ImeDictProvider.recordInput()` 更新用户词频。`PageCandidate` 携带翻页方向（`PageDirection.Forward` 或 `PageDirection.Backward`），引擎收到后更新 `CandidateList.pageIndex`，不触发字典查询。
+`SelectCandidate` 和 `PageCandidate` 是候选相关的两种意图。`SelectCandidate` 携带用户选中的 `InputWord` 实例，引擎收到后执行候选词确认逻辑：将候选词追加到 `InputList.inputs` 中，清空 `pending`，通过 `ImeEditorBridge.commitText()` 输出文本到目标编辑器，通过 `ImeDictProvider.recordInput()` 更新用户词频。`PageCandidate` 携带翻页方向（`PageDirection.Forward` 或 `PageDirection.Backward`），引擎收到后更新 `CandidateList.pageIndex`，不触发字典查询。
 
 ### 1.3 输入列表意图
 
-`CommitInput`、`DeleteInput`、`CleanInput` 和 `MoveCursorTo` 是输入列表的四种操作意图。`CommitInput` 确认当前 `pending` 中的待选字符，将选中内容追加到 `inputs` 中并输出到目标编辑器。`DeleteInput` 撤销最近一次确认输入，通过 `ImeOutputBridge.revokeCommit()` 恢复编辑器文本。`CleanInput` 清空整个输入列表，重置 `InputList` 为初始状态。`MoveCursorTo` 移动游标到指定位置，仅更新 `gapIndex`，不触发输出操作。
+`CommitInput`、`DeleteInput`、`CleanInput` 和 `MoveCursorTo` 是输入列表的四种操作意图。`CommitInput` 确认当前 `pending` 中的待选字符，将选中内容追加到 `inputs` 中并输出到目标编辑器。`DeleteInput` 撤销最近一次确认输入，通过 `ImeEditorBridge.revokeCommit()` 恢复编辑器文本。`CleanInput` 清空整个输入列表，重置 `InputList` 为初始状态。`MoveCursorTo` 移动游标到指定位置，仅更新 `gapIndex`，不触发输出操作。
 
 ### 1.4 编辑动作意图
 
-`PerformEdit` 携带 `EditorEditAction` 枚举值，触发目标编辑器的编辑操作。`EditorEditAction` 包含 `BACKSPACE`、`SELECT_ALL`、`COPY`、`CUT`、`PASTE`、`UNDO`、`REDO` 七种动作。引擎收到 `PerformEdit` 后，根据 `EditorEditAction` 类型执行对应的操作：破坏性编辑动作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空 `BaseImeOutputBridge` 的撤销快照，非破坏性动作（`SELECT_ALL`、`COPY`）不影响撤销快照。收藏功能独立于编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`。
+`PerformEdit` 携带 `EditorEditAction` 枚举值，触发目标编辑器的编辑操作。`EditorEditAction` 包含 `BACKSPACE`、`SELECT_ALL`、`COPY`、`CUT`、`PASTE`、`UNDO`、`REDO` 七种动作。引擎收到 `PerformEdit` 后，根据 `EditorEditAction` 类型执行对应的操作：破坏性编辑动作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空 `BaseImeEditorBridge` 的撤销快照，非破坏性动作（`SELECT_ALL`、`COPY`）不影响撤销快照。收藏功能独立于编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`。
 
 ### 1.5 剪贴板、收藏与配置意图
 
@@ -79,12 +79,12 @@ sealed class ImeIntent {
 
 ---
 
-## 2. ImeOutput 编辑输出体系
+## 2. EditorAction 编辑动作体系
 
-`ImeOutput` 是引擎向目标编辑器输出的编辑指令，以 `sealed class` 表达所有可能的输出类型。与 `ImeIntent` 表达用户意图不同，`ImeOutput` 表达引擎对编辑器的操作指令——提交文本、撤销提交、插入配对符号、移动光标、扩展选区、执行编辑动作。`ImeOutput` 由引擎的 `reduce` 函数在处理 `ImeIntent` 时产生，通过 `dispatchToTarget()` 统一分发到 `ImeOutputBridge`。`sealed class` 的穷举性确保引擎在分发输出时编译期覆盖所有类型。
+`EditorAction` 是引擎向目标编辑器输出的编辑动作，以 `sealed class` 表达所有可能的动作类型。与 `ImeIntent` 表达用户意图不同，`EditorAction` 表达引擎对编辑器的操作动作——提交文本、撤销提交、插入配对符号、移动光标、扩展选区、执行编辑动作。`EditorAction` 由引擎的 `reduce` 函数在处理 `ImeIntent` 时产生，通过 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`。`sealed class` 的穷举性确保引擎在分发编辑动作时编译期覆盖所有类型。
 
 ```kotlin
-sealed class ImeOutput {
+sealed class EditorAction {
     abstract val timestamp: Long
 
     /** 提交文本：将文本插入到当前光标位置，支持替换轮换 */
@@ -92,53 +92,53 @@ sealed class ImeOutput {
         override val timestamp: Long,
         val text: String,
         val replacements: List<String>? = null,
-    ) : ImeOutput()
+    ) : EditorAction()
 
     /** 撤销提交：撤销最近一次可撤回的输入 */
     data class RevokeCommit(
         override val timestamp: Long,
-    ) : ImeOutput()
+    ) : EditorAction()
 
     /** 插入配对符号：在当前光标位置插入左右配对符号 */
     data class InsertPairedSymbols(
         override val timestamp: Long,
         val left: String,
         val right: String,
-    ) : ImeOutput()
+    ) : EditorAction()
 
     /** 移动光标：按指定方向移动光标 */
     data class MoveCursor(
         override val timestamp: Long,
         val direction: CursorDirection,
-    ) : ImeOutput()
+    ) : EditorAction()
 
     /** 扩展选区：按指定方向扩展选区 */
     data class SelectRange(
         override val timestamp: Long,
         val direction: CursorDirection,
-    ) : ImeOutput()
+    ) : EditorAction()
 
     /** 执行编辑动作：触发目标编辑器的编辑操作 */
     data class PerformEdit(
         override val timestamp: Long,
         val action: EditorEditAction,
-    ) : ImeOutput()
+    ) : EditorAction()
 }
 ```
 
 ### 2.1 CommitText 提交文本
 
-`CommitText` 是最常见的输出类型，在用户确认拼音输入、选择候选词、粘贴剪贴板内容等场景下产生。`text` 为提交的文本内容，`replacements` 为可选的替换列表——当 `replacements` 非空时，`ImeOutputBridge` 实现需检查光标前文本是否匹配替换列表中的某一项，匹配时执行替换而非插入。替换轮换机制用于直输模式下的标点符号双击轮换——用户双击同一个按键时，引擎输出 `CommitText` 并携带替换列表，桥梁实现自动轮换光标前的文本。
+`CommitText` 是最常见的输出类型，在用户确认拼音输入、选择候选词、粘贴剪贴板内容等场景下产生。`text` 为提交的文本内容，`replacements` 为可选的替换列表——当 `replacements` 非空时，`ImeEditorBridge` 实现需检查光标前文本是否匹配替换列表中的某一项，匹配时执行替换而非插入。替换轮换机制用于直输模式下的标点符号双击轮换——用户双击同一个按键时，引擎输出 `CommitText` 并携带替换列表，桥梁实现自动轮换光标前的文本。
 
 `replacements` 的典型场景：用户输入英文句号 `.` 后双击同一按键，引擎输出 `CommitText(text = "。", replacements = [".", "。", "…"])`，桥梁实现检查光标前文本是否为 `"."` 或 `"。"`，若是则替换为下一个轮换项；若不匹配任何替换项，则正常插入 `text`。默认的替换轮换采用双击按键方式触发——用户在短时间内连续按两次同一个按键时，引擎输出携带 `replacements` 的 `CommitText`，桥梁实现自动轮换光标前的文本。这种设计将替换逻辑从引擎中解耦——引擎只负责提供替换列表，桥梁实现负责检测和执行替换操作，使得不同平台可以按自身能力提供差异化的替换实现。
 
 ### 2.2 RevokeCommit 撤销提交
 
-`RevokeCommit` 在用户执行 `ImeIntent.DeleteInput` 时产生，触发 `ImeOutputBridge.revokeCommit()` 恢复编辑器文本到最近一次提交前的状态。撤销机制采用单快照设计（而非栈），反映 IME 的使用模式——用户通常只需撤销最近一次输入。`RevokeCommit` 的处理由 `BaseImeOutputBridge` 的 `revertion` 快照驱动，桥梁实现从快照中恢复选区位置和文本内容。
+`RevokeCommit` 在用户执行 `ImeIntent.DeleteInput` 时产生，触发 `ImeEditorBridge.revokeCommit()` 恢复编辑器文本到最近一次提交前的状态。撤销机制采用单快照设计（而非栈），反映 IME 的使用模式——用户通常只需撤销最近一次输入。`RevokeCommit` 的处理由 `BaseImeEditorBridge` 的 `revertion` 快照驱动，桥梁实现从快照中恢复选区位置和文本内容。
 
 ### 2.3 InsertPairedSymbols 插入配对符号
 
-`InsertPairedSymbols` 在用户输入配对符号的左半部分时产生，触发 `ImeOutputBridge.insertPairedSymbols(left, right)` 在目标编辑器中插入成对符号。若编辑器中存在选中文本，桥梁实现将选中文本包裹在左右符号之间；若无选中文本，插入左右符号并将光标置于两者之间。配对符号的插入清空撤销快照，因为涉及两个插入点，无法通过单次撤销恢复。
+`InsertPairedSymbols` 在用户输入配对符号的左半部分时产生，触发 `ImeEditorBridge.insertPairedSymbols(left, right)` 在目标编辑器中插入成对符号。若编辑器中存在选中文本，桥梁实现将选中文本包裹在左右符号之间；若无选中文本，插入左右符号并将光标置于两者之间。配对符号的插入清空撤销快照，因为涉及两个插入点，无法通过单次撤销恢复。
 
 ### 2.4 MoveCursor 与 SelectRange
 
@@ -150,12 +150,12 @@ sealed class ImeOutput {
 
 ---
 
-## 3. ImeOutputBridge 输出桥接接口
+## 3. ImeEditorBridge 编辑器桥接接口
 
-`ImeOutputBridge` 是引擎与目标编辑器之间的桥梁接口，采用桥接模式实现输出目标与引擎的解耦。引擎内部仅执行一次 `when(ImeOutput)` 穷举分发，桥梁实现者只需实现语义方法，无需理解 `ImeOutput` 类型体系。接口方法表达「做什么」（语义）而非「怎么做」（实现），不同平台和目标编辑器可以按自身能力提供差异化的实现。
+`ImeEditorBridge` 是引擎与目标编辑器之间的桥梁接口，采用桥接模式实现输出目标与引擎的解耦。引擎内部仅执行一次 `when(EditorAction)` 穷举分发，桥梁实现者只需实现语义方法，无需理解 `EditorAction` 类型体系。接口方法表达「做什么」（语义）而非「怎么做」（实现），不同平台和目标编辑器可以按自身能力提供差异化的实现。
 
 ```kotlin
-interface ImeOutputBridge {
+interface ImeEditorBridge {
     /**
      * 提交文本到当前光标位置。
      * 若 replacements 非空，桥梁需检查光标前文本是否在列表中：
@@ -189,12 +189,12 @@ interface ImeOutputBridge {
 
 接口的七个方法覆盖了 IME 对目标编辑器的全部操作：`commitText()` 提交文本（支持替换轮换），`revokeCommit()` 撤销最近输入，`insertPairedSymbols()` 插入配对符号，`moveCursor()` 移动光标，`selectRange()` 扩展选区，`performEdit()` 执行编辑动作，`getText()` 和 `getSelection()` 读取编辑器状态。所有方法在主线程调用以保证线程安全。`getText()` 和 `getSelection()` 是桥梁实现从目标编辑器读取状态的唯二方法，引擎在需要获取编辑器当前文本和选区信息时调用这两个方法。
 
-### 3.1 BaseImeOutputBridge 抽象基类
+### 3.1 BaseImeEditorBridge 抽象基类
 
-`BaseImeOutputBridge` 提供单快照撤销机制的抽象基类，减少子类的实现负担。撤销机制采用单快照设计（而非栈），反映了 IME 的使用模式——用户通常只需撤销最近一次输入。快照记录提交前后的选区状态，使得撤销时可以精确恢复到操作前的文本和光标位置。
+`BaseImeEditorBridge` 提供单快照撤销机制的抽象基类，减少子类的实现负担。撤销机制采用单快照设计（而非栈），反映了 IME 的使用模式——用户通常只需撤销最近一次输入。快照记录提交前后的选区状态，使得撤销时可以精确恢复到操作前的文本和光标位置。
 
 ```kotlin
-abstract class BaseImeOutputBridge : ImeOutputBridge {
+abstract class BaseImeEditorBridge : ImeEditorBridge {
 
     private data class SelectionSnapshot(
         val beforeStart: Int,
@@ -256,7 +256,7 @@ abstract class BaseImeOutputBridge : ImeOutputBridge {
 ```kotlin
 class InputConnectionBridge(
     private val targetSupplier: () -> InputConnection?
-) : BaseImeOutputBridge() {
+) : BaseImeEditorBridge() {
 
     override fun doNormalCommitText(text: String) {
         resetRevertion()
@@ -388,7 +388,7 @@ class InputConnectionBridge(
 ```kotlin
 class EditTextBridge(
     private val targetSupplier: () -> EditText?
-) : BaseImeOutputBridge() {
+) : BaseImeEditorBridge() {
 
     override fun doNormalCommitText(text: String) {
         resetRevertion()
@@ -511,16 +511,16 @@ class EditTextBridge(
 
 `EditTextBridge` 直接操作 `EditText` 的 `Editable` 文本接口，提供了比 `InputConnection` 更精细的文本操控能力。`doNormalCommitText()` 使用 `Editable.replace()` 替换当前选区文本，自动处理选区重叠和文本长度变化。替换轮换逻辑（`doReplaceableCommitText()`）通过 `substring()` 获取光标前文本进行检查，匹配时使用 `replace()` 执行替换。配对符号插入时，若无选中文本，插入左右符号后通过 `setSelection()` 将光标置于两者之间；若有选中文本，将选中文本包裹在左右符号之间。编辑动作的实现使用 `EditText` 的原生 API（`selectAll()`、`ClipboardManager` 等），`UNDO` 和 `REDO` 动作为空操作（`EditText` 无内置撤销/重做支持）。收藏功能独立于编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`，无需在桥梁中处理。
 
-`EditTextBridge` 适用于应用内嵌入输入法的场景——例如应用内有一个自定义的文本编辑器，需要使用筷字输入法的引擎能力，但不通过系统 IME 服务。在这种场景下，`EditTextBridge` 将引擎的输出指令直接映射到 `EditText` 的文本操作，无需经过 `InputConnection` 的中转层。两个桥梁实现的选择由宿主模块决定：`:app` 模块中的 `IMEService` 使用 `InputConnectionBridge`，`:ime-ui` 模块中的嵌入式输入组件使用 `EditTextBridge`。
+`EditTextBridge` 适用于应用内嵌入输入法的场景——例如应用内有一个自定义的文本编辑器，需要使用筷字输入法的引擎能力，但不通过系统 IME 服务。在这种场景下，`EditTextBridge` 将引擎的编辑动作直接映射到 `EditText` 的文本操作，无需经过 `InputConnection` 的中转层。两个桥梁实现的选择由宿主模块决定：`:app` 模块中的 `IMEService` 使用 `InputConnectionBridge`，`:ime-ui` 模块中的嵌入式输入组件使用 `EditTextBridge`。
 
 ---
 
 ## 6. 数据流转全景图
 
-引擎的数据流由三条核心通道构成：Intent 通道（用户操作 → 引擎处理）、State 通道（引擎状态 → UI 渲染）、Output 通道（引擎输出 → 目标编辑器）。三条通道通过 `ImeEngine` 的 `handleIntent()` 方法串联，形成严格的单向数据流。此外还有 Effect 通道（一次性效果 → UI 消费），与 State 通道并行但语义不同——State 表达持续性状态，Effect 表达一次性事件。
+引擎的数据流由三条核心通道构成：Intent 通道（用户操作 → 引擎处理）、State 通道（引擎状态 → UI 渲染）、EditorAction 通道（引擎编辑动作 → 目标编辑器）。三条通道通过 `ImeEngine` 的 `handleIntent()` 方法串联，形成严格的单向数据流。此外还有 Effect 通道（一次性效果 → UI 消费），与 State 通道并行但语义不同——State 表达持续性状态，Effect 表达一次性事件。
 
 ```plantuml
-@file:../diagrams/engine-output-bridge.puml
+@file:../diagrams/engine-editor-action-bridge.puml
 ```
 
 ### 6.1 完整数据流路径
@@ -536,20 +536,20 @@ class EditTextBridge(
    - Step 2：`KeyboardStateMachine` 执行状态转换 → 新 `KeyboardState` + `sideEffects`
    - Step 3：处理 `sideEffects`（异步意图如字典查询）
    - Step 4：通过 `copy()` 模式更新 `ImeState`
-   - Step 5：分发 `ImeOutput` 到 `ImeOutputBridge`
+   - Step 5：分发 `EditorAction` 到 `ImeEditorBridge`
    - Step 6：发射 `ImeEffect` 到 `SharedFlow`
 
 4. **State 通道**：新 `ImeState` 通过 `StateFlow<ImeState>` 原子更新，UI 层通过 `collectAsState()` 订阅状态驱动 Compose 重组。状态更新是即时且持续的——订阅者始终读取到最新的完整状态快照。
 
-5. **Output 通道**：`ImeOutput` 由 `dispatchToTarget()` 统一分发到 `ImeOutputBridge`，桥梁实现将语义操作翻译为平台特定 API 调用。输出通道承担所有对目标编辑器的操作——提交文本、移动光标、插入配对符号、执行编辑动作等。
+5. **EditorAction 通道**：`EditorAction` 由 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`，桥梁实现将语义操作翻译为平台特定 API 调用。编辑动作通道承担所有对目标编辑器的操作——提交文本、移动光标、插入配对符号、执行编辑动作等。
 
 6. **Effect 通道**：`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，UI 层收集后立即消费。一次性效果（弹出提示、音效播放、确认对话框）通过此通道传递，消费后即丢弃，不存在状态清理和重复消费问题。
 
-### 6.2 Intent/Output 映射关系
+### 6.2 Intent/EditorAction 映射关系
 
-每种 `ImeIntent` 在引擎处理过程中可能产生零到多个 `ImeOutput`，映射关系如下：
+每种 `ImeIntent` 在引擎处理过程中可能产生零到多个 `EditorAction`，映射关系如下：
 
-| `ImeIntent` | 产生的 `ImeOutput` | 说明 |
+| `ImeIntent` | 产生的 `EditorAction` | 说明 |
 |---|---|---|
 | `PressKey` (拼音字符) | `CommitText` | 确认候选词后提交文本 |
 | `SelectCandidate` | `CommitText` | 选中候选词后提交文本 |
@@ -559,14 +559,43 @@ class EditTextBridge(
 | `MoveCursorTo` | `MoveCursor` | 移动光标到指定位置 |
 | `PerformEdit` | `PerformEdit` | 执行编辑动作 |
 | `PasteClip` | `CommitText` | 粘贴剪贴板内容 |
-| `SwitchKeyboard` | 无 `ImeOutput` | 仅状态变更，无编辑器操作 |
-| `PageCandidate` | 无 `ImeOutput` | 仅分页变更，无编辑器操作 |
-| `UpdateConfig` | 无 `ImeOutput` | 仅配置变更，无编辑器操作 |
+| `SwitchKeyboard` | 无 `EditorAction` | 仅状态变更，无编辑器操作 |
+| `PageCandidate` | 无 `EditorAction` | 仅分页变更，无编辑器操作 |
+| `UpdateConfig` | 无 `EditorAction` | 仅配置变更，无编辑器操作 |
 
-映射关系体现了引擎的设计原则：**仅编辑器操作产生 `ImeOutput`，纯状态变更不产生输出**。键盘切换、候选翻页、配置变更等操作仅影响引擎内部状态，不向目标编辑器发送任何指令，避免了不必要的编辑器干扰。
+映射关系体现了引擎的设计原则：**仅编辑器操作产生 `EditorAction`，纯状态变更不产生输出**。键盘切换、候选翻页、配置变更等操作仅影响引擎内部状态，不向目标编辑器发送任何指令，避免了不必要的编辑器干扰。
 
 ### 6.3 桥梁选择与注册
 
-`ImeOutputBridge` 的注册由宿主模块在创建 `ImeEngine` 后执行：`:app` 模块通过 `engine.attachOutputBridge(InputConnectionBridge { currentInputConnection })` 注册系统输入连接桥梁，`:ime-ui` 模块通过 `engine.attachOutputBridge(EditTextBridge { currentEditText })` 注册编辑框桥梁。桥梁在引擎运行期间可以动态切换——`detachOutputBridge()` 注销当前桥梁，`attachOutputBridge()` 注册新桥梁。引擎在分发 `ImeOutput` 时检查桥梁是否存在：若存在则调用对应的语义方法，若不存在则静默忽略。这种设计允许引擎在没有桥梁的情况下正常运行（例如纯逻辑测试场景），输出操作被自动跳过。
+`ImeEditorBridge` 的注册由宿主模块在创建 `ImeEngine` 后执行：`:app` 模块通过 `engine.attachEditorBridge(InputConnectionBridge { currentInputConnection })` 注册系统输入连接桥梁，`:ime-ui` 模块通过 `engine.attachEditorBridge(EditTextBridge { currentEditText })` 注册编辑框桥梁。多个桥梁可以同时挂载——引擎将 `EditorAction` 分发到所有已挂载的桥梁，每个桥梁独立接收相同的编辑动作。`detachEditorBridge(bridge)` 注销指定的桥梁，`attachEditorBridge(bridge)` 注册新桥梁。若 `ImeEngine` 的 `_editorBridges` 为空，分发被静默跳过。这种设计允许引擎在没有桥梁的情况下正常运行（例如纯逻辑测试场景），编辑动作被自动跳过。
 
-第三方应用可以创建自定义桥梁实现，将 IME 引擎接入任意编辑器目标：简单场景直接实现 `ImeOutputBridge` 接口，需要撤销支持则继承 `BaseImeOutputBridge`。接口保持最小化和平台无关，新增桥梁无需理解引擎内部类型——引擎内部的 `ImeOutput` 类型体系通过 `dispatchToTarget()` 翻译为桥梁的语义方法调用，桥梁实现者只需关注「做什么」，无需理解引擎内部的输出类型分发逻辑。
+```kotlin
+class ImeEngine internal constructor(
+    private var config: ImeConfig,
+    private val dictProvider: ImeDictProvider,
+    private val stateMachine: KeyboardStateMachine,
+    private val inputListOp: InputListOperator,
+    private val featureRegistry: FeatureRegistry,
+) {
+    private val _state = MutableStateFlow(ImeState())
+    val state: StateFlow<ImeState> = _state.asStateFlow()
+
+    private val _effect = MutableSharedFlow<ImeEffect>(extraBufferCapacity = 16)
+    val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
+
+    private val _editorBridges = mutableListOf<ImeEditorBridge>()
+
+    fun attachEditorBridge(bridge: ImeEditorBridge) { ... }
+    fun detachEditorBridge(bridge: ImeEditorBridge) { ... }
+    fun handleIntent(intent: ImeIntent) { ... }
+    fun updateConfig(block: (ImeConfig) -> ImeConfig) { ... }
+
+    companion object {
+        fun create(config: ImeConfig = ImeConfig(), dictProvider: ImeDictProvider): ImeEngine
+    }
+}
+```
+
+`dispatchEditorAction()` 遍历 `_editorBridges` 中的所有桥梁，对每个桥梁调用与 `EditorAction` 子类型对应的语义方法。若 `_editorBridges` 为空，分发被静默跳过。多个桥梁独立运作——每个桥梁独立接收相同的 `EditorAction` 分发，互不干扰。第三方应用可以挂载多个桥梁，将同一引擎的编辑动作同时分发到不同的编辑器目标。
+
+第三方应用可以创建自定义桥梁实现，将 IME 引擎接入任意编辑器目标：简单场景直接实现 `ImeEditorBridge` 接口，需要撤销支持则继承 `BaseImeEditorBridge`。接口保持最小化和平台无关，新增桥梁无需理解引擎内部类型——引擎内部的 `EditorAction` 类型体系通过 `dispatchEditorAction()` 翻译为桥梁的语义方法调用，桥梁实现者只需关注「做什么」，无需理解引擎内部的动作类型分发逻辑。

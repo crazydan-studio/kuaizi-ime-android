@@ -146,7 +146,7 @@ sealed class KeyboardStateTransition {
 
 ### 2.2 Result 副作用机制
 
-`Result` 的 `sideEffects` 字段是状态转换产生的副作用意图列表，包含需要异步处理的操作（如字典查询、音频播放、输出桥接等）。`KeyboardStateMachine` 本身是纯函数式的——`transition()` 方法根据当前状态和转换类型计算新状态与副作用列表，不直接执行任何副作用。副作用列表由 `ImeEngine` 在获得 `Result` 后异步处理，确保状态计算与副作用执行的解耦。`Result` 作为 `KeyboardStateTransition` 的嵌套类型，表达转换与结果之间的归属关系，使得调用方可以清晰地从类型签名中识别返回值的来源。
+`Result` 的 `sideEffects` 字段是状态转换产生的副作用意图列表，包含需要异步处理的操作（如字典查询、音频播放、编辑器桥接等）。`KeyboardStateMachine` 本身是纯函数式的——`transition()` 方法根据当前状态和转换类型计算新状态与副作用列表，不直接执行任何副作用。副作用列表由 `ImeEngine` 在获得 `Result` 后异步处理，确保状态计算与副作用执行的解耦。`Result` 作为 `KeyboardStateTransition` 的嵌套类型，表达转换与结果之间的归属关系，使得调用方可以清晰地从类型签名中识别返回值的来源。
 
 ---
 
@@ -320,7 +320,7 @@ Emoji 选择键盘，提供分组浏览和翻页选择 Emoji 的能力。
 
 | `ImeIntent` | 处理流程 | 产生的 `KeyboardStateTransition` |
 |-------------|---------|-------------------------------|
-| `PressKey(CtrlKey.Edit_Editor)` | 执行编辑操作（复制、粘贴等） | 不产生 Transition，通过 `ImeOutput` 输出 |
+| `PressKey(CtrlKey.Edit_Editor)` | 执行编辑操作（复制、粘贴等） | 不产生 Transition，通过 `EditorAction` 输出 |
 | `LongPressKey(CtrlKey.Editor_Cursor_Locator)` | 进入范围选择编辑 | `SelectText` |
 | `FingerMoving_Start`（光标定位按键） | 进入光标移动编辑 | `MoveCursor` |
 
@@ -684,7 +684,7 @@ ImeIntent → KeyboardStateTransition → KeyboardState
 
 ### 8.3 第三层：副作用执行
 
-由 `ImeEngine` 异步处理副作用列表中的 `ImeIntent`，如字典查询、音频播放、输出桥接等。`KeyboardStateMachine.transition()` 返回的 `Result.sideEffects` 由 `ImeEngine` 逐一处理——每个副作用 `ImeIntent` 再次进入 `handleIntent()` 流程，可能触发新的状态转换或异步操作。这种递归处理机制使得状态机可以在一次转换中表达需要链式执行的副作用序列，同时保持状态转换本身的纯函数性质。
+由 `ImeEngine` 异步处理副作用列表中的 `ImeIntent`，如字典查询、音频播放、编辑器桥接等。`KeyboardStateMachine.transition()` 返回的 `Result.sideEffects` 由 `ImeEngine` 逐一处理——每个副作用 `ImeIntent` 再次进入 `handleIntent()` 流程，可能触发新的状态转换或异步操作。这种递归处理机制使得状态机可以在一次转换中表达需要链式执行的副作用序列，同时保持状态转换本身的纯函数性质。
 
 ### 8.4 三层映射的优势
 

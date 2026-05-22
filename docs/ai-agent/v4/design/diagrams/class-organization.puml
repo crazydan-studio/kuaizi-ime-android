@@ -22,8 +22,8 @@ package ":ime-engine" #FFF3E0 {
       + state: StateFlow<ImeState>
       + handleIntent(intent: ImeIntent)
       + updateConfig(block)
-      + attachOutputBridge(bridge)
-      + detachOutputBridge()
+      + attachEditorBridge(bridge)
+      + detachEditorBridge(bridge)
       + create(config, dictProvider): ImeEngine
     }
     class ImeConfig <<(D,#FFF3E0)>> {
@@ -41,7 +41,7 @@ package ":ime-engine" #FFF3E0 {
       {static} PerformEdit(action)
       {static} UpdateConfig(config)
     }
-    class ImeOutput <<(S,#FFF3E0)>> {
+    class EditorAction <<(S,#FFF3E0)>> {
       {static} CommitText(text, replacements)
       {static} RevokeCommit
       {static} InsertPairedSymbols(left, right)
@@ -62,7 +62,7 @@ package ":ime-engine" #FFF3E0 {
   }
 
   package "engine.output" {
-    interface ImeOutputBridge <<(I,#FFF3E0)>> {
+    interface ImeEditorBridge <<(I,#FFF3E0)>> {
       + commitText(text, replacements?)
       + revokeCommit()
       + insertPairedSymbols(left, right)
@@ -72,7 +72,7 @@ package ":ime-engine" #FFF3E0 {
       + getText(): CharSequence
       + getSelection(): TextRange
     }
-    abstract class BaseImeOutputBridge <<(A,#FFF3E0)>> {
+    abstract class BaseImeEditorBridge <<(A,#FFF3E0)>> {
       # revertion: SelectionSnapshot?
       # resetRevertion()
       # recordRevertion(...)
@@ -488,8 +488,8 @@ package ":app" #E3F2FD {
 
 ' ==================== 关键关系 ====================
 
-BaseImeOutputBridge <|-- InputConnectionBridge : :app
-BaseImeOutputBridge <|-- EditTextBridge : :ime-ui
+BaseImeEditorBridge <|-- InputConnectionBridge : :app
+BaseImeEditorBridge <|-- EditTextBridge : :ime-ui
 InputActionPositionResolver <|.. ComposeInputActionPositionResolver : :ime-ui
 
 ImeEngine *-- KeyboardStateMachine

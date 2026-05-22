@@ -1,10 +1,10 @@
-@startuml engine-output-bridge
+@startuml engine-editor-action-bridge
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam classAttributeIconSize 0
 skinparam defaultFontSize 11
 
-title 输出桥接模式
+title 编辑动作与桥接模式
 
 legend right
   |= 模块 |= 颜色 |= 说明 |
@@ -14,10 +14,10 @@ legend right
   | 第三方 | <#F5F5F5> | 自定义实现 |
 endlegend
 
-' ===== ImeOutput =====
+' ===== EditorAction =====
 package ":ime-engine" #FFF3E0 {
 
-  class ImeOutput <<(S,#FFF3E0)>> {
+  class EditorAction <<(S,#FFF3E0)>> {
     + timestamp: Long
     --
     CommitText(text, replacements?)
@@ -30,13 +30,13 @@ package ":ime-engine" #FFF3E0 {
 
   class ImeEngine <<(C,#FFF3E0)>> {
     + handleIntent(intent)
-    - dispatchToTarget(output)
-    - _outputBridge: ImeOutputBridge?
-    + attachOutputBridge(bridge)
-    + detachOutputBridge()
+    - dispatchEditorAction(action)
+    - _editorBridges: MutableList<ImeEditorBridge>
+    + attachEditorBridge(bridge)
+    + detachEditorBridge(bridge)
   }
 
-  interface ImeOutputBridge <<(I,#FFF3E0)>> {
+  interface ImeEditorBridge <<(I,#FFF3E0)>> {
     + commitText(text, replacements?)
     + revokeCommit()
     + insertPairedSymbols(left, right)
@@ -47,7 +47,7 @@ package ":ime-engine" #FFF3E0 {
     + getSelection(): TextRange
   }
 
-  abstract class BaseImeOutputBridge <<(A,#FFF3E0)>> {
+  abstract class BaseImeEditorBridge <<(A,#FFF3E0)>> {
     - revertion: SelectionSnapshot?
     # resetRevertion()
     # recordRevertion(...)
@@ -56,7 +56,7 @@ package ":ime-engine" #FFF3E0 {
     # doReplaceableCommitText(text, replacements)
   }
 
-  note right of BaseImeOutputBridge
+  note right of BaseImeEditorBridge
     **撤销机制 (单快照)**
     - 仅支持撤销最近一次可撤回输入
     - 记录提交前后的选区快照
@@ -114,24 +114,24 @@ package "第三方扩展" #F5F5F5 {
     (Web编辑器/游戏引擎/终端)
   }
   note right of CustomBridge
-    简单场景: 直接实现 ImeOutputBridge
-    需要撤销: 继承 BaseImeOutputBridge
+    简单场景: 直接实现 ImeEditorBridge
+    需要撤销: 继承 BaseImeEditorBridge
   end note
 }
 
 ' ===== 关系 =====
-ImeEngine --> ImeOutput : 生成
-ImeEngine --> ImeOutputBridge : dispatchToTarget()
+ImeEngine --> EditorAction : 生成
+ImeEngine --> ImeEditorBridge : dispatchEditorAction()
 
-ImeOutputBridge <|-- BaseImeOutputBridge : 抽象实现
-BaseImeOutputBridge <|-- InputConnectionBridge : :app
-BaseImeOutputBridge <|-- EditTextBridge : :ime-ui
-ImeOutputBridge <|.. CustomBridge : 第三方
+ImeEditorBridge <|-- BaseImeEditorBridge : 抽象实现
+BaseImeEditorBridge <|-- InputConnectionBridge : :app
+BaseImeEditorBridge <|-- EditTextBridge : :ime-ui
+ImeEditorBridge <|.. CustomBridge : 第三方
 
 ' ===== 分发流程 =====
 note left of ImeEngine
-  **dispatchToTarget() 分发流程**
-  when(output) {
+  **dispatchEditorAction() 分发流程**
+  when(action) {
     is CommitText -> bridge.commitText(text, replacements)
     is RevokeCommit -> bridge.revokeCommit()
     is InsertPairedSymbols -> bridge.insertPairedSymbols(left, right)

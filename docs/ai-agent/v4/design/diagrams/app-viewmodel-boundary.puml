@@ -114,9 +114,9 @@ package ":ime-engine 模块" #FFF3E0 {
     + state: StateFlow<ImeState>
     + handleIntent(intent)
     + updateConfig(block)
-    + attachOutputBridge(bridge)
+    + attachEditorBridge(bridge)
   }
-  interface ImeOutputBridge {
+  interface ImeEditorBridge {
     + commitText / revokeCommit / ...
   }
 }
@@ -124,7 +124,7 @@ package ":ime-engine 模块" #FFF3E0 {
 ' ===== 交互关系 =====
 
 IMEService --> ImeEngine : 创建\nImeEngine.create(config, dictProvider)
-IMEService --> InputConnectionBridge : 创建并挂载\nengine.attachOutputBridge(bridge)
+IMEService --> InputConnectionBridge : 创建并挂载\nengine.attachEditorBridge(bridge)
 IMEService --> KeyboardViewModel : 注入\nKeyboardViewModel.Factory(engine)
 
 KeyboardViewModel --> ImeEngine : 持有引用\nhandleIntent() / state / updateConfig()
@@ -134,8 +134,8 @@ KeyboardViewModel *-- InputActionPlayer : 集成
 KeyboardHost --> KeyboardViewModel : viewModel
 KeyboardInputActionPlayerHost --> KeyboardViewModel : viewModel
 
-InputConnectionBridge -up-|> ImeOutputBridge : 实现 [:app]
-EditTextBridge -up-|> ImeOutputBridge : 实现 [:ime-ui]
+InputConnectionBridge -up-|> ImeEditorBridge : 实现 [:app]
+EditTextBridge -up-|> ImeEditorBridge : 实现 [:ime-ui]
 
 ' ===== 数据流标注 =====
 

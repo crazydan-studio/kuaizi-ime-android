@@ -8,7 +8,7 @@
 
 | 模块 | 命名规则 | 示例 |
 |------|----------|------|
-| `:ime-engine` | 公开 class 以 `Ime` 为前缀 | `ImeEngine`, `ImeConfig`, `ImeOutput`, `ImeState`, `ImeIntent`, `ImeOutputBridge` |
+| `:ime-engine` | 公开 class 以 `Ime` 为前缀 | `ImeEngine`, `ImeConfig`, `EditorAction`, `ImeState`, `ImeIntent`, `ImeEditorBridge` |
 | `:ime-ui` | 不使用 `Ime` 前缀，贴近 UI 业务命名 | `KeyboardHost`, `EditTextBridge`, `GestureFeedbackPanel`, `CandidateListPanel` |
 | `:app` | 不使用 `Ime` 前缀，贴近应用业务命名 | `IMEService`, `ConfigDataStore`, `InputConnectionBridge` |
 
@@ -31,7 +31,7 @@
 
 ### 1.3 app 模块
 
-Android 系统服务类沿用平台命名惯例（如 `IMEService`），配置类使用职能名称（如 `ConfigDataStore`），桥接类使用目标对象 + Bridge 后缀命名（如 `InputConnectionBridge`），实现 ImeOutputBridge 接口。页面以 `Screen` 为后缀（如 `SettingsScreen`、`MainScreen`）。
+Android 系统服务类沿用平台命名惯例（如 `IMEService`），配置类使用职能名称（如 `ConfigDataStore`），桥接类使用目标对象 + Bridge 后缀命名（如 `InputConnectionBridge`），实现 ImeEditorBridge 接口。页面以 `Screen` 为后缀（如 `SettingsScreen`、`MainScreen`）。
 
 ---
 
@@ -53,7 +53,7 @@ Android 系统服务类沿用平台命名惯例（如 `IMEService`），配置�
 | 类型 | 命名 | 说明 |
 |------|------|------|
 | Intent | `ImeIntent.PerformEdit(EditorEditAction)` | 不是 `ImeIntent.EditorEditAction(EditorActionType)` |
-| Output | `ImeOutput.PerformEdit(EditorEditAction)` | PerformEdit 与 Output 对称使用同一 `EditorEditAction` 枚举 |
+| Output | `EditorAction.PerformEdit(EditorEditAction)` | PerformEdit 与 EditorAction 对称使用同一 `EditorEditAction` 枚举 |
 | 手势输入 | `ImeEngine.handleGesture(InputGesture)` | 不是 `onKeyPress` / `handleKeyPress` |
 | 意图处理 | `ImeEngine.handleIntent(ImeIntent)` | 直接发送意图 |
 
@@ -105,14 +105,14 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 |----------|---------|---------|
 | `ImeConfig` | `ImeEngineConfig` | `Ime` 前缀已表达归属，无需冗余 `Engine` |
 | `EditorEditAction` | `EditorActionType` | 枚举命名不带 `Type` 后缀，Kotlin 惯例 |
-| `ImeOutput.PerformEdit` | `ImeOutput.EditAction` | `PerformEdit` 与 `ImeIntent.PerformEdit` 对称 |
+| `EditorAction.PerformEdit` | `EditorAction.EditAction` | `PerformEdit` 与 `ImeIntent.PerformEdit` 对称 |
 
 ### 5.3 桥接与输出
 
 | 选用名称 | 替代方案 | 选择理由 |
 |----------|---------|---------|
-| `EditTextBridge` | `EditorField`, `ImeEditText`, `ImeSupportEditText` | `Bridge` 后缀与 `ImeOutputBridge` 一致；`EditText` 明确桥接目标 |
-| `BaseImeOutputBridge` 内部管理撤销状态 | `EditorState` | 撤销状态为桥接实现细节，不独立暴露 |
+| `EditTextBridge` | `EditorField`, `ImeEditText`, `ImeSupportEditText` | `Bridge` 后缀与 `ImeEditorBridge` 一致；`EditText` 明确桥接目标 |
+| `BaseImeEditorBridge` 内部管理撤销状态 | `EditorState` | 撤销状态为桥接实现细节，不独立暴露 |
 
 ### 5.4 输入动作程序化
 

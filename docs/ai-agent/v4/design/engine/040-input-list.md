@@ -176,11 +176,11 @@ data class PairSymbol(
 )
 ```
 
-`open` 字段为配对符号的左半部分（如 `(`、`[`、`"`、`'`），`close` 字段为右半部分（如 `)`、`]`、`"`、`'`），`content` 字段为左右符号之间的可选内容。`content` 为 `null` 表示配对符号内部为空——用户输入左符号后，引擎通过 `ImeOutput.InsertPairedSymbols` 输出左右符号并将游标置于两者之间。`content` 非空表示配对符号包裹了已有文本——用户选中文本后输入左符号，引擎将选中内容包裹在配对符号内。
+`open` 字段为配对符号的左半部分（如 `(`、`[`、`"`、`'`），`close` 字段为右半部分（如 `)`、`]`、`"`、`'`），`content` 字段为左右符号之间的可选内容。`content` 为 `null` 表示配对符号内部为空——用户输入左符号后，引擎通过 `EditorAction.InsertPairedSymbols` 输出左右符号并将游标置于两者之间。`content` 非空表示配对符号包裹了已有文本——用户选中文本后输入左符号，引擎将选中内容包裹在配对符号内。
 
-配对符号的插入流程由 `ImeEngine` 的 `reduce` 函数处理：当 `InputItem.Char` 的 `hasPair` 为 `true` 时，引擎在追加 `Char` 到 `InputList` 后，额外产生一个 `ImeOutput.InsertPairedSymbols` 输出，通过 `ImeOutputBridge.insertPairedSymbols(left, right)` 在目标编辑器中插入成对符号。若目标编辑器中存在选中文本，`ImeOutputBridge` 实现将选中文本包裹在左右符号之间；若无选中文本，插入左右符号并将游标置于两者之间。
+配对符号的插入流程由 `ImeEngine` 的 `reduce` 函数处理：当 `InputItem.Char` 的 `hasPair` 为 `true` 时，引擎在追加 `Char` 到 `InputList` 后，额外产生一个 `EditorAction.InsertPairedSymbols` 输出，通过 `ImeEditorBridge.insertPairedSymbols(left, right)` 在目标编辑器中插入成对符号。若目标编辑器中存在选中文本，`ImeEditorBridge` 实现将选中文本包裹在左右符号之间；若无选中文本，插入左右符号并将游标置于两者之间。
 
-`PairSymbol` 的常见配置包括：圆括号 `(` `)`、方括号 `[` `]`、花括号 `{` `}`、双引号 `"` `"`、单引号 `'` `'`、书名号 `《` `》`、双书名号 `〈` `〉` 等。中英文标点符号的配对规则不同——中文标点使用全角字符，英文标点使用半角字符，引擎根据当前键盘类型和 `ImeConfig` 的标点配置选择合适的配对字符集。配对符号的插入不受 `InputListEditor` 撤销机制的单快照约束——`BaseImeOutputBridge` 在插入配对符号时调用 `resetRevertion()` 清空撤销快照，因为配对符号涉及两个插入点，无法简单地通过单次撤销恢复。
+`PairSymbol` 的常见配置包括：圆括号 `(` `)`、方括号 `[` `]`、花括号 `{` `}`、双引号 `"` `"`、单引号 `'` `'`、书名号 `《` `》`、双书名号 `〈` `〉` 等。中英文标点符号的配对规则不同——中文标点使用全角字符，英文标点使用半角字符，引擎根据当前键盘类型和 `ImeConfig` 的标点配置选择合适的配对字符集。配对符号的插入不受 `InputListEditor` 撤销机制的单快照约束——`BaseImeEditorBridge` 在插入配对符号时调用 `resetRevertion()` 清空撤销快照，因为配对符号涉及两个插入点，无法简单地通过单次撤销恢复。
 
 ---
 
@@ -336,7 +336,7 @@ object InputGapSpacing {
 
 4. **数字序列内部**：不需要间隔。连续的数字构成一个数值，数值内部不应出现游标停留点。例如输入 `"123"` 时，数字之间没有 `Gap`。
 
-5. **配对符号内部（无内容）**：不需要间隔。当用户输入左符号后，左右符号之间自动插入的空位由 `ImeOutputBridge.insertPairedSymbols()` 管理，不需要 `InputList` 层面的 `Gap`。
+5. **配对符号内部（无内容）**：不需要间隔。当用户输入左符号后，左右符号之间自动插入的空位由 `ImeEditorBridge.insertPairedSymbols()` 管理，不需要 `InputList` 层面的 `Gap`。
 
 6. **异种字符之间**：需要间隔。不同类型的字符之间（如中文字与英文字母、数字与标点符号等）始终插入 `Gap`，因为异种字符之间存在语义边界，用户可能需要在此位置进行编辑操作。
 

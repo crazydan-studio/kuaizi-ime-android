@@ -47,9 +47,9 @@ v4 版本将筷字输入法设计为三层库架构，支持其他程序以库�
 
 引擎库的核心模型定义了 `:ime-engine` 与 `:ime-ui`、`:app` 之间的核心契约，包括：
 
-- **ImeEngine**：引擎核心入口点，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeOutputBridge` 输出编辑指令
+- **ImeEngine**：引擎核心入口点，通过 `StateFlow` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeEditorBridge` 分发编辑动作
 - **ImeConfig**：统一运行时配置，含引擎配置（`EngineConfig`）和 UI 配置（`UiConfig`）的明确隔离
-- **ImeOutput**：引擎编辑输出的 sealed class 表达，由引擎统一分发到桥梁
+- **EditorAction**：引擎编辑动作的 sealed class 表达，由引擎统一分发到桥梁
 - **ImeIntent**：用户意图的 sealed class 表达，所有用户操作统一为 Intent
 - **ImeState 子状态类型**：`InputList`、`CandidateList`、`Clipboard`、`FavoriteList` 等
 - **KeyboardType**：键盘内容类型枚举（Pinyin/Latin/Symbol/Emoji/Number/Math/Editor/Candidate/CommitOption），决定按键集合的语义内容
@@ -63,8 +63,8 @@ v4 版本将筷字输入法设计为三层库架构，支持其他程序以库�
 
 UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方应用开放，遵循「缺省实现、可替换、可组合、可定制」四大设计原则。UI 库提供从原子组件（KeyView、CandidateItem）到面板组件（GestureInputPanel、KeyLayoutPanel、CandidateListPanel）再到集成组件（KeyboardHost）的完整组件层次，以及 `KeyboardViewModel` 作为 UI 协调中心和主题系统。输入练习 UI 层（`ExerciseScreen`）属于 `:app` 模块，`InputActionPlayerPanel` 属于 `:ime-ui` 模块的集成组件。
 
-**输出桥接机制**（ImeOutputBridge 桥接模式）是引擎与目标编辑器之间的核心架构模式：引擎内部统一执行 `when(ImeOutput)` 分发，桥梁实现者只需实现语义方法。`ImeOutputBridge` 接口和 `BaseImeOutputBridge` 抽象类定义在 `:ime-engine`，`InputConnectionBridge`（系统输入连接）实现在 `:app`，`EditTextBridge`（EditText 类型）实现在 `:ime-ui`。
+**编辑器桥接机制**（ImeEditorBridge 桥接模式）是引擎与目标编辑器之间的核心架构模式：引擎内部统一执行 `when(EditorAction)` 分发，桥梁实现者只需实现语义方法。`ImeEditorBridge` 接口和 `BaseImeEditorBridge` 抽象类定义在 `:ime-engine`，`InputConnectionBridge`（系统输入连接）实现在 `:app`，`EditTextBridge`（EditText 类型）实现在 `:ime-ui`。
 
 详细设计分别见：
 - UI 库设计目标与组件清单：[010-UI 库设计总览](../ui/010-ui-library-overview.md)
-- 输出桥接机制：[060-意图、输出与桥接](../engine/060-intent-output-bridge.md)
+- 编辑器桥接机制：[060-意图、编辑动作与桥接](../engine/060-intent-editor-action-bridge.md)

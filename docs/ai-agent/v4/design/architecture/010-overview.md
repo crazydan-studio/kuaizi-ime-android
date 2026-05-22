@@ -25,7 +25,7 @@ v4 采用三层库架构：引擎库（`:ime-engine`）、UI 库（`:ime-ui`）�
 ├─────────────────────────────────────────────────────────────────┤
 │                       Domain Layer     ← :ime-engine 库          │
 │  ImeEngine / Keyboard / InputList / Inputboard / Favoriteboard  │
-│  ImeOutputBridge / BaseImeOutputBridge                          │
+│  ImeEditorBridge / BaseImeEditorBridge                          │
 │  ImeLog / ImeLogger / LogLevel / LogEntry / LogWriter / LogStorage│
 │  (逻辑层与 UI/应用分离，第三方可定制 UI 与交互)       │
 ├─────────────────────────────────────────────────────────────────┤
@@ -57,7 +57,7 @@ v4 采用 MVI（Model-View-Intent）架构，核心数据流如下：
 - **ImeIntent**：用户意图的 sealed class 表达。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)
 - **ImeState**：不可变状态 data class，通过 StateFlow 自动传播到 UI。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)
 - **三层面板分离**：GestureInputPanel（手势拦截层）→ GestureFeedbackPanel（反馈绘制层）→ KeyLayoutPanel（按键渲染层）。完整设计见 [020-面板三层分离设计](../ui/020-panel-separation.md)
-- **ImeOutput**：引擎输出 sealed class，通过 ImeOutputBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)，桥接机制见 [060-意图、输出与桥接](../engine/060-intent-output-bridge.md)
+- **EditorAction**：引擎编辑动作 sealed class，通过 ImeEditorBridge 语义化分派到具体编辑器。引擎内部统一执行 when 分发，桥梁实现者只需实现语义方法。完整定义见 [010-引擎库设计总览](../engine/010-engine-overview.md)，桥接机制见 [060-意图、编辑动作与桥接](../engine/060-intent-editor-action-bridge.md)
 
 ### 2.1 按键输入完整流程
 
@@ -92,9 +92,9 @@ v4 采用 MVI（Model-View-Intent）架构，核心数据流如下：
    ↓
 3. reduce 提取 inputList 的文本
    ↓
-4. 通过 ImeOutputBridge.commitText() 提交到编辑器（桥梁由 :app 的 IMEService 挂载）
+4. 通过 ImeEditorBridge.commitText() 提交到编辑器（桥梁由 :app 的 IMEService 挂载）
    ↓
-5. 重置 inputList 和 candidates；引擎通过 dispatchToTarget() 自动分发到已挂载的 ImeOutputBridge
+5. 重置 inputList 和 candidates；引擎通过 dispatchEditorAction() 自动分发到已挂载的 ImeEditorBridge
    ↓
 6. 状态更新 → UI 自动刷新
 ```

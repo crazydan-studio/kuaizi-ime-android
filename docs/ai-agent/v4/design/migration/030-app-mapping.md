@@ -13,12 +13,12 @@
 | Java Class | v4 对应 | 变更说明 |
 |-----------|---------|----------|
 | `ImeIntegratedActivity` | `KeyboardHost` + `EditTextBridge` | Compose 组件 + 桥梁替代特定 Activity。应用内嵌输入法不再需要继承特定 Activity，可在 Fragment、Dialog 或自定义 View 中使用 |
-| `ImeSupportEditText` | `EditTextBridge` | 桥梁模式替代 `InputMsgListener` 实现。`EditTextBridge` 继承 `BaseImeOutputBridge`，构造时接受 `supplier: () -> EditText?` |
+| `ImeSupportEditText` | `EditTextBridge` | 桥梁模式替代 `InputMsgListener` 实现。`EditTextBridge` 继承 `BaseImeEditorBridge`，构造时接受 `supplier: () -> EditText?` |
 | `Preferences` | `SettingsScreen` | Compose 设置页面替代 `PreferenceFragmentCompat` |
 | `PreferencesTheme` | `SettingsScreen` 中的主题设置 | 合并到设置页面，不再独立子页面 |
 | `Guide` | `GuideScreen` | Compose 引导页面 |
 | `IMEService` | `IMEService`（`:app`） | 不再充当消息中介，仅管理 `InputConnection` 生命周期。创建 `ImeEngine`，接入 `InputConnectionBridge`，使用 `KeyboardHost` 作为输入视图 |
-| — | `InputConnectionBridge`（`:app`） | 新增：面向系统 `InputConnection` 的桥梁实现，继承 `BaseImeOutputBridge`。替代原 `IMEService` 中嵌入的 InputConnection 操作 |
+| — | `InputConnectionBridge`（`:app`） | 新增：面向系统 `InputConnection` 的桥梁实现，继承 `BaseImeEditorBridge`。替代原 `IMEService` 中嵌入的 InputConnection 操作 |
 | — | `ConfigDataStore`（`:app`） | 新增：配置持久化仓库，基于 DataStore 存取 `ImeConfig`。处理运行时覆盖与持久化同步。替代原 `Config` + `SharedPreferences` |
 
 ### IMEService 职责变化
@@ -27,7 +27,7 @@
 |------|----------|---------|
 | 消息路由 | UserMsg → IMEditor, InputMsg → IMEditorView | 不再路由，引擎内部通过 `reduce()` 处理 Intent |
 | InputConnection 操作 | 在 IMEService 中手动处理 | 委托 `InputConnectionBridge` |
-| 输出分发 | 手动 when 分发（2 处重复） | `ImeEngine.dispatchToTarget()` 自动分发到桥梁 |
+| 编辑动作分发 | 手动 when 分发（2 处重复） | `ImeEngine.dispatchEditorAction()` 自动分发到桥梁 |
 | 输入视图 | `MainboardView`（自定义 View） | `KeyboardHost`（Compose） |
 | 配置管理 | `Config` + `SharedPreferences` | `ConfigDataStore` + DataStore |
 
@@ -112,14 +112,14 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 
 | ImeSupportEditText 能力 | InputMsgType | v4 对应 | 变更说明 |
 |------------------------|-------------|---------|----------|
-| 提交输入文本 | `InputList_Commit_Doing` | `ImeOutputBridge.commitText()` | 桥梁语义方法 |
-| 撤销提交 | `InputList_Committed_Revoke_Doing` | `ImeOutputBridge.revokeCommit()` | 桥梁语义方法，快照机制内置 |
-| 配对符号 | `InputList_PairSymbol_Commit_Doing` | `ImeOutputBridge.insertPairedSymbols()` | 桥梁语义方法 |
-| 粘贴收藏 | `InputFavorite_Text_Commit_Doing` | `ImeOutputBridge.commitText()` | 统一到 commitText |
-| 粘贴剪贴板 | `InputClip_Text_Commit_Doing` | `ImeOutputBridge.commitText()` | 统一到 commitText |
-| 移动光标 | `Editor_Cursor_Move_Doing` | `ImeOutputBridge.moveCursor()` | 桥梁语义方法 |
-| 选择文本 | `Editor_Range_Select_Doing` | `ImeOutputBridge.selectRange()` | 桥梁语义方法 |
-| 编辑操作 | `Editor_Edit_Doing` | `ImeOutputBridge.performEdit()` | 桥梁语义方法 |
+| 提交输入文本 | `InputList_Commit_Doing` | `ImeEditorBridge.commitText()` | 桥梁语义方法 |
+| 撤销提交 | `InputList_Committed_Revoke_Doing` | `ImeEditorBridge.revokeCommit()` | 桥梁语义方法，快照机制内置 |
+| 配对符号 | `InputList_PairSymbol_Commit_Doing` | `ImeEditorBridge.insertPairedSymbols()` | 桥梁语义方法 |
+| 粘贴收藏 | `InputFavorite_Text_Commit_Doing` | `ImeEditorBridge.commitText()` | 统一到 commitText |
+| 粘贴剪贴板 | `InputClip_Text_Commit_Doing` | `ImeEditorBridge.commitText()` | 统一到 commitText |
+| 移动光标 | `Editor_Cursor_Move_Doing` | `ImeEditorBridge.moveCursor()` | 桥梁语义方法 |
+| 选择文本 | `Editor_Range_Select_Doing` | `ImeEditorBridge.selectRange()` | 桥梁语义方法 |
+| 编辑操作 | `Editor_Edit_Doing` | `ImeEditorBridge.performEdit()` | 桥梁语义方法 |
 
 ### v4 三层库架构
 
@@ -137,9 +137,9 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 
 | 维度 | Java 版本 | v4 版本 |
 |------|----------|---------|
-| 输出消费 | `EditorField` 和 `InputConnectionBridge` 各自独立实现完整的 `when(ImeOutput)` 分发，代码完全重复 | 引擎内部统一 `dispatchToTarget()` when 分发（仅一处），桥梁实现者只需实现语义方法 |
-| 第三方接入 | 必须理解 `ImeOutput` sealed class | 只需实现 `ImeOutputBridge` 接口的 6 个语义方法 |
-| 撤销机制 | 各消费方自行实现 | `BaseImeOutputBridge` 抽象类内置撤销快照机制 |
+| 输出消费 | `EditorField` 和 `InputConnectionBridge` 各自独立实现完整的 `when(EditorAction)` 分发，代码完全重复 | 引擎内部统一 `dispatchEditorAction()` when 分发（仅一处），桥梁实现者只需实现语义方法 |
+| 第三方接入 | 必须理解 `EditorAction` sealed class | 只需实现 `ImeEditorBridge` 接口的 6 个语义方法 |
+| 撤销机制 | 各消费方自行实现 | `BaseImeEditorBridge` 抽象类内置撤销快照机制 |
 
 **历史原因**：Java 版本没有独立的库模块，整个 IME 在 `:app` 中，无法作为依赖被其他项目引入。`ImeIntegratedActivity` 要求嵌入输入法必须继承特定 Activity，不够灵活。引擎与视图不分离（`IMEditorView` 直接引用 `IMEditor`），无法仅使用引擎而不引入视图层。配置硬编码 `SharedPreferences`，库的使用者无法通过代码设置配置。数据库不可替换，`IMEditorDict` 是单例且使用固定路径。v4 的三层库架构解决了所有这些问题：引擎与 UI 完全分离、数据库层可替换、功能可裁剪、配置通过代码设置。
 
@@ -153,7 +153,7 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 
 | 旧名称 | 新名称 | 变更说明 |
 |--------|--------|----------|
-| `EditorActionType` | `EditorEditAction` | 统一为单一枚举，与 ImeIntent/ImeOutput 对称使用 |
+| `EditorActionType` | `EditorEditAction` | 统一为单一枚举，与 ImeIntent/EditorAction 对称使用 |
 | `StandardKeyboard` | `StandardKeyLayoutPanel` | 去掉 `onKeyPress`，纯渲染；强调 Layout 布局特征 |
 | `KeyPanel` | `KeyLayoutPanel` | 强调 Layout 布局特征 |
 | `StandardKeyPanel` | `StandardKeyLayoutPanel` | 跟随 KeyLayoutPanel 更名 |
@@ -167,8 +167,8 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 | `Config` | `ImeConfig.UiConfig` | 应用配置合并到 ImeConfig |
 | `disable*` / `enable*` 前缀 | `*Enabled` 后缀 | 肯定式命名，如 `keyAnimationEnabled` |
 | `ImeSupportEditText` / `ImeEditText` / `EditorField` | `EditTextBridge` | 桥梁模式替代独立编辑框组件 |
-| `EditorHost` / `InputHostView` | （移除） | 替换为 ImeOutputBridge 接入示例 |
-| `EditorState` | （移除） | 撤销状态由 `BaseImeOutputBridge` 内部管理 |
+| `EditorHost` / `InputHostView` | （移除） | 替换为 ImeEditorBridge 接入示例 |
+| `EditorState` | （移除） | 撤销状态由 `BaseImeEditorBridge` 内部管理 |
 | `AppLog` / `AppLogger` | `ImeLog` / `ImeLogger` | Ime 前缀，划归 engine 模块。核心基础设施详见 [090-日志系统](../engine/090-logging.md) |
 | `LogExportActivity` | `LogExportScreen` | 页面以 Screen 为后缀，划归 app 模块。Android 日志实现与 UI 详见 [020-日志系统](../app/020-logging.md) |
 | `CandidateState` | `CandidateList` | 体现列表语义 |
@@ -176,4 +176,4 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 | `CandidatePanel` | `CandidateListPanel` | 体现列表语义 |
 | `FavoritesPanel` | `FavoriteListPanel` | 体现列表语义；单数 Favorite + ListPanel |
 | `CandidatePager` | `CandidateListPager` | 体现列表语义 |
-| `ImeOutput.EditAction` | `ImeOutput.PerformEdit` | 动作导向命名，与 `ImeIntent.PerformEdit` 对称 |
+| `EditorAction.EditAction` | `EditorAction.PerformEdit` | 动作导向命名，与 `ImeIntent.PerformEdit` 对称 |
