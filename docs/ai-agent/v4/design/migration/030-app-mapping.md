@@ -119,7 +119,7 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 | 粘贴剪贴板 | `InputClip_Text_Commit_Doing` | `ImeOutputBridge.commitText()` | 统一到 commitText |
 | 移动光标 | `Editor_Cursor_Move_Doing` | `ImeOutputBridge.moveCursor()` | 桥梁语义方法 |
 | 选择文本 | `Editor_Range_Select_Doing` | `ImeOutputBridge.selectRange()` | 桥梁语义方法 |
-| 编辑操作 | `Editor_Edit_Doing` | `ImeOutputBridge.performAction()` | 桥梁语义方法 |
+| 编辑操作 | `Editor_Edit_Doing` | `ImeOutputBridge.performEdit()` | 桥梁语义方法 |
 
 ### v4 三层库架构
 
@@ -153,7 +153,7 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 
 | 旧名称 | 新名称 | 变更说明 |
 |--------|--------|----------|
-| `EditorActionType` | `EditorAction` | 统一为单一枚举，与 ImeIntent/ImeOutput 对称使用 |
+| `EditorActionType` | `EditorEditAction` | 统一为单一枚举，与 ImeIntent/ImeOutput 对称使用 |
 | `StandardKeyboard` | `StandardKeyLayoutPanel` | 去掉 `onKeyPress`，纯渲染；强调 Layout 布局特征 |
 | `KeyPanel` | `KeyLayoutPanel` | 强调 Layout 布局特征 |
 | `StandardKeyPanel` | `StandardKeyLayoutPanel` | 跟随 KeyLayoutPanel 更名 |

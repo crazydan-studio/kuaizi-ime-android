@@ -68,7 +68,7 @@ package ":ime-engine" #FFF3E0 {
       + insertPairedSymbols(left, right)
       + moveCursor(direction)
       + selectRange(direction)
-      + performAction(action)
+      + performEdit(action)
       + getText(): CharSequence
       + getSelection(): TextRange
     }
@@ -463,7 +463,7 @@ package ":app" #E3F2FD {
     + doReplaceableCommitText(text, replacements)
     + insertPairedSymbols(left, right)
     + moveCursor(direction)
-    + performAction(action)
+    + performEdit(action)
   }
   class ConfigDataStore <<(C,#E3F2FD)>> {
     + config: Flow<ImeConfig>

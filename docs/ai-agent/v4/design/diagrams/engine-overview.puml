@@ -55,7 +55,7 @@ package "核心模型" #FFE0B2 {
     insertPairedSymbols(left, right)
     moveCursor(direction)
     selectRange(direction)
-    performAction(action)
+    performEdit(action)
     getText(): CharSequence
     getSelection(): TextRange
   }

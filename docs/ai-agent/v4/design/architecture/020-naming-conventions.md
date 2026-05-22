@@ -52,8 +52,8 @@ Android 系统服务类沿用平台命名惯例（如 `IMEService`），配置�
 
 | 类型 | 命名 | 说明 |
 |------|------|------|
-| Intent | `ImeIntent.PerformEdit(EditorAction)` | 不是 `ImeIntent.EditorAction(EditorActionType)` |
-| Output | `ImeOutput.PerformEdit(EditorAction)` | PerformEdit 与 Output 对称使用同一 `EditorAction` 枚举 |
+| Intent | `ImeIntent.PerformEdit(EditorEditAction)` | 不是 `ImeIntent.EditorEditAction(EditorActionType)` |
+| Output | `ImeOutput.PerformEdit(EditorEditAction)` | PerformEdit 与 Output 对称使用同一 `EditorEditAction` 枚举 |
 | 手势输入 | `ImeEngine.handleGesture(InputGesture)` | 不是 `onKeyPress` / `handleKeyPress` |
 | 意图处理 | `ImeEngine.handleIntent(ImeIntent)` | 直接发送意图 |
 
@@ -104,7 +104,7 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 | 选用名称 | 替代方案 | 选择理由 |
 |----------|---------|---------|
 | `ImeConfig` | `ImeEngineConfig` | `Ime` 前缀已表达归属，无需冗余 `Engine` |
-| `EditorAction` | `EditorActionType` | 枚举命名不带 `Type` 后缀，Kotlin 惯例 |
+| `EditorEditAction` | `EditorActionType` | 枚举命名不带 `Type` 后缀，Kotlin 惯例 |
 | `ImeOutput.PerformEdit` | `ImeOutput.EditAction` | `PerformEdit` 与 `ImeIntent.PerformEdit` 对称 |
 
 ### 5.3 桥接与输出

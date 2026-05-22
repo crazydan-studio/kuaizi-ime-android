@@ -220,7 +220,7 @@ class InputListEditor {
 
 `pushUndo()` 在每次 `InputList` 变更前调用，将当前状态推入 `undoStack`，同时清空 `redoStack`——新变更使得重做历史失效。`undo()` 从 `undoStack` 弹出最近的状态替换当前状态，并将当前状态推入 `redoStack`，实现双向导航。`redo()` 从 `redoStack` 弹出最近的状态替换当前状态，并将当前状态推入 `undoStack`。`canUndo` 和 `canRedo` 属性供 UI 层的撤销/重做工具按钮判断是否启用。
 
-`InputListEditor` 由 `InputListOperator` 内部持有和管理，外部不直接操作编辑器。`InputListOperator` 在每次执行输入列表变更操作时自动调用 `pushUndo()`，确保撤销栈与实际状态变更同步。撤销和重做操作通过 `ImeIntent.PerformEdit(EditorAction.UNDO)` 和 `ImeIntent.PerformEdit(EditorAction.REDO)` 触发，引擎在 `reduce` 函数中委托 `InputListOperator` 执行对应的撤销/重做逻辑。
+`InputListEditor` 由 `InputListOperator` 内部持有和管理，外部不直接操作编辑器。`InputListOperator` 在每次执行输入列表变更操作时自动调用 `pushUndo()`，确保撤销栈与实际状态变更同步。撤销和重做操作通过 `ImeIntent.PerformEdit(EditorEditAction.UNDO)` 和 `ImeIntent.PerformEdit(EditorEditAction.REDO)` 触发，引擎在 `reduce` 函数中委托 `InputListOperator` 执行对应的撤销/重做逻辑。
 
 `ArrayDeque` 的 `maxSize` 参数为 50，意味着撤销栈最多保存 50 个历史状态。这个容量设计在内存占用和撤销深度之间取得平衡：50 个不可变 `InputList` 实例的内存占用通常在 KB 级别，而 50 层撤销深度覆盖了绝大多数用户的使用场景。超过 50 层时，最早的状态被自动丢弃，用户无法撤销到更早的状态。
 

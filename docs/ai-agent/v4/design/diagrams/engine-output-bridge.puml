@@ -42,7 +42,7 @@ package ":ime-engine" #FFF3E0 {
     + insertPairedSymbols(left, right)
     + moveCursor(direction)
     + selectRange(direction)
-    + performAction(action)
+    + performEdit(action)
     + getText(): CharSequence
     + getSelection(): TextRange
   }
@@ -74,7 +74,7 @@ package ":ime-ui" #E8F5E9 {
     + insertPairedSymbols(left, right)
     + moveCursor(direction)
     + selectRange(direction)
-    + performAction(action)
+    + performEdit(action)
     + getText(): CharSequence
     + getSelection(): TextRange
     # onRevokeCommit(snapshot)
@@ -95,7 +95,7 @@ package ":app" #E3F2FD {
     + insertPairedSymbols(left, right)
     + moveCursor(direction)
     + selectRange(direction)
-    + performAction(action)
+    + performEdit(action)
     + getText(): CharSequence
     + getSelection(): TextRange
     # onRevokeCommit(snapshot)
@@ -137,7 +137,7 @@ note left of ImeEngine
     is InsertPairedSymbols -> bridge.insertPairedSymbols(left, right)
     is MoveCursor -> bridge.moveCursor(direction)
     is SelectRange -> bridge.selectRange(direction)
-    is PerformEdit -> bridge.performAction(action)
+    is PerformEdit -> bridge.performEdit(action)
   }
 end note
 
