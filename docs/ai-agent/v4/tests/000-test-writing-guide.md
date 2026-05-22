@@ -280,7 +280,7 @@ val engine = mockk<ImeEngine> {
 
 ### 7.2 状态机测试的完整覆盖
 
-对于键盘状态机（[020-键盘状态机](../design/engine/020-state-machine.md)），测试必须覆盖：
+对于键盘状态机（[030-键盘状态机](../design/engine/030-keyboard-state-machine.md)），测试必须覆盖：
 
 1. **所有合法状态转换**：状态机图中每一条边至少一个测试用例
 2. **非法状态转换**：不合法的 Intent 在特定状态下应如何处理（Fail Fast 或忽略）

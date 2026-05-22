@@ -20,15 +20,15 @@
 
 | 开发计划 | 测试文档 | 测试范围 | 状态 |
 |----------|----------|----------|------|
-| （待创建） | （与计划同名） | 键盘状态机、Intent 处理、状态转换（对应 [020-键盘状态机](../design/engine/020-state-machine.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | 键盘状态机、Intent 处理、状态转换（对应 [030-键盘状态机](../design/engine/030-keyboard-state-machine.md)） | 📋待编写 |
 | （待创建） | （与计划同名） | ImeEngine API、ImeConfig、ImeOutput、ImeDictProvider（对应 [010-引擎库设计总览](../design/engine/010-engine-overview.md)） | 📋待编写 |
-| （待创建） | （与计划同名） | InputList 不可变操作、游标、撤销 / 重做（对应 [030-输入列表](../design/engine/030-input-list.md)） | 📋待编写 |
-| （待创建） | （与计划同名） | Room DAO、ImeDictProvider 实现、字典查询、升级迁移（对应 [040-字典系统](../design/engine/040-dict-system.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | InputList 不可变操作、游标、撤销 / 重做（对应 [040-输入列表](../design/engine/040-input-list.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | Room DAO、ImeDictProvider 实现、字典查询、升级迁移（对应 [050-候选与字典](../design/engine/050-candidate-and-dict.md)） | 📋待编写 |
 | （待创建） | （与计划同名） | ConfigRepository、ImeConfig 运行时优先、DataStore（对应 [010-配置与设置](../design/app/010-config.md)） | 📋待编写 |
 | （待创建） | （与计划同名） | ClipboardProvider、FavoritesRepository、Feature 裁剪（对应 [070-剪贴板与收藏](../design/engine/070-clipboard-and-favorites.md)） | 📋待编写 |
 | （待创建） | （与计划同名） | UserDataService、JSON 序列化、替换 / 合并、SAF（对应 [040-用户数据导入导出](../design/app/040-user-data.md)） | 📋待编写 |
-| （待创建） | （与计划同名） | ImeLog 分级、持久化、崩溃拦截（对应 [080-日志系统](../design/engine/080-logging.md)） | 📋待编写 |
-| （待创建） | （与计划同名） | InputActionPlayer、脚本编译、回放（对应 [060-输入动作程序化](../design/engine/060-input-action.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | ImeLog 分级、持久化、崩溃拦截（对应 [090-日志系统](../design/engine/090-logging.md)） | 📋待编写 |
+| （待创建） | （与计划同名） | InputActionPlayer、脚本编译、回放（对应 [080-输入动作程序化](../design/engine/080-input-action.md)） | 📋待编写 |
 
 ---
 

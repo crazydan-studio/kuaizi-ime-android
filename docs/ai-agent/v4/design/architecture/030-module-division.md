@@ -67,4 +67,4 @@ UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方�
 
 详细设计分别见：
 - UI 库设计目标与组件清单：[010-UI 库设计总览](../ui/010-ui-library-overview.md)
-- 输出桥接机制：[090-输出桥接机制](../engine/090-output-bridge.md)
+- 输出桥接机制：[060-意图、输出与桥接](../engine/060-intent-output-bridge.md)
