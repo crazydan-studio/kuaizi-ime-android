@@ -36,7 +36,7 @@ start
 :keyboard.state / inputList\ncandidateList / config\nkeyboard.mode;
 
 |ImeEffect|
-:PopupTip / PlayAudio\nConfirmFavorite;
+:PopupTip / PlayAudio\nPlayHaptic;
 
 |KeyboardViewModel|
 :订阅 ImeEffect → PopupTipState\n派生 isInputting (inputList.hasPending)\n维护 ToolListState (local);

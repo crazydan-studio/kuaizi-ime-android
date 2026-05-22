@@ -263,9 +263,6 @@ class KeyboardViewModel(
                             hapticPlayer.play(effect.type)
                         }
                     }
-                    is ImeEffect.ConfirmFavorite -> {
-                        // 交由收藏确认 UI 处理
-                    }
                 }
             }
         }
@@ -484,9 +481,9 @@ data class ToolItem(
 
 `HapticType` 包括 `LightTap`（轻触反馈，20ms / 50% 强度）、`MediumTap`（中等反馈，50ms / 70% 强度）、`HeavyTap`（重触反馈，100ms / 100% 强度）三种类型。轻触反馈用于按键点击和候选选择，中等反馈用于滑行识别和翻页，重触反馈用于长按触发。触觉播放器接口（`HapticPlayer`）定义在 `:ime-ui` 中，平台实现（`AndroidHapticPlayer`）由 `:app` 提供，详见 [engine/065-音效与触觉反馈](../engine/065-audio-haptic-feedback.md)。
 
-### 5.5 `ConfirmFavorite` 处理
+### 5.5 收藏确认处理
 
-`ImeEffect.ConfirmFavorite` 携带待收藏的内容字符串，ViewModel 收到后驱动收藏确认 UI。收藏确认对话框由 `:app` 模块实现，ViewModel 仅负责触发确认流程。用户确认后，`ImeIntent.ConfirmFavorite` 被发送到引擎，引擎在 reduce 中将内容保存到收藏列表。
+收藏确认通过 `PopupTip.Action` 实现，而非独立的 `ImeEffect` 类型。当 `ImeIntent.CommitInput` 处理完成后，引擎检查已提交文本是否已在收藏列表中。若未收藏，引擎发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(InputFavorite(text=committedText)), persistent=false)`，ViewModel 收到后显示带「收藏」按钮的提示条，用户点击即可保存。已收藏的内容不触发任何提示。这种设计将收藏确认统一到 `PopupTip.Action` 体系中，无需额外的 `ImeEffect` 子类型。
 
 ---
 

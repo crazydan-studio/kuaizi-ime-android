@@ -22,7 +22,7 @@ IME 的交互反馈分为两类：视觉反馈（按键动画、滑行轨迹、�
 
 ### 2.1 ImeEffect 扩展
 
-`ImeEffect` 在引擎中新增 `PlayAudio` 和 `PlayHaptic` 两个子类型，与 `PopupTip` 和 `ConfirmFavorite` 并列。两种反馈信号各自携带类型枚举，表达触发反馈的具体场景。引擎在 `handleIntent()` 的 reduce 过程中根据业务逻辑决定发射时机，UI 层收到信号后根据配置和播放器可用性决定是否播放。
+`ImeEffect` 在引擎中新增 `PlayAudio` 和 `PlayHaptic` 两个子类型，与 `PopupTip` 并列。两种反馈信号各自携带类型枚举，表达触发反馈的具体场景。引擎在 `handleIntent()` 的 reduce 过程中根据业务逻辑决定发射时机，UI 层收到信号后根据配置和播放器可用性决定是否播放。
 
 ```kotlin
 sealed class ImeEffect {
@@ -46,8 +46,6 @@ sealed class ImeEffect {
 
     /** 触觉反馈信号：指示 UI 层触发指定类型的振动 */
     data class PlayHaptic(val type: HapticType) : ImeEffect()
-
-    data class ConfirmFavorite(val content: String) : ImeEffect()
 }
 ```
 
@@ -210,9 +208,6 @@ init {
                     if (state.value.config.ui.hapticFeedbackEnabled && hapticPlayer != null) {
                         hapticPlayer.play(effect.type)
                     }
-                }
-                is ImeEffect.ConfirmFavorite -> {
-                    // 交由收藏确认 UI 处理
                 }
             }
         }
