@@ -288,14 +288,23 @@ sealed class ImeEffect {
             val timeoutMs: Long = 5000L,
         ) : PopupTip()
     }
+    /** 音效反馈信号：指示 UI 层播放指定类型的音效 */
     data class PlayAudio(val type: AudioType) : ImeEffect()
+    /** 触觉反馈信号：指示 UI 层触发指定类型的振动 */
+    data class PlayHaptic(val type: HapticType) : ImeEffect()
     data class ConfirmFavorite(val content: String) : ImeEffect()
 }
 
 enum class AudioType {
     KeyPress, CandidateSelect, Slip, PageFlip,
 }
+
+enum class HapticType {
+    LightTap, MediumTap, HeavyTap,
+}
 ```
+
+`PlayAudio` 和 `PlayHaptic` 是感官反馈信号，遵循 fire-and-forget 语义——引擎发出信号后不维护其状态，UI 层消费后即丢弃。感官反馈的播放器接口定义在 `:ime-ui` 中，平台实现由 `:app` 提供，配置检查由 `KeyboardViewModel` 执行。这种分层确保引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
 
 ### 6.2 Message 提示
 
@@ -318,7 +327,7 @@ enum class AudioType {
 
 ### 6.4 通道集成
 
-`ImeEngine` 在 `handleIntent()` 处理过程中，通过内部 `MutableSharedFlow<ImeEffect>`（`extraBufferCapacity = 16`）发射副作用信号，对外暴露只读 `SharedFlow<ImeEffect>` 供 UI 层订阅。`KeyboardViewModel` 订阅引擎的 `effect` 通道，根据 `ImeEffect` 类型驱动对应的 UI 行为：`PopupTip.Message` 显示浮动提示条并启动自动 dismiss 定时器；`PopupTip.Action` 显示带按钮的提示条，按钮点击触发对应的 `ImeIntent`；`PlayAudio` 交由音频播放器处理；`ConfirmFavorite` 交由收藏确认 UI 处理。
+`ImeEngine` 在 `handleIntent()` 处理过程中，通过内部 `MutableSharedFlow<ImeEffect>`（`extraBufferCapacity = 16`）发射副作用信号，对外暴露只读 `SharedFlow<ImeEffect>` 供 UI 层订阅。`KeyboardViewModel` 订阅引擎的 `effect` 通道，根据 `ImeEffect` 类型驱动对应的 UI 行为：`PopupTip.Message` 显示浮动提示条并启动自动 dismiss 定时器；`PopupTip.Action` 显示带按钮的提示条，按钮点击触发对应的 `ImeIntent`；`PlayAudio` 检查 `audioFeedbackEnabled` 配置后调用 `AudioPlayer.play()`；`PlayHaptic` 检查 `hapticFeedbackEnabled` 配置后调用 `HapticPlayer.play()`；`ConfirmFavorite` 交由收藏确认 UI 处理。
 
 `PopupTip.Action` 的 dismiss 策略在 UI 层实现：`persistent = false` 时启动 `delay(timeoutMs)` 协程，超时后自动 dismiss；`persistent = true` 时不启动超时定时器，改为监听 `keyboard.state` 变更——当用户开始输入（状态从 `Idle` 转换到 `PinyinInput.Waiting`）时自动 dismiss。新的 `PopupTip` Effect 到来时取消前一个定时器和提示，确保同一时刻只有一个 PopupTip 可见。
 

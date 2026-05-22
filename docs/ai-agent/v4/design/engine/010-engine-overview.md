@@ -143,30 +143,36 @@ data class ImeState(
 
 ```kotlin
 sealed class ImeEffect {
-    data class PopupTip(
-        val message: String,
-        val type: PopupTipType = PopupTipType.Info,
-    ) : ImeEffect()
+    sealed class PopupTip : ImeEffect() {
+        data class Message(
+            val message: String,
+            val timeoutMs: Long = 3000L,
+        ) : PopupTip()
 
-    data class PlayAudio(
-        val type: AudioType,
-    ) : ImeEffect()
+        data class Action(
+            val message: String,
+            val actionLabel: String,
+            val action: ImeIntent,
+            val persistent: Boolean = false,
+            val timeoutMs: Long = 5000L,
+        ) : PopupTip()
+    }
 
-    data class ConfirmFavorite(
-        val content: String,
-    ) : ImeEffect()
-}
-
-enum class PopupTipType {
-    Info, Clipboard, Editor;
+    data class PlayAudio(val type: AudioType) : ImeEffect()
+    data class PlayHaptic(val type: HapticType) : ImeEffect()
+    data class ConfirmFavorite(val content: String) : ImeEffect()
 }
 
 enum class AudioType {
-    KeyPress, Slip, CandidateSelect, PageFlip,
+    KeyPress, CandidateSelect, Slip, PageFlip,
+}
+
+enum class HapticType {
+    LightTap, MediumTap, HeavyTap,
 }
 ```
 
-`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，UI 层收集后立即消费，不存在重复消费和状态清理问题。`ImeState` 专注于持续性状态，`ImeEffect` 专注于一次性效果，两者共同构成引擎的完整输出。将弹出提示、音效播放等一次性效果从 `ImeState` 中分离，避免了状态清理负担、语义不匹配和重复消费风险。
+`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，UI 层收集后立即消费，不存在重复消费和状态清理问题。`ImeState` 专注于持续性状态，`ImeEffect` 专注于一次性效果，两者共同构成引擎的完整输出。将弹出提示、音效播放、触觉振动等一次性效果从 `ImeState` 中分离，避免了状态清理负担、语义不匹配和重复消费风险。感官反馈（`PlayAudio` / `PlayHaptic`）的播放器接口定义在 `:ime-ui` 中，平台实现由 `:app` 提供——引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
 
 ---
 
@@ -204,7 +210,7 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 ## 4. 核心模型概览
 
-引擎库的核心模型按职责划分为八个子系统，各子系统拥有独立的设计文档。本节提供每个子系统的简要概览和文档索引，帮助读者快速定位到感兴趣的领域进行深入阅读。
+引擎库的核心模型按职责划分为九个子系统，各子系统拥有独立的设计文档。本节提供每个子系统的简要概览和文档索引，帮助读者快速定位到感兴趣的领域进行深入阅读。
 
 ### 4.1 键盘状态机
 
@@ -236,19 +242,25 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 详见 [060-输出桥接](060-intent-output-bridge.md)。
 
-### 4.6 剪贴板与收藏
+### 4.6 音效与触觉反馈
+
+`ImeEffect.PlayAudio` 和 `ImeEffect.PlayHaptic` 是感官反馈信号，遵循 fire-and-forget 语义。感官反馈的播放器接口（`AudioPlayer` / `HapticPlayer`）定义在 `:ime-ui` 中，平台实现（`AndroidAudioPlayer` / `AndroidHapticPlayer`）由 `:app` 提供。引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。
+
+详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
+
+### 4.7 剪贴板与收藏
 
 `ClipboardService` 监听系统剪贴板变更并提供文本类型检测（URL、验证码、手机号等）。`FavoriteService` 管理用户收藏的文本，通过 Room DAO 实现响应式查询。两者均通过 `Feature` 枚举进行门控，禁用时调用相关 Intent 立即抛出异常。
 
 详见 [070-剪贴板与收藏](070-clipboard-and-favorites.md)。
 
-### 4.7 输入动作程序化
+### 4.8 输入动作程序化
 
 `InputAction` sealed class 定义坐标无关的逻辑动作（按下、滑行到、抬起、选择候选等）。`InputActionScript` 将动作序列组合为可回放的脚本，`InputActionScriptCompiler` 将待输入文本编译为动作脚本。归一化坐标基础类型 `OffsetF` / `RectF` 和路径插值算法确保跨面板、跨尺寸的回放一致性。
 
 详见 [080-输入动作](080-input-action.md)。
 
-### 4.8 日志系统
+### 4.9 日志系统
 
 `ImeLog` 是日志系统的全局门面，`ImeLogger` 提供带标签的日志记录器。`LogWriter` 接口支持可扩展的输出目标，`FileLogWriter` 实现异步批量文件写入，`LogcatWriter` 提供 Android Logcat 输出，`CrashInterceptor` 实现 JVM 崩溃拦截。日志等级由应用层注入，引擎不内置构建类型判断。
 
@@ -558,8 +570,9 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 `ImeEngine` 在 `reduce` 过程中收集需要发射的 `ImeEffect` 实例，在状态更新和输出分发完成后统一发射。发射通过 `_effect.tryEmit()` 实现，`extraBufferCapacity = 16` 确保高频率发射时不会因订阅者处理慢而丢弃事件。
 
 典型的 `ImeEffect` 发射场景：
-- 键盘类型切换时发射 `ImeEffect.PopupTip("已切换到拉丁键盘")`
-- 按键处理时发射 `ImeEffect.PlayAudio(AudioType.KeyPress)`
+- 键盘类型切换时发射 `ImeEffect.PopupTip.Message("已切换到拉丁键盘")`
+- 按键处理时发射 `ImeEffect.PlayAudio(AudioType.KeyPress)` 和 `ImeEffect.PlayHaptic(HapticType.LightTap)`
+- 候选词选择时发射 `ImeEffect.PlayAudio(AudioType.CandidateSelect)`
 - 收藏保存时发射 `ImeEffect.ConfirmFavorite(content)`
 
 `ImeEffect` 的发射时机在 `ImeState` 更新之后，确保 UI 层先观察到状态变更，再处理副作用信号。这种时序保证了一次性效果（如弹出提示）所依赖的渲染状态已经就绪。

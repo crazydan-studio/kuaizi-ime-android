@@ -56,13 +56,16 @@ package org.crazydan.studio.ime.ui.viewmodel
  * - 派生 isInputting 状态，控制 ToolListPanel/InputListPanel 互斥切换
  * - 提供输入动作播放器（InputActionPlayer）
  * - 缓存面板布局状态供播放器坐标解析
+ * - 管理感官反馈播放（AudioPlayer / HapticPlayer）
  *
- * ViewModel 仅依赖引擎核心模型。
+ * ViewModel 仅依赖引擎核心模型和播放器接口。
  * 平台级职责（ImeEngine 创建、InputConnectionBridge 管理、配置持久化）
  * 均由 `:app` 模块承担。
  */
 class KeyboardViewModel(
     private val engine: ImeEngine,
+    private val audioPlayer: AudioPlayer? = null,
+    private val hapticPlayer: HapticPlayer? = null,
 ) : ViewModel() {
 
     // ─── 状态暴露 ────────────────────────────────────────────────
@@ -251,7 +254,14 @@ class KeyboardViewModel(
                         // 输入开始后由 isInputting 变更触发清除
                     }
                     is ImeEffect.PlayAudio -> {
-                        // 交由音频播放器处理
+                        if (state.value.config.ui.audioFeedbackEnabled && audioPlayer != null) {
+                            audioPlayer.play(effect.type)
+                        }
+                    }
+                    is ImeEffect.PlayHaptic -> {
+                        if (state.value.config.ui.hapticFeedbackEnabled && hapticPlayer != null) {
+                            hapticPlayer.play(effect.type)
+                        }
                     }
                     is ImeEffect.ConfirmFavorite -> {
                         // 交由收藏确认 UI 处理
@@ -329,10 +339,12 @@ class KeyboardViewModel(
 
     class Factory(
         private val engine: ImeEngine,
+        private val audioPlayer: AudioPlayer? = null,
+        private val hapticPlayer: HapticPlayer? = null,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return KeyboardViewModel(engine) as T
+            return KeyboardViewModel(engine, audioPlayer, hapticPlayer) as T
         }
     }
 }
@@ -462,9 +474,17 @@ data class ToolItem(
 
 ### 5.3 `PlayAudio` 处理
 
-`ImeEffect.PlayAudio` 携带 `AudioType` 枚举值，ViewModel 收到后交由音频播放器处理。音频播放器的实现由 `:app` 模块提供，ViewModel 仅负责将 `AudioType` 传递给播放器。`AudioType` 包括 `KeyPress`（按键音）、`Slip`（滑行输入音）、`CandidateSelect`（候选选择音）、`PageFlip`（翻页音）等类型。
+`ImeEffect.PlayAudio` 携带 `AudioType` 枚举值，ViewModel 收到后检查 `ImeConfig.UiConfig.audioFeedbackEnabled` 配置和 `audioPlayer` 播放器的可用性。配置启用且播放器可用时，调用 `audioPlayer.play(effect.type)` 播放音效；配置禁用或播放器不可用时，静默跳过。这种「配置检查 + 播放器注入」的模式确保引擎不感知 UI 配置——引擎始终发射 `PlayAudio` 信号，UI 层根据配置和运行时环境决定是否播放。
 
-### 5.4 `ConfirmFavorite` 处理
+`AudioType` 包括 `KeyPress`（按键音）、`Slip`（滑行输入音）、`CandidateSelect`（候选选择音）、`PageFlip`（翻页音）四种类型。`candidatesPagingAudioEnabled` 是翻页音效的独立开关，ViewModel 在处理 `AudioType.PageFlip` 时额外检查此配置。音频播放器接口（`AudioPlayer`）定义在 `:ime-ui` 中，平台实现（`AndroidAudioPlayer`）由 `:app` 提供，详见 [engine/065-音效与触觉反馈](../engine/065-audio-haptic-feedback.md)。
+
+### 5.4 `PlayHaptic` 处理
+
+`ImeEffect.PlayHaptic` 携带 `HapticType` 枚举值，ViewModel 收到后检查 `ImeConfig.UiConfig.hapticFeedbackEnabled` 配置和 `hapticPlayer` 播放器的可用性。配置启用且播放器可用时，调用 `hapticPlayer.play(effect.type)` 触发振动；配置禁用或播放器不可用时，静默跳过。处理模式与 `PlayAudio` 完全一致——配置检查在 ViewModel 层执行，不在引擎层执行。
+
+`HapticType` 包括 `LightTap`（轻触反馈，20ms / 50% 强度）、`MediumTap`（中等反馈，50ms / 70% 强度）、`HeavyTap`（重触反馈，100ms / 100% 强度）三种类型。轻触反馈用于按键点击和候选选择，中等反馈用于滑行识别和翻页，重触反馈用于长按触发。触觉播放器接口（`HapticPlayer`）定义在 `:ime-ui` 中，平台实现（`AndroidHapticPlayer`）由 `:app` 提供，详见 [engine/065-音效与触觉反馈](../engine/065-audio-haptic-feedback.md)。
+
+### 5.5 `ConfirmFavorite` 处理
 
 `ImeEffect.ConfirmFavorite` 携带待收藏的内容字符串，ViewModel 收到后驱动收藏确认 UI。收藏确认对话框由 `:app` 模块实现，ViewModel 仅负责触发确认流程。用户确认后，`ImeIntent.ConfirmFavorite` 被发送到引擎，引擎在 reduce 中将内容保存到收藏列表。
 
@@ -543,6 +563,8 @@ fun KeyboardHost(
 class IMEService : InputMethodService() {
     private var engine: ImeEngine? = null
     private var bridge: InputConnectionBridge? = null
+    private var audioPlayer: AndroidAudioPlayer? = null
+    private var hapticPlayer: AndroidHapticPlayer? = null
     private var composeView: ComposeView? = null
 
     override fun onCreate() {
@@ -555,17 +577,22 @@ class IMEService : InputMethodService() {
         // 创建并挂载输出桥梁（与 ViewModel 无关）
         bridge = InputConnectionBridge { currentInputConnection }
         engine?.attachOutputBridge(bridge!!)
+        // 创建感官反馈播放器
+        audioPlayer = AndroidAudioPlayer(this)
+        hapticPlayer = AndroidHapticPlayer(this)
     }
 
     override fun onCreateInputView(): View {
         val engine = this.engine ?: error("Engine not initialized")
+        val audio = this.audioPlayer
+        val haptic = this.hapticPlayer
         return ComposeView(this).also { composeView = it }.apply {
             setViewCompositionStrategy(
                 ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
             )
             setContent {
                 val viewModel: KeyboardViewModel = viewModel(
-                    factory = KeyboardViewModel.Factory(engine)
+                    factory = KeyboardViewModel.Factory(engine, audio, haptic)
                 )
                 // KeyboardHost 已包含候选栏 + 输入栏 + 工具列表 + 三层面板叠加 + 弹出提示
                 KeyboardHost(viewModel = viewModel)
@@ -574,6 +601,9 @@ class IMEService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        audioPlayer?.release()
+        audioPlayer = null
+        hapticPlayer = null
         // 断开桥梁并销毁引擎
         engine?.detachOutputBridge()
         engine = null
@@ -591,8 +621,10 @@ class IMEService : InputMethodService() {
 
 2. **桥梁挂载**：`IMEService.onCreate()` 中创建 `InputConnectionBridge`，传入 `currentInputConnection` 的提供者，然后通过 `engine.attachOutputBridge()` 挂载。桥梁的挂载与 ViewModel 无关——桥梁直接与引擎交互，将 `ImeOutput` 分发到 `InputConnection`。
 
-3. **ViewModel 注入**：`IMEService.onCreateInputView()` 中通过 `KeyboardViewModel.Factory(engine)` 创建 ViewModel 工厂，将预创建的引擎注入 ViewModel。ViewModel 通过引擎的公开 API（`handleIntent()`、`state`、`effect`、`updateConfig()`）与引擎交互，不感知桥梁和平台生命周期。
+3. **播放器创建**：`IMEService.onCreate()` 中创建 `AndroidAudioPlayer` 和 `AndroidHapticPlayer`，传入 `Context` 用于加载音频资源和获取 `Vibrator` 服务。播放器的生命周期与 `IMEService` 相同，不随 `InputConnection` 变更而重建。
 
-4. **Compose 渲染**：`setContent {}` 中使用 `KeyboardHost(viewModel = viewModel)` 作为根组件，`KeyboardHost` 订阅 ViewModel 的所有状态，驱动 Compose 渲染完整的输入法界面。
+4. **ViewModel 注入**：`IMEService.onCreateInputView()` 中通过 `KeyboardViewModel.Factory(engine, audio, haptic)` 创建 ViewModel 工厂，将预创建的引擎和播放器注入 ViewModel。ViewModel 通过引擎的公开 API（`handleIntent()`、`state`、`effect`、`updateConfig()`）与引擎交互，通过播放器接口与平台层交互，不感知桥梁和平台生命周期。
 
-5. **生命周期管理**：`IMEService.onDestroy()` 中断开桥梁、销毁引擎和 ComposeView。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎——引擎的生命周期由 `:app` 管理，比 ViewModel 更长（引擎在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。
+5. **Compose 渲染**：`setContent {}` 中使用 `KeyboardHost(viewModel = viewModel)` 作为根组件，`KeyboardHost` 订阅 ViewModel 的所有状态，驱动 Compose 渲染完整的输入法界面。
+
+6. **生命周期管理**：`IMEService.onDestroy()` 中释放播放器资源（`audioPlayer.release()`）、断开桥梁、销毁引擎和 ComposeView。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。
