@@ -238,6 +238,7 @@ function sidebarAiAgent() {
         { text: '040-输入列表', link: '/ai-agent/v4/design/engine/040-input-list' },
         { text: '050-候选与字典', link: '/ai-agent/v4/design/engine/050-candidate-and-dict' },
         { text: '060-意图、输出与桥接', link: '/ai-agent/v4/design/engine/060-intent-output-bridge' },
+        { text: '065-音效与触觉反馈', link: '/ai-agent/v4/design/engine/065-audio-haptic-feedback' },
         { text: '070-剪贴板与收藏', link: '/ai-agent/v4/design/engine/070-clipboard-and-favorites' },
         { text: '080-输入动作程序化', link: '/ai-agent/v4/design/engine/080-input-action' },
         { text: '090-日志系统', link: '/ai-agent/v4/design/engine/090-logging' },
