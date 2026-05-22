@@ -34,7 +34,7 @@ sealed class ImeIntent {
     data class MoveCursorTo(val index: Int) : ImeIntent()
 
     /** 执行编辑动作意图：用户触发编辑操作（全选、复制、剪切、粘贴、撤销、重做等） */
-    data class PerformEdit(val action: EditorAction) : ImeIntent()
+    data class PerformEdit(val action: EditorEditAction) : ImeIntent()
 
     /** 粘贴剪贴板意图：用户粘贴剪贴板内容 */
     data class PasteClip(val text: String) : ImeIntent()
@@ -71,7 +71,7 @@ sealed class ImeIntent {
 
 ### 1.4 编辑动作意图
 
-`PerformEdit` 携带 `EditorAction` 枚举值，触发目标编辑器的编辑操作。`EditorAction` 包含 `BACKSPACE`、`SELECT_ALL`、`COPY`、`CUT`、`PASTE`、`UNDO`、`REDO`、`FAVORITE` 八种动作。引擎收到 `PerformEdit` 后，根据 `EditorAction` 类型执行对应的操作：破坏性编辑动作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空 `BaseImeOutputBridge` 的撤销快照，非破坏性动作（`SELECT_ALL`、`COPY`）不影响撤销快照，`FAVORITE` 动作触发收藏保存逻辑。
+`PerformEdit` 携带 `EditorEditAction` 枚举值，触发目标编辑器的编辑操作。`EditorEditAction` 包含 `BACKSPACE`、`SELECT_ALL`、`COPY`、`CUT`、`PASTE`、`UNDO`、`REDO` 七种动作。引擎收到 `PerformEdit` 后，根据 `EditorEditAction` 类型执行对应的操作：破坏性编辑动作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空 `BaseImeOutputBridge` 的撤销快照，非破坏性动作（`SELECT_ALL`、`COPY`）不影响撤销快照。收藏功能独立于编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`。
 
 ### 1.5 剪贴板、收藏与配置意图
 
@@ -121,16 +121,16 @@ sealed class ImeOutput {
     /** 执行编辑动作：触发目标编辑器的编辑操作 */
     data class PerformEdit(
         override val timestamp: Long,
-        val action: EditorAction,
+        val action: EditorEditAction,
     ) : ImeOutput()
 }
 ```
 
 ### 2.1 CommitText 提交文本
 
-`CommitText` 是最常见的输出类型，在用户确认拼音输入、选择候选词、粘贴剪贴板内容等场景下产生。`text` 为提交的文本内容，`replacements` 为可选的替换列表——当 `replacements` 非空时，`ImeOutputBridge` 实现需检查光标前文本是否匹配替换列表中的某一项，匹配时执行替换而非插入。替换轮换机制用于直输模式下的标点符号长按选择——用户连续按同一个按键时，引擎输出 `CommitText` 并携带替换列表，桥梁实现自动轮换光标前的文本。
+`CommitText` 是最常见的输出类型，在用户确认拼音输入、选择候选词、粘贴剪贴板内容等场景下产生。`text` 为提交的文本内容，`replacements` 为可选的替换列表——当 `replacements` 非空时，`ImeOutputBridge` 实现需检查光标前文本是否匹配替换列表中的某一项，匹配时执行替换而非插入。替换轮换机制用于直输模式下的标点符号双击轮换——用户双击同一个按键时，引擎输出 `CommitText` 并携带替换列表，桥梁实现自动轮换光标前的文本。
 
-`replacements` 的典型场景：用户输入英文句号 `.` 后长按，引擎输出 `CommitText(text = "。", replacements = [".", "。", "…"])`，桥梁实现检查光标前文本是否为 `"."` 或 `"。"`，若是则替换为下一个轮换项；若不匹配任何替换项，则正常插入 `text`。这种设计将替换逻辑从引擎中解耦——引擎只负责提供替换列表，桥梁实现负责检测和执行替换操作，使得不同平台可以按自身能力提供差异化的替换实现。
+`replacements` 的典型场景：用户输入英文句号 `.` 后双击同一按键，引擎输出 `CommitText(text = "。", replacements = [".", "。", "…"])`，桥梁实现检查光标前文本是否为 `"."` 或 `"。"`，若是则替换为下一个轮换项；若不匹配任何替换项，则正常插入 `text`。默认的替换轮换采用双击按键方式触发——用户在短时间内连续按两次同一个按键时，引擎输出携带 `replacements` 的 `CommitText`，桥梁实现自动轮换光标前的文本。这种设计将替换逻辑从引擎中解耦——引擎只负责提供替换列表，桥梁实现负责检测和执行替换操作，使得不同平台可以按自身能力提供差异化的替换实现。
 
 ### 2.2 RevokeCommit 撤销提交
 
@@ -146,7 +146,7 @@ sealed class ImeOutput {
 
 ### 2.5 PerformEdit 执行编辑动作
 
-`PerformEdit` 携带 `EditorAction` 枚举值，触发目标编辑器的编辑操作。桥梁实现根据 `EditorAction` 类型调用平台特定的编辑 API——例如在 `InputConnectionBridge` 中，`SELECT_ALL` 调用 `InputConnection.performContextMenuAction(android.R.id.selectAll)`，`COPY` 调用 `InputConnection.performContextMenuAction(android.R.id.copy)`。破坏性编辑动作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空撤销快照，非破坏性动作（`SELECT_ALL`、`COPY`）不影响快照。
+`PerformEdit` 携带 `EditorEditAction` 枚举值，触发目标编辑器的编辑操作。桥梁实现根据 `EditorEditAction` 类型调用平台特定的编辑 API——例如在 `InputConnectionBridge` 中，`SELECT_ALL` 调用 `InputConnection.performContextMenuAction(android.R.id.selectAll)`，`COPY` 调用 `InputConnection.performContextMenuAction(android.R.id.copy)`。破坏性编辑动作（`BACKSPACE`、`CUT`、`PASTE`、`UNDO`、`REDO`）清空撤销快照，非破坏性动作（`SELECT_ALL`、`COPY`）不影响快照。
 
 ---
 
@@ -177,7 +177,7 @@ interface ImeOutputBridge {
     fun selectRange(direction: CursorDirection)
 
     /** 执行编辑动作（全选、复制、剪切、粘贴等） */
-    fun performAction(action: EditorAction)
+    fun performEdit(action: EditorEditAction)
 
     /** 实时获取目标当前文本 */
     fun getText(): CharSequence
@@ -187,7 +187,7 @@ interface ImeOutputBridge {
 }
 ```
 
-接口的七个方法覆盖了 IME 对目标编辑器的全部操作：`commitText()` 提交文本（支持替换轮换），`revokeCommit()` 撤销最近输入，`insertPairedSymbols()` 插入配对符号，`moveCursor()` 移动光标，`selectRange()` 扩展选区，`performAction()` 执行编辑动作，`getText()` 和 `getSelection()` 读取编辑器状态。所有方法在主线程调用以保证线程安全。`getText()` 和 `getSelection()` 是桥梁实现从目标编辑器读取状态的唯二方法，引擎在需要获取编辑器当前文本和选区信息时调用这两个方法。
+接口的七个方法覆盖了 IME 对目标编辑器的全部操作：`commitText()` 提交文本（支持替换轮换），`revokeCommit()` 撤销最近输入，`insertPairedSymbols()` 插入配对符号，`moveCursor()` 移动光标，`selectRange()` 扩展选区，`performEdit()` 执行编辑动作，`getText()` 和 `getSelection()` 读取编辑器状态。所有方法在主线程调用以保证线程安全。`getText()` 和 `getSelection()` 是桥梁实现从目标编辑器读取状态的唯二方法，引擎在需要获取编辑器当前文本和选区信息时调用这两个方法。
 
 ### 3.1 BaseImeOutputBridge 抽象基类
 
@@ -245,7 +245,7 @@ abstract class BaseImeOutputBridge : ImeOutputBridge {
 }
 ```
 
-快照重置规则确保撤销状态与编辑器状态保持一致：新的可撤回输入开始前先清空旧快照，提交后记录新快照；撤销完成后清空已消费的快照；配对符号提交清空快照（不可撤回）；有编辑副作用的动作（退格、粘贴、剪切、撤销、重做）清空快照；无编辑副作用的动作（全选、收藏、复制）不影响快照。子类在各接口方法中按上述规则调用 `resetRevertion()` 和 `recordRevertion()`，确保撤销状态的正确性。`commitText()` 方法在基类中实现了分发逻辑——根据 `replacements` 是否为空选择 `doReplaceableCommitText()` 或 `doNormalCommitText()`，子类只需实现这两个具体的提交方法。
+快照重置规则确保撤销状态与编辑器状态保持一致：新的可撤回输入开始前先清空旧快照，提交后记录新快照；撤销完成后清空已消费的快照；配对符号提交清空快照（不可撤回）；有编辑副作用的动作（退格、粘贴、剪切、撤销、重做）清空快照；无编辑副作用的动作（全选、复制）不影响快照。子类在各接口方法中按上述规则调用 `resetRevertion()` 和 `recordRevertion()`，确保撤销状态的正确性。`commitText()` 方法在基类中实现了分发逻辑——根据 `replacements` 是否为空选择 `doReplaceableCommitText()` 或 `doNormalCommitText()`，子类只需实现这两个具体的提交方法。
 
 ---
 
@@ -339,20 +339,19 @@ class InputConnectionBridge(
         }
     }
 
-    override fun performAction(action: EditorAction) {
+    override fun performEdit(action: EditorEditAction) {
         if (action.hasEditorEffect) resetRevertion()
         val ic = targetSupplier() ?: return
         when (action) {
-            EditorAction.BACKSPACE -> {
+            EditorEditAction.BACKSPACE -> {
                 ic.sendKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
             }
-            EditorAction.SELECT_ALL -> ic.performContextMenuAction(android.R.id.selectAll)
-            EditorAction.COPY -> ic.performContextMenuAction(android.R.id.copy)
-            EditorAction.PASTE -> ic.performContextMenuAction(android.R.id.paste)
-            EditorAction.CUT -> ic.performContextMenuAction(android.R.id.cut)
-            EditorAction.UNDO -> ic.performContextMenuAction(android.R.id.undo)
-            EditorAction.REDO -> ic.performContextMenuAction(android.R.id.redo)
-            EditorAction.FAVORITE -> { /* no-op for InputConnection */ }
+            EditorEditAction.SELECT_ALL -> ic.performContextMenuAction(android.R.id.selectAll)
+            EditorEditAction.COPY -> ic.performContextMenuAction(android.R.id.copy)
+            EditorEditAction.PASTE -> ic.performContextMenuAction(android.R.id.paste)
+            EditorEditAction.CUT -> ic.performContextMenuAction(android.R.id.cut)
+            EditorEditAction.UNDO -> ic.performContextMenuAction(android.R.id.undo)
+            EditorEditAction.REDO -> ic.performContextMenuAction(android.R.id.redo)
         }
     }
 
@@ -378,7 +377,7 @@ class InputConnectionBridge(
 
 `InputConnectionBridge` 的替换轮换逻辑（`doReplaceableCommitText()`）首先通过 `getTextBeforeCursor()` 获取光标前文本，检查是否匹配 `replacements` 列表中的某一项。匹配时，先通过 `deleteSurroundingText()` 删除光标前文本，再通过 `commitText()` 插入新文本，实现替换操作。不匹配时退化为普通提交。撤销恢复逻辑（`onRevokeCommit()`）先设置选区覆盖被修改的文本范围，然后提交原始内容覆盖当前文本，最后恢复到操作前的选区位置。
 
-目标变更（用户切换输入目标编辑器）不需要特殊检测：`resetRevertion()` 的调用时机已经规避了目标变更可能造成的影响——每次新的可撤回输入开始前都会清空旧快照，目标变更后的首次输入自然会在新的 `InputConnection` 上建立新快照。`FAVORITE` 动作在 `InputConnectionBridge` 中为空操作，因为 `InputConnection` 没有收藏的概念——收藏功能由引擎内部处理，不需要通过桥梁输出到编辑器。
+目标变更（用户切换输入目标编辑器）不需要特殊检测：`resetRevertion()` 的调用时机已经规避了目标变更可能造成的影响——每次新的可撤回输入开始前都会清空旧快照，目标变更后的首次输入自然会在新的 `InputConnection` 上建立新快照。
 
 ---
 
@@ -467,32 +466,31 @@ class EditTextBridge(
         e.setSelection(start, end)
     }
 
-    override fun performAction(action: EditorAction) {
+    override fun performEdit(action: EditorEditAction) {
         if (action.hasEditorEffect) resetRevertion()
         val e = targetSupplier() ?: return
         when (action) {
-            EditorAction.BACKSPACE -> {
+            EditorEditAction.BACKSPACE -> {
                 val start = e.selectionStart
                 if (start > 0) e.text.delete(start - 1, start)
             }
-            EditorAction.SELECT_ALL -> e.selectAll()
-            EditorAction.COPY -> {
+            EditorEditAction.SELECT_ALL -> e.selectAll()
+            EditorEditAction.COPY -> {
                 val clipboard = e.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clipboard.setPrimaryClip(ClipData.newPlainText("text", e.text.substring(e.selectionStart, e.selectionEnd)))
             }
-            EditorAction.PASTE -> {
+            EditorEditAction.PASTE -> {
                 val clipboard = e.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 val clip = clipboard.primaryClip?.getItemAt(0)?.text?.toString() ?: return
                 e.text.replace(e.selectionStart, e.selectionEnd, clip)
             }
-            EditorAction.CUT -> {
+            EditorEditAction.CUT -> {
                 val clipboard = e.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clipboard.setPrimaryClip(ClipData.newPlainText("text", e.text.substring(e.selectionStart, e.selectionEnd)))
                 e.text.delete(e.selectionStart, e.selectionEnd)
             }
-            EditorAction.UNDO -> { /* EditText 无内置撤销 */ }
-            EditorAction.REDO -> { /* EditText 无内置撤销 */ }
-            EditorAction.FAVORITE -> { /* 委托引擎内部处理 */ }
+            EditorEditAction.UNDO -> { /* EditText 无内置撤销 */ }
+            EditorEditAction.REDO -> { /* EditText 无内置撤销 */ }
         }
     }
 
@@ -511,7 +509,7 @@ class EditTextBridge(
 }
 ```
 
-`EditTextBridge` 直接操作 `EditText` 的 `Editable` 文本接口，提供了比 `InputConnection` 更精细的文本操控能力。`doNormalCommitText()` 使用 `Editable.replace()` 替换当前选区文本，自动处理选区重叠和文本长度变化。替换轮换逻辑（`doReplaceableCommitText()`）通过 `substring()` 获取光标前文本进行检查，匹配时使用 `replace()` 执行替换。配对符号插入时，若无选中文本，插入左右符号后通过 `setSelection()` 将光标置于两者之间；若有选中文本，将选中文本包裹在左右符号之间。编辑动作的实现使用 `EditText` 的原生 API（`selectAll()`、`ClipboardManager` 等），`UNDO` 和 `REDO` 动作为空操作（`EditText` 无内置撤销/重做支持）。`FAVORITE` 动作委托引擎内部处理，不在编辑器层面执行操作。
+`EditTextBridge` 直接操作 `EditText` 的 `Editable` 文本接口，提供了比 `InputConnection` 更精细的文本操控能力。`doNormalCommitText()` 使用 `Editable.replace()` 替换当前选区文本，自动处理选区重叠和文本长度变化。替换轮换逻辑（`doReplaceableCommitText()`）通过 `substring()` 获取光标前文本进行检查，匹配时使用 `replace()` 执行替换。配对符号插入时，若无选中文本，插入左右符号后通过 `setSelection()` 将光标置于两者之间；若有选中文本，将选中文本包裹在左右符号之间。编辑动作的实现使用 `EditText` 的原生 API（`selectAll()`、`ClipboardManager` 等），`UNDO` 和 `REDO` 动作为空操作（`EditText` 无内置撤销/重做支持）。收藏功能独立于编辑操作，通过 `ImeIntent.SaveFavorite` 触发，不属于 `EditorEditAction`，无需在桥梁中处理。
 
 `EditTextBridge` 适用于应用内嵌入输入法的场景——例如应用内有一个自定义的文本编辑器，需要使用筷字输入法的引擎能力，但不通过系统 IME 服务。在这种场景下，`EditTextBridge` 将引擎的输出指令直接映射到 `EditText` 的文本操作，无需经过 `InputConnection` 的中转层。两个桥梁实现的选择由宿主模块决定：`:app` 模块中的 `IMEService` 使用 `InputConnectionBridge`，`:ime-ui` 模块中的嵌入式输入组件使用 `EditTextBridge`。
 

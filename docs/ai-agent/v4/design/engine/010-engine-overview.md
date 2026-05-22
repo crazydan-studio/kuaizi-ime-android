@@ -62,7 +62,7 @@ sealed class ImeIntent {
     data class MoveCursorTo(val index: Int) : ImeIntent()
 
     // 编辑操作意图
-    data class PerformEdit(val action: EditorAction) : ImeIntent()
+    data class PerformEdit(val action: EditorEditAction) : ImeIntent()
 
     // 剪贴板与收藏意图
     data class PasteClip(val text: String) : ImeIntent()
@@ -113,12 +113,12 @@ sealed class ImeOutput {
 
     data class PerformEdit(
         override val timestamp: Long,
-        val action: EditorAction,
+        val action: EditorEditAction,
     ) : ImeOutput()
 }
 ```
 
-`ImeOutput` 的 sealed class 层次确保引擎在分发输出时穷举所有类型，编译期保证类型安全。每种输出类型携带时间戳，用于日志记录和调试追踪。`CommitText` 的 `replacements` 参数支持直输模式下的字符轮换——桥梁实现需检查光标前文本是否匹配替换列表，匹配时执行替换而非插入。
+`ImeOutput` 的 sealed class 层次确保引擎在分发输出时穷举所有类型，编译期保证类型安全。每种输出类型携带时间戳，用于日志记录和调试追踪。`CommitText` 的 `replacements` 参数支持直输模式下的字符轮换——默认采用双击按键方式触发，桥梁实现需检查光标前文本是否匹配替换列表，匹配时执行替换而非插入。
 
 ### 2.5 ImeState
 
@@ -160,7 +160,6 @@ sealed class ImeEffect {
 
     data class PlayAudio(val type: AudioType) : ImeEffect()
     data class PlayHaptic(val type: HapticType) : ImeEffect()
-    data class ConfirmFavorite(val content: String) : ImeEffect()
 }
 
 enum class AudioType {
@@ -396,7 +395,7 @@ data class ImeConfig(
 |------|------|--------|------|
 | `keyboardType` | `KeyboardType` | `Pinyin` | 初始键盘类型，运行时通过 `ImeState.keyboard.type` 访问当前类型 |
 | `handMode` | `HandMode` | `Right` | 手模式，影响键盘布局的左右手偏移 |
-| `features` | `Set<Feature>` | `DefaultSet` | 启用的功能集合，门控剪贴板、收藏、输入练习、候选预测等 |
+| `features` | `Set<Feature>` | `DefaultSet` | 启用的功能集合，门控剪贴板、收藏、候选预测等 |
 | `candidatePredictionEnabled` | `Boolean` | `true` | 是否启用候选预测（HMM + Viterbi），影响短语预测功能 |
 | `singleLineInput` | `Boolean` | `false` | 是否启用单行输入模式，影响输入列表的显示方式 |
 
@@ -438,7 +437,6 @@ Feature 门控机制允许引擎在运行时根据配置启用或禁用特定功
 enum class Feature {
     Clipboard,            // 剪贴板监听和粘贴
     Favorites,            // 收藏管理
-    InputPractice,        // 输入练习演示
     CandidatePrediction;  // 候选预测（HMM + Viterbi）
 
     companion object {
@@ -453,12 +451,11 @@ enum class Feature {
 |---------|--------|---------|
 | `Clipboard` | 剪贴板监听和粘贴 | `ImeState.clipboard.disabled = true`，`clipboard.clips` 始终为空，调用 `ImeIntent.PasteClip` 抛出 `IllegalStateException` |
 | `Favorites` | 收藏管理 | `ImeState.favoriteList.disabled = true`，`favoriteList.favorites` 始终为空，调用 `ImeIntent.SaveFavorite` 抛出 `IllegalStateException` |
-| `InputPractice` | 输入练习演示 | 禁用输入动作脚本的编译和回放，调用 `InputActionScriptCompiler.compile()` 抛出 `IllegalStateException` |
 | `CandidatePrediction` | 候选预测（HMM + Viterbi） | `EngineConfig.candidatePredictionEnabled = false`，字典查询跳过 HMM 预测和 Viterbi 解码步骤，仅返回基础候选词 |
 
 ### 7.3 DefaultSet 说明
 
-`Feature.DefaultSet` 包含 `Clipboard`、`Favorites` 和 `CandidatePrediction` 三个功能，覆盖大多数用户的使用需求。`InputPractice` 默认不启用，因为输入练习演示是开发者/教学场景下的辅助功能，普通用户不需要。
+`Feature.DefaultSet` 包含 `Clipboard`、`Favorites` 和 `CandidatePrediction` 三个功能，覆盖大多数用户的使用需求。
 
 ### 7.4 FeatureRegistry 门控检查
 
@@ -561,7 +558,7 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 - `ImeOutput.InsertPairedSymbols` → `bridge.insertPairedSymbols(left, right)`
 - `ImeOutput.MoveCursor` → `bridge.moveCursor(direction)`
 - `ImeOutput.SelectRange` → `bridge.selectRange(direction)`
-- `ImeOutput.PerformEdit` → `bridge.performAction(action)`
+- `ImeOutput.PerformEdit` → `bridge.performEdit(action)`
 
 若 `_outputBridge` 为 `null`，分发操作被跳过。所有桥接方法在主线程调用，确保线程安全。
 
@@ -573,6 +570,6 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 - 键盘类型切换时发射 `ImeEffect.PopupTip.Message("已切换到拉丁键盘")`
 - 按键处理时发射 `ImeEffect.PlayAudio(AudioType.KeyPress)` 和 `ImeEffect.PlayHaptic(HapticType.LightTap)`
 - 候选词选择时发射 `ImeEffect.PlayAudio(AudioType.CandidateSelect)`
-- 收藏保存时发射 `ImeEffect.ConfirmFavorite(content)`
+- 输入提交后若内容未收藏，发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...), persistent=false)`
 
 `ImeEffect` 的发射时机在 `ImeState` 更新之后，确保 UI 层先观察到状态变更，再处理副作用信号。这种时序保证了一次性效果（如弹出提示）所依赖的渲染状态已经就绪。
