@@ -327,6 +327,8 @@ class ImeEngine internal constructor(
 
 `_editorBridges` 是 `MutableList<ImeEditorBridge>`，通过 `attachEditorBridge()` 注册桥接，`detachEditorBridge()` 注销指定桥接。引擎在分发 `EditorAction` 时遍历所有已注册桥接，逐个调用对应的语义方法；若桥接列表为空则静默跳过。这种设计允许引擎在没有桥接的情况下正常运行（例如纯逻辑测试场景），也支持同时向多个编辑器分发编辑器操作。
 
+**桥梁所有权与生命周期**：`ImeEditorBridge` 的创建、注册、注销和销毁均由宿主模块负责，引擎仅持有桥梁引用用于分发 `EditorAction`。`attachEditorBridge()` 与 `detachEditorBridge()` 必须由同一宿主模块成对调用——`attach` 注册桥梁到引擎的桥接列表，`detach` 从列表中移除指定桥梁。这种设计遵循观察者模式的所有权原则：引擎是 Subject，桥梁是 Observer，Subject 不负责 Observer 的注册/注销的完整生命周期管理。`destroy()` 内部对 `_editorBridges` 执行 `clear()` 是防御性安全网，确保即使调用方忘记 `detach`，桥梁引用也不会泄漏到已销毁的引擎中，但 `destroy()` 不会替外部对象执行 `detachEditorBridge()` 的注销逻辑。调用方应在 `destroy()` 前显式调用 `detachEditorBridge(bridge)`，确保 `attach`/`detach` 对称。
+
 ### 5.4 工厂方法
 
 `Companion.create()` 是 `ImeEngine` 的唯一创建入口，内部完成以下初始化工作：创建 `KeyboardStateMachine`、创建 `InputListOperator`。工厂方法确保所有依赖项正确初始化，避免外部构造时遗漏关键组件。
@@ -359,6 +361,8 @@ class ImeEngine internal constructor(
 销毁引擎，回收所有资源。`destroy()` 是终态操作——停止异步任务、关闭字典连接、注销剪贴板监听、清空编辑器桥接列表，并将所有内部引用置为 `null`。调用 `destroy()` 后引擎不可再启动，任何对引擎方法的调用将抛出 `IllegalStateException`。
 
 调用时机：`InputMethodService#onDestroy`。
+
+> **设计决策——`destroy()` 与 `detachEditorBridge()` 的关系**：`destroy()` 内部对 `_editorBridges` 执行 `clear()` 是**防御性清空**，仅清除引擎持有的外部对象引用，**不调用 `detachEditorBridge()`**。这是因为 `ImeEditorBridge` 的生命周期由宿主模块（如 `:app` 的 `IMEService`）管理，引擎仅是桥梁的**消费者**而非**拥有者**——这与 Java 版 `IMEditor.destroy()` 中 `this.listener = null` 的模式一致。调用方应在 `destroy()` 前显式调用 `detachEditorBridge(bridge)`，确保 `attach`/`detach` 对称，保留对清理顺序的显式控制权。若调用方忘记 detach，`destroy()` 的防御性清空确保桥梁引用不会泄漏到已销毁的引擎中，但不会替外部对象执行注销逻辑。详见 §5.3 编辑器桥接。
 
 > **设计决策**：`start()`/`close()`/`destroy()` 作为独立的生命周期方法，而非 `ImeIntent` 子类，是因为它们是系统回调驱动的生命周期事件，语义上不属于「用户意图」。将生命周期事件与用户意图分离，确保 `ImeIntent` 的语义契约——「表达用户想要做什么」——不被稀释。同时，所有状态变更（包括 `start()` 中的初始化）均通过 `applyStateUpdate()` 统一出口，保证日志、断言和状态不变式检查的一致性。
 

@@ -624,7 +624,11 @@ class IMEService : InputMethodService() {
         audioPlayer?.release()
         audioPlayer = null
         hapticPlayer = null
-        // 断开桥梁并销毁引擎
+        // 先断开桥梁，再销毁引擎。
+        // 必须显式调用 detachEditorBridge 而非依赖 destroy 自动注销，
+        // 因为桥梁的生命周期由宿主模块管理，引擎仅是桥梁的消费者。
+        // destroy() 内部仅对 _editorBridges 执行防御性 clear()，
+        // 不会调用 detachEditorBridge() 的注销逻辑。
         engine?.detachEditorBridge(bridge!!)
         engine?.destroy()
         engine = null
@@ -650,4 +654,4 @@ class IMEService : InputMethodService() {
 
 6. **启动输入**：`IMEService.onStartInputView()` 中调用 `engine.start(startupConfig)` 启动输入法，传入从 `EditorInfo` 解析的 `StartupConfig`。`onCurrentInputMethodSubtypeChanged()` 中同样调用 `engine.start()`，但 `editorInputType` 为 `null` 以确保不覆盖已识别的编辑器类型。
 
-7. **关闭与销毁**：`IMEService.onFinishInputView()` 中调用 `engine.close()` 关闭输入法（仅隐藏面板，状态保持不变）。`IMEService.onDestroy()` 中先断开桥梁，再调用 `engine.destroy()` 销毁引擎（回收所有资源），然后释放播放器资源。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。
+7. **关闭与销毁**：`IMEService.onFinishInputView()` 中调用 `engine.close()` 关闭输入法（仅隐藏面板，状态保持不变）。`IMEService.onDestroy()` 中的清理遵循严格的顺序：先释放播放器资源，再断开桥梁，最后销毁引擎。`detachEditorBridge(bridge)` 必须在 `destroy()` 前显式调用，而非依赖 `destroy()` 自动注销，这是基于桥梁所有权原则——桥梁由 `IMEService` 创建和拥有，`attach`/`detach` 是宿主模块的对称操作，引擎仅是桥梁的消费者（详见 [010-引擎架构总览](../engine/010-engine-overview.md) §5.3 编辑器桥接）。`destroy()` 内部对 `_editorBridges` 仅执行防御性 `clear()`，不调用 `detachEditorBridge()` 的注销逻辑，与 Java 版 `IMEditor.destroy()` 中 `this.listener = null` 的模式一致。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。

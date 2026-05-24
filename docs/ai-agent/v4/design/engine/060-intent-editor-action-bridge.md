@@ -569,6 +569,8 @@ class EditTextBridge(
 
 `ImeEditorBridge` 的注册由宿主模块在创建 `ImeEngine` 后执行：`:app` 模块通过 `engine.attachEditorBridge(InputConnectionBridge { currentInputConnection })` 注册系统输入连接桥梁，`:ime-ui` 模块通过 `engine.attachEditorBridge(EditTextBridge { currentEditText })` 注册编辑框桥梁。多个桥梁可以同时挂载——引擎将 `EditorAction` 分发到所有已挂载的桥梁，每个桥梁独立接收相同的编辑器操作。`detachEditorBridge(bridge)` 注销指定的桥梁，`attachEditorBridge(bridge)` 注册新桥梁。若 `ImeEngine` 的 `_editorBridges` 为空，分发被静默跳过。这种设计允许引擎在没有桥梁的情况下正常运行（例如纯逻辑测试场景），编辑器操作被自动跳过。
 
+**桥梁所有权原则**：`ImeEditorBridge` 的生命周期由宿主模块管理，引擎仅是桥梁的消费者。`attachEditorBridge()` 与 `detachEditorBridge()` 必须由同一宿主模块成对调用，形成注册/注销的对称操作。调用方应在引擎销毁前显式调用 `detachEditorBridge(bridge)`，而非依赖 `ImeEngine.destroy()` 自动注销。`destroy()` 内部对 `_editorBridges` 仅执行防御性 `clear()`，不调用 `detachEditorBridge()`，因为引擎不拥有桥梁对象——这与 Java 版 `IMEditor.destroy()` 中 `this.listener = null` 的模式一致：静默清除外部对象引用，不调用外部对象的任何方法。这种设计的优势在于：(1) 所有权语义清晰——谁创建谁销毁，`attach`/`detach` 对称；(2) 调用方保留对清理顺序的显式控制权——可在 `detach` 之后、`destroy` 之前做 bridge 相关的清理工作；(3) 未来若 `detachEditorBridge` 需要增加逻辑（如通知 bridge 已被注销的回调），显式 `detach` 的调用方能自然获得该能力。
+
 ```kotlin
 class ImeEngine internal constructor(
     private var config: ImeConfig,

@@ -392,7 +392,13 @@ class IMEService : InputMethodService() {
         audioPlayer?.release()
         audioPlayer = null
         hapticPlayer = null
+        // 先断开桥梁，再销毁引擎。
+        // 必须显式调用 detachEditorBridge 而非依赖 destroy 自动注销，
+        // 因为桥梁的生命周期由宿主模块管理，引擎仅是桥梁的消费者。
+        // destroy() 内部仅对 _editorBridges 执行防御性 clear()，
+        // 不会调用 detachEditorBridge() 的注销逻辑。
         engine?.detachEditorBridge(bridge!!)
+        engine?.destroy()
         engine = null
         bridge = null
         composeView?.disposeComposition()
@@ -408,7 +414,7 @@ class IMEService : InputMethodService() {
 
 2. **播放器注入**：`IMEService.onCreateInputView()` 中通过 `KeyboardViewModel.Factory(engine, audio, haptic)` 将播放器注入 ViewModel。ViewModel 在收到 `ImeEffect.PlayAudio` 或 `ImeEffect.PlayHaptic` 时使用注入的播放器执行播放。
 
-3. **播放器释放**：`IMEService.onDestroy()` 中调用 `audioPlayer.release()` 释放 `SoundPool` 资源。`AndroidHapticPlayer` 不需要显式释放（`Vibrator` 是系统服务），但引用置空以避免内存泄漏。播放器的释放先于引擎销毁，确保引擎在最后时刻仍可通过 `ImeEffect` 通道发送信号。
+3. **播放器释放与引擎销毁**：`IMEService.onDestroy()` 中调用 `audioPlayer.release()` 释放 `SoundPool` 资源。`AndroidHapticPlayer` 不需要显式释放（`Vibrator` 是系统服务），但引用置空以避免内存泄漏。播放器的释放先于引擎销毁，确保引擎在最后时刻仍可通过 `ImeEffect` 通道发送信号。播放器释放后，先显式调用 `detachEditorBridge(bridge)` 断开桥梁（桥梁所有权属于宿主模块，必须由宿主显式注销），再调用 `engine.destroy()` 销毁引擎——`destroy()` 内部仅对 `_editorBridges` 执行防御性 `clear()`，不会调用 `detachEditorBridge()` 的注销逻辑。
 
 ---
 
