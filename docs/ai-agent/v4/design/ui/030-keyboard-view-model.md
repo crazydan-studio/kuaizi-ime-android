@@ -526,7 +526,7 @@ fun KeyboardHost(
     val toolListState by viewModel.toolListState.collectAsState()
     var keyLayoutState by remember { mutableStateOf(KeyLayoutState()) }
 
-    KeyboardTheme(themeType = state.config.ui.keyboardThemeType) {
+    KeyboardTheme(type = state.config.ui.keyboardThemeType) {
         when (layoutMode) {
             is KeyboardLayoutMode.Stacked -> StackedLayout(
                 viewModel, state, feedbackState,
@@ -597,12 +597,36 @@ class IMEService : InputMethodService() {
         }
     }
 
+    override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
+        super.onStartInputView(editorInfo, restarting)
+        engine?.start(StartupConfig(
+            imeSubtype = IMESubtype.from(this),
+            screenOrientation = ScreenOrientation.from(this),
+            editorInputType = EditorInputType.from(editorInfo),
+        ))
+    }
+
+    override fun onCurrentInputMethodSubtypeChanged(subtype: InputMethodSubtype?) {
+        super.onCurrentInputMethodSubtypeChanged(subtype)
+        engine?.start(StartupConfig(
+            imeSubtype = IMESubtype.from(this),
+            screenOrientation = ScreenOrientation.from(this),
+            editorInputType = null, // 不覆盖已识别到的编辑器类型
+        ))
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        super.onFinishInputView(finishingInput)
+        engine?.close()
+    }
+
     override fun onDestroy() {
         audioPlayer?.release()
         audioPlayer = null
         hapticPlayer = null
         // 断开桥梁并销毁引擎
         engine?.detachEditorBridge(bridge!!)
+        engine?.destroy()
         engine = null
         bridge = null
         composeView?.disposeComposition()
@@ -624,4 +648,6 @@ class IMEService : InputMethodService() {
 
 5. **Compose 渲染**：`setContent {}` 中使用 `KeyboardHost(viewModel = viewModel)` 作为根组件，`KeyboardHost` 订阅 ViewModel 的所有状态，驱动 Compose 渲染完整的输入法界面。
 
-6. **生命周期管理**：`IMEService.onDestroy()` 中释放播放器资源（`audioPlayer.release()`）、断开桥梁、销毁引擎和 ComposeView。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。
+6. **启动输入**：`IMEService.onStartInputView()` 中调用 `engine.start(startupConfig)` 启动输入法，传入从 `EditorInfo` 解析的 `StartupConfig`。`onCurrentInputMethodSubtypeChanged()` 中同样调用 `engine.start()`，但 `editorInputType` 为 `null` 以确保不覆盖已识别的编辑器类型。
+
+7. **关闭与销毁**：`IMEService.onFinishInputView()` 中调用 `engine.close()` 关闭输入法（仅隐藏面板，状态保持不变）。`IMEService.onDestroy()` 中先断开桥梁，再调用 `engine.destroy()` 销毁引擎（回收所有资源），然后释放播放器资源。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。

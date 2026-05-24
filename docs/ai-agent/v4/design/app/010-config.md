@@ -101,10 +101,10 @@ val LocalKeyboardColors = compositionLocalOf { KeyboardThemes.Light }
 ```kotlin
 @Composable
 fun KeyboardTheme(
-    themeType: KeyboardThemeType = KeyboardThemeType.FollowSystem,
+    type: KeyboardThemeType = KeyboardThemeType.FollowSystem,
     content: @Composable () -> Unit,
 ) {
-    val isDark = when (themeType) {
+    val isDark = when (type) {
         KeyboardThemeType.Light -> false
         KeyboardThemeType.Night -> true
         KeyboardThemeType.FollowSystem -> isSystemInDarkTheme()

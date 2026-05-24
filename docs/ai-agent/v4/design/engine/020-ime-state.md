@@ -190,7 +190,7 @@ data class Clipboard(
 )
 ```
 
-`currentText` 为当前系统剪贴板的文本内容，`null` 表示无内容。`showTip` 控制是否在 UI 上显示剪贴板提示，当 `ClipboardService` 检测到新剪贴内容时设为 `true`，用户粘贴或 dismiss 后设为 `false`。`clips` 为最近的剪贴条目列表，支持用户浏览和选择历史剪贴内容。`disabled` 为功能开关，见第 8 节收藏功能门控规则。
+`currentText` 为当前系统剪贴板的文本内容，`null` 表示无内容。`showTip` 控制是否在 UI 上显示剪贴板提示，当 `ClipboardService` 检测到新剪贴内容时设为 `true`，用户粘贴或 dismiss 后设为 `false`。`clips` 为最近的剪贴条目列表，支持用户浏览和选择历史剪贴内容。`disabled` 为功能开关，由 `UiConfig.clipPastePopupTipsEnabled` 与 `EngineConfig.favoriteClipEnabled` 共同确定，见第 8 节门控规则。
 
 ### 4.1 InputClip 数据模型
 
@@ -377,13 +377,36 @@ data class ToolItem(
 - 不影响剪贴板收藏功能（若 `favoriteClipEnabled` 为 `true`）
 - 不影响已收藏内容的使用（若 `favoriteClipEnabled` 为 `true`，收藏面板仍然可用）
 
-### 8.3 剪贴板收藏门控
+### 8.3 剪贴板门控
 
-当 `EngineConfig.favoriteClipEnabled` 为 `false` 时：
+`Clipboard.disabled` 由 `UiConfig.clipPastePopupTipsEnabled` 与 `EngineConfig.favoriteClipEnabled` 共同确定：
 
-- `ClipboardService` 仍正常运行，用户可通过 `ImeIntent.PasteClip` 粘贴剪贴板内容
+| `clipPastePopupTipsEnabled` | `favoriteClipEnabled` | `Clipboard.disabled` | 说明 |
+|---------------------------|----------------------|---------------------|------|
+| `true` | `true` | `false` | 剪贴板完全启用：支持粘贴、可粘贴内容提示、剪贴板收藏提示 |
+| `true` | `false` | `false` | 剪贴板部分启用：支持粘贴和可粘贴内容提示，但不产生剪贴板收藏提示 |
+| `false` | `true` | `false` | 剪贴板部分启用：支持粘贴和剪贴板收藏提示，但不产生可粘贴内容提示 |
+| `false` | `false` | `true` | 剪贴板完全禁用：`ClipboardService` 不工作 |
+
+即 `Clipboard.disabled = !clipPastePopupTipsEnabled && !favoriteClipEnabled`。
+
+当 `Clipboard.disabled` 为 `true` 时：
+
+- `ImeState.clipboard.disabled = true`
+- `ClipboardService` 停止监听系统剪贴板
+- 不发射任何剪贴板相关的 `ImeEffect` 提示
+
+当 `EngineConfig.favoriteClipEnabled` 为 `false` 但 `UiConfig.clipPastePopupTipsEnabled` 为 `true` 时：
+
+- `ClipboardService` 正常运行，`ImeEngine.start()` 时检查剪贴板可粘贴内容并弹出粘贴确认提示
 - 不发射剪贴板收藏相关的 `ImeEffect.PopupTip.Action` 提示
 - 不影响输入收藏功能（若 `favoriteInputEnabled` 为 `true`）
+
+当 `EngineConfig.favoriteClipEnabled` 为 `true` 但 `UiConfig.clipPastePopupTipsEnabled` 为 `false` 时：
+
+- `ClipboardService` 正常运行，但 `ImeEngine.start()` 时不检查剪贴板可粘贴内容
+- 剪贴板收藏提示正常发射
+- 用户仍可通过工具栏的剪贴板按钮手动粘贴
 
 ### 8.4 收藏同步门控
 
@@ -393,9 +416,9 @@ data class ToolItem(
 - 收藏面板中显示「同步」按钮（将用户字典数据同步到收藏）和删除时的「同步删除」按钮
 - 此门控仅在 `favoriteInputEnabled` 或 `favoriteClipEnabled` 至少一个为 `true` 时生效
 
-### 8.5 剪贴板门控
+### 8.5 剪贴板粘贴功能说明
 
-注意：剪贴板粘贴功能（`ImeIntent.PasteClip`）不再受门控限制。当 `favoriteClipEnabled` 为 `false` 时，剪贴板粘贴功能仍然可用，只是不会提示收藏。这与旧版 `Feature.Clipboard` 门控不同——旧版禁用后粘贴功能也被禁用，新版将粘贴功能与收藏功能解耦。
+剪贴板粘贴功能（`ImeIntent.PasteClip`）始终可用，不受任何门控限制。即使在 `Clipboard.disabled = true` 的情况下，用户仍可通过工具栏的剪贴板按钮手动粘贴——只是不会有自动的可粘贴内容提示。这与旧版 `Feature.Clipboard` 门控不同——旧版禁用后粘贴功能也被禁用，新版将粘贴功能与提示/收藏功能解耦。
 
 ---
 
@@ -409,11 +432,13 @@ data class ToolItem(
 
 3. **`favoriteList` 禁用一致性**：当 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 均为 `false` 时，`favoriteList.disabled` 必须为 `true`，`favoriteList.favorites` 必须为空列表，`favoriteList.isLoading` 必须为 `false`。此不变式由 reduce 函数的门控短路逻辑保证。
 
-4. **`inputList.gapIndex` 范围合法性**：`gapIndex` 必须满足 `0 <= gapIndex <= inputs.lastIndex + 1`，且 `inputs[gapIndex]` 必须是 `InputItem.Gap`（当 `gapIndex <= inputs.lastIndex` 时）。此不变式由 `InputList` 的 `init` 块和所有游标移动方法的边界检查保证。
+4. **`clipboard` 禁用一致性**：当 `UiConfig.clipPastePopupTipsEnabled` 和 `EngineConfig.favoriteClipEnabled` 均为 `false` 时，`clipboard.disabled` 必须为 `true`。此不变式由 reduce 函数的门控逻辑保证。
 
-5. **`candidateList.pageIndex` 范围合法性**：当 `candidateList.candidates` 非空时，`pageIndex` 必须满足 `0 <= pageIndex < ceil(candidates.size / pageSize)`。若数据变更导致 `pageIndex * pageSize >= candidates.size`，自动调整到最后一页。此不变式由 `CandidateList` 的分页逻辑保证。
+5. **`inputList.gapIndex` 范围合法性**：`gapIndex` 必须满足 `0 <= gapIndex <= inputs.lastIndex + 1`，且 `inputs[gapIndex]` 必须是 `InputItem.Gap`（当 `gapIndex <= inputs.lastIndex` 时）。此不变式由 `InputList` 的 `init` 块和所有游标移动方法的边界检查保证。
 
-6. **`keyboard` 切换清空历史**：`KeyboardType` 切换时 `KeyboardStateHistory` 必须被清空。不同键盘类型之间不存在状态回退关系，残留的历史栈会导致回退到语义不兼容的状态。此不变式由 `KeyboardStateMachine.resetTo()` 保证。
+6. **`candidateList.pageIndex` 范围合法性**：当 `candidateList.candidates` 非空时，`pageIndex` 必须满足 `0 <= pageIndex < ceil(candidates.size / pageSize)`。若数据变更导致 `pageIndex * pageSize >= candidates.size`，自动调整到最后一页。此不变式由 `CandidateList` 的分页逻辑保证。
+
+7. **`keyboard` 切换清空历史**：`KeyboardType` 切换时 `KeyboardStateHistory` 必须被清空。不同键盘类型之间不存在状态回退关系，残留的历史栈会导致回退到语义不兼容的状态。此不变式由 `KeyboardStateMachine.resetTo()` 保证。
 
 ---
 

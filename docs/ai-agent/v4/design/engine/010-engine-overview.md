@@ -55,9 +55,6 @@ sealed class ImeIntent {
     // 键盘切换
     data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
 
-    // 启动配置意图
-    data class StartInput(val startupConfig: StartupConfig) : ImeIntent()
-
     // 输入列表意图
     data object CommitInput : ImeIntent()
     data object DeleteInput : ImeIntent()
@@ -289,11 +286,23 @@ class ImeEngine internal constructor(
 
     private val _editorBridges = mutableListOf<ImeEditorBridge>()
 
+    // ─── 生命周期方法 ──────────────────────────────────────────
+
+    /** 启动输入法，初始化 RuntimeConfig 并确定键盘类型 */
+    fun start(startupConfig: StartupConfig) { ... }
+
+    /** 关闭输入法，仅隐藏面板，但输入状态保持不变 */
+    fun close() { ... }
+
+    /** 销毁引擎，回收所有资源，不可再启动 */
+    fun destroy() { ... }
+
+    // ─── 意图与配置 ──────────────────────────────────────────
+
     fun attachEditorBridge(bridge: ImeEditorBridge) { ... }
     fun detachEditorBridge(bridge: ImeEditorBridge) { ... }
     fun handleIntent(intent: ImeIntent) { ... }
     fun updateConfig(block: (ImeConfig) -> ImeConfig) { ... }
-    fun start(startupConfig: StartupConfig) { ... }
 
     companion object {
         fun create(config: ImeConfig = ImeConfig(), dictProvider: ImeDictProvider): ImeEngine
@@ -322,7 +331,61 @@ class ImeEngine internal constructor(
 
 `Companion.create()` 是 `ImeEngine` 的唯一创建入口，内部完成以下初始化工作：创建 `KeyboardStateMachine`、创建 `InputListOperator`。工厂方法确保所有依赖项正确初始化，避免外部构造时遗漏关键组件。
 
-### 5.5 使用示例
+### 5.5 生命周期方法
+
+`ImeEngine` 提供三个生命周期方法，分别对应输入法的启动、隐藏和销毁。这三个方法的语义参考 Java 版本 `IMEditor` 的 `start`/`close`/`destroy`，但适配了 v4 的 MVI 架构——所有状态变更通过 `applyStateUpdate()` 统一出口，确保日志、断言和状态不变式检查的一致性。
+
+#### `start(startupConfig: StartupConfig)`
+
+启动输入法，建立后续所有 Intent 处理的前置条件。`start()` 是独立的生命周期方法，**不经过 `handleIntent()` → reduce 六步处理链**，而是直接执行引擎级初始化操作。其处理步骤为：
+
+1. **更新 RuntimeConfig**：将 `StartupConfig` 中的值覆盖到当前 `RuntimeConfig`。`screenOrientation` 始终被覆盖；`editorInputType` 在 `StartupConfig.editorInputType` 非 null 时覆盖，否则保持原值不变。
+2. **确定 KeyboardType**：通过两级级联规则确定启动时的键盘类型。首先根据 `StartupConfig.imeSubtype` 确定基础键盘（`Latin` → 拉丁键盘，其余 → 拼音键盘），然后根据 `RuntimeConfig.editorInputType` 修正（`Number/Datetime/Phone` → 数字键盘，`Password` → 拉丁键盘，其余保持）。
+3. **更新 keyPopupTipsEnabled**：若 `editorInputType` 为 `Password`，强制设置 `RuntimeConfig.keyPopupTipsEnabled = false` 并清空输入列表。
+4. **重置 KeyboardStateMachine**：根据确定的 `KeyboardType` 调用 `stateMachine.resetTo(initialState)` 并清空历史栈。
+5. **检查剪贴板可粘贴内容**：若 `UiConfig.clipPastePopupTipsEnabled` 为 `true`，检查系统剪贴板是否有新的可粘贴内容，若有，发射 `ImeEffect.PopupTip.Action(message="可粘贴内容", actionLabel="粘贴", action=ImeIntent.PasteClip(text), persistent=true)` 提示。
+6. **通过 `applyStateUpdate()` 原子更新 ImeState**：一次 `copy()` 操作完成所有子状态的协调变更。
+
+调用时机：`InputMethodService#onStartInputView` 和 `InputMethodService#onCurrentInputMethodSubtypeChanged`。
+
+#### `close()`
+
+关闭输入法，仅隐藏面板，但输入状态保持不变。`close()` 是轻量级操作——关闭 `ClipboardService` 对系统剪贴板的监听（停止占用系统资源），但不重置键盘状态、输入列表或候选列表。调用 `start()` 后即可恢复到关闭前的完整工作状态。
+
+调用时机：`InputMethodService#onFinishInputView`。
+
+#### `destroy()`
+
+销毁引擎，回收所有资源。`destroy()` 是终态操作——停止异步任务、关闭字典连接、注销剪贴板监听、清空编辑器桥接列表，并将所有内部引用置为 `null`。调用 `destroy()` 后引擎不可再启动，任何对引擎方法的调用将抛出 `IllegalStateException`。
+
+调用时机：`InputMethodService#onDestroy`。
+
+> **设计决策**：`start()`/`close()`/`destroy()` 作为独立的生命周期方法，而非 `ImeIntent` 子类，是因为它们是系统回调驱动的生命周期事件，语义上不属于「用户意图」。将生命周期事件与用户意图分离，确保 `ImeIntent` 的语义契约——「表达用户想要做什么」——不被稀释。同时，所有状态变更（包括 `start()` 中的初始化）均通过 `applyStateUpdate()` 统一出口，保证日志、断言和状态不变式检查的一致性。
+
+### 5.6 applyStateUpdate() 统一状态更新出口
+
+`applyStateUpdate()` 是 `ImeEngine` 内部的私有方法，所有 `ImeState` 变更——无论是 `handleIntent()` 中的 reduce 逻辑、`SwitchKeyboard` 的直接切换，还是 `start()`/`close()`/`destroy()` 中的生命周期操作——都必须经过此方法更新 `_state`。该方法是引擎状态更新的唯一出口，提供以下统一能力：
+
+- **日志**：每次状态变更记录旧状态与新状态的 diff，便于调试和追踪
+- **断言**：验证状态不变式（如 `keyboard.type` 与 `keyboard.state` 一致性、`candidateList` 非空前提、`favoriteList` 禁用一致性等），断言失败时抛出 `IllegalStateException`
+- **状态不变式检查**：确保 §3.3 中定义的所有不变式在每次状态变更后仍然成立
+
+```kotlin
+/** 统一的状态更新出口：所有 ImeState 变更必须经过此方法 */
+private fun applyStateUpdate(transform: (ImeState) -> ImeState) {
+    val oldState = _state.value
+    val newState = transform(oldState)
+    // 日志记录
+    ImeLogger.d("ImeEngine", "State updated: ${oldState.diff(newState)}")
+    // 状态不变式断言
+    assertStateInvariants(newState)
+    _state.value = newState
+}
+```
+
+`applyStateUpdate()` 的引入确保了即使 `start()` 和 `handleIntent()` 的处理路径不同，状态更新的质量保证是统一的——不存在绕过日志和断言的旁路。
+
+### 5.7 使用示例
 
 ```kotlin
 val engine = ImeEngine.create(
@@ -395,6 +458,7 @@ data class ImeConfig(
         val keyAnimationEnabled: Boolean = true,
         val gestureSlippingTrailEnabled: Boolean = true,
         val clipPopupTipsEnabled: Boolean = true,
+        val clipPastePopupTipsEnabled: Boolean = true,
         val clipPopupTipsTimeout: Int = 15,
         val adaptDesktopSwipeUpGesture: Boolean = false,
         val candidatesPagingAudioEnabled: Boolean = true,
@@ -451,7 +515,8 @@ enum class IMESubtype { Latin, Hans }
 | `hapticFeedbackEnabled` | `Boolean` | `true` | 是否启用触觉反馈 |
 | `keyAnimationEnabled` | `Boolean` | `true` | 是否启用按键动画 |
 | `gestureSlippingTrailEnabled` | `Boolean` | `true` | 是否启用滑行轨迹显示 |
-| `clipPopupTipsEnabled` | `Boolean` | `true` | 是否启用剪贴板弹出提示 |
+| `clipPopupTipsEnabled` | `Boolean` | `true` | 是否启用剪贴板收藏弹出提示 |
+| `clipPastePopupTipsEnabled` | `Boolean` | `true` | 是否启用可粘贴内容的弹出提示。若启用，则在 `ImeEngine.start()` 时检查剪贴板是否有新的可粘贴内容，若有，则弹出粘贴确认提示，在用户点击后向目标编辑器粘贴对应的内容 |
 | `clipPopupTipsTimeout` | `Int` | `15` | 剪贴板弹出提示超时（秒） |
 | `adaptDesktopSwipeUpGesture` | `Boolean` | `false` | 是否适配桌面下滑手势 |
 | `candidatesPagingAudioEnabled` | `Boolean` | `true` | 候选词翻页是否播放音效 |
@@ -514,7 +579,8 @@ enum class IMESubtype { Latin, Hans }
 ### 7.1 门控规则
 
 - 当 `favoriteInputEnabled` 和 `favoriteClipEnabled` 均为 `false` 时，收藏功能完全禁用：`ImeState.favoriteList.disabled = true`，`favoriteList.favorites` 始终为空，调用 `ImeIntent.SaveFavorite` 抛出 `IllegalStateException`。
-- 当 `favoriteClipEnabled` 为 `false` 时，`ClipboardService` 仍然正常工作（支持粘贴功能），但不会产生剪贴板收藏提示。
+- 当 `favoriteClipEnabled` 为 `false` 且 `clipPastePopupTipsEnabled` 为 `false` 时，`Clipboard.disabled = true`，`ClipboardService` 完全不工作。
+- 当 `favoriteClipEnabled` 为 `false` 但 `clipPastePopupTipsEnabled` 为 `true` 时，`Clipboard.disabled = false`，`ClipboardService` 正常工作（支持粘贴功能和可粘贴内容提示），但不会产生剪贴板收藏提示。
 - 当 `favoriteInputEnabled` 为 `false` 时，已提交输入不会产生输入收藏提示。
 - `favoriteSyncToUserDictEnabled` 是正交配置，仅在 `favoriteInputEnabled` 或 `favoriteClipEnabled` 至少一个为 `true` 时生效。当其为 `true` 时，收藏面板中出现「同步」和「同步删除」按钮；当其均为 `false` 时，该配置项无意义。
 
@@ -586,9 +652,7 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 - `candidateList`：根据字典查询结果更新候选列表
 - `clipboard` / `favoriteList`：根据剪贴板和收藏操作更新对应子状态
 
-注意：`ImeIntent.StartInput` 不经过 `reduce` 处理链，而是在 `ImeEngine.start()` 方法中直接处理，用于初始化 `RuntimeConfig` 和键盘类型。
-
-各子状态的变更通过一次 `copy()` 操作原子完成，不存在中间状态被外部观察到的风险。
+各子状态的变更通过 `applyStateUpdate()` 统一出口完成，不存在绕过日志和断言的旁路。`start()` 中的状态初始化也经过 `applyStateUpdate()`，确保所有状态变更——无论来源是生命周期方法还是用户意图——都经过统一的质量保证流程。
 
 ### 8.6 Step 5：分发 EditorAction 到 ImeEditorBridge
 

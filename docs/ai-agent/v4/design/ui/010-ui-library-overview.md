@@ -80,7 +80,7 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 | `KeyboardTheme` | `theme` | 主题 `Composable`（支持跟随系统） |
 | `LocalKeyboardColors` | `theme` | `CompositionLocal` 提供颜色 |
 
-主题系统为所有 UI 组件提供统一的颜色体系。`KeyboardColors` 定义了键盘界面各区域的颜色变量，包括按键背景色、按键前景色、按键激活色、候选栏背景色、候选栏前景色、输入栏背景色、输入栏前景色、弹出提示背景色、弹出提示前景色、工具栏背景色等。`KeyboardThemes` 提供两套预置主题——亮色（`Light`）和暗色（`Night`），分别对应 `KeyboardColors` 的不同配色方案。`KeyboardTheme` 是顶层 `Composable`，根据 `ImeConfig.ui.themeType` 选择主题，通过 `CompositionLocal` 将 `KeyboardColors` 向下传递。第三方应用可以通过实现自定义的 `KeyboardColors` 完全替换配色方案，也可以通过 `ImeConfig.ui` 调整部分颜色参数。
+主题系统为所有 UI 组件提供统一的颜色体系。`KeyboardColors` 定义了键盘界面各区域的颜色变量，包括按键背景色、按键前景色、按键激活色、候选栏背景色、候选栏前景色、输入栏背景色、输入栏前景色、弹出提示背景色、弹出提示前景色、工具栏背景色等。`KeyboardThemes` 提供两套预置主题——亮色（`Light`）和暗色（`Night`），分别对应 `KeyboardColors` 的不同配色方案。`KeyboardTheme` 是顶层 `Composable`，根据 `ImeConfig.ui.keyboardThemeType` 选择主题，通过 `CompositionLocal` 将 `KeyboardColors` 向下传递。第三方应用可以通过实现自定义的 `KeyboardColors` 完全替换配色方案，也可以通过 `ImeConfig.ui` 调整部分颜色参数。
 
 ### 2.6 按键生成组件
 

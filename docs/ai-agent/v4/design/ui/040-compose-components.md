@@ -369,14 +369,14 @@ object KeyboardThemes {
 ```kotlin
 @Composable
 fun KeyboardTheme(
-    themeMode: ThemeMode,
+    type: KeyboardThemeType,
     content: @Composable () -> Unit,
 )
 
 val LocalKeyboardColors = compositionLocalOf { KeyboardThemes.Light }
 ```
 
-`KeyboardTheme` 读取 `themeMode` 参数（`Light`、`Night` 或 `FollowSystem`），当 `FollowSystem` 时通过 `isSystemInDarkTheme()` 判断系统当前模式。选定 `KeyboardColors` 后，通过 `CompositionLocalProvider` 将其注入 `LocalKeyboardColors`。所有子组件通过 `LocalKeyboardColors.current` 读取色彩值，确保主题切换时界面风格的一致性。
+`KeyboardTheme` 读取 `type` 参数（`KeyboardThemeType.Light`、`KeyboardThemeType.Night` 或 `KeyboardThemeType.FollowSystem`），当 `FollowSystem` 时通过 `isSystemInDarkTheme()` 判断系统当前模式。选定 `KeyboardColors` 后，通过 `CompositionLocalProvider` 将其注入 `LocalKeyboardColors`。所有子组件通过 `LocalKeyboardColors.current` 读取色彩值，确保主题切换时界面风格的一致性。
 
 ---
 

@@ -486,7 +486,7 @@ val UITestTool.displayName: String
 // main 源集
 @Composable
 fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
-    KeyboardTheme(themeType = state.config.ui.themeType) {
+    KeyboardTheme(type = state.config.ui.keyboardThemeType) {
         KeyboardHost(state, intentHandler)
     }
 }
@@ -494,7 +494,7 @@ fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
 // debug 源集
 @Composable
 fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
-    KeyboardTheme(themeType = state.config.ui.themeType) {
+    KeyboardTheme(type = state.config.ui.keyboardThemeType) {
         Box {
             KeyboardHost(state, intentHandler)
 
@@ -588,7 +588,7 @@ class PinyinKeyboardScreenshotTest {
     @Test
     fun pinyinKeyboardIdle() {
         paparazzi.snapshot {
-            KeyboardTheme(themeType = KeyboardThemeType.Light) {
+            KeyboardTheme(type = KeyboardThemeType.Light) {
                 KeyboardHost(
                     state = ImeState(
                         keyboard = Keyboard(type = KeyboardType.Pinyin, state = KeyboardState.Idle),
@@ -602,7 +602,7 @@ class PinyinKeyboardScreenshotTest {
     @Test
     fun pinyinKeyboardWithCandidates() {
         paparazzi.snapshot {
-            KeyboardTheme(themeType = KeyboardThemeType.Light) {
+            KeyboardTheme(type = KeyboardThemeType.Light) {
                 KeyboardHost(
                     state = ImeState(
                         keyboard = Keyboard(type = KeyboardType.Pinyin, state = KeyboardState.PinyinInput.Waiting(
