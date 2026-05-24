@@ -23,12 +23,12 @@ data class ImeState(
 
 ## 2. Keyboard 模型
 
-`Keyboard` 将键盘的类型、输入模式和交互状态封装为一个不可变的 `data class`，通过组合模式替代继承。三个字段各自承担独立的职责维度：`type` 决定按键集合的语义内容（拼音字母、数字、符号等），`mode` 决定按键的几何排列与交互范式（六边形网格或矩形网格），`state` 记录当前键盘状态机的精确位置。`type` 和 `mode` 正交组合——任意 `KeyboardType` 可与任意 `KeyboardInputMode` 配对，引擎在运行时根据用户配置和键盘类型选择合适的组合。
+`Keyboard` 将键盘的类型、左右手模式临时状态和交互状态封装为一个不可变的 `data class`，通过组合模式替代继承。三个字段各自承担独立的职责维度：`type` 决定按键集合的语义内容（拼音字母、数字、符号等），`handMode` 记录左右手模式的临时切换状态（`null` 表示未切换，此时使用 `UiConfig.keyboardHandMode` 的值），`state` 记录当前键盘状态机的精确位置。`KeyboardInputMode` 不再作为 `Keyboard` 的字段——键盘输入模式只能通过 `UiConfig.keyboardInputMode` 配置变更，不支持临时性修改。
 
 ```kotlin
 data class Keyboard(
     val type: KeyboardType = KeyboardType.Pinyin,
-    val mode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+    val handMode: KeyboardHandMode? = null,
     val state: KeyboardState = KeyboardState.Idle,
 )
 ```
@@ -55,7 +55,7 @@ enum class KeyboardType {
 
 ### 2.2 KeyboardInputMode 枚举
 
-`KeyboardInputMode` 定义了按键的几何排列和交互范式，与 `KeyboardType` 正交组合。当前支持两种输入模式：
+`KeyboardInputMode` 定义了按键的几何排列和交互范式，通过 `ImeConfig.UiConfig.keyboardInputMode` 配置，不再是 `Keyboard` 的字段。键盘输入模式只能通过配置变更，不支持运行时临时修改。当前支持两种输入模式：
 
 ```kotlin
 enum class KeyboardInputMode {
@@ -68,7 +68,7 @@ enum class KeyboardInputMode {
 
 `RectGrid` 模式下，按键以传统矩形网格排列（QWERTY 布局），适合逐键点击输入。矩形网格的几何排列更符合用户对传统键盘的肌肉记忆，在需要精确逐键输入的场景（如拉丁字母输入、数字输入）下更加直观。引擎在 `RectGrid` 模式下以逐键点击为默认交互方式，但仍然支持滑行和翻动手势——只是手势识别策略和按键间距参数与 `HexGrid` 不同。
 
-两种模式的切换通过 `ImeConfig` 配置或运行时 Intent 触发，切换后引擎根据新模式重新计算按键布局和手势识别参数。UI 层根据 `keyboard.mode` 选择对应的布局渲染器（`HexGridLayout` 或 `RectGridLayout`），引擎层根据 `keyboard.mode` 选择对应的手势识别策略。
+键盘输入模式的切换通过 `UiConfig.keyboardInputMode` 配置变更实现，不支持运行时临时修改。UI 层根据 `config.ui.keyboardInputMode` 选择对应的布局渲染器（`HexGridLayout` 或 `RectGridLayout`），引擎层根据 `config.ui.keyboardInputMode` 选择对应的手势识别策略。
 
 ---
 
@@ -190,7 +190,7 @@ data class Clipboard(
 )
 ```
 
-`currentText` 为当前系统剪贴板的文本内容，`null` 表示无内容。`showTip` 控制是否在 UI 上显示剪贴板提示，当 `ClipboardService` 检测到新剪贴内容时设为 `true`，用户粘贴或 dismiss 后设为 `false`。`clips` 为最近的剪贴条目列表，支持用户浏览和选择历史剪贴内容。`disabled` 为功能开关，见第 8 节 Feature 门控规则。
+`currentText` 为当前系统剪贴板的文本内容，`null` 表示无内容。`showTip` 控制是否在 UI 上显示剪贴板提示，当 `ClipboardService` 检测到新剪贴内容时设为 `true`，用户粘贴或 dismiss 后设为 `false`。`clips` 为最近的剪贴条目列表，支持用户浏览和选择历史剪贴内容。`disabled` 为功能开关，见第 8 节收藏功能门控规则。
 
 ### 4.1 InputClip 数据模型
 
@@ -242,7 +242,7 @@ data class FavoriteList(
 )
 ```
 
-`favorites` 为当前用户的收藏条目列表，按使用频次和时间排序——常用条目排在前面，便于快速访问。`isLoading` 标识收藏列表是否正在从数据库加载，初始启动或数据库查询期间为 `true`，加载完成后设为 `false`。UI 层根据 `isLoading` 显示加载指示器或收藏列表内容。`disabled` 为功能开关，见第 8 节 Feature 门控规则。
+`favorites` 为当前用户的收藏条目列表，按使用频次和时间排序——常用条目排在前面，便于快速访问。`isLoading` 标识收藏列表是否正在从数据库加载，初始启动或数据库查询期间为 `true`，加载完成后设为 `false`。UI 层根据 `isLoading` 显示加载指示器或收藏列表内容。`disabled` 为功能开关，见第 8 节收藏功能门控规则。
 
 ### 5.1 InputFavorite 数据模型
 
@@ -334,7 +334,7 @@ enum class HapticType {
 
 ## 7. ToolListState（ViewModel 本地状态）
 
-`ToolListState` **不属于 `ImeState`**，由 `KeyboardViewModel` 维护本地 `StateFlow<ToolListState>`。工具栏内容根据 `keyboard.type`、`keyboard.state` 和 Feature 门控动态配置。将 `ToolListState` 从 `ImeState` 中分离的设计决策基于以下考量：工具栏的配置是 UI 层的展示逻辑，不属于引擎的核心状态；工具栏的变更频率（键盘切换级，秒级）远低于 `ImeState` 的变更频率（按键级，毫秒级）；引擎不需要感知工具栏的具体内容，仅通过 `ImeIntent` 接收工具栏按钮的操作。
+`ToolListState` **不属于 `ImeState`**，由 `KeyboardViewModel` 维护本地 `StateFlow<ToolListState>`。工具栏内容根据 `keyboard.type`、`keyboard.state` 和收藏功能门控动态配置。将 `ToolListState` 从 `ImeState` 中分离的设计决策基于以下考量：工具栏的配置是 UI 层的展示逻辑，不属于引擎的核心状态；工具栏的变更频率（键盘切换级，秒级）远低于 `ImeState` 的变更频率（按键级，毫秒级）；引擎不需要感知工具栏的具体内容，仅通过 `ImeIntent` 接收工具栏按钮的操作。
 
 ```kotlin
 data class ToolListState(
@@ -349,39 +349,53 @@ data class ToolItem(
 )
 ```
 
-`ToolItem` 的 `intent` 字段存储点击该工具后发送的 `ImeIntent`，`disabled` 字段根据运行时状态动态控制——例如撤销/重做工具根据 `InputListEditor` 的 undoStack/redoStack 状态启用或禁用。工具栏的内容按 `keyboard.type` 动态配置：`Pinyin`/`Latin` 键盘显示全选、复制、粘贴、剪贴板、撤销、重做；`Editor` 键盘显示全选、复制、剪切、粘贴、撤销；`Symbol`/`Emoji`/`Number`/`Math` 键盘显示全选、复制、粘贴。剪贴板工具项仅在 `Feature.Clipboard` 启用时显示，收藏工具项仅在 `Feature.Favorites` 启用时显示。
+`ToolItem` 的 `intent` 字段存储点击该工具后发送的 `ImeIntent`，`disabled` 字段根据运行时状态动态控制——例如撤销/重做工具根据 `InputListEditor` 的 undoStack/redoStack 状态启用或禁用。工具栏的内容按 `keyboard.type` 动态配置：`Pinyin`/`Latin` 键盘显示全选、复制、粘贴、剪贴板、撤销、重做；`Editor` 键盘显示全选、复制、剪切、粘贴、撤销；`Symbol`/`Emoji`/`Number`/`Math` 键盘显示全选、复制、粘贴。剪贴板工具项始终显示（剪贴板粘贴功能不再受门控限制），收藏工具项仅在 `favoriteInputEnabled` 或 `favoriteClipEnabled` 至少一个为 `true` 时显示。
 
 ---
 
-## 8. Feature 门控规则
+## 8. 收藏功能门控规则
 
-Feature 门控是 `:ime-engine` 的功能裁剪机制，通过 `ImeConfig.engine.features` 集合控制可选功能的启用和禁用。门控规则遵循 **Fail Fast** 原则——禁用功能后调用相关操作立即抛出异常，而非静默忽略，确保调用方在编译期或运行时早期发现错误。
+收藏功能门控由 `ImeConfig.EngineConfig` 中的 `favoriteInputEnabled` 和 `favoriteClipEnabled` 两个布尔字段联合控制，替代原有的 `Feature` 枚举门控机制。门控规则遵循 **Fail Fast** 原则——禁用功能后调用相关操作立即抛出异常。
 
-### 8.1 Clipboard 门控
+### 8.1 收藏功能总门控
 
-当 `Feature.Clipboard` 被禁用时：
-
-- `ImeState.clipboard.disabled = true`
-- `clipboard.clips` 始终为空列表
-- `clipboard.showTip` 始终为 `false`
-- `clipboard.currentText` 始终为 `null`
-- 调用 `ImeIntent.PasteClip(text)` 立即抛出 `IllegalStateException`
-- `ClipboardService` 不监听系统剪贴板变更
-
-门控的写入路径由 `ImeEngine` 的 reduce 函数保证：当 `Feature.Clipboard` 未包含在 `config.engine.features` 中时，任何试图更新 `clipboard` 字段的 reduce 逻辑都会被短路，状态保持为禁用默认值。读取路径由 UI 层保证：`KeyboardViewModel` 根据 `clipboard.disabled` 隐藏剪贴板相关的 UI 元素和工具项。
-
-### 8.2 Favorites 门控
-
-当 `Feature.Favorites` 被禁用时：
+当 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 均为 `false` 时：
 
 - `ImeState.favoriteList.disabled = true`
 - `favoriteList.favorites` 始终为空列表
 - `favoriteList.isLoading` 始终为 `false`
 - 调用 `ImeIntent.SaveFavorite(favorite)` 立即抛出 `IllegalStateException`
-- 调用 `ImeIntent.DeleteFavorite(text)` 立即抛出 `IllegalStateException`
-- `FavoriteService` 不订阅数据库变更
+- UI 层不显示收藏面板切换按钮
 
-与剪贴板门控类似，收藏门控的写入路径由 reduce 函数短路保证，读取路径由 UI 层根据 `favoriteList.disabled` 隐藏收藏相关的 UI 元素和工具项。两个门控规则共同确保：禁用功能的子状态始终保持禁用默认值，禁用功能的操作 Intent 始终 Fail Fast，禁用功能的 UI 元素始终不可见。
+门控的写入路径由 `ImeEngine` 的 reduce 函数保证：当两个开关均为 false 时，任何试图更新 `favoriteList` 字段的 reduce 逻辑都会被短路，状态保持为禁用默认值。读取路径由 UI 层保证：`KeyboardViewModel` 根据 `favoriteList.disabled` 隐藏收藏相关的 UI 元素和工具项。
+
+### 8.2 输入收藏门控
+
+当 `EngineConfig.favoriteInputEnabled` 为 `false` 时：
+
+- 输入提交后不发射 `ImeEffect.PopupTip.Action("可收藏内容", ...)` 提示
+- 不影响剪贴板收藏功能（若 `favoriteClipEnabled` 为 `true`）
+- 不影响已收藏内容的使用（若 `favoriteClipEnabled` 为 `true`，收藏面板仍然可用）
+
+### 8.3 剪贴板收藏门控
+
+当 `EngineConfig.favoriteClipEnabled` 为 `false` 时：
+
+- `ClipboardService` 仍正常运行，用户可通过 `ImeIntent.PasteClip` 粘贴剪贴板内容
+- 不发射剪贴板收藏相关的 `ImeEffect.PopupTip.Action` 提示
+- 不影响输入收藏功能（若 `favoriteInputEnabled` 为 `true`）
+
+### 8.4 收藏同步门控
+
+当 `EngineConfig.favoriteSyncToUserDictEnabled` 为 `true` 时：
+
+- 被收藏的输入内容或可粘贴内容，自动保存到系统用户字典中
+- 收藏面板中显示「同步」按钮（将用户字典数据同步到收藏）和删除时的「同步删除」按钮
+- 此门控仅在 `favoriteInputEnabled` 或 `favoriteClipEnabled` 至少一个为 `true` 时生效
+
+### 8.5 剪贴板门控
+
+注意：剪贴板粘贴功能（`ImeIntent.PasteClip`）不再受门控限制。当 `favoriteClipEnabled` 为 `false` 时，剪贴板粘贴功能仍然可用，只是不会提示收藏。这与旧版 `Feature.Clipboard` 门控不同——旧版禁用后粘贴功能也被禁用，新版将粘贴功能与收藏功能解耦。
 
 ---
 
@@ -393,15 +407,13 @@ Feature 门控是 `:ime-engine` 的功能裁剪机制，通过 `ImeConfig.engine
 
 2. **`candidateList` 非空前提**：`candidateList.candidates` 非空当且仅当 `keyboard.state` 处于 `CandidateSelection.*` 状态。进入候选选择时加载候选词，退出候选选择时清空列表。此不变式确保 UI 层不会在非候选状态下渲染空白的候选面板。
 
-3. **`clipboard` 禁用一致性**：当 `clipboard.disabled = true` 时，`clipboard.clips` 必须为空列表，`clipboard.showTip` 必须为 `false`，`clipboard.currentText` 必须为 `null`。此不变式由 reduce 函数的门控短路逻辑保证。
+3. **`favoriteList` 禁用一致性**：当 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 均为 `false` 时，`favoriteList.disabled` 必须为 `true`，`favoriteList.favorites` 必须为空列表，`favoriteList.isLoading` 必须为 `false`。此不变式由 reduce 函数的门控短路逻辑保证。
 
-4. **`favoriteList` 禁用一致性**：当 `favoriteList.disabled = true` 时，`favoriteList.favorites` 必须为空列表，`favoriteList.isLoading` 必须为 `false`。此不变式由 reduce 函数的门控短路逻辑保证。
+4. **`inputList.gapIndex` 范围合法性**：`gapIndex` 必须满足 `0 <= gapIndex <= inputs.lastIndex + 1`，且 `inputs[gapIndex]` 必须是 `InputItem.Gap`（当 `gapIndex <= inputs.lastIndex` 时）。此不变式由 `InputList` 的 `init` 块和所有游标移动方法的边界检查保证。
 
-5. **`inputList.gapIndex` 范围合法性**：`gapIndex` 必须满足 `0 <= gapIndex <= inputs.lastIndex + 1`，且 `inputs[gapIndex]` 必须是 `InputItem.Gap`（当 `gapIndex <= inputs.lastIndex` 时）。此不变式由 `InputList` 的 `init` 块和所有游标移动方法的边界检查保证。
+5. **`candidateList.pageIndex` 范围合法性**：当 `candidateList.candidates` 非空时，`pageIndex` 必须满足 `0 <= pageIndex < ceil(candidates.size / pageSize)`。若数据变更导致 `pageIndex * pageSize >= candidates.size`，自动调整到最后一页。此不变式由 `CandidateList` 的分页逻辑保证。
 
-6. **`candidateList.pageIndex` 范围合法性**：当 `candidateList.candidates` 非空时，`pageIndex` 必须满足 `0 <= pageIndex < ceil(candidates.size / pageSize)`。若数据变更导致 `pageIndex * pageSize >= candidates.size`，自动调整到最后一页。此不变式由 `CandidateList` 的分页逻辑保证。
-
-7. **`keyboard` 切换清空历史**：`KeyboardType` 切换时 `KeyboardStateHistory` 必须被清空。不同键盘类型之间不存在状态回退关系，残留的历史栈会导致回退到语义不兼容的状态。此不变式由 `KeyboardStateMachine.resetTo()` 保证。
+6. **`keyboard` 切换清空历史**：`KeyboardType` 切换时 `KeyboardStateHistory` 必须被清空。不同键盘类型之间不存在状态回退关系，残留的历史栈会导致回退到语义不兼容的状态。此不变式由 `KeyboardStateMachine.resetTo()` 保证。
 
 ---
 

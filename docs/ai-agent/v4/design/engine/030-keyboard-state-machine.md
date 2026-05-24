@@ -391,12 +391,12 @@ class ImeEngine internal constructor(
 
 ### 5.1 Keyboard data class
 
-`Keyboard` 是键盘实例的不可变数据类，绑定键盘类型、输入模式和键盘状态。三个维度正交组合：`type` 决定按键集合的语义内容，`mode` 决定按键的几何排列和交互方式，`state` 决定当前交互所处的状态机节点。状态变更通过 `copy()` 生成新实例，原始实例不受影响。`Keyboard` 不持有任何行为逻辑——意图处理委托给 `KeyboardIntentHandler`，状态转换委托给 `KeyboardStateMachine`，自身仅作为数据容器。
+`Keyboard` 将键盘的类型、左右手模式临时状态和交互状态封装为一个不可变的 `data class`，通过组合模式替代继承。三个字段各自承担独立的职责维度：`type` 决定按键集合的语义内容，`handMode` 记录左右手模式的临时切换（`null` 表示未切换，使用 `UiConfig.keyboardHandMode` 的值），`state` 记录当前键盘状态机的精确位置。键盘输入模式（`KeyboardInputMode`）不再是 `Keyboard` 的字段，仅通过 `ImeConfig.UiConfig.keyboardInputMode` 配置变更。状态变更通过 `copy()` 生成新实例，原始实例不受影响。
 
 ```kotlin
 data class Keyboard(
     val type: KeyboardType = KeyboardType.Pinyin,
-    val mode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+    val handMode: KeyboardHandMode? = null,
     val state: KeyboardState = KeyboardState.Idle,
 )
 ```
@@ -434,7 +434,7 @@ enum class KeyboardInputMode {
 }
 ```
 
-`KeyboardInputMode` 与 `KeyboardType` 正交：任意 `KeyboardType` 可与任意 `KeyboardInputMode` 组合。不同输入模式决定按键的几何排列和手势识别策略——`RectGrid` 采用传统矩形按键布局，手势识别基于方向向量；`HexGrid` 采用六边形按键布局，手势识别基于轴向坐标。
+`KeyboardInputMode` 定义了按键的几何排列和交互范式，通过 `ImeConfig.UiConfig.keyboardInputMode` 配置，不再是 `Keyboard` 的字段。键盘输入模式只能通过配置变更，不支持运行时临时修改。不同输入模式决定按键的几何排列和手势识别策略——`RectGrid` 采用传统矩形按键布局，手势识别基于方向向量；`HexGrid` 采用六边形按键布局，手势识别基于轴向坐标。
 
 ### 5.4 KeyboardType → 初始 KeyboardState 映射
 

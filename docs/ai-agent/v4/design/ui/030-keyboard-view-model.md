@@ -81,7 +81,7 @@ class KeyboardViewModel(
     /**
      * 工具列表状态，由 ViewModel 本地维护。
      *
-     * 根据 keyboard.type、keyboard.state 和 Feature 门控动态配置工具项。
+     * 根据 keyboard.type、keyboard.state 和收藏功能门控（favoriteInputEnabled / favoriteClipEnabled）动态配置工具项。
      * 不属于 ImeState，避免引擎维护 UI 层的展示状态。
      * 当 keyboard.type 或 keyboard.state 变更时，自动重新计算工具列表。
      */
@@ -423,7 +423,7 @@ sealed class PopupTipState {
 /**
  * 工具列表状态，由 KeyboardViewModel 维护。
  *
- * 工具栏内容根据 keyboard.type 和 Feature 门控动态配置。
+ * 工具栏内容根据 keyboard.type 和收藏功能门控（favoriteInputEnabled / favoriteClipEnabled）动态配置。
  * 不属于 ImeState，避免引擎维护 UI 层的展示状态。
  */
 data class ToolListState(
@@ -449,7 +449,7 @@ data class ToolItem(
 )
 ```
 
-`KeyboardViewModel` 通过 `computeToolList(state: ImeState)` 方法根据当前 `ImeState` 动态计算工具列表。工具列表的内容随 `keyboard.type` 和 Feature 门控变化：拼音和拉丁键盘提供完整的编辑功能键（全选、复制、粘贴、剪贴板、撤销、重做）和键盘切换键；编辑键盘专注于编辑操作（全选、复制、剪切、粘贴、撤销）；符号、表情、数字和数学键盘提供基本编辑功能（全选、复制、粘贴）和返回主键盘的切换键。`ToolItem.disabled` 字段用于在某些状态下禁用特定工具（如输入列表为空时禁用复制），`ToolListPanel` 渲染禁用工具时降低视觉权重并阻止点击。
+`KeyboardViewModel` 通过 `computeToolList(state: ImeState)` 方法根据当前 `ImeState` 动态计算工具列表。工具列表的内容随 `keyboard.type` 和收藏功能门控（`EngineConfig.favoriteInputEnabled` / `EngineConfig.favoriteClipEnabled`）变化：拼音和拉丁键盘提供完整的编辑功能键（全选、复制、粘贴、剪贴板、撤销、重做）和键盘切换键；编辑键盘专注于编辑操作（全选、复制、剪切、粘贴、撤销）；符号、表情、数字和数学键盘提供基本编辑功能（全选、复制、粘贴）和返回主键盘的切换键。`ToolItem.disabled` 字段用于在某些状态下禁用特定工具（如输入列表为空时禁用复制），`ToolListPanel` 渲染禁用工具时降低视觉权重并阻止点击。
 
 ---
 
@@ -526,7 +526,7 @@ fun KeyboardHost(
     val toolListState by viewModel.toolListState.collectAsState()
     var keyLayoutState by remember { mutableStateOf(KeyLayoutState()) }
 
-    KeyboardTheme(themeType = state.config.ui.themeType) {
+    KeyboardTheme(themeType = state.config.ui.keyboardThemeType) {
         when (layoutMode) {
             is KeyboardLayoutMode.Stacked -> StackedLayout(
                 viewModel, state, feedbackState,

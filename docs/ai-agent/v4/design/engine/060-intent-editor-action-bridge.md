@@ -75,7 +75,7 @@ sealed class ImeIntent {
 
 ### 1.5 剪贴板、收藏与配置意图
 
-`PasteClip` 携带剪贴板文本内容，引擎收到后将文本追加到 `InputList.inputs` 中并输出到目标编辑器。`PasteClip` 受 `Feature.Clipboard` 门控——禁用时调用立即抛出 `IllegalStateException`。`SaveFavorite` 携带收藏条目，引擎收到后通过 `FavoriteService` 保存收藏，受 `Feature.Favorites` 门控。`UpdateConfig` 携带新的 `ImeConfig` 实例，引擎收到后更新运行时配置，同步更新 `FeatureRegistry` 的门控状态。`ExportUserData` 和 `ImportUserData` 是数据导入导出意图，引擎收到后委托 `DictRepository` 执行数据的序列化和反序列化。
+`PasteClip` 携带剪贴板文本内容，引擎收到后将文本追加到 `InputList.inputs` 中并输出到目标编辑器。`SaveFavorite` 携带收藏条目，引擎收到后通过 `FavoriteService` 保存收藏，受 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 联合门控——当两者均为 `false` 时调用立即抛出 `IllegalStateException`。`UpdateConfig` 携带新的 `ImeConfig` 实例，引擎收到后更新运行时配置。`ExportUserData` 和 `ImportUserData` 是数据导入导出意图，引擎收到后委托 `DictRepository` 执行数据的序列化和反序列化。
 
 ---
 
@@ -575,7 +575,6 @@ class ImeEngine internal constructor(
     private val dictProvider: ImeDictProvider,
     private val stateMachine: KeyboardStateMachine,
     private val inputListOp: InputListOperator,
-    private val featureRegistry: FeatureRegistry,
 ) {
     private val _state = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()

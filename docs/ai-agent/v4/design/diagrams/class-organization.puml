@@ -29,7 +29,20 @@ package ":ime-engine" #FFF3E0 {
     class ImeConfig <<(D,#FFF3E0)>> {
       + engine: EngineConfig
       + ui: UiConfig
-      + runtimeOverrides: Set<ConfigField>
+      + runtime: RuntimeConfig
+    }
+    class RuntimeConfig <<(D,#FFF3E0)>> {
+      + screenOrientation: ScreenOrientation
+      + editorInputType: EditorInputType
+      + keyPopupTipsEnabled: Boolean?
+      + toolSettingsEnabled: Boolean
+      + toolSwitchIMEEnabled: Boolean
+      + toolCloseKeyboardEnabled: Boolean
+    }
+    class StartupConfig <<(D,#FFF3E0)>> {
+      + imeSubtype: IMESubtype
+      + screenOrientation: ScreenOrientation
+      + editorInputType: EditorInputType?
     }
     class ImeIntent <<(S,#FFF3E0)>> {
       {static} PressKey(key, gesture)
@@ -56,7 +69,7 @@ package ":ime-engine" #FFF3E0 {
     }
     class Keyboard <<(D,#FFF3E0)>> {
       + type: KeyboardType
-      + mode: KeyboardInputMode
+      + handMode: KeyboardHandMode?
       + state: KeyboardState
     }
   }
@@ -190,9 +203,6 @@ package ":ime-engine" #FFF3E0 {
     }
     class InputListOperator <<(C,#FFF3E0)>> {
       + apply(intent, list): InputList
-    }
-    class FeatureRegistry <<(C,#FFF3E0)>> {
-      + isEnabled(feature): Boolean
     }
   }
 
@@ -494,10 +504,10 @@ InputActionPositionResolver <|.. ComposeInputActionPositionResolver : :ime-ui
 
 ImeEngine *-- KeyboardStateMachine
 ImeEngine *-- InputListOperator
-ImeEngine *-- FeatureRegistry
 ImeState *-- Keyboard : keyboard
 Keyboard *-- KeyboardType : type
-Keyboard *-- KeyboardInputMode : mode
+Keyboard *-- KeyboardHandMode : handMode
+ImeConfig *-- RuntimeConfig : runtime
 ImeSqliteDictProvider *-- DictRepository
 ImeSqliteDictProvider *-- PinyinCharsTree
 ImeSqliteDictProvider *-- HmmModel

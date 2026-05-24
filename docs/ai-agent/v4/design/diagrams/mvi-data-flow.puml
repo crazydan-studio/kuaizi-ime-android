@@ -127,7 +127,7 @@ note right of IE
 end note
 
 note right of IS
-  keyboard.mode
+  config.ui.keyboardInputMode
   keyboard.state
   candidateList, inputList
   config

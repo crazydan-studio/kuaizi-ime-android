@@ -291,11 +291,10 @@ val engine = mockk<ImeEngine> {
 
 ImeConfig 的运行时优先语义是核心行为，必须覆盖：
 
-1. **初始化**：应用启动时 ImeConfig 从持久化配置初始化
+1. **初始化**：应用启动时 ImeConfig 从持久化配置初始化（EngineConfig + UiConfig），RuntimeConfig 由 StartupConfig 初始化
 2. **运行时修改**：运行时修改 ImeConfig 字段后，引擎和 UI 立即响应
-3. **运行时覆盖优先**：已被运行时覆盖的字段（`runtimeOverrides` 记录）不会被持久化同步覆盖
-4. **重启重置**：应用重启后，运行时覆盖失效，ImeConfig 重新从持久化配置初始化
-5. **部分覆盖**：仅覆盖部分字段时，未覆盖字段仍跟随持久化配置
+3. **RuntimeConfig 不持久化**：运行时临时状态（屏幕方向、编辑器类型、工具按钮状态等）放在 RuntimeConfig 中，不做持久化
+4. **重启重置**：应用重启后，RuntimeConfig 由新的 StartupConfig 重新初始化，EngineConfig 和 UiConfig 从持久化配置恢复
 
 ---
 

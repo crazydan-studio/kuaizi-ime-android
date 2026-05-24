@@ -604,9 +604,9 @@ class ViterbiDecoder(private val model: HmmModel) {
 
 ### 8.3 阶段三：HMM 排序
 
-当 `ImeConfig.engine.candidatePredictionEnabled` 为 `true` 且 `Feature.CandidatePrediction` 启用时，引擎在精确查询结果之上执行 HMM 短语预测。`HmmModel` 接收当前拼音作为观测值，结合上文已输入的汉字作为上下文，通过 `ViterbiDecoder.decode()` 计算最可能的汉字序列。HMM 预测的结果为 Top-5 候选路径，每条路径包含一个汉字序列和对应概率。
+当 `ImeConfig.engine.inputPredictionEnabled` 为 `true` 时，引擎在精确查询结果之上执行 HMM 短语预测。`HmmModel` 接收当前拼音作为观测值，结合上文已输入的汉字作为上下文，通过 `ViterbiDecoder.decode()` 计算最可能的汉字序列。HMM 预测的结果为 Top-5 候选路径，每条路径包含一个汉字序列和对应概率。
 
-HMM 预测结果与精确查询结果的合并策略是：预测结果的概率归一化后与字典频率线性加权，权重由 `ImeConfig` 配置控制。默认配置下，HMM 预测结果的权重较低（0.3），字典频率的权重较高（0.7）——这确保了字典频率作为基础排序依据的稳定性，HMM 预测作为辅助排序信号提供上下文感知的微调。当 `Feature.CandidatePrediction` 禁用时，此阶段完全跳过，候选列表仅包含精确查询结果。
+HMM 预测结果与精确查询结果的合并策略是：预测结果的概率归一化后与字典频率线性加权，权重由 `ImeConfig` 配置控制。默认配置下，HMM 预测结果的权重较低（0.3），字典频率的权重较高（0.7）——这确保了字典频率作为基础排序依据的稳定性，HMM 预测作为辅助排序信号提供上下文感知的微调。当 `ImeConfig.engine.inputPredictionEnabled` 为 `false` 时，此阶段完全跳过，候选列表仅包含精确查询结果。
 
 ### 8.4 阶段四：用户频率合并
 

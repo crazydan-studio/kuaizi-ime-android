@@ -162,7 +162,7 @@ Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高
 | `PreferenceScreen` 跳转 | 扁平化 `LazyColumn` | 减少页面跳转 |
 | `SwitchPreferenceCompat` | `EnhancedSwitchPreference` | 增加描述、条件显示、依赖提示 |
 | `ListPreference` 主题选择 | `ThemeSelector` 卡片 + 即时预览 | 可视化选择，内嵌键盘预览 |
-| `ListPreference` 手模式 | `HandModeToggle` 分段按钮 | 一键切换，无需打开选择器 |
+| `ListPreference` 手模式 | `KeyboardHandModeToggle` 分段按钮 | 一键切换，无需打开选择器 |
 | `PreferenceCategory` 固定分组 | `expandableSection` 可折叠分组 | 低频配置默认折叠 |
 | 否定式命名（禁用 xxx） | 肯定式命名（xxx 启用） | 直觉理解，UI 开关值 = `config.ui.*Enabled` |
 | 无描述 | 每项完整描述 | 说明功能和影响 |
@@ -175,9 +175,9 @@ Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高
 
 ### 配置字段命名对照
 
-所有配置项从否定式（`disable*`）改为肯定式（`*Enabled`），UI 开关值直接映射：
+所有配置项从否定式（`disable*`）改为肯定式（`*Enabled`），UI 开关值直接映射。类型命名变更：`ThemeType` → `KeyboardThemeType`、`HandMode` → `KeyboardHandMode`。部分字段移至 `EngineConfig`（`candidateVariantFirstEnabled`、`userDataPersistEnabled`）：
 
-| Java 配置键（否定式） | v4 `ImeConfig.UiConfig` 属性（肯定式） | UI 显示名称 | 映射关系 |
+| Java 配置键（否定式） | v4 `ImeConfig` 属性（肯定式） | UI 显示名称 | 映射关系 |
 |---------------------|--------------------------------------|------------|----------|
 | `disable_key_clicked_audio` | `audioFeedbackEnabled` | 按键音效 | 直接映射（反转语义） |
 | `disable_key_animation` | `keyAnimationEnabled` | 按键动画 | 直接映射（反转语义） |
@@ -185,11 +185,11 @@ Java 版本中，按键的绘制、手势检测、手势反馈和输入处理高
 | `disable_input_key_popup_tips` | `keyPopupTipsEnabled` | 按键放大提示 | 直接映射（反转语义） |
 | `disable_gesture_slipping_trail` | `gestureSlippingTrailEnabled` | 滑行轨迹显示 | 直接映射（反转语义） |
 | `disable_input_clip_popup_tips` | `clipPopupTipsEnabled` | 剪贴板粘贴提示 | 直接映射（反转语义） |
-| `disable_user_input_data` | `userInputDataEnabled` | 记录输入习惯 | 直接映射（反转语义） |
+| `disable_user_input_data` | `userDataPersistEnabled`（EngineConfig） | 记录输入习惯 | 重命名并移至 EngineConfig（反转语义） |
 | `input_clip_popup_tips_timeout` | `clipPopupTipsTimeout` | 剪贴板提示自动关闭 | 直接映射 |
-| `enable_x_input_pad` | `xPadEnabled` | X-Pad 连续输入 | 直接映射 |
-| `enable_latin_use_pinyin_keys_in_x_input_pad` | `latinUsePinyinKeysInXPadEnabled` | 拉丁键盘复用拼音布局 | 直接映射 |
+| `enable_x_input_pad` | （移除） | — | X-Pad 功能移除 |
+| `enable_latin_use_pinyin_keys_in_x_input_pad` | （移除） | — | X-Pad 功能移除 |
 | `adapt_desktop_swipe_up_gesture` | `adaptDesktopSwipeUpGesture` | 适配桌面滑动手势 | 直接映射 |
-| `enable_candidate_variant_first` | `candidateVariantFirstEnabled` | 繁体异体字优先 | 直接映射 |
+| `enable_candidate_variant_first` | `candidateVariantFirstEnabled`（EngineConfig） | 繁体异体字优先 | 移至 EngineConfig |
 
 **历史原因**：Java 版本的设置界面基于 `PreferenceFragmentCompat`，存在分组逻辑混乱（「基本」仅含主题和繁体优先两个不相关配置、「隐私」混入反馈控制项）、层级过深（主题和手模式藏在子页面中）、说明缺失（大部分开关只有标题没有描述）、命名否定式（所有开关用「禁用」前缀，用户需心理反转）等问题。v4 以用户心智模型为导向重新组织信息架构，使用场景化分组、肯定式命名、即时预览和搜索功能，显著提升了配置操作效率。

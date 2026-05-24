@@ -182,7 +182,7 @@ UI 库的所有组件仅依赖 `:ime-engine` 的公开 API：
 
 ## 5 `KeyTableGenerator` 接口
 
-`KeyTableGenerator` 是按键布局生成器接口，根据 `KeyTableContext` 中的上下文信息生成按键布局矩阵。该接口的设计使得按键布局逻辑可以按 `KeyboardInputMode` 和 `KeyboardType` 的组合进行策略分发——不同组合可以注册不同的 `KeyTableGenerator` 实现，由 `KeyLayoutPanel` 根据当前 `keyboard.mode` 和 `keyboard.type` 选择合适的生成器。
+`KeyTableGenerator` 是按键布局生成器接口，根据 `KeyTableContext` 中的上下文信息生成按键布局矩阵。该接口的设计使得按键布局逻辑可以按 `KeyboardInputMode` 和 `KeyboardType` 的组合进行策略分发——不同组合可以注册不同的 `KeyTableGenerator` 实现，由 `KeyLayoutPanel` 根据当前 `config.ui.keyboardInputMode` 和 `keyboard.type` 选择合适的生成器。
 
 ```kotlin
 /**

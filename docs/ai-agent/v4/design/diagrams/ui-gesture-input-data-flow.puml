@@ -33,7 +33,7 @@ start
 :reduce(state, intent);
 
 |ImeState|
-:keyboard.state / inputList\ncandidateList / config\nkeyboard.mode;
+:keyboard.state / inputList\ncandidateList / config\nconfig.ui.keyboardInputMode;
 
 |ImeEffect|
 :PopupTip / PlayAudio\nPlayHaptic;
@@ -43,7 +43,7 @@ start
 
 |Compose UI|
 :collectAsState() 驱动重组;
-:keyboard.mode → KeyLayoutPanel\nisInputting → ToolListPanel/InputListPanel\npopupTipState → PopupTipPanel\ntoolListState → ToolListPanel\ncandidateList → CandidateListPanel\ninputList → InputListPanel;
+:config.ui.keyboardInputMode → KeyLayoutPanel\nisInputting → ToolListPanel/InputListPanel\npopupTipState → PopupTipPanel\ntoolListState → ToolListPanel\ncandidateList → CandidateListPanel\ninputList → InputListPanel;
 
 stop
 

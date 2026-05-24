@@ -588,7 +588,7 @@ class PinyinKeyboardScreenshotTest {
     @Test
     fun pinyinKeyboardIdle() {
         paparazzi.snapshot {
-            KeyboardTheme(themeType = ThemeType.Light) {
+            KeyboardTheme(themeType = KeyboardThemeType.Light) {
                 KeyboardHost(
                     state = ImeState(
                         keyboard = Keyboard(type = KeyboardType.Pinyin, state = KeyboardState.Idle),
@@ -602,7 +602,7 @@ class PinyinKeyboardScreenshotTest {
     @Test
     fun pinyinKeyboardWithCandidates() {
         paparazzi.snapshot {
-            KeyboardTheme(themeType = ThemeType.Light) {
+            KeyboardTheme(themeType = KeyboardThemeType.Light) {
                 KeyboardHost(
                     state = ImeState(
                         keyboard = Keyboard(type = KeyboardType.Pinyin, state = KeyboardState.PinyinInput.Waiting(

@@ -65,13 +65,13 @@
 
 | Java 配置键 | 类型 | v4 `ImeConfig` 属性 | 变更说明 |
 |------------|------|-------------------|----------|
-| `theme` | String | `ImeConfig.UiConfig.themeType: ThemeType` | 字符串 → 枚举，类型安全 |
-| `hand_mode` | String | `ImeConfig.EngineConfig.handMode: HandMode` | 字符串 → 枚举 |
-| `enable_x_input_pad` | Boolean | `ImeConfig.UiConfig.xPadEnabled: Boolean` | 肯定式命名 |
-| `enable_latin_use_pinyin_keys_in_x_input_pad` | Boolean | `ImeConfig.UiConfig.latinUsePinyinKeysInXPadEnabled: Boolean` | 肯定式命名 |
+| `theme` | String | `ImeConfig.UiConfig.keyboardThemeType: KeyboardThemeType` | 字符串 → 枚举，类型安全；增加 Keyboard 前缀 |
+| `hand_mode` | String | `ImeConfig.UiConfig.keyboardHandMode: KeyboardHandMode` | 字符串 → 枚举；移至 UiConfig，增加 Keyboard 前缀 |
+| `enable_x_input_pad` | Boolean | （移除） | X-Pad 功能移除 |
+| `enable_latin_use_pinyin_keys_in_x_input_pad` | Boolean | （移除） | X-Pad 功能移除 |
 | `adapt_desktop_swipe_up_gesture` | Boolean | `ImeConfig.UiConfig.adaptDesktopSwipeUpGesture: Boolean` | 直接迁移 |
-| `enable_candidate_variant_first` | Boolean | `ImeConfig.UiConfig.candidateVariantFirstEnabled: Boolean` | 肯定式命名 |
-| `disable_user_input_data` | Boolean | `ImeConfig.UiConfig.userInputDataEnabled: Boolean` | 否定式 → 肯定式（语义反转） |
+| `enable_candidate_variant_first` | Boolean | `ImeConfig.EngineConfig.candidateVariantFirstEnabled: Boolean` | 肯定式命名；移至 EngineConfig |
+| `disable_user_input_data` | Boolean | `ImeConfig.EngineConfig.userDataPersistEnabled: Boolean` | 否定式 → 肯定式（语义反转）；重命名并移至 EngineConfig |
 | `disable_key_clicked_audio` | Boolean | `ImeConfig.UiConfig.audioFeedbackEnabled: Boolean` | 否定式 → 肯定式（语义反转） |
 | `disable_key_animation` | Boolean | `ImeConfig.UiConfig.keyAnimationEnabled: Boolean` | 否定式 → 肯定式（语义反转） |
 | `disable_input_candidates_paging_audio` | Boolean | `ImeConfig.UiConfig.candidatesPagingAudioEnabled: Boolean` | 否定式 → 肯定式（语义反转） |
@@ -83,11 +83,13 @@
 | — | — | `ImeConfig.UiConfig.practicePlaybackSpeed: Float` | 新增：输入练习速度 |
 | — | — | `ImeConfig.UiConfig.practiceShowFingerOverlay: Boolean` | 新增：手指指示器 |
 | — | — | `ImeConfig.UiConfig.practiceShowSwipeTrail: Boolean` | 新增：滑行轨迹 |
-| — | — | `ImeConfig.UiConfig.logLevel: LogLevel` | 新增：日志等级 |
-| — | — | `ImeConfig.UiConfig.logStoragePath: String?` | 新增：日志路径 |
-| — | — | `ImeConfig.EngineConfig.candidatePredictionEnabled: Boolean` | 新增：候选预测 |
-| — | — | `ImeConfig.EngineConfig.singleLineInput: Boolean` | 新增：单行输入 |
-| — | — | `ImeConfig.EngineConfig.features: Set<Feature>` | 新增：可选功能标记 |
+| — | — | `ImeConfig.UiConfig.keyboardInputMode: KeyboardInputMode` | 新增：键盘输入模式（原 Keyboard.mode） |
+| — | — | `ImeConfig.EngineConfig.logLevel: LogLevel` | 新增：日志等级（移至 EngineConfig） |
+| — | — | `ImeConfig.EngineConfig.logStoragePath: String?` | 新增：日志路径（移至 EngineConfig） |
+| — | — | `ImeConfig.EngineConfig.inputPredictionEnabled: Boolean` | 新增：输入预测（原 candidatePredictionEnabled） |
+| — | — | `ImeConfig.EngineConfig.favoriteInputEnabled: Boolean` | 新增：输入收藏 |
+| — | — | `ImeConfig.EngineConfig.favoriteClipEnabled: Boolean` | 新增：剪贴板收藏 |
+| — | — | `ImeConfig.EngineConfig.favoriteSyncToUserDictEnabled: Boolean` | 新增：收藏同步用户字典 |
 
 **历史原因**：Java 版本的 `Config.Mutable` 包装 `Config.Immutable`，运行时覆盖部分值，层叠逻辑增加了理解成本。`SharedPreferences` 的 `commit()` 阻塞主线程，`apply()` 虽然异步但可能在 `onStop()` 时丢失。`IMEConfig`（引擎配置）和 `Config`（应用配置）两套配置之间存在字段重叠和同步问题。v4 将两套配置合并为统一的 `ImeConfig`，含 `EngineConfig` 和 `UiConfig` 明确隔离，使用 DataStore 实现异步、类型安全、原子更新。
 
@@ -177,3 +179,9 @@ Java 版本的 `ImeSupportEditText` 是"被动"接收者，实现 `InputMsgListe
 | `FavoritesPanel` | `FavoriteListPanel` | 体现列表语义；单数 Favorite + ListPanel |
 | `CandidatePager` | `CandidateListPager` | 体现列表语义 |
 | `EditorAction.EditAction` | `EditorAction.PerformEdit` | 动作导向命名，与 `ImeIntent.PerformEdit` 对称 |
+| `HandMode` | `KeyboardHandMode` | 增加 Keyboard 前缀，与键盘相关枚举统一命名 |
+| `ThemeType` | `KeyboardThemeType` | 增加 Keyboard 前缀，与键盘相关枚举统一命名 |
+| `Feature` / `FeatureRegistry` | （移除） | 替换为 EngineConfig.favoriteInputEnabled + favoriteClipEnabled 布尔门控 |
+| `runtimeOverrides` | （移除） | RuntimeConfig 不做持久化，无需跟踪运行时覆盖字段 |
+| `ConfigField` | （移除） | 随 runtimeOverrides 一并移除 |
+| `Keyboard.mode` | `UiConfig.keyboardInputMode` | 键盘输入模式改为配置驱动，不支持临时修改 |

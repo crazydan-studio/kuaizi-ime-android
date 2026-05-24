@@ -14,7 +14,7 @@
 
 ### 1.1 engine 模块
 
-所有对外的 class（包括 sealed class、data class、enum、interface）均以 `Ime` 作为前缀，作为引擎库的命名空间标识。内部实现类（如 `KeyboardStateMachine`、`InputListOperator`、`FeatureRegistry`）不强制使用 `Ime` 前缀，因为它们不对外暴露。
+所有对外的 class（包括 sealed class、data class、enum、interface）均以 `Ime` 作为前缀，作为引擎库的命名空间标识。内部实现类（如 `KeyboardStateMachine`、`InputListOperator`）不强制使用 `Ime` 前缀，因为它们不对外暴露。
 
 ### 1.2 ui 模块
 
@@ -135,3 +135,5 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 | 选用名称 | 替代方案 | 选择理由 |
 |----------|---------|---------|
 | `*Enabled` 后缀 | `disable*` / `enable*` 前缀 | 布尔配置字段统一使用 `Enabled` 后缀，语义更清晰 |
+| `KeyboardHandMode` | `HandMode` | 增加 `Keyboard` 前缀，与键盘相关枚举统一命名 |
+| `KeyboardThemeType` | `ThemeType` | 增加 `Keyboard` 前缀，与键盘相关枚举统一命名 |

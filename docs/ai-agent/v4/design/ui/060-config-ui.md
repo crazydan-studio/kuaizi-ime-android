@@ -22,11 +22,11 @@ fun KeyboardPreview(
 
 ### 实时响应
 
-`KeyboardPreview` 通过 `collectAsState()` 订阅 `ImeConfig` 的变更。当用户在 `ThemeSelector` 或 `HandModeToggle` 中切换选项时，配置变更立即反映到预览视图中，无需重新创建组件。预览视图不加载字典数据，候选栏和输入栏显示占位内容，仅按键布局和主题色彩是真实的渲染结果。
+`KeyboardPreview` 通过 `collectAsState()` 订阅 `ImeConfig` 的变更。当用户在 `ThemeSelector` 或 `KeyboardHandModeToggle` 中切换选项时，配置变更立即反映到预览视图中，无需重新创建组件。预览视图不加载字典数据，候选栏和输入栏显示占位内容，仅按键布局和主题色彩是真实的渲染结果。
 
 ### 键盘内容
 
-预览视图根据 `config.engine.keyboardType` 渲染对应类型的按键布局。默认显示拼音键盘的 RectGrid 布局。手模式（`config.engine.handMode`）变更时，按键布局会相应调整按键的排列偏移，模拟单手操作下的按键位置变化。主题变更时，所有按键的背景色、前景色和圆角等视觉属性立即更新。
+预览视图根据 `config.engine.keyboardType` 渲染对应类型的按键布局。默认显示拼音键盘的 RectGrid 布局。手模式（`config.ui.keyboardHandMode`）变更时，按键布局会相应调整按键的排列偏移，模拟单手操作下的按键位置变化。主题变更时，所有按键的背景色、前景色和圆角等视觉属性立即更新。
 
 ---
 
@@ -37,8 +37,8 @@ fun KeyboardPreview(
 ```kotlin
 @Composable
 fun ThemeSelector(
-    currentTheme: ThemeType,
-    onThemeSelected: (ThemeType) -> Unit,
+    currentTheme: KeyboardThemeType,
+    onThemeSelected: (KeyboardThemeType) -> Unit,
     modifier: Modifier = Modifier,
 )
 ```
@@ -49,15 +49,15 @@ fun ThemeSelector(
 
 | 模式 | 标签 | 预览内容 |
 |------|------|---------|
-| `ThemeType.Light` | 浅色 | 使用 `KeyboardThemes.Light` 色彩的缩略键盘 |
-| `ThemeType.Night` | 深色 | 使用 `KeyboardThemes.Night` 色彩的缩略键盘 |
-| `ThemeType.FollowSystem` | 跟随系统 | 根据当前系统模式动态切换的缩略键盘 |
+| `KeyboardThemeType.Light` | 浅色 | 使用 `KeyboardThemes.Light` 色彩的缩略键盘 |
+| `KeyboardThemeType.Night` | 深色 | 使用 `KeyboardThemes.Night` 色彩的缩略键盘 |
+| `KeyboardThemeType.FollowSystem` | 跟随系统 | 根据当前系统模式动态切换的缩略键盘 |
 
 每个卡片内嵌一个 `MiniKeyboardPreview`，该组件是 `KeyboardPreview` 的轻量版本，仅渲染 2-3 行按键的缩略图，高度不超过 80dp。卡片选中时显示 `KeyboardColors.themeSelectedBorder` 色彩的边框，未选中时无边框。
 
 ### 交互行为
 
-用户点击卡片时，`ThemeSelector` 调用 `onThemeSelected` 回调，将选中的 `ThemeType` 传递给上层组件。上层组件（通常是设置页面）通过 `KeyboardViewModel.updateConfig()` 修改 `ImeConfig.ui.themeType` 字段。配置变更后，`KeyboardTheme` 可组合函数自动切换 `LocalKeyboardColors` 的值，所有订阅主题色彩的组件立即重组。
+用户点击卡片时，`ThemeSelector` 调用 `onThemeSelected` 回调，将选中的 `KeyboardThemeType` 传递给上层组件。上层组件（通常是设置页面）通过 `KeyboardViewModel.updateConfig()` 修改 `ImeConfig.ui.keyboardThemeType` 字段。配置变更后，`KeyboardTheme` 可组合函数自动切换 `LocalKeyboardColors` 的值，所有订阅主题色彩的组件立即重组。
 
 ### 横向滚动
 
@@ -65,33 +65,33 @@ fun ThemeSelector(
 
 ---
 
-## 3. HandModeToggle 单手模式切换
+## 3. KeyboardHandModeToggle 单手模式切换
 
-`HandModeToggle` 提供左右手模式的分段选择控件，以 `FilterChip` 组的形式呈现。该组件用于设置页面和快捷设置弹窗中切换手模式。
+`KeyboardHandModeToggle` 提供左右手模式的分段选择控件，以 `FilterChip` 组的形式呈现。该组件用于设置页面和快捷设置弹窗中切换手模式。
 
 ```kotlin
 @Composable
-fun HandModeToggle(
-    currentHandMode: HandMode,
-    onHandModeSelected: (HandMode) -> Unit,
+fun KeyboardHandModeToggle(
+    currentHandMode: KeyboardHandMode,
+    onHandModeSelected: (KeyboardHandMode) -> Unit,
     modifier: Modifier = Modifier,
 )
 ```
 
 ### 分段选择
 
-`HandModeToggle` 使用两个 `FilterChip` 并排组成分段选择器：
+`KeyboardHandModeToggle` 使用两个 `FilterChip` 并排组成分段选择器：
 
 | 模式 | 标签 | 图标 |
 |------|------|------|
-| `HandMode.Left` | 左手 | 左手图标 |
-| `HandMode.Right` | 右手 | 右手图标 |
+| `KeyboardHandMode.Left` | 左手 | 左手图标 |
+| `KeyboardHandMode.Right` | 右手 | 右手图标 |
 
 选中状态的 `FilterChip` 使用 `KeyboardColors.handModeSelectedBackground` 和 `KeyboardColors.handModeSelectedForeground`，未选中状态使用默认的 `FilterChip` 样式。两个 `FilterChip` 之间无间距，通过 `Row` 组合形成连续的分段外观。
 
 ### 配置变更
 
-用户选择手模式后，`HandModeToggle` 调用 `onHandModeSelected` 回调。上层组件通过 `KeyboardViewModel.updateConfig()` 修改 `ImeConfig.engine.handMode` 字段。手模式变更影响按键布局中功能键的排列位置：右手模式下功能键集中在右侧，左手模式下功能键集中在左侧。布局变更由 `KeyTableGenerator` 在下次生成按键表时应用。
+用户选择手模式后，`KeyboardHandModeToggle` 调用 `onHandModeSelected` 回调。上层组件通过 `KeyboardViewModel.updateConfig()` 修改 `ImeConfig.ui.keyboardHandMode` 字段。手模式变更影响按键布局中功能键的排列位置：右手模式下功能键集中在右侧，左手模式下功能键集中在左侧。布局变更由 `KeyTableGenerator` 在下次生成按键表时应用。
 
 ---
 

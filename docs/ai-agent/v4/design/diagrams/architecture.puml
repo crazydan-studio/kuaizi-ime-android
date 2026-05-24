@@ -60,12 +60,12 @@ package ":ime-ui 模块\n(UI Layer + ViewModel Layer)" as ui #E8F5E9 {
 package ":ime-engine 模块\n(Domain Layer + Data Layer)" as engine #FFF3E0 {
   package "Domain Layer - 核心模型" {
     component [ImeEngine] as IE <<ime_engine>>
-    component [ImeConfig] as IC <<ime_engine>>
+    component [ImeConfig\n(+ RuntimeConfig)] as IC <<ime_engine>>
     component [ImeIntent] as II <<ime_engine>>
     component [EditorAction] as IO <<ime_engine>>
     component [ImeEditorBridge\nBaseImeEditorBridge] as IOB <<ime_engine>>
     component [ImeState\n+ 子状态] as IS <<ime_engine>>
-    component [Keyboard\n(type, mode, state)] as K <<ime_engine>>
+    component [Keyboard\n(type, handMode, state)] as K <<ime_engine>>
     component [KeyboardType\n(枚举)] as KT <<ime_engine>>
     component [KeyboardInputMode\n(枚举)] as KIM <<ime_engine>>
   }
@@ -82,7 +82,6 @@ package ":ime-engine 模块\n(Domain Layer + Data Layer)" as engine #FFF3E0 {
   package "Domain Layer - 内部组件" {
     component [KeyboardStateMachine] as KSM <<ime_engine>>
     component [InputListOperator] as ILO <<ime_engine>>
-    component [FeatureRegistry] as FR <<ime_engine>>
   }
   package "Domain Layer - 日志" {
     component [ImeLog / ImeLogger] as IL <<ime_engine>>
@@ -131,7 +130,6 @@ Theme --> IC : 读取 UiConfig
 ' :ime-engine 内部
 IE *-- KSM : 组合
 IE *-- ILO : 组合
-IE *-- FR : 组合
 IE --> II : 处理
 IE --> IO : 生成
 IE --> IOB : 分发
@@ -141,7 +139,6 @@ ISDP *-- PCT : 组合
 ISDP *-- HMM : 组合
 IS *-- K : keyboard
 K *-- KT : type
-K *-- KIM : mode
 IASC --> IAS : 编译生成
 IAS *-- IA : 包含
 IAFI *-- CA : 包含\n(clickAnimation)
@@ -149,5 +146,11 @@ IAFI *-- OFRF : 使用
 IAPI --> OFRF : 输入输出
 IL --> LW : 分发
 LW --> LS : 写入
+
+package ":ime-codegen 模块\n(KSP Code Generation)" as codegen #FCE4EC {
+  component [ConfigDataStoreKeys\n代码生成器] as CDK <<codegen>>
+}
+
+CDS --> CDK : 使用生成代码
 
 @enduml

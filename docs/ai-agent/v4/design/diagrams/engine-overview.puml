@@ -30,7 +30,20 @@ package "核心模型" #FFE0B2 {
   class ImeConfig <<(D,#FFE0B2)>> {
     + engine: EngineConfig
     + ui: UiConfig
-    + runtimeOverrides: Set<ConfigField>
+    + runtime: RuntimeConfig
+  }
+  class RuntimeConfig <<(D,#FFE0B2)>> {
+    + screenOrientation: ScreenOrientation
+    + editorInputType: EditorInputType
+    + keyPopupTipsEnabled: Boolean?
+    + toolSettingsEnabled: Boolean
+    + toolSwitchIMEEnabled: Boolean
+    + toolCloseKeyboardEnabled: Boolean
+  }
+  class StartupConfig <<(D,#FFE0B2)>> {
+    + imeSubtype: IMESubtype
+    + screenOrientation: ScreenOrientation
+    + editorInputType: EditorInputType?
   }
   class ImeIntent <<(S,#FFE0B2)>> {
     PressKey(key, gesture)
@@ -77,7 +90,7 @@ package "状态类型" #C8E6C9 {
   }
   class Keyboard <<(D,#C8E6C9)>> {
     + type: KeyboardType
-    + mode: KeyboardInputMode
+    + handMode: KeyboardHandMode?
     + state: KeyboardState
   }
   class InputList <<(D,#C8E6C9)>> {
@@ -111,9 +124,6 @@ package "内部组件" #BBDEFB {
   }
   class InputListOperator <<(C,#BBDEFB)>> {
     + apply(intent, list): InputList
-  }
-  class FeatureRegistry <<(C,#BBDEFB)>> {
-    + isEnabled(feature): Boolean
   }
   class KeyAudioPlayer <<(C,#BBDEFB)>> {
     + play(keyType)
@@ -188,13 +198,13 @@ package "日志系统" #F3E5F5 {
 ' ===== 关系 =====
 ImeEngine *-- KeyboardStateMachine : 组合
 ImeEngine *-- InputListOperator : 组合
-ImeEngine *-- FeatureRegistry : 组合
 ImeEngine *-- KeyAudioPlayer : 组合
 ImeEngine --> ImeIntent : 处理
 ImeEngine --> EditorAction : 生成
 ImeEngine --> ImeEditorBridge : 分发
 ImeEngine --> ImeState : 更新
 ImeEngine --> ImeConfig : 持有
+ImeConfig *-- RuntimeConfig : runtime
 
 ImeEditorBridge <|-- BaseImeEditorBridge
 KeyboardStateMachine --> KeyAudioPlayer : 使用
@@ -202,7 +212,7 @@ KeyboardStateMachine --> InputListOperator : 使用
 
 ImeState *-- Keyboard
 Keyboard *-- KeyboardType : type
-Keyboard *-- KeyboardInputMode : mode
+Keyboard *-- KeyboardHandMode : handMode
 ImeState *-- InputList
 ImeState *-- CandidateList
 ImeState *-- Clipboard

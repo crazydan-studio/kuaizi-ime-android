@@ -63,7 +63,7 @@ Java 版本采用自定义消息驱动的 MVP 架构，v4 采用 MVI + StateFlow
 | `BaseInputContext` | `BaseInputContext`（domain） | 直接迁移 |
 | `KeyboardStateMachine` | `KeyboardStateMachine`（domain） | 从 `BaseKeyboard` 中的状态管理逻辑提取为独立组件 |
 | `InputListOperator` | `InputListOperator`（domain） | 从 `InputList` 中的操作逻辑提取为独立组件 |
-| `FeatureRegistry` | `FeatureRegistry`（domain） | 新增：管理 `Feature` 的启用 / 禁用 |
+| `FeatureRegistry` | （移除） | 替换为 `EngineConfig.favoriteInputEnabled` + `favoriteClipEnabled` 布尔门控 |
 
 ### 共享组件提取
 

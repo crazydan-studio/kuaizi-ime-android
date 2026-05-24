@@ -235,38 +235,30 @@ data class ConfigBackupEntry(
 
 @Serializable
 data class EngineConfigBackupEntry(
-    // 输入体验
-    val keyboard_type: String? = null,
-    val hand_mode: String? = null,
-    val candidate_prediction_enabled: Boolean? = null,
-    val single_line_input: Boolean? = null,
-    // 功能集单独处理（features 为枚举集合，不在此列出）
+    val log_level: String? = null,
+    val log_storage_path: String? = null,
+    val input_prediction_enabled: Boolean? = null,
+    val user_data_persist_enabled: Boolean? = null,
+    val favorite_input_enabled: Boolean? = null,
+    val favorite_clip_enabled: Boolean? = null,
+    val favorite_sync_to_user_dict_enabled: Boolean? = null,
+    val candidate_variant_first_enabled: Boolean? = null,
 )
 
 @Serializable
 data class UiConfigBackupEntry(
-    // 外观
-    val theme_type: String? = null,
-    val x_pad_enabled: Boolean? = null,
-    // 输入体验
-    val latin_use_pinyin_keys_in_x_pad: Boolean? = null,
-    val adapt_desktop_swipe_up_gesture: Boolean? = null,
-    val candidate_variant_first_enabled: Boolean? = null,
-    // 隐私
-    val user_input_data_enabled: Boolean? = null,
-    // 反馈控制
+    val keyboard_input_mode: String? = null,
+    val keyboard_hand_mode: String? = null,
+    val keyboard_theme_type: String? = null,
+    val key_popup_tips_enabled: Boolean? = null,
     val audio_feedback_enabled: Boolean? = null,
     val haptic_feedback_enabled: Boolean? = null,
     val key_animation_enabled: Boolean? = null,
-    val key_popup_tips_enabled: Boolean? = null,
     val gesture_slipping_trail_enabled: Boolean? = null,
     val clip_popup_tips_enabled: Boolean? = null,
-    val candidates_paging_audio_enabled: Boolean? = null,
     val clip_popup_tips_timeout: Int? = null,
-    // 日志与诊断
-    val log_level: String? = null,
-    val log_storage_path: String? = null,
-    // 输入练习演示
+    val adapt_desktop_swipe_up_gesture: Boolean? = null,
+    val candidates_paging_audio_enabled: Boolean? = null,
     val practice_playback_speed: Float? = null,
     val practice_show_finger_overlay: Boolean? = null,
     val practice_show_swipe_trail: Boolean? = null,
@@ -292,13 +284,18 @@ data class UiConfigBackupEntry(
     ],
     "config": {
       "engine": {
-        "hand_mode": "Right"
+        "input_prediction_enabled": true,
+        "user_data_persist_enabled": true,
+        "favorite_input_enabled": true,
+        "favorite_clip_enabled": true,
+        "favorite_sync_to_user_dict_enabled": true,
+        "candidate_variant_first_enabled": false,
+        "log_level": "WARN"
       },
       "ui": {
-        "theme_type": "FollowSystem",
-        "x_pad_enabled": true,
-        "candidate_variant_first_enabled": false,
-        "user_input_data_enabled": true,
+        "keyboard_input_mode": "XPad",
+        "keyboard_hand_mode": "Right",
+        "keyboard_theme_type": "FollowSystem",
         "audio_feedback_enabled": true,
         "key_animation_enabled": true,
         "candidates_paging_audio_enabled": true,

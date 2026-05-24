@@ -21,17 +21,15 @@ package ":ime-engine" #FFF3E0 {
   class ImeConfig <<(D,#FFF3E0)>> {
     + engine: EngineConfig
     + ui: UiConfig
-    + runtimeOverrides: Set<ConfigField>
+    + runtime: RuntimeConfig
   }
   class ImeEngine <<(C,#FFF3E0)>> {
     + updateConfig(block)
     + state: StateFlow<ImeState>
   }
   note right of ImeConfig
-    **运行时优先原则**
-    runtimeOverrides 记录被运行时临时修改的字段
-    持久化同步时跳过这些字段
-    重启后根据持久化配置重新初始化
+    RuntimeConfig 不做持久化，
+    应用重启时根据 StartupConfig 重新初始化
   end note
 }
 
@@ -63,10 +61,10 @@ package ":app" #E3F2FD {
     + updateConfig(transform)
     --
     持久化 EngineConfig:
-      keyboardType (→ Keyboard.type), handMode, features,
+      keyboardType (→ Keyboard.type), keyboardHandMode,
       candidatePredictionEnabled, singleLineInput
     持久化 UiConfig:
-      themeType, xPadEnabled, audioFeedback,
+      keyboardThemeType, xPadEnabled, audioFeedback,
       hapticFeedback, keyAnimation, keyPopupTips,
       gestureSlippingTrail, clipPopupTips,
       logLevel, logStoragePath, ...
@@ -140,10 +138,9 @@ note bottom
      - viewModel.updateConfig() (运行时)
      - 不写入 DataStore
 
-  3. 运行时优先原则:
-     - 运行时修改始终优先于持久化配置
-     - runtimeOverrides 记录临时修改字段
-     - 重启后由 ConfigDataStore 从 DataStore 恢复
+  3. RuntimeConfig 不持久化:
+     - 运行时配置（屏幕方向、编辑器类型、工具按钮状态等）不做持久化
+     - 重启时由 StartupConfig 重新初始化
 
   4. 日志配置特殊:
      - logLevel 变更 → ImeLog.updateLevel() (立即生效)

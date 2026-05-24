@@ -11,7 +11,7 @@
 | **逻辑与 UI 分离** | 引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等 |
 | **MVI 驱动** | 通过 `StateFlow<ImeState>` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeEditorBridge` 输出编辑器操作 |
 | **可嵌入** | 第三方应用只需引入 `:ime-engine` 即可获得完整输入法能力，无需系统 IME 服务 |
-| **可扩展** | 字典接口与实现分离（`ImeDictProvider`），编辑器桥接可自定义（`ImeEditorBridge`），功能可裁剪（`Feature`） |
+| **可扩展** | 字典接口与实现分离（`ImeDictProvider`），编辑器桥接可自定义（`ImeEditorBridge`），收藏功能可裁剪（`favoriteInputEnabled` / `favoriteClipEnabled`） |
 | **Fail Fast** | 非法操作（如禁用收藏后调用收藏功能）立即抛出异常而非静默忽略 |
 
 引擎库的「逻辑与 UI 分离」定位意味着第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能，也可以仅引入 `:ime-engine` 自行实现视图层和交互逻辑。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来消除 Android 依赖。
@@ -20,9 +20,9 @@
 
 「可嵌入」定位使得 `:ime-engine` 可以在多种场景下使用：作为系统输入法引擎、嵌入到应用内的自定义输入组件中、甚至作为纯 JVM 环境下的输入法逻辑核心。引擎的创建和销毁完全由宿主控制，不持有任何全局状态或单例。
 
-「可扩展」定位通过三个扩展点实现：`ImeDictProvider` 允许替换整个字典层（例如使用远程字典服务替代本地 SQLite）；`ImeEditorBridge` 允许替换输出目标（例如接入 WebView 编辑器或游戏引擎文本框）；`Feature` 枚举允许裁剪功能（例如禁用剪贴板功能以减少权限需求）。
+「可扩展」定位通过三个扩展点实现：`ImeDictProvider` 允许替换整个字典层（例如使用远程字典服务替代本地 SQLite）；`ImeEditorBridge` 允许替换输出目标（例如接入 WebView 编辑器或游戏引擎文本框）；`EngineConfig.favoriteInputEnabled` / `EngineConfig.favoriteClipEnabled` 允许裁剪收藏功能（例如禁用剪贴板收藏以减少权限需求）。
 
-「Fail Fast」定位确保引擎在运行时检测到非法操作时立即抛出异常，而非静默忽略或产生不确定行为。典型的非法操作包括：在 `Feature.Clipboard` 禁用时调用 `ImeIntent.PasteClip`、在 `Feature.Favorites` 禁用时调用 `ImeIntent.SaveFavorite`、在无效状态下执行不合法的 `KeyboardStateTransition` 等。Fail Fast 原则帮助开发者在开发阶段尽早发现错误，避免错误在调用链中传播后难以定位。
+「Fail Fast」定位确保引擎在运行时检测到非法操作时立即抛出异常，而非静默忽略或产生不确定行为。典型的非法操作包括：在 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 均为 false 时调用 `ImeIntent.SaveFavorite`、在无效状态下执行不合法的 `KeyboardStateTransition` 等。Fail Fast 原则帮助开发者在开发阶段尽早发现错误，避免错误在调用链中传播后难以定位。
 
 ---
 
@@ -36,7 +36,7 @@
 
 ### 2.2 ImeConfig
 
-`ImeConfig` 是统一的运行时配置，同时包含引擎配置和 UI 配置，二者在数据结构上明确隔离。引擎配置（`EngineConfig`）影响引擎的核心行为，UI 配置（`UiConfig`）影响界面呈现和交互反馈。库不内置配置持久化，所有配置通过 `ImeConfig` 在创建时或运行时设置，持久化是应用层的职责。完整定义见本文档 §6。
+`ImeConfig` 是统一的运行时配置，包含引擎配置（`EngineConfig`）、UI 配置（`UiConfig`）和运行时配置（`RuntimeConfig`），三者各自在数据结构上明确隔离。引擎配置影响引擎的核心行为，UI 配置影响界面呈现和交互反馈，运行时配置承载不持久化的临时状态。库不内置配置持久化，所有配置通过 `ImeConfig` 在创建时或运行时设置，持久化是应用层的职责。完整定义见本文档 §6。
 
 ### 2.3 ImeIntent
 
@@ -54,6 +54,9 @@ sealed class ImeIntent {
 
     // 键盘切换
     data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
+
+    // 启动配置意图
+    data class StartInput(val startupConfig: StartupConfig) : ImeIntent()
 
     // 输入列表意图
     data object CommitInput : ImeIntent()
@@ -249,7 +252,7 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 ### 4.7 剪贴板与收藏
 
-`ClipboardService` 监听系统剪贴板变更并提供文本类型检测（URL、验证码、手机号等）。`FavoriteService` 管理用户收藏的文本，通过 Room DAO 实现响应式查询。两者均通过 `Feature` 枚举进行门控，禁用时调用相关 Intent 立即抛出异常。
+`ClipboardService` 监听系统剪贴板变更并提供文本类型检测（URL、验证码、手机号等）。`FavoriteService` 管理用户收藏的文本，通过 Room DAO 实现响应式查询。两者的功能启用由 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 控制，当两者均为 false 时收藏功能完全禁用。
 
 详见 [070-剪贴板与收藏](070-clipboard-and-favorites.md)。
 
@@ -277,7 +280,6 @@ class ImeEngine internal constructor(
     private val dictProvider: ImeDictProvider,
     private val stateMachine: KeyboardStateMachine,
     private val inputListOp: InputListOperator,
-    private val featureRegistry: FeatureRegistry,
 ) {
     private val _state = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()
@@ -291,6 +293,7 @@ class ImeEngine internal constructor(
     fun detachEditorBridge(bridge: ImeEditorBridge) { ... }
     fun handleIntent(intent: ImeIntent) { ... }
     fun updateConfig(block: (ImeConfig) -> ImeConfig) { ... }
+    fun start(startupConfig: StartupConfig) { ... }
 
     companion object {
         fun create(config: ImeConfig = ImeConfig(), dictProvider: ImeDictProvider): ImeEngine
@@ -302,11 +305,10 @@ class ImeEngine internal constructor(
 
 | 参数 | 类型 | 说明 |
 |------|------|------|
-| `config` | `ImeConfig` | 运行时配置，包含引擎配置和 UI 配置。`var` 声明允许运行时通过 `updateConfig()` 修改 |
+| `config` | `ImeConfig` | 运行时配置，包含引擎配置、UI 配置和运行时配置。`var` 声明允许运行时通过 `updateConfig()` 修改 |
 | `dictProvider` | `ImeDictProvider` | 字典查询接口，由外部注入。默认实现 `ImeSqliteDictProvider` 基于 Room，第三方可替换 |
 | `stateMachine` | `KeyboardStateMachine` | 键盘状态机，集中管理 `KeyboardState` 的转换规则和状态历史 |
 | `inputListOp` | `InputListOperator` | 输入列表操作器，提供线程安全的 `InputList` 变更方法 |
-| `featureRegistry` | `FeatureRegistry` | 功能注册表，管理 `Feature` 的启用/禁用状态和门控检查 |
 
 ### 5.2 状态暴露
 
@@ -318,7 +320,7 @@ class ImeEngine internal constructor(
 
 ### 5.4 工厂方法
 
-`Companion.create()` 是 `ImeEngine` 的唯一创建入口，内部完成以下初始化工作：创建 `KeyboardStateMachine`、创建 `InputListOperator`、根据 `ImeConfig.engine.features` 创建 `FeatureRegistry`、根据 `ImeConfig.engine.keyboardType` 设置初始键盘状态。工厂方法确保所有依赖项正确初始化，避免外部构造时遗漏关键组件。
+`Companion.create()` 是 `ImeEngine` 的唯一创建入口，内部完成以下初始化工作：创建 `KeyboardStateMachine`、创建 `InputListOperator`。工厂方法确保所有依赖项正确初始化，避免外部构造时遗漏关键组件。
 
 ### 5.5 使用示例
 
@@ -326,13 +328,24 @@ class ImeEngine internal constructor(
 val engine = ImeEngine.create(
     config = ImeConfig(
         engine = ImeConfig.EngineConfig(
-            keyboardType = KeyboardType.Pinyin,
-            handMode = HandMode.Right,
-            features = setOf(Feature.Clipboard, Feature.Favorites),
+            inputPredictionEnabled = true,
+            favoriteInputEnabled = true,
+            favoriteClipEnabled = true,
+        ),
+        ui = ImeConfig.UiConfig(
+            keyboardHandMode = KeyboardHandMode.Right,
+            keyboardThemeType = KeyboardThemeType.FollowSystem,
         ),
     ),
     dictProvider = ImeSqliteDictProvider(context),
 )
+
+// 启动输入法（在 InputMethodService.onStartInputView 中调用）
+engine.start(StartupConfig(
+    imeSubtype = IMESubtype.Hans,
+    screenOrientation = ScreenOrientation.Portrait,
+    editorInputType = EditorInputType.Text,
+))
 
 // 接入桥接
 val bridge = InputConnectionBridge { currentInputConnection }
@@ -349,138 +362,165 @@ engine.handleIntent(ImeIntent.SwitchKeyboard(KeyboardType.Latin))
 
 ## 6. ImeConfig 配置模型
 
-`ImeConfig` 是统一的运行时配置，同时包含引擎配置和 UI 配置，二者在数据结构上明确隔离。引擎配置（`engine`）影响引擎的核心行为，UI 配置（`ui`）影响界面呈现和交互反馈。库不内置配置持久化，所有配置通过 `ImeConfig` 在创建时或运行时设置，持久化是应用层的职责（如 `:app` 模块使用 DataStore）。
+`ImeConfig` 是统一的运行时配置，包含引擎配置、UI 配置和运行时配置三个子配置，各自在数据结构上明确隔离。引擎配置（`EngineConfig`）和 UI 配置（`UiConfig`）均为持久化配置项，运行时配置（`RuntimeConfig`）不做持久化。`StartupConfig` 仅作为 `ImeEngine.start()` 的参数，用于初始化 `RuntimeConfig`。对配置项的修改在 UI 和引擎层面都是即时生效的。库不内置配置持久化，所有配置通过 `ImeConfig` 在创建时或运行时设置，持久化是应用层的职责（如 `:app` 模块使用 DataStore）。
 
-> **设计决策**：`ImeConfig` 合并了引擎配置与应用配置的职责，消除两套配置之间的字段重叠和同步问题。运行时修改始终优先于持久化配置——`ImeConfig.runtimeOverrides` 记录被运行时临时修改的字段，持久化同步时跳过这些字段。应用重启时，`ImeConfig` 根据持久化配置重新初始化。
+> **设计决策**：`ImeConfig` 包含引擎配置、UI 配置和运行时配置三个子配置，各自在数据结构上明确隔离。引擎配置（`EngineConfig`）和 UI 配置（`UiConfig`）均为持久化配置项，运行时配置（`RuntimeConfig`）不做持久化。`StartupConfig` 仅作为 `ImeEngine.start()` 的参数，用于初始化 `RuntimeConfig`。对配置项的修改在 UI 和引擎层面都是即时生效的。
 
 ```kotlin
 data class ImeConfig(
     val engine: EngineConfig = EngineConfig(),
     val ui: UiConfig = UiConfig(),
-    val runtimeOverrides: Set<ConfigField> = emptySet(),
+    val runtime: RuntimeConfig = RuntimeConfig(),
 ) {
+    /** 引擎配置：影响引擎的核心行为，均为持久化配置项 */
     data class EngineConfig(
-        val keyboardType: KeyboardType = KeyboardType.Pinyin,
-        val handMode: HandMode = HandMode.Right,
-        val features: Set<Feature> = Feature.DefaultSet,
-        val candidatePredictionEnabled: Boolean = true,
-        val singleLineInput: Boolean = false,
+        val logLevel: LogLevel = LogLevel.WARN,
+        val logStoragePath: String? = null,
+        val inputPredictionEnabled: Boolean = true,
+        val userDataPersistEnabled: Boolean = true,
+        val favoriteInputEnabled: Boolean = true,
+        val favoriteClipEnabled: Boolean = true,
+        val favoriteSyncToUserDictEnabled: Boolean = false,
+        val candidateVariantFirstEnabled: Boolean = false,
     )
 
+    /** UI 配置：影响界面呈现和交互反馈，均为持久化配置项 */
     data class UiConfig(
-        val themeType: ThemeType = ThemeType.FollowSystem,
+        val keyboardInputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+        val keyboardHandMode: KeyboardHandMode = KeyboardHandMode.Right,
+        val keyboardThemeType: KeyboardThemeType = KeyboardThemeType.FollowSystem,
+        val keyPopupTipsEnabled: Boolean = true,
         val audioFeedbackEnabled: Boolean = true,
         val hapticFeedbackEnabled: Boolean = true,
         val keyAnimationEnabled: Boolean = true,
-        val keyPopupTipsEnabled: Boolean = true,
         val gestureSlippingTrailEnabled: Boolean = true,
         val clipPopupTipsEnabled: Boolean = true,
         val clipPopupTipsTimeout: Int = 15,
         val adaptDesktopSwipeUpGesture: Boolean = false,
-        val candidateVariantFirstEnabled: Boolean = false,
-        val userInputDataEnabled: Boolean = true,
         val candidatesPagingAudioEnabled: Boolean = true,
         val practicePlaybackSpeed: Float = 1.0f,
         val practiceShowFingerOverlay: Boolean = true,
         val practiceShowSwipeTrail: Boolean = true,
-        val logLevel: LogLevel = LogLevel.WARN,
-        val logStoragePath: String? = null,
+    )
+
+    /** 运行时配置：不做持久化的临时状态 */
+    data class RuntimeConfig(
+        val screenOrientation: ScreenOrientation = ScreenOrientation.Landscape,
+        val editorInputType: EditorInputType = EditorInputType.Text,
+        val keyPopupTipsEnabled: Boolean? = null,
+        val toolSettingsEnabled: Boolean = true,
+        val toolSwitchIMEEnabled: Boolean = true,
+        val toolCloseKeyboardEnabled: Boolean = true,
     )
 }
+
+/** 启动配置：仅作为 ImeEngine.start() 的参数 */
+data class StartupConfig(
+    val imeSubtype: IMESubtype,
+    val screenOrientation: ScreenOrientation,
+    val editorInputType: EditorInputType?,
+)
+
+enum class ScreenOrientation { Landscape, Portrait }
+enum class EditorInputType { Filter, Number, Datetime, Phone, Password, Email, URI, Text }
+enum class IMESubtype { Latin, Hans }
 ```
 
 ### 6.1 EngineConfig 字段说明
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `keyboardType` | `KeyboardType` | `Pinyin` | 初始键盘类型，运行时通过 `ImeState.keyboard.type` 访问当前类型 |
-| `handMode` | `HandMode` | `Right` | 手模式，影响键盘布局的左右手偏移 |
-| `features` | `Set<Feature>` | `DefaultSet` | 启用的功能集合，门控剪贴板、收藏、候选预测等 |
-| `candidatePredictionEnabled` | `Boolean` | `true` | 是否启用候选预测（HMM + Viterbi），影响短语预测功能 |
-| `singleLineInput` | `Boolean` | `false` | 是否启用单行输入模式，影响输入列表的显示方式 |
+| `logLevel` | `LogLevel` | `WARN` | 日志等级，由应用层注入 |
+| `logStoragePath` | `String?` | `null` | 日志文件存放目录路径，`null` 使用默认应用私有目录 |
+| `inputPredictionEnabled` | `Boolean` | `true` | 是否启用输入预测，用于输入补全，提升输入效率 |
+| `userDataPersistEnabled` | `Boolean` | `true` | 是否持久化用户数据。启用后，已提交且未撤回的输入将被保存，用于提升输入预测的准确性 |
+| `favoriteInputEnabled` | `Boolean` | `true` | 是否启用「输入收藏」。启用后，已提交输入将提示可收藏，并在用户确认后将该输入内容收藏起来（保存到收藏表），被收藏的输入内容可在「收藏面板」中单击输入，避免反复输入相同内容 |
+| `favoriteClipEnabled` | `Boolean` | `true` | 是否启用「剪贴板收藏」。启用后，将监听剪贴板，当剪贴板中有未收藏的可粘贴内容时，将提示该可粘贴内容可收藏，并在用户确认后将该可粘贴内容收藏起来（保存到收藏表），方便后续直接输入。由于剪贴板监听只有在输入法处于前台时才会起作用，因此，复制/剪切将均是由输入法触发的 |
+| `favoriteSyncToUserDictEnabled` | `Boolean` | `false` | 是否启用「收藏与用户字典的同步」。启用后，被收藏的输入内容或可粘贴内容，将自动保存到系统用户字典中。对于系统用户字典中的已有数据，可以在收藏面板中增加「同步」按钮，将用户字典数据同步到收藏中（需要用户自行定期手动同步）。在删除收藏时，可选择是否一并删除用户字典（单独按钮，与仅删除收藏按钮同级）。注意，同步和同步删除仅在 `favoriteSyncToUserDictEnabled` 为 `true` 时启用 |
+| `candidateVariantFirstEnabled` | `Boolean` | `false` | 是否启用「繁体优先」，主要用于自动将拼音候选字转换为繁体 |
 
 ### 6.2 UiConfig 字段说明
 
 | 字段 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
-| `themeType` | `ThemeType` | `FollowSystem` | 主题模式（跟随系统/亮色/暗色） |
+| `keyboardInputMode` | `KeyboardInputMode` | `RectGrid` | 键盘采用的输入模式。影响 UI 层面的按键布局，也影响引擎层面的交互逻辑处理。不支持临时性修改，只能通过配置变更 |
+| `keyboardHandMode` | `KeyboardHandMode` | `Right` | 键盘的左右手模式。只影响 UI 层面键盘为适应左右手而做的按键布局调整 |
+| `keyboardThemeType` | `KeyboardThemeType` | `FollowSystem` | 键盘主题样式类型。不支持临时性修改 |
+| `keyPopupTipsEnabled` | `Boolean` | `true` | 是否显示按键输入提示。当其为 `false` 时，按键输入提示将始终被禁用，而若其为 `true`，则按键输入提示可被 `RuntimeConfig.keyPopupTipsEnabled` 临时禁用 |
 | `audioFeedbackEnabled` | `Boolean` | `true` | 是否启用按键音效反馈 |
 | `hapticFeedbackEnabled` | `Boolean` | `true` | 是否启用触觉反馈 |
 | `keyAnimationEnabled` | `Boolean` | `true` | 是否启用按键动画 |
-| `keyPopupTipsEnabled` | `Boolean` | `true` | 是否启用按键弹出提示 |
 | `gestureSlippingTrailEnabled` | `Boolean` | `true` | 是否启用滑行轨迹显示 |
 | `clipPopupTipsEnabled` | `Boolean` | `true` | 是否启用剪贴板弹出提示 |
 | `clipPopupTipsTimeout` | `Int` | `15` | 剪贴板弹出提示超时（秒） |
 | `adaptDesktopSwipeUpGesture` | `Boolean` | `false` | 是否适配桌面下滑手势 |
-| `candidateVariantFirstEnabled` | `Boolean` | `false` | 候选词变体是否优先显示 |
-| `userInputDataEnabled` | `Boolean` | `true` | 是否启用用户输入数据记录 |
 | `candidatesPagingAudioEnabled` | `Boolean` | `true` | 候选词翻页是否播放音效 |
 | `practicePlaybackSpeed` | `Float` | `1.0f` | 输入练习回放速度倍率 |
 | `practiceShowFingerOverlay` | `Boolean` | `true` | 输入练习是否显示手指覆盖层 |
 | `practiceShowSwipeTrail` | `Boolean` | `true` | 输入练习是否显示滑行轨迹 |
-| `logLevel` | `LogLevel` | `WARN` | 发布版本的日志等级 |
-| `logStoragePath` | `String?` | `null` | 日志文件存放目录路径，`null` 使用默认应用私有目录 |
 
-### 6.3 runtimeOverrides 机制
+### 6.3 RuntimeConfig 字段说明
 
-`runtimeOverrides` 记录被运行时临时修改的配置字段名称集合。当应用层将 `ImeConfig` 持久化到 DataStore 时，需要跳过 `runtimeOverrides` 中记录的字段——这些字段的值来自运行时修改（如用户在输入过程中临时切换手模式），而非用户的持久化偏好。应用重启时，被跳过的字段使用 DataStore 中的持久化值重新初始化。
+| 字段 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `screenOrientation` | `ScreenOrientation` | `Landscape` | 在调用 `ImeEngine.start` 时被 `StartupConfig.screenOrientation` 覆盖。其仅影响 UI 层的键盘在横屏或竖屏下的按键布局形式。对于某些 `KeyboardInputMode` 可以不支持横屏切换，这取决于该输入模式在横屏中的交互是否友好、便捷、顺畅 |
+| `editorInputType` | `EditorInputType` | `Text` | 在调用 `ImeEngine.start` 时被 `StartupConfig.editorInputType` 覆盖，但若是 `StartupConfig.editorInputType` 为 `null`，则不做覆盖。编辑器的输入类型可以决定输入法启动时的键盘类型，也决定了键盘中 enter 按键的图标样式：当输入类型为 `Filter` 时，采用搜索图标，表示开始查询；当输入类型为 `Number`、`Phone`、`Password`、`URI` 等单行输入时，采用提交图标，表示提交输入；对于 `Text` 等其他无明确动作区分的类型，则采用换行符图标，表示输入换行符。注意，虽然 enter 按键的视觉样式不同，但其行为没有变化，其始终向编辑器输入 `\n` 字符 |
+| `keyPopupTipsEnabled` | `Boolean?` | `null` | 是否启用按键输入提示，在调用 `ImeEngine.start` 时根据 `RuntimeConfig.editorInputType` 更新该值，若编辑器输入类型为 `Password` 等敏感信息类型时，始终强制禁用按键输入提示，以保护敏感数据，其余情况则可由应用侧自行决定。该值为 `false` 时，忽略 `UiConfig.keyPopupTipsEnabled` 的设置，该值不为 `false` 时，由 `UiConfig.keyPopupTipsEnabled` 的值决定是否显示提示 |
+| `toolSettingsEnabled` | `Boolean` | `true` | 是否启用「配置」按钮。当其为 `false` 时，键盘上方的工具栏中的「配置」按钮将被禁用但仍然显示 |
+| `toolSwitchIMEEnabled` | `Boolean` | `true` | 是否启用「输入法切换」按钮。当其为 `false` 时，键盘上方的工具栏中的「输入法切换」按钮将被禁用但仍然显示 |
+| `toolCloseKeyboardEnabled` | `Boolean` | `true` | 是否启用「关闭键盘」按钮。当其为 `false` 时，键盘上方的工具栏中的「关闭键盘」按钮将被禁用但仍然显示 |
+
+### 6.4 StartupConfig 字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `imeSubtype` | `IMESubtype` | 系统输入法子类型（Input Method Subtype）。通过 context 实时获取。枚举量为 `Latin`、`Hans` |
+| `screenOrientation` | `ScreenOrientation` | 屏幕方向（纵向 or 横向）。通过 context 实时获取 |
+| `editorInputType` | `EditorInputType?` | 目标编辑器的输入类型。`Filter` 代表搜索框输入；`Number` 代表数字输入；`Datetime` 代表日期输入；`Phone` 代表电话输入；`Password` 代表密码输入；`Email` 代表邮件输入；`URI` 代表 url 地址输入；`Text` 代表普通文本输入，在无法精确识别输入类型时，均采用该类型。在 `InputMethodService#onCurrentInputMethodSubtypeChanged` 中，该配置项值始终为 `null`，以确保不覆盖已识别到的目标类型 |
+
+### 6.5 KeyboardType 切换规则
+
+`KeyboardType` 不是配置项，而是运行时状态。键盘类型的切换遵循以下规则：
+
+1. **在 `ImeEngine.start()` 中**：首先检查 `StartupConfig.imeSubtype`，若为 `Latin` 则切换到拉丁键盘，否则切换到拼音键盘；然后检查 `RuntimeConfig.editorInputType`，若为 `Number`、`Datetime` 或 `Phone` 则切换到数字键盘，若为 `Password` 则切换到拉丁键盘，其余类型保持前一步的键盘类型。
+2. **通过功能键点击**：用户点击键盘上的功能键时，发送 `ImeIntent.SwitchKeyboard` 意图，引擎处理该意图切换键盘类型。
+3. **调用时机**：`ImeEngine.start()` 在 `InputMethodService#onStartInputView` 和 `InputMethodService#onCurrentInputMethodSubtypeChanged` 中调用。
+
+### 6.6 keyPopupTipsEnabled 交互逻辑
+
+`UiConfig.keyPopupTipsEnabled` 与 `RuntimeConfig.keyPopupTipsEnabled` 之间存在优先级关系：
+
+- 当 `RuntimeConfig.keyPopupTipsEnabled` 为 `false` 时，强制禁用按键输入提示，无论 `UiConfig.keyPopupTipsEnabled` 的值为何。
+- 当 `RuntimeConfig.keyPopupTipsEnabled` 不为 `false`（即 `null` 或 `true`）时，由 `UiConfig.keyPopupTipsEnabled` 的值决定是否显示按键输入提示。
+- 在 `ImeEngine.start()` 中，若 `editorInputType` 为 `Password`，则强制设置 `RuntimeConfig.keyPopupTipsEnabled = false`，并同时清空输入列表（`InputList`）。
+
+### 6.7 收藏功能门控
+
+收藏功能的启用由 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 两个配置项控制：
+
+- 当 `favoriteInputEnabled` 和 `favoriteClipEnabled` 均为 `false` 时，「收藏」功能完全禁用，UI 层隐藏收藏面板切换按钮。
+- 当 `favoriteInputEnabled` 为 `true` 时：已提交输入将提示可收藏，用户确认后将该输入内容收藏。
+- 当 `favoriteClipEnabled` 为 `true` 时：监听剪贴板，当剪贴板中有未收藏的可粘贴内容时，提示该可粘贴内容可收藏，用户确认后收藏。
+- 当 `favoriteSyncToUserDictEnabled` 为 `true` 时：收藏面板中出现「同步」和「同步删除」按钮，支持收藏与用户字典的双向同步。注意，`favoriteSyncToUserDictEnabled` 仅在 `favoriteInputEnabled` 或 `favoriteClipEnabled` 至少一个为 `true` 时生效。
 
 ---
 
-## 7. Feature 门控机制
+## 7. 收藏功能门控
 
-Feature 门控机制允许引擎在运行时根据配置启用或禁用特定功能。每个 `Feature` 枚举值对应一个功能域，禁用后该功能域的所有操作将被拦截并抛出异常。Feature 门控是引擎 Fail Fast 原则的核心实现之一，确保开发者在开发阶段尽早发现功能使用与配置不匹配的问题。
+收藏功能的门控机制取代了旧的 `Feature` 枚举门控设计，采用直接的布尔配置字段来控制功能的启用与禁用。
 
-### 7.1 Feature 枚举
+旧的 `Feature` 枚举、`FeatureRegistry` 和 `Feature.DefaultSet` 已被移除，取而代之的是 `EngineConfig` 中的 `favoriteInputEnabled`、`favoriteClipEnabled` 和 `favoriteSyncToUserDictEnabled` 三个布尔字段。
 
-```kotlin
-enum class Feature {
-    Clipboard,            // 剪贴板监听和粘贴
-    Favorites,            // 收藏管理
-    CandidatePrediction;  // 候选预测（HMM + Viterbi）
+### 7.1 门控规则
 
-    companion object {
-        val DefaultSet: Set<Feature> = setOf(Clipboard, Favorites, CandidatePrediction)
-    }
-}
-```
+- 当 `favoriteInputEnabled` 和 `favoriteClipEnabled` 均为 `false` 时，收藏功能完全禁用：`ImeState.favoriteList.disabled = true`，`favoriteList.favorites` 始终为空，调用 `ImeIntent.SaveFavorite` 抛出 `IllegalStateException`。
+- 当 `favoriteClipEnabled` 为 `false` 时，`ClipboardService` 仍然正常工作（支持粘贴功能），但不会产生剪贴板收藏提示。
+- 当 `favoriteInputEnabled` 为 `false` 时，已提交输入不会产生输入收藏提示。
+- `favoriteSyncToUserDictEnabled` 是正交配置，仅在 `favoriteInputEnabled` 或 `favoriteClipEnabled` 至少一个为 `true` 时生效。当其为 `true` 时，收藏面板中出现「同步」和「同步删除」按钮；当其均为 `false` 时，该配置项无意义。
 
-### 7.2 Feature 枚举值说明
+### 7.2 与 ImeConfig 的同步
 
-| Feature | 功能域 | 禁用影响 |
-|---------|--------|---------|
-| `Clipboard` | 剪贴板监听和粘贴 | `ImeState.clipboard.disabled = true`，`clipboard.clips` 始终为空，调用 `ImeIntent.PasteClip` 抛出 `IllegalStateException` |
-| `Favorites` | 收藏管理 | `ImeState.favoriteList.disabled = true`，`favoriteList.favorites` 始终为空，调用 `ImeIntent.SaveFavorite` 抛出 `IllegalStateException` |
-| `CandidatePrediction` | 候选预测（HMM + Viterbi） | `EngineConfig.candidatePredictionEnabled = false`，字典查询跳过 HMM 预测和 Viterbi 解码步骤，仅返回基础候选词 |
-
-### 7.3 DefaultSet 说明
-
-`Feature.DefaultSet` 包含 `Clipboard`、`Favorites` 和 `CandidatePrediction` 三个功能，覆盖大多数用户的使用需求。
-
-### 7.4 FeatureRegistry 门控检查
-
-`FeatureRegistry` 是引擎内部的功能注册表，管理 `Feature` 的启用/禁用状态和门控检查。`FeatureRegistry` 提供以下核心方法：
-
-```kotlin
-class FeatureRegistry(private val features: Set<Feature>) {
-
-    /** 检查功能是否启用，未启用时抛出 IllegalStateException */
-    fun require(feature: Feature) {
-        check(feature in features) {
-            "Feature $feature is not enabled. Add it to ImeConfig.engine.features to enable."
-        }
-    }
-
-    /** 检查功能是否启用，返回布尔值 */
-    fun isEnabled(feature: Feature): Boolean = feature in features
-}
-```
-
-`require()` 方法在引擎处理 `ImeIntent` 时被调用，作为功能门控的守卫检查。例如，`ImeEngine.handleIntent(ImeIntent.PasteClip(...))` 的处理逻辑中首先调用 `featureRegistry.require(Feature.Clipboard)`，若 `Clipboard` 功能未启用则立即抛出异常。这种 Fail Fast 的门控方式确保非法操作在调用点即被发现，而非在后续处理中产生不确定行为。
-
-### 7.5 Feature 与 ImeConfig 的同步
-
-`Feature` 的启用/禁用状态存储在 `ImeConfig.engine.features` 中，`FeatureRegistry` 在 `ImeEngine.create()` 时根据配置初始化。运行时通过 `ImeEngine.updateConfig()` 修改 `features` 集合后，`FeatureRegistry` 同步更新，后续的门控检查使用新的功能集合。`ImeState.config` 始终反映当前生效的配置，UI 层可根据 `Feature` 的启用状态显示或隐藏对应的功能入口。
+`favoriteInputEnabled`、`favoriteClipEnabled` 和 `favoriteSyncToUserDictEnabled` 的值存储在 `ImeConfig.engine` 中，`ImeEngine` 在 `create()` 时根据配置初始化。运行时通过 `ImeEngine.updateConfig()` 修改这些字段后，引擎同步更新门控状态，后续的检查使用新的配置值。`ImeState.config` 始终反映当前生效的配置，UI 层可根据配置的启用状态显示或隐藏对应的功能入口。
 
 ---
 
@@ -545,7 +585,8 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 - `inputList`：根据意图类型更新输入列表（追加字符、确认候选、删除输入等）
 - `candidateList`：根据字典查询结果更新候选列表
 - `clipboard` / `favoriteList`：根据剪贴板和收藏操作更新对应子状态
-- `config`：根据配置变更意图更新运行时配置
+
+注意：`ImeIntent.StartInput` 不经过 `reduce` 处理链，而是在 `ImeEngine.start()` 方法中直接处理，用于初始化 `RuntimeConfig` 和键盘类型。
 
 各子状态的变更通过一次 `copy()` 操作原子完成，不存在中间状态被外部观察到的风险。
 
@@ -570,6 +611,6 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 - 键盘类型切换时发射 `ImeEffect.PopupTip.Message("已切换到拉丁键盘")`
 - 按键处理时发射 `ImeEffect.PlayAudio(AudioType.KeyPress)` 和 `ImeEffect.PlayHaptic(HapticType.LightTap)`
 - 候选词选择时发射 `ImeEffect.PlayAudio(AudioType.CandidateSelect)`
-- 输入提交后若内容未收藏，发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...), persistent=false)`
+- 输入提交后若内容未收藏且 `EngineConfig.favoriteInputEnabled` 为 `true`，发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...), persistent=false)`
 
 `ImeEffect` 的发射时机在 `ImeState` 更新之后，确保 UI 层先观察到状态变更，再处理副作用信号。这种时序保证了一次性效果（如弹出提示）所依赖的渲染状态已经就绪。
