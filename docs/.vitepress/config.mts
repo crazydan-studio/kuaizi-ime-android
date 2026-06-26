@@ -82,10 +82,10 @@ export default defineConfig({
         items: [
           { text: '功能总览', link: '/ai-agent/v4/' },
           { text: '架构设计', link: '/ai-agent/v4/design/architecture/' },
-          { text: '引擎模块', link: '/ai-agent/v4/design/engine/' },
-          { text: 'UI 模块', link: '/ai-agent/v4/design/ui/' },
-          { text: '应用模块', link: '/ai-agent/v4/design/app/' },
-          { text: 'Java 迁移对照', link: '/ai-agent/v4/design/migration/' },
+          { text: ':engine 引擎模块', link: '/ai-agent/v4/design/engine/' },
+          { text: ':ui UI 模块', link: '/ai-agent/v4/design/ui/' },
+          { text: ':app 应用模块', link: '/ai-agent/v4/design/app/' },
+          { text: ':app-codegen 代码生成', link: '/ai-agent/v4/design/app-codegen/' },
           { text: '讨论记录', link: '/ai-agent/v4/discussions/' },
           { text: '开发计划', link: '/ai-agent/v4/plans/' },
           { text: '测试', link: '/ai-agent/v4/tests/' },
@@ -228,7 +228,7 @@ function sidebarAiAgent() {
       ],
     },
     {
-      text: ':ime-engine 引擎模块',
+      text: ':engine 引擎模块',
       collapsed: false,
       items: [
         { text: '索引', link: '/ai-agent/v4/design/engine/' },
@@ -245,7 +245,7 @@ function sidebarAiAgent() {
       ],
     },
     {
-      text: ':ime-ui UI 模块',
+      text: ':ui UI 模块',
       collapsed: false,
       items: [
         { text: '索引', link: '/ai-agent/v4/design/ui/' },
@@ -269,13 +269,11 @@ function sidebarAiAgent() {
       ],
     },
     {
-      text: 'Java 迁移对照',
-      collapsed: true,
+      text: ':app-codegen 代码生成模块',
+      collapsed: false,
       items: [
-        { text: '索引', link: '/ai-agent/v4/design/migration/' },
-        { text: '010-引擎模块迁移', link: '/ai-agent/v4/design/migration/010-engine-mapping' },
-        { text: '020-UI 模块迁移', link: '/ai-agent/v4/design/migration/020-ui-mapping' },
-        { text: '030-应用模块迁移', link: '/ai-agent/v4/design/migration/030-app-mapping' },
+        { text: '索引', link: '/ai-agent/v4/design/app-codegen/' },
+        { text: '010-KSP 代码生成', link: '/ai-agent/v4/design/app-codegen/010-codegen' },
       ],
     },
     {
