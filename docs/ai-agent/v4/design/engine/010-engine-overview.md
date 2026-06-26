@@ -68,6 +68,16 @@ sealed class ImeIntent {
     data class PasteClip(val text: String) : ImeIntent()
     data class SaveFavorite(val favorite: InputFavorite) : ImeIntent()
 
+    // 剪贴板与收藏列表控制
+    data object ShowClipList : ImeIntent()
+    data object ShowFavoriteList : ImeIntent()
+    data object CloseClipList : ImeIntent()
+    data object CloseFavoriteList : ImeIntent()
+
+    // 字典查询（异步 sideEffect）
+    data class LoadCandidates(val pinyin: String) : ImeIntent()
+    data class SetCandidates(val candidates: CandidateList) : ImeIntent()
+
     // 配置意图
     data class UpdateConfig(val config: ImeConfig) : ImeIntent()
 
@@ -626,6 +636,8 @@ Step 5: 分发 EditorAction 到 ImeEditorBridge
   ▼
 Step 6: 发射 ImeEffect 到 SharedFlow
 ```
+
+**未知意图处理**：`handleIntent()` 的 `when(intent)` 表达式由 Kotlin 编译器验证穷尽性——所有 ImeIntent 子类型必须被覆盖。若未来新增 ImeIntent 子类型但未在 `when` 中添加对应分支，编译器报错而非运行时静默忽略。因此不存在"未知意图"的运行时分支。
 
 ### 8.2 Step 1：ImeIntent → KeyboardStateTransition
 

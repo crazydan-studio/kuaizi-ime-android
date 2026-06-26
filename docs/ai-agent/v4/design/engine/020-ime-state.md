@@ -83,7 +83,8 @@ data class CandidateList(
     val pageIndex: Int = 0,
     val pageSize: Int = 20,
     val hasMore: Boolean = false,
-    val filter: PinyinWordFilter = PinyinWordFilter(),
+    val totalApprox: Int = 0,
+    val filter: PinyinWordFilter? = null,
 )
 ```
 
@@ -91,14 +92,14 @@ data class CandidateList(
 
 ### 3.1 InputWord 层级体系
 
-`InputWord` 是候选词的类型层级，以 `sealed class` 表达四种候选词类型。所有子类共享 `text` 和 `frequency` 字段，各自携带类型特有的语义信息。`PinyinWord` 是最复杂的子类型，包含拼音拼写、繁体变体、部首和声调等中文输入特有的属性；`PinyinPhrase` 是多字词组，记录各字的拼音拼写序列；`Emoji` 包含名称和分组信息；`Latin` 最为简单，仅包含文本和频次。
+`InputWord` 是候选词的类型层级，以 `sealed class` 表达四种候选词类型。所有子类共享 `text` 和 `frequency` 字段，各自携带类型特有的语义信息。`InputWord.Pinyin` 是最复杂的子类型，包含拼音拼写、繁体变体、部首和声调等中文输入特有的属性；`PinyinPhrase` 是多字词组，记录各字的拼音拼写序列；`Emoji` 包含名称和分组信息；`Latin` 最为简单，仅包含文本和频次。
 
 ```kotlin
 sealed class InputWord {
     abstract val text: String
     abstract val frequency: Int
 
-    data class PinyinWord(
+    data class Pinyin(
         override val text: String,
         override val frequency: Int,
         val spell: Spell?,
@@ -127,9 +128,9 @@ sealed class InputWord {
 }
 ```
 
-### 3.2 PinyinWord 辅助类型
+### 3.2 InputWord.Pinyin 辅助类型
 
-`PinyinWord` 携带的辅助类型为拼音过滤和提交选项提供了结构化的数据基础。`Spell` 记录拼音拼写的标识和值，用于拼写过滤和双拼/注音切换。`Variant` 记录繁体/异体变体文本和类型，用于繁简切换。`Radical` 记录部首文本和笔画数，用于高级过滤中的部首筛选。`Tone` 枚举了五个声调值，用于声调过滤。`SpellUsedMode` 控制拼音字的显示形式（全拼/双拼/注音），`VariantType` 区分繁体和异体两种变体类型。
+`InputWord.Pinyin` 携带的辅助类型为拼音过滤和提交选项提供了结构化的数据基础。`Spell` 记录拼音拼写的标识和值，用于拼写过滤和双拼/注音切换。`Variant` 记录繁体/异体变体文本和类型，用于繁简切换。`Radical` 记录部首文本和笔画数，用于高级过滤中的部首筛选。`Tone` 枚举了五个声调值，用于声调过滤。`SpellUsedMode` 控制拼音字的显示形式（全拼/双拼/注音），`VariantType` 区分繁体和异体两种变体类型。
 
 ```kotlin
 data class Spell(val id: String, val value: String)
@@ -143,17 +144,17 @@ enum class VariantType { Traditional, Variant }
 
 ### 3.3 PinyinWordFilter 拼音过滤器
 
-`PinyinWordFilter` 是候选列表的过滤条件，支持按声调和拼写两个维度筛选拼音候选词。过滤条件为空时 `isEmpty` 返回 `true`，此时候选列表不应用任何过滤。`matched()` 方法判断一个 `InputWord` 是否满足过滤条件——非 `PinyinWord` 类型直接返回 `false`，`PinyinWord` 类型需同时满足声调和拼写两个维度（若对应维度条件非空）。
+`PinyinWordFilter` 是候选列表的过滤条件，支持按声调和拼写两个维度筛选拼音候选词。过滤条件为空时 `isEmpty` 返回 `true`，此时候选列表不应用任何过滤。`matched()` 方法判断一个 `InputWord` 是否满足过滤条件——非 `InputWord.Pinyin` 类型直接返回 `false`，`InputWord.Pinyin` 类型需同时满足声调和拼写两个维度（若对应维度条件非空）。
 
 ```kotlin
 data class PinyinWordFilter(
-    val tones: Set<PinyinWord.Tone> = emptySet(),
-    val spells: Set<PinyinWord.Spell> = emptySet(),
+    val tones: Set<InputWord.Pinyin.Tone> = emptySet(),
+    val spells: Set<InputWord.Pinyin.Spell> = emptySet(),
 ) {
     val isEmpty: Boolean get() = tones.isEmpty() && spells.isEmpty()
 
     fun matched(word: InputWord): Boolean {
-        if (word !is PinyinWord) return false
+        if (word !is InputWord.Pinyin) return false
         if (tones.isNotEmpty() && word.tone !in tones) return false
         if (spells.isNotEmpty() && word.spell !in spells) return false
         return true
@@ -169,8 +170,8 @@ data class PinyinWordFilter(
 
 ```kotlin
 sealed class CommitOption {
-    data class ToggleSpellMode(val mode: PinyinWord.SpellUsedMode) : CommitOption()
-    data class ToggleVariant(val variant: PinyinWord.Variant) : CommitOption()
+    data class ToggleSpellMode(val mode: InputWord.Pinyin.SpellUsedMode) : CommitOption()
+    data class ToggleVariant(val variant: InputWord.Pinyin.Variant) : CommitOption()
     data object DeleteInput : CommitOption()
     data object CommitInput : CommitOption()
 }

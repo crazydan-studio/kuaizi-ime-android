@@ -42,9 +42,6 @@ sealed class ImeIntent {
     /** 保存收藏意图：用户保存一条收藏 */
     data class SaveFavorite(val favorite: InputFavorite) : ImeIntent()
 
-    /** 更新配置意图：用户修改运行时配置 */
-    data class UpdateConfig(val config: ImeConfig) : ImeIntent()
-
     /** 显示剪贴板列表 */
     data object ShowClipList : ImeIntent()
 
@@ -56,6 +53,15 @@ sealed class ImeIntent {
 
     /** 关闭收藏列表 */
     data object CloseFavoriteList : ImeIntent()
+
+    /** 字典查询（异步 sideEffect） */
+    data class LoadCandidates(val pinyin: String) : ImeIntent()
+
+    /** 设置候选列表 */
+    data class SetCandidates(val candidates: CandidateList) : ImeIntent()
+
+    /** 更新配置意图：用户修改运行时配置 */
+    data class UpdateConfig(val config: ImeConfig) : ImeIntent()
 
     /** 导出用户数据意图：用户导出输入历史和收藏数据 */
     data object ExportUserData : ImeIntent()
@@ -101,7 +107,7 @@ enum class EditorEditAction {
 
 ### 1.5 剪贴板、收藏与配置意图
 
-`PasteClip` 携带剪贴板文本内容，引擎收到后将文本追加到 `InputList.inputs` 中并输出到目标编辑器。`SaveFavorite` 携带收藏条目，引擎收到后通过 `FavoriteService` 保存收藏，受 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 联合门控——当两者均为 `false` 时调用立即抛出 `IllegalStateException`。`UpdateConfig` 携带新的 `ImeConfig` 实例，引擎收到后更新运行时配置。`ShowClipList` 和 `ShowFavoriteList` 切换 UI 层面板显示状态。`ExportUserData` 和 `ImportUserData` 是数据导入导出意图，引擎收到后委托 `DictRepository` 执行数据的序列化和反序列化。
+`PasteClip` 携带剪贴板文本内容，引擎收到后将文本追加到 `InputList.inputs` 中并输出到目标编辑器。`SaveFavorite` 携带收藏条目，引擎收到后通过 `FavoriteService` 保存收藏，受 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 联合门控——当两者均为 `false` 时调用立即抛出 `IllegalStateException`。`ShowClipList` 和 `CloseClipList` 切换/关闭剪贴板面板，`ShowFavoriteList` 和 `CloseFavoriteList` 切换/关闭收藏面板。`LoadCandidates` 触发异步字典查询，`SetCandidates` 设置查询结果到状态树。`UpdateConfig` 携带新的 `ImeConfig` 实例，引擎收到后更新运行时配置。`ExportUserData` 和 `ImportUserData` 是数据导入导出意图，引擎收到后委托 `DictRepository` 执行数据的序列化和反序列化。
 
 ---
 

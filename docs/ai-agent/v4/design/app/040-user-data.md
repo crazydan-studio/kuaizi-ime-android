@@ -182,6 +182,8 @@ class UserDataService(
 }
 ```
 
+**配置导入回滚**：若 `configStore.updateConfig()` 在导入过程中失败，配置可能处于部分更新状态。导入操作在事务执行前通过 `config.first()` 备份当前配置快照，写入失败时通过第二个 `updateConfig` 调用恢复备份快照。此回滚操作本身可能因 DataStore 写入失败而无法执行，此时引擎通过 Fail Fast 原则在下次启动时从 DataStore 重新加载——错误的配置仅在当前进程存活期内生效。
+
 ---
 
 ## 2. 数据模型
@@ -445,6 +447,6 @@ fun ImportStrategyDialog(
 用户数据导入导出新增以下 `ImeIntent` 子类：
 
 ```kotlin
-data class ExportUserData(val uri: Uri) : ImeIntent()
-data class ImportUserData(val uri: Uri, val strategy: ImportStrategy) : ImeIntent()
+data class ExportUserData(val filePath: String) : ImeIntent()
+data class ImportUserData(val filePath: String, val strategy: ImportStrategy) : ImeIntent()
 ```
