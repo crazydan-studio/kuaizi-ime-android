@@ -13,9 +13,8 @@ data class InputClip(
 ) {
     companion object {
         /** 根据文本内容自动检测类型并创建 InputClip 实例 */
-        fun from(text: String): InputClip {
-            val type = InputTextType.detect(text)
-            return InputClip(text, type)
+        suspend fun from(text: String): InputClip = withContext(Dispatchers.Default) {
+            InputClip(text = text, type = InputTextType.detect(text))
         }
     }
 }
@@ -108,6 +107,8 @@ enum class InputTextType {
 | `Html` | 代码图标 | 粘贴 HTML 源码 | 直接粘贴全部内容 |
 | `null` | 无图标 | 粘贴原始文本 | 直接粘贴全部内容 |
 
+`InputTextType.detect()` 包含 9 个按优先级排序的正则匹配（验证码、信用卡、身份证、手机号等），运行在 `Dispatchers.Default` 上避免阻塞主线程。
+
 ---
 
 ## 3. ClipboardService 剪贴板服务
@@ -143,7 +144,10 @@ class ClipboardService(
                 val clip = clipboardManager.primaryClip
                     ?.getItemAt(0)?.text?.toString()
                 if (clip != null) {
-                    trySend(InputClip.from(clip))
+                    scope.launch(Dispatchers.Default) {
+                        val inputClip = InputClip.from(clip)
+                        trySend(inputClip)
+                    }
                 }
             }
             clipboardManager.addPrimaryClipChangedListener(listener)

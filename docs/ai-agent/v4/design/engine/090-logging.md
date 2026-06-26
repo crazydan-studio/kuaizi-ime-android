@@ -394,27 +394,44 @@ class FileLogWriter(private val storage: LogStorage) : LogWriter {
 
 ## 9. LogcatWriter Android Logcat 输出
 
-`LogcatWriter` 将引擎的 `LogEntry` 映射到 `android.util.Log` 的对应方法，使日志在 Android Studio 的 Logcat 面板中实时可见。
+`LogcatWriter` 将引擎的 `LogEntry` 映射到 `android.util.Log` 的对应方法，使日志在 Android Studio 的 Logcat 面板中实时可见。LogcatWriter 默认为同步写入（bufferSize=0），直接调用 `android.util.Log.println()`。可选的小型 Channel 缓冲（如 bufferSize=16）将 Logcat 输出异步化，避免热路径中的同步 IPC 开销。缓冲满时通过 `trySend` 静默丢弃，确保写入者永不阻塞。
 
 ```kotlin
-class LogcatWriter : LogWriter {
-    override fun write(entry: LogEntry) {
-        when (entry.level) {
-            LogLevel.VERBOSE -> Log.v(entry.tag, entry.message, entry.throwable)
-            LogLevel.DEBUG -> Log.d(entry.tag, entry.message, entry.throwable)
-            LogLevel.INFO -> Log.i(entry.tag, entry.message, entry.throwable)
-            LogLevel.WARN -> Log.w(entry.tag, entry.message, entry.throwable)
-            LogLevel.ERROR -> Log.e(entry.tag, entry.message, entry.throwable)
+class LogcatWriter(
+    private val bufferSize: Int = 0, // 0 = 同步写入（默认）
+) : LogWriter {
+    private val channel: Channel<LogEntry>? =
+        if (bufferSize > 0) Channel(bufferSize) else null
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    init {
+        channel?.let { ch ->
+            scope.launch {
+                for (entry in ch) {
+                    android.util.Log.println(entry.level.priority, entry.tag, entry.message)
+                }
+            }
         }
     }
 
-    override suspend fun flush() {
-        // Logcat 无需刷新，日志即时输出
+    override fun write(entry: LogEntry) {
+        val ch = channel
+        if (ch != null) {
+            ch.trySend(entry) // 非阻塞，满则丢弃
+        } else {
+            android.util.Log.println(entry.level.priority, entry.tag, entry.message)
+        }
+    }
+
+    override fun flush() {
+        channel?.let {
+            while (!it.isEmpty) {
+                Thread.sleep(10)
+            }
+        }
     }
 }
 ```
-
-`LogcatWriter` 的 `write()` 方法是同步实现，直接调用 `android.util.Log` 的静态方法，日志立即出现在 Logcat 面板中，不存在缓冲延迟。`flush()` 方法为空实现，因为 Android Logcat 是即时输出通道，不存在缓冲区。
 
 通常仅在 Debug 构建中注册 `LogcatWriter`，Release 构建不包含此 Writer，确保发布版本不会向 Logcat 输出敏感信息。
 

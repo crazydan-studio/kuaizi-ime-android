@@ -607,3 +607,30 @@ HMM 预测结果与精确查询结果的合并策略是：预测结果的概率�
 用户频率合并的策略是：若候选词存在于用户输入历史中，使用用户频率替换字典频率作为排序依据；若不存在，使用字典频率。这种策略确保了用户常用词始终排在列表前端——即使用户常用词在字典中的频率较低（如人名、专业术语），用户频率的提升也会将其推到列表前端。
 
 四个阶段的完整查询流程确保了候选列表的质量：前缀匹配保证查询范围合法，精确查询提供基础候选集，HMM 排序引入上下文感知能力，用户频率合并反映个性化偏好。四个阶段的组合使得拼音输入的候选排序既准确又个性化，减少用户的翻页和选择成本。
+
+### 8.5 字典查询异步化
+
+字典查询通过 sideEffects 异步执行：当 KeyboardStateMachine 产生查询需求时，返回 `ImeIntent.LoadCandidates(pinyin)` 作为 sideEffect。`ImeEngine` 的工作队列将其分发到 `Dispatchers.Default` 协程执行，查询结果通过 `ImeIntent.SetCandidates(candidates)` 重新回到 reduce 处理链。
+
+```kotlin
+// ImeIntent 补充两个新子类型（如果未定义）
+data class LoadCandidates(val pinyin: String) : ImeIntent()
+data class SetCandidates(val candidates: CandidateList) : ImeIntent()
+
+// ImeEngine 中异步处理
+private fun handleAsyncIntent(intent: ImeIntent) {
+    when (intent) {
+        is ImeIntent.LoadCandidates -> {
+            scope.launch(Dispatchers.Default) {
+                val candidates = dictProvider.query(intent.pinyin)
+                handleIntent(ImeIntent.SetCandidates(candidates))
+            }
+        }
+        // ...
+    }
+}
+```
+
+查询流程：Prefix matching → (sideEffect) → DB query on Default → Viterbi on Default → SetCandidates → reduce
+
+字典查询通过 `Dispatchers.Default` 异步化后，主线程仅处理缓存命中场景（纯 Trie 查找），DB I/O 和 Viterbi 计算不阻塞 UI 线程。

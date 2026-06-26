@@ -13,11 +13,10 @@ data class ImeState(
     val favoriteList: FavoriteList = FavoriteList(),
     val toolListState: ToolListState = ToolListState(),
     val config: ImeConfig = ImeConfig(),
-    val effect: ImeEffect? = null,
 )
 ```
 
-`ImeState` 的八个字段覆盖了输入法的全部逻辑状态和一次性效果信号：`keyboard` 描述当前键盘的类型、输入模式和状态机位置；`inputList` 管理用户输入的字符序列与游标；`candidateList` 承载候选词的分页和过滤数据；`clipboard` 和 `favoriteList` 分别维护剪贴板检测与收藏管理的状态；`toolListState` 管理工具栏按钮的配置与启用状态；`config` 提供运行时配置的快照；`effect` 承载一次性副作用信号，UI 层消费后由引擎清除。这种扁平组合的设计使得每个子状态都有清晰的职责边界，任何子状态的变更仅影响对应字段的 `copy()` 操作，不会意外波及其他子状态。
+`ImeState` 的七个字段覆盖了输入法的全部逻辑状态：`keyboard` 描述当前键盘的类型、输入模式和状态机位置；`inputList` 管理用户输入的字符序列与游标；`candidateList` 承载候选词的分页和过滤数据；`clipboard` 和 `favoriteList` 分别维护剪贴板检测与收藏管理的状态；`toolListState` 管理工具栏按钮的配置与启用状态；`config` 提供运行时配置的快照。一次性副作用信号（弹出提示、音效、触觉振动）通过独立的 `SharedFlow<ImeEffect>` 通道发射，与 `ImeState` 完全分离。这种扁平组合的设计使得每个子状态都有清晰的职责边界，任何子状态的变更仅影响对应字段的 `copy()` 操作，不会意外波及其他子状态。
 
 需要特别指出的是，`ImeState` 中**不包含**以下两类数据：`isInputting`（由 `KeyboardViewModel` 从 `inputList.pending` 直接派生）、帧级手势反馈状态（如触摸轨迹、按键高亮，由 `:ui` 的 `KeyboardViewModel` 维护本地 `StateFlow`）。这种分离确保了高频帧级状态不会污染引擎的核心状态树，避免了不必要的 Compose 重组开销。
 
@@ -285,9 +284,12 @@ data class ToolItem(
 
 ---
 
-## 7. ImeEffect 副作用信号
+## 7. 副作用通道 (ImeEffect)
 
-`ImeEffect` 是引擎的副作用信号，通过 `ImeState.effect` 字段承载一次性效果。与持续性状态语义不同，`ImeEffect` 表达的是「发生了某件事」的事件语义——引擎设置 `effect` 字段后，UI 层消费并调用 `consumeEffect()` 清除，确保同一效果不会被重复消费。
+`ImeEffect` 是引擎的副作用信号，通过独立的 `SharedFlow<ImeEffect>` 通道发射，与 `ImeState` 完全分离。`ImeEngine` 内部持有 `MutableSharedFlow<ImeEffect>(extraBufferCapacity = 64)`，对外暴露只读 `SharedFlow<ImeEffect>`。与持续性状态不同，`ImeEffect` 表达的是「发生了某件事」的事件语义——引擎发射信号后 UI 层在独立协程中消费，不触发 `ImeState` 的变化。
+
+> **为什么 ImeEffect 与 ImeState 分离？**  
+> 避免了一次性效果触发 ImeState.copy() 和 StateFlow 发射导致的全局 UI 重组。每个 effect 通过独立的 SharedFlow 通道传递，UI 层在独立的 collectEffect() 协程中消费，不触发 ImeState 的变化。64 的缓冲容量确保快速连击时高频效果（按键音、触觉反馈）不会因背压而静默丢弃。
 
 ### 7.1 PopupTip 体系
 
@@ -349,7 +351,7 @@ enum class HapticType {
 
 ### 7.4 通道集成
 
-`ImeEngine` 在 `handleIntent()` 处理过程中，将 `ImeEffect` 设置到 `ImeState.effect` 字段。UI 层通过 `collectAsState()` 观察到 `effect` 非 null 时立即消费：`PopupTip.Message` 显示浮动提示条并启动自动 dismiss 定时器；`PopupTip.Action` 显示带按钮的提示条，按钮点击触发对应的 `ImeIntent`；`PlayAudio` 检查 `audioFeedbackEnabled` 配置后调用 `AudioPlayer.play()`；`PlayHaptic` 检查 `hapticFeedbackEnabled` 配置后调用 `HapticPlayer.play()`。收藏确认通过 `PopupTip.Action` 实现——输入提交后若内容未收藏，引擎设置 `PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示，用户点击「收藏」按钮即可保存。
+`ImeEngine` 在 `handleIntent()` 处理过程中，将 `ImeEffect` 通过 `_effect.emit()` 发射到 `SharedFlow<ImeEffect>`。UI 层在独立的 `collectEffect()` 协程中收集并消费：`PopupTip.Message` 显示浮动提示条并启动自动 dismiss 定时器；`PopupTip.Action` 显示带按钮的提示条，按钮点击触发对应的 `ImeIntent`；`PlayAudio` 检查 `audioFeedbackEnabled` 配置后调用 `AudioPlayer.play()`；`PlayHaptic` 检查 `hapticFeedbackEnabled` 配置后调用 `HapticPlayer.play()`。收藏确认通过 `PopupTip.Action` 实现——输入提交后若内容未收藏，引擎发射 `PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示，用户点击「收藏」按钮即可保存。
 
 `PopupTip.Action` 的 dismiss 策略在 UI 层实现：`persistent = false` 时启动 `delay(timeoutMs)` 协程，超时后自动 dismiss；`persistent = true` 时不启动超时定时器，改为监听 `keyboard.state` 变更——当用户开始输入（状态从 `Idle` 转换到 `PinyinInput.Waiting`）时自动 dismiss。
 
@@ -375,7 +377,7 @@ enum class HapticType {
 
 当 `EngineConfig.favoriteInputEnabled` 为 `false` 时：
 
-- 输入提交后不发射 `ImeEffect.PopupTip.Action("可收藏内容", ...)` 提示
+- 输入提交后不向 SharedFlow 发射 `ImeEffect.PopupTip.Action("可收藏内容", ...)` 提示
 - 不影响剪贴板收藏功能（若 `favoriteClipEnabled` 为 `true`）
 - 不影响已收藏内容的使用（若 `favoriteClipEnabled` 为 `true`，收藏面板仍然可用）
 
@@ -396,12 +398,12 @@ enum class HapticType {
 
 - `ImeState.clipboard.disabled = true`
 - `ClipboardService` 停止监听系统剪贴板
-- 不设置任何剪贴板相关的 `ImeEffect` 信号
+- 不向 SharedFlow 发射任何剪贴板相关的 `ImeEffect` 信号
 
 当 `EngineConfig.favoriteClipEnabled` 为 `false` 但 `UiConfig.clipPastePopupTipsEnabled` 为 `true` 时：
 
 - `ClipboardService` 正常运行，`ImeEngine.start()` 时检查剪贴板可粘贴内容并弹出粘贴确认提示
-- 不设置剪贴板收藏相关的 `ImeEffect.PopupTip.Action` 信号
+- 不向 SharedFlow 发射剪贴板收藏相关的 `ImeEffect.PopupTip.Action` 信号
 - 不影响输入收藏功能（若 `favoriteInputEnabled` 为 `true`）
 
 当 `EngineConfig.favoriteClipEnabled` 为 `true` 但 `UiConfig.clipPastePopupTipsEnabled` 为 `false` 时：
@@ -442,8 +444,6 @@ enum class HapticType {
 
 7. **`keyboard` 切换清空历史**：`KeyboardType` 切换时 `KeyboardStateHistory` 必须被清空。不同键盘类型之间不存在状态回退关系，残留的历史栈会导致回退到语义不兼容的状态。此不变式由 `KeyboardStateMachine.resetTo()` 保证。
 
-8. **`effect` 单次消费**：`effect` 字段在 UI 层调用 `consumeEffect()` 后必须被清除，确保同一效果不会在多次重组中被重复消费。此不变式由 `ImeEngine.consumeEffect()` 保证。
-
 ---
 
 ## 10. 状态频率分层
@@ -453,6 +453,7 @@ IME 系统中的状态变更频率差异极大——从每帧 60fps 的手势反
 | 状态 | 变更频率 | 所有者 | 通道 |
 |------|---------|--------|------|
 | `ImeState` | 按键级（ms 级） | `:engine` | `StateFlow<ImeState>` |
+| `ImeEffect` | 按键级（ms 级） | `:engine` | `SharedFlow<ImeEffect>` |
 | `GestureFeedbackState` | 帧级（16ms 级） | `:ui` | ViewModel 本地 `StateFlow` |
 | `ToolListState` | 键盘切换级（s 级） | `:engine` | `StateFlow<ImeState>.toolListState` |
 | `InputActionPlayerState` | 播放控制级（s 级） | `:ui` | ViewModel 本地 `StateFlow` |

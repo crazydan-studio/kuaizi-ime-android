@@ -603,7 +603,7 @@ class ImeEngine internal constructor(
     private val _state = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<ImeEffect>(extraBufferCapacity = 16)
+    private val _effect = MutableSharedFlow<ImeEffect>(extraBufferCapacity = 64)
     val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
 
     private val _editorBridges = mutableListOf<ImeEditorBridge>()
@@ -618,6 +618,8 @@ class ImeEngine internal constructor(
     }
 }
 ```
+
+64 的缓冲容量确保快速连击时高频效果（按键音、触觉反馈）不会因背压而静默丢弃。
 
 `dispatchEditorAction()` 遍历 `_editorBridges` 中的所有桥梁，对每个桥梁调用与 `EditorAction` 子类型对应的语义方法。若 `_editorBridges` 为空，分发被静默跳过。多个桥梁独立运作——每个桥梁独立接收相同的 `EditorAction` 分发，互不干扰。第三方应用可以挂载多个桥梁，将同一引擎的编辑器操作同时分发到不同的编辑器目标。
 
