@@ -4,106 +4,105 @@ allowmixing
 skinparam backgroundColor #FEFEFE
 skinparam defaultFontSize 12
 
-title 面板三层分离与屏幕布局
+title Panel Three-Layer Separation & Screen Layout
 
 legend right
-  |= 颜色 |= 说明 |
-  | <#C8E6C9> | GestureInputPanel (最上层) |
-  | <#FFF9C4> | GestureFeedbackPanel (中间层) |
-  | <#BBDEFB> | KeyLayoutPanel (最下层) |
-  | <#FFCDD2> | 信息面板 (Row 1/2) |
-  | <#E1BEE7> | 指示器/覆盖层 |
-  | <#F5F5F5> | Zone 容器 |
-  | <#FFFFFF> | 中性容器 |
+  |= Color |= Description |
+  | <#C8E6C9> | GestureInputPanel (topmost) |
+  | <#FFF9C4> | GestureFeedbackPanel (middle) |
+  | <#BBDEFB> | KeyLayoutPanel (bottommost) |
+  | <#FFCDD2> | Info panels (Row 1/2) |
+  | <#E1BEE7> | Indicator/overlay |
+  | <#F5F5F5> | Zone container |
+  | <#FFFFFF> | Neutral container |
 endlegend
 
-' ===== 三层分离核心 =====
-rectangle "三层分离架构" as ThreeLayer #FFFFFF {
-  rectangle "最上层: GestureInputPanel\n(透明手势层)" as GIP #C8E6C9
-  rectangle "中间层: GestureFeedbackPanel\n(透明绘制层，可多实例)" as GFP #FFF9C4
-  rectangle "最下层: KeyLayoutPanel\n(按键布局层，单实例)" as KLP #BBDEFB
+' ===== Three-Layer Separation Core =====
+rectangle "Three-Layer Separation Architecture" as ThreeLayer #FFFFFF {
+  rectangle "Top: GestureInputPanel\n(Transparent Gesture Layer)" as GIP #C8E6C9
+  rectangle "Middle: GestureFeedbackPanel\n(Transparent Drawing Layer, Multi-Instance)" as GFP #FFF9C4
+  rectangle "Bottom: KeyLayoutPanel\n(Key Layout Layer, Single Instance)" as KLP #BBDEFB
 }
 
 note right of GIP
-  接收原始触摸事件
-  识别手势类型 (点击/长按/滑行/翻转)
-  查询 KeyLayoutState 定位按键
-  输出 InputGesture → ViewModel
-  驱动 GestureFeedbackState → 反馈面板
-  不绘制任何视觉反馈 (完全透明)
+  Receives raw touch events
+  Recognizes gesture types (tap/long-press/slide/flip)
+  Queries KeyLayoutState for key targeting
+  Outputs InputGesture → ViewModel
+  Drives GestureFeedbackState → feedback panel
+  Does not draw any visual feedback (fully transparent)
 end note
 
 note right of GFP
-  绘制输入轨迹 (含按键间路径/X-Pad路径)
-  绘制按键高亮
-  绘制手指指示器 (程序化输入)
-  绘制 clickAnimation 涟漪
-  不处理触摸事件
-  使用归一化坐标绘制
+  Draws input trail (including inter-key paths)
+  Draws key highlights
+  Draws finger indicator (programmatic input)
+  Draws clickAnimation ripple
+  Does not handle touch events
+  Uses normalized coordinates for drawing
 end note
 
 note right of KLP
-  根据 KeyboardInputMode + Type 渲染按键
-  展示按键状态 (按下/激活/禁用)
-  提供 KeyLayoutState 供查询
-  onLayoutStateChanged 回调
-  不处理触摸事件
+  Renders keys based on KeyboardInputMode + Type
+  Shows key state (pressed/active/disabled)
+  Provides KeyLayoutState for queries
+  onLayoutStateChanged callback
+  Does not handle touch events
 end note
 
-' ===== 通信解耦 =====
-rectangle "InputGesture\n(坐标无关)" as IG
-rectangle "GestureFeedbackState\n(归一化坐标)" as GFS
-rectangle "ImeState\n(不可变状态)" as IS
+' ===== Communication Decoupling =====
+rectangle "InputGesture\n(Coordinate-Independent)" as IG
+rectangle "GestureFeedbackState\n(Normalized Coordinates)" as GFS
+rectangle "ImeState\n(Immutable State)" as IS
 
-GIP -down-> IG : 输出
+GIP -down-> IG : outputs
 IG -down-> KLP : ViewModel → ImeState
-GIP -down-> GFS : 驱动
-GFS -down-> GFP : 消费
-IS -down-> KLP : 驱动
+GIP -down-> GFS : drives
+GFS -down-> GFP : consumes
+IS -down-> KLP : drives
 
 ' ===== Zone A / Zone B =====
-rectangle "屏幕分区" as Zones #FFFFFF {
+rectangle "Screen Zones" as Zones #FFFFFF {
 
-  rectangle "Zone A (上半区)\n仅 Separated 模式使用" as ZoneA #F5F5F5 {
-    rectangle "KeyLayoutPanel\n(底层渲染)" as ZA_KLP #BBDEFB
-    rectangle "GestureFeedbackPanel\n(Zone A 实例)\n透明反馈层" as ZA_GFP #FFF9C4
+  rectangle "Zone A (Upper Half)\nSeparated Mode Only" as ZoneA #F5F5F5 {
+    rectangle "KeyLayoutPanel\n(Bottom Rendering)" as ZA_KLP #BBDEFB
+    rectangle "GestureFeedbackPanel\n(Zone A Instance)\nTransparent Feedback Layer" as ZA_GFP #FFF9C4
     ZA_KLP -[hidden]up- ZA_GFP
   }
 
-  rectangle "Zone B (下半区)\n两种模式均使用" as ZoneB #F5F5F5 {
+  rectangle "Zone B (Lower Half)\nBoth Modes Use" as ZoneB #F5F5F5 {
 
-    rectangle "Row 1: 候选提示区\n叠加共存" as Row1 #FFCDD2 {
-      rectangle "CandidateListPanel\n(含内建 IndicatorOverlay)" as R1_CLP #FFCDD2
-      rectangle "PopupTipPanel\n(叠加，短暂浮现)" as R1_PTP #E1BEE7
+    rectangle "Row 1: Candidate & Hint Area\nOverlay Coexistence" as Row1 #FFCDD2 {
+      rectangle "CandidateListPanel\n(Built-in IndicatorOverlay)" as R1_CLP #FFCDD2
+      rectangle "PopupTipPanel\n(Overlay, Transient)" as R1_PTP #E1BEE7
     }
 
-    rectangle "Row 2: 工具/输入区\n互斥共存" as Row2 #FFCDD2 {
-      rectangle "ToolListPanel\n(空闲时显示)\n含内建 IndicatorOverlay" as R2_TLP #FFCDD2
-      rectangle "InputListPanel\n(输入时互斥显示)\n含内建 IndicatorOverlay" as R2_ILP #FFCDD2
-      R2_TLP .> R2_ILP : 互斥
+    rectangle "Row 2: Tool & Input Area\nMutually Exclusive" as Row2 #FFCDD2 {
+      rectangle "ToolListPanel\n(Shown When Idle)\nBuilt-in IndicatorOverlay" as R2_TLP #FFCDD2
+      rectangle "InputListPanel\n(Mutually Exclusive When Inputting)\nBuilt-in IndicatorOverlay" as R2_ILP #FFCDD2
+      R2_TLP .> R2_ILP : mutually exclusive
     }
 
-    rectangle "Row 3: 键盘交互区\n三层叠加共存" as Row3 #FFFFFF {
-      rectangle "KeyLayoutPanel\n(最下层，渲染)" as R3_KLP #BBDEFB
-      rectangle "GestureFeedbackPanel\n(Zone B 实例，反馈)" as R3_GFP #FFF9C4
-      rectangle "GestureInputPanel\n(最上层，触摸)" as R3_GIP #C8E6C9
+    rectangle "Row 3: Keyboard Interaction Area\nThree-Layer Overlay Coexistence" as Row3 #FFFFFF {
+      rectangle "KeyLayoutPanel\n(Bottommost, Rendering)" as R3_KLP #BBDEFB
+      rectangle "GestureFeedbackPanel\n(Zone B Instance, Feedback)" as R3_GFP #FFF9C4
+      rectangle "GestureInputPanel\n(Topmost, Touch)" as R3_GIP #C8E6C9
     }
   }
 }
 
-' ===== 数据模型 =====
-package "数据模型" {
-  rectangle "InputGesture\n(坐标无关)" as IG2
-  rectangle "GestureFeedbackState\n(归一化坐标)" as GFS2
-  rectangle "InputActionFingerIndicator\n(归一化坐标)" as IAFI
-  rectangle "KeyLayoutState\n(归一化坐标)" as KLS
+' ===== Data Models =====
+package "Data Models" {
+  rectangle "InputGesture\n(Coordinate-Independent)" as IG2
+  rectangle "GestureFeedbackState\n(Normalized Coordinates)" as GFS2
+  rectangle "InputActionFingerIndicator\n(Normalized Coordinates)" as IAFI
+  rectangle "KeyLayoutState\n(Normalized Coordinates)" as KLS
   rectangle "CoordinateNormalizer" as CN
 }
 
 note right of IG2
   Tap, LongPress, Swipe
-  Flip, XPadZonePath
-  CandidateTap
+  Flip, CandidateTap
 end note
 
 note right of GFS2
@@ -117,13 +116,13 @@ note right of IAFI
   pressed: Boolean
   visible: Boolean
   clickAnimation: ClickAnimation?
-  手指指示器（绘制手指图形 + 点击动画）
+  Finger indicator (draws finger graphic + click animation)
 end note
 
 note right of KLS
   keyPositions: Map<InputKey, RectF>
   findKeyAt(position): InputKey?
-  onLayoutStateChanged 回调
+  onLayoutStateChanged callback
 end note
 
 note right of CN

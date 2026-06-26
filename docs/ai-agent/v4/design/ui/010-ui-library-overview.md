@@ -1,6 +1,6 @@
 # UI 库架构总览
 
-UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方应用开放。第三方应用可以直接使用库中的 Compose 组件和 `KeyboardViewModel` 构建完整的输入法界面，无需自行实现视图层或 ViewModel。同时，UI 库的设计遵循「可替换」原则：所有 UI 组件仅依赖 `:ime-engine` 的公开 API（`StateFlow`、`ImeIntent`、`EditorAction`），不依赖引擎内部实现，因此第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能。
+UI 库 `:ui` 的核心设计目标是作为**缺省 UI 实现**对第三方应用开放。第三方应用可以直接使用库中的 Compose 组件和 `KeyboardViewModel` 构建完整的输入法界面，无需自行实现视图层或 ViewModel。同时，UI 库的设计遵循「可替换」原则：所有 UI 组件仅依赖 `:engine` 的公开 API（`StateFlow`、`ImeIntent`、`EditorAction`），不依赖引擎内部实现，因此第三方应用可以完全用自定义 UI 替换 `:ui` 而不影响引擎功能。
 
 ---
 
@@ -13,7 +13,7 @@ UI 库 `:ime-ui` 的核心设计目标是作为**缺省 UI 实现**对第三方�
 | **可组合** | 组件粒度合理，第三方应用可选择性使用部分组件（如只用键盘不用候选栏） |
 | **可定制** | 通过主题系统（`KeyboardColors`）和配置参数控制外观和行为 |
 
-UI 库的「缺省实现」定位意味着它必须提供功能完备的组件，覆盖输入法界面的所有交互场景。第三方应用无需实现任何 UI 逻辑，只需引入 `:ime-engine` + `:ime-ui` 两个库，即可获得完整的输入法能力与界面。「可替换」定位则要求组件边界清晰、接口稳定，所有组件仅依赖 `:ime-engine` 公开 API，确保第三方应用可替换任意组件而不影响引擎运行。
+UI 库的「缺省实现」定位意味着它必须提供功能完备的组件，覆盖输入法界面的所有交互场景。第三方应用无需实现任何 UI 逻辑，只需引入 `:engine` + `:ui` 两个库，即可获得完整的输入法能力与界面。「可替换」定位则要求组件边界清晰、接口稳定，所有组件仅依赖 `:engine` 公开 API，确保第三方应用可替换任意组件而不影响引擎运行。
 
 「可组合」定位要求组件粒度合理，既不过度拆分导致组合复杂度飙升，也不过度聚合导致无法复用。`KeyboardHost` 作为一站式集成组件提供了最便捷的使用方式，而 `KeyLayoutPanel`、`CandidateListPanel` 等面板组件则允许第三方应用按需组合。「可定制」定位通过 `KeyboardColors` 主题系统和 `ImeConfig` 配置参数实现，外观和行为均可在不修改组件代码的前提下调整。四个设计目标之间没有优先级之分，它们共同构成了 UI 库的架构约束，任何设计决策都需要在这四个维度上取得平衡。
 
@@ -69,7 +69,7 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 |------|--------|------|
 | `KeyboardViewModel` | `viewmodel` | UI 协调中心，持有 `ImeEngine`，暴露 `StateFlow<ImeState>`，将 `InputGesture` 转换为 `ImeIntent`，管理 `GestureFeedbackState`、`PopupTipState`、`ToolListState`、`layoutMode` 及 `InputActionPlayer` |
 
-`KeyboardViewModel` 是 UI 层的协调中心，桥接 Compose UI 组件与 `:ime-engine` 引擎。它不属于 `:app` 模块，而是归属于 `:ime-ui` 模块，确保任何引入 `:ime-engine` + `:ime-ui` 的第三方应用都能获得即插即用的 ViewModel。ViewModel 的核心职责包括：手势/意图分发（`handleGesture()`、`handleIntent()`）、状态暴露（`state`、`config`、`layoutMode`、`feedbackState`）、弹出提示管理（订阅引擎 `ImeEffect` 通道，驱动 `PopupTipPanel`）、工具列表管理（根据 `keyboard.type` 动态配置）、布局模式管理（`KeyboardLayoutMode` 运行时切换）、输入动作播放器集成（`InputActionPlayer`）以及布局状态缓存（供播放器坐标解析）。ViewModel 仅依赖引擎公开 API，不持有 `InputConnectionBridge`，不执行配置持久化，不创建或销毁引擎（详见 [030-键盘视图模型](030-keyboard-view-model.md)）。
+`KeyboardViewModel` 是 UI 层的协调中心，桥接 Compose UI 组件与 `:engine` 引擎。它不属于 `:app` 模块，而是归属于 `:ui` 模块，确保任何引入 `:engine` + `:ui` 的第三方应用都能获得即插即用的 ViewModel。ViewModel 的核心职责包括：手势/意图分发（`handleGesture()`、`handleIntent()`）、状态暴露（`state`、`config`、`layoutMode`、`feedbackState`）、弹出提示管理（订阅引擎 `ImeEffect` 通道，驱动 `PopupTipPanel`）、工具列表管理（根据 `keyboard.type` 动态配置）、布局模式管理（`KeyboardLayoutMode` 运行时切换）、输入动作播放器集成（`InputActionPlayer`）以及布局状态缓存（供播放器坐标解析）。ViewModel 仅依赖引擎公开 API，不持有 `InputConnectionBridge`，不执行配置持久化，不创建或销毁引擎（详见 [030-键盘视图模型](030-keyboard-view-model.md)）。
 
 ### 2.5 主题系统
 
@@ -89,7 +89,7 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 | `KeyTableGenerator` | `keyboard` | 按键布局生成器接口，根据键盘类型、输入模式、键盘状态和相关数据生成按键布局矩阵 |
 | `KeyTableContext` | `keyboard` | 按键生成上下文，包含 `config`、`keyboard`、`inputList`、`candidateList` |
 
-`KeyTableGenerator` 是按键布局生成器接口，归属于 `:ime-ui` 模块，因为按键布局是 UI 关注点，由 UI 层根据键盘状态决定按键的排列和显示。`KeyTableGenerator` 根据 `KeyTableContext` 中的信息生成 `List<List<InputKey>>` 二维矩阵，每一行对应键盘的一行按键，每个 `InputKey` 描述按键的语义标识和标签内容。`KeyTableContext` 包含 `config: ImeConfig`（运行时配置）、`keyboard: Keyboard`（当前键盘实例，含 `type`、`mode`、`state` 三个维度）、`inputList: InputList`（当前输入列表，用于确定功能键状态）、`candidateList: CandidateList`（当前候选列表，用于确定候选键内容）。不同 `KeyboardInputMode`（`HexGrid` 和 `RectGrid`）下，`KeyTableGenerator` 的实现可能不同——`HexGrid` 生成六边形排列的按键矩阵，`RectGrid` 生成矩形排列的按键矩阵。
+`KeyTableGenerator` 是按键布局生成器接口，归属于 `:ui` 模块，因为按键布局是 UI 关注点，由 UI 层根据键盘状态决定按键的排列和显示。`KeyTableGenerator` 根据 `KeyTableContext` 中的信息生成 `List<List<InputKey>>` 二维矩阵，每一行对应键盘的一行按键，每个 `InputKey` 描述按键的语义标识和标签内容。`KeyTableContext` 包含 `config: ImeConfig`（运行时配置）、`keyboard: Keyboard`（当前键盘实例，含 `type`、`mode`、`state` 三个维度）、`inputList: InputList`（当前输入列表，用于确定功能键状态）、`candidateList: CandidateList`（当前候选列表，用于确定候选键内容）。不同 `KeyboardInputMode`（`HexGrid` 和 `RectGrid`）下，`KeyTableGenerator` 的实现可能不同——`HexGrid` 生成六边形排列的按键矩阵，`RectGrid` 生成矩形排列的按键矩阵。
 
 ```kotlin
 interface KeyTableGenerator {
@@ -116,11 +116,7 @@ data class KeyTableContext(
 
 ## 3 组件层次关系
 
-以下为组件层次树，展示 `:ime-ui` 模块各组件之间的组合关系（详细设计见 [020-面板三层分离与屏幕布局](020-panel-separation.md)）。
-
-```plantuml
-@file:../diagrams/ui-component-hierarchy.puml
-```
+以下为组件层次树，展示 `:ui` 模块各组件之间的组合关系（详细设计见 [020-面板三层分离与屏幕布局](020-panel-separation.md)）。
 
 `KeyboardHost` 是最顶层的集成组件，通过 `KeyboardLayoutMode` 统一 `Stacked`/`Separated` 入口。`KeyboardHost` 订阅 `KeyboardViewModel` 的 `state`、`layoutMode`、`feedbackState`、`popupTipState`、`toolListState` 等状态，根据布局模式选择不同的组件部署方式。在 `Stacked` 布局下，所有面板集中在 Zone B 的三行结构中；在 `Separated` 布局下，`KeyLayoutPanel` 迁移到 Zone A，其余面板仍在 Zone B。`KeyboardInputActionPlayerHost` 在 `KeyboardHost` 基础上叠加播放引擎，专用于输入动作演示。
 
@@ -158,7 +154,7 @@ KeyboardViewModel
 
 ## 4 引擎依赖
 
-UI 库的所有组件仅依赖 `:ime-engine` 的公开 API：
+UI 库的所有组件仅依赖 `:engine` 的公开 API：
 
 | 依赖的引擎 API | UI 库中的使用场景 |
 |---------------|-----------------|
@@ -169,14 +165,14 @@ UI 库的所有组件仅依赖 `:ime-engine` 的公开 API：
 | `ImeEditorBridge` / `BaseImeEditorBridge` | `EditTextBridge` 实现用于非系统 IME 场景 |
 | `ImeEffect` | `KeyboardViewModel` 订阅引擎副作用通道，处理 `PopupTip.Message`、`PopupTip.Action`、`PlayAudio`、`PlayHaptic`；收藏确认通过 `PopupTip.Action` 实现 |
 | `ImeConfig` / `ImeConfig.UiConfig` | 主题系统、配置 UI 组件读取配置驱动界面呈现 |
-| `KeyboardInputMode` 枚举 | `KeyLayoutPanel` 布局策略选择、`GestureInputPanel` 手势识别逻辑。`KeyboardInputMode` 与 `KeyboardType` 是 `:ime-engine` 中两个不同的概念：`KeyboardType` 是引擎的键盘分类（`Pinyin`/`Latin`/`Symbol`/`Emoji`/`Number`/`Math`），决定按键集合的语义内容；`KeyboardInputMode` 是输入交互范式分类（`HexGrid`/`RectGrid`），决定按键的几何排列和手势交互方式。二者正交组合 |
+| `KeyboardInputMode` 枚举 | `KeyLayoutPanel` 布局策略选择、`GestureInputPanel` 手势识别逻辑。`KeyboardInputMode` 与 `KeyboardType` 是 `:engine` 中两个不同的概念：`KeyboardType` 是引擎的键盘分类（`Pinyin`/`Latin`/`Symbol`/`Emoji`/`Number`/`Math`），决定按键集合的语义内容；`KeyboardInputMode` 是输入交互范式分类（`HexGrid`/`RectGrid`），决定按键的几何排列和手势交互方式。二者正交组合 |
 | `InputActionPlayerState` | `InputActionPlayer` 播放状态管理 |
 | `InputActionFingerIndicator` | 手指指示器渲染，绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画（供 `CandidateListPanel`/`InputListPanel`/`ToolListPanel` 内建绘制及 `GestureFeedbackPanel` 绘制） |
 | `InputActionPathInterpolator` | `InputActionPlayer` 轨迹插值计算 |
 | `InputActionPositionResolver` | `ComposeInputActionPositionResolver` 实现的接口，将语义标识解析为归一化坐标 |
 | `OffsetF` / `RectF` | 归一化坐标类型，`CoordinateNormalizer` 与 `GestureFeedbackPanel` 使用 |
 
-这种依赖隔离是 UI 库「可替换」定位的技术保障。第三方应用可以用自己的 ViewModel 替换 `KeyboardViewModel`，只要正确将用户操作转换为 `ImeIntent` 发送给 `ImeEngine`、正确订阅 `ImeEffect` 副作用通道；同理，可以替换任何 `:ime-ui` 组件，只要订阅 `StateFlow<ImeState>` 并正确渲染。UI 库不依赖引擎内部实现细节（如状态机的 `reduce` 逻辑、字典查询机制、剪贴板访问方式等），仅依赖引擎公开的类型和 API，确保引擎内部重构不会影响 UI 层。
+这种依赖隔离是 UI 库「可替换」定位的技术保障。第三方应用可以用自己的 ViewModel 替换 `KeyboardViewModel`，只要正确将用户操作转换为 `ImeIntent` 发送给 `ImeEngine`、正确订阅 `ImeEffect` 副作用通道；同理，可以替换任何 `:ui` 组件，只要订阅 `StateFlow<ImeState>` 并正确渲染。UI 库不依赖引擎内部实现细节（如状态机的 `reduce` 逻辑、字典查询机制、剪贴板访问方式等），仅依赖引擎公开的类型和 API，确保引擎内部重构不会影响 UI 层。
 
 ---
 

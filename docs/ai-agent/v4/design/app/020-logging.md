@@ -1,8 +1,8 @@
 # 日志系统
 
-v4 版本的日志系统在应用层提供引擎日志基础设施的初始化集成和日志管理界面。核心日志基础设施（`ImeLog`、`ImeLogger`、`LogLevel`、`LogEntry`、`LogWriter` 接口、`LogStorage`、`FileLogWriter`）和直接可用的工具类（`LogcatWriter`、`CrashInterceptor`）定义在 `:ime-engine` 引擎库中，详见 [090-日志系统](../engine/090-logging.md)。本模块（`:app`）负责引擎日志基础设施的初始化集成，以及日志查看、导出、等级配置、存储路径配置等用户界面。
+日志系统在应用层提供引擎日志基础设施的初始化集成和日志管理界面。核心日志基础设施（`ImeLog`、`ImeLogger`、`LogLevel`、`LogEntry`、`LogWriter` 接口、`LogStorage`、`FileLogWriter`）和直接可用的工具类（`LogcatWriter`、`CrashInterceptor`）定义在 `:engine` 引擎库中，详见 [090-日志系统](../engine/090-logging.md)。本模块（`:app`）负责引擎日志基础设施的初始化集成，以及日志查看、导出、等级配置、存储路径配置等用户界面。
 
-**模块归属**：应用层负责日志系统的初始化集成（使用引擎提供的 `LogcatWriter` 和 `CrashInterceptor` 工具类），以及日志相关的界面（`LogViewerScreen`、`LogExportScreen`、`LogLevelSetting`、`LogStoragePathSetting`、`LogViewerViewModel`）。日志核心基础设施和工具类划归 `:ime-engine` 模块。
+**模块归属**：应用层负责日志系统的初始化集成（使用引擎提供的 `LogcatWriter` 和 `CrashInterceptor` 工具类），以及日志相关的界面（`LogViewerScreen`、`LogExportScreen`、`LogLevelSetting`、`LogStoragePathSetting`、`LogViewerViewModel`）。日志核心基础设施和工具类划归 `:engine` 模块。
 
 ---
 
@@ -21,7 +21,7 @@ v4 版本的日志系统在应用层提供引擎日志基础设施的初始化�
 │  CrashInterceptor(writers, storage).install() → 安装崩溃拦截   │
 │  路径解析 → Context.filesDir / SAF URI → File → LogStorage     │
 ├───────────────────────────────────────────────────────────────┤
-│               引擎日志基础设施 [:ime-engine]                     │
+│               引擎日志基础设施 [:engine]                         │
 │  ImeLog / ImeLogger / LogLevel / LogEntry / LogWriter          │
 │  LogStorage / FileLogWriter / LogcatWriter / CrashInterceptor  │
 └───────────────────────────────────────────────────────────────┘
@@ -52,17 +52,14 @@ fun initLogging(context: Context, config: ImeConfig) {
     val storage = LogStorage(logDir)
 
     val writers = buildList {
-        // 引擎提供的 LogcatWriter，仅 debug 构建使用
         if (BuildConfig.DEBUG) {
             add(LogcatWriter())
         }
-        // 文件持久化始终启用
         add(FileLogWriter(storage))
     }
 
     ImeLog.init(level, writers)
 
-    // 安装引擎提供的崩溃拦截器
     CrashInterceptor(writers, storage).install()
 }
 
@@ -80,7 +77,6 @@ private fun resolveLogDir(context: Context, customPath: String?): File {
         if (dir.isDirectory || dir.mkdirs()) {
             return dir
         }
-        // 降级到缺省路径
         ImeLog.logger("LogInit").warn { "配置的日志路径无效: $customPath，降级到缺省路径" }
     }
     return File(context.filesDir, "logs")
@@ -111,7 +107,6 @@ fun LogViewerScreen(
     val state by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // 工具栏
         LogViewerToolbar(
             levelFilter = state.levelFilter,
             keyword = state.keyword,
@@ -120,7 +115,6 @@ fun LogViewerScreen(
             onRefresh = viewModel::refresh,
         )
 
-        // 日志列表
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = state.listState,
@@ -136,10 +130,10 @@ fun LogViewerScreen(
 private fun LogEntryItem(entry: LogEntry) {
     val textColor = when (entry.level) {
         LogLevel.VERBOSE -> Color.Gray
-        LogLevel.DEBUG -> Color(0xFF2196F3)  // 蓝色
-        LogLevel.INFO -> Color(0xFF4CAF50)   // 绿色
-        LogLevel.WARN -> Color(0xFFFF9800)   // 橙色
-        LogLevel.ERROR -> Color(0xFFF44336)  // 红色
+        LogLevel.DEBUG -> Color(0xFF2196F3)
+        LogLevel.INFO -> Color(0xFF4CAF50)
+        LogLevel.WARN -> Color(0xFFFF9800)
+        LogLevel.ERROR -> Color(0xFFF44336)
     }
 
     Row(
@@ -251,13 +245,11 @@ fun LogLevelSetting(
     onLevelChange: (LogLevel) -> Unit,
 ) {
     if (isDebugBuild) {
-        // Debug 构建显示当前等级但不可修改
         ListItem(
             headlineContent = { Text("日志等级") },
             supportingContent = { Text("调试构建固定为 VERBOSE") },
         )
     } else {
-        // Release 构建提供等级选择
         var showDialog by remember { mutableStateOf(false) }
 
         ListItem(
@@ -353,12 +345,10 @@ fun LogStoragePathSetting(
     )
 
     if (showPicker) {
-        // 使用系统目录选择器
         val launcher = rememberLauncherForActivityResult(
             ActivityResultContracts.OpenDocumentTree()
         ) { uri ->
             uri?.let {
-                // 获取持久化权限
                 context.contentResolver.takePersistableUriPermission(
                     it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 )
@@ -366,7 +356,6 @@ fun LogStoragePathSetting(
             }
             showPicker = false
         }
-        // 触发选择器...
     }
 }
 ```
@@ -393,13 +382,11 @@ UI 测试方案与应用日志系统协同工作，详见 [030-UI 测试方案](
 | 日志等级联动 | UI 测试工具激活时，自动将日志等级降至 DEBUG 以获取更完整信息 |
 
 ```kotlin
-// debug 源集：UI 测试与日志联动
 class DebugUITestOverlay(
     private val log: ImeLog,
 ) : UITestOverlay {
 
     override fun enable() {
-        // UI 测试激活时降级日志等级
         if (log.level > LogLevel.DEBUG) {
             log.updateLevel(LogLevel.DEBUG)
             log.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }

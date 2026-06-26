@@ -1,10 +1,6 @@
 # 键盘视图模型
 
-`KeyboardViewModel` 划归 `:ime-ui` 模块的 `viewmodel/` 包，作为 UI 层的协调中心，桥接 Compose UI 组件与 `:ime-engine` 引擎。ViewModel 将 UI 手势（`InputGesture`）转换为引擎意图（`ImeIntent`），暴露引擎状态（`StateFlow<ImeState>`）供 Compose 订阅，管理手势反馈状态（`GestureFeedbackState`），提供运行时布局模式切换（`KeyboardLayoutMode`），以及集成输入动作播放器（`InputActionPlayer`）。ViewModel 仅依赖引擎核心模型和公开 API，平台级职责由 `:app` 模块承担，确保 `:ime-ui` 作为纯 UI 库可被第三方应用即插即用。
-
-```plantuml
-@file:../diagrams/app-viewmodel-boundary.puml
-```
+`KeyboardViewModel` 划归 `:ui` 模块的 `viewmodel/` 包，作为 UI 层的协调中心，桥接 Compose UI 组件与 `:engine` 引擎。ViewModel 将 UI 手势（`InputGesture`）转换为引擎意图（`ImeIntent`），暴露引擎状态（`StateFlow<ImeState>`）供 Compose 订阅，管理手势反馈状态（`GestureFeedbackState`），提供运行时布局模式切换（`KeyboardLayoutMode`），以及集成输入动作播放器（`InputActionPlayer`）。ViewModel 仅依赖引擎核心模型和公开 API，平台级职责由 `:app` 模块承担，确保 `:ui` 作为纯 UI 库可被第三方应用即插即用。
 
 ---
 
@@ -12,7 +8,7 @@
 
 ### 1.1 模块归属
 
-`KeyboardViewModel` 属于 `:ime-ui` 模块的 `viewmodel/` 包，是 UI 层（UI Layer + ViewModel Layer）的核心组件。
+`KeyboardViewModel` 属于 `:ui` 模块的 `viewmodel/` 包，是 UI 层（UI Layer + ViewModel Layer）的核心组件。
 
 **归属理由**：
 
@@ -20,7 +16,7 @@
 |------|------|
 | **职能本质是 UI 协调** | ViewModel 将 UI 手势（`InputGesture`）转换为引擎意图（`ImeIntent`），暴露引擎状态（`StateFlow<ImeState>`）供 Compose 订阅，管理 `KeyboardLayoutMode` 切换和布局状态缓存——这些职能完全属于 UI 层 |
 | **仅依赖引擎公开 API** | ViewModel 仅持有 `ImeEngine` 引用，使用其 `handleIntent()`、`state`、`effect`、`updateConfig()` 等公开 API，不依赖引擎内部实现 |
-| **第三方应用需要** | 任何引入 `:ime-engine` + `:ime-ui` 的第三方应用都需要 `KeyboardViewModel` 来驱动 UI。如果 ViewModel 在 `:app`，第三方应用必须自行实现等价组件，违背「即插即用」的设计目标 |
+| **第三方应用需要** | 任何引入 `:engine` + `:ui` 的第三方应用都需要 `KeyboardViewModel` 来驱动 UI。如果 ViewModel 在 `:app`，第三方应用必须自行实现等价组件，违背「即插即用」的设计目标 |
 | **集成组件的直接搭档** | `KeyboardHost`、`KeyboardInputActionPlayerHost` 等集成组件均以 ViewModel 为交互入口，二者同属 UI 层、同生同灭 |
 
 ### 1.2 不属于 ViewModel 的职责
@@ -44,9 +40,9 @@
 package org.crazydan.studio.ime.ui.viewmodel
 
 /**
- * 键盘视图模型，`:ime-ui` 模块的 UI 协调中心。
+ * 键盘视图模型，`:ui` 模块的 UI 协调中心。
  *
- * 桥接 Compose UI 组件与 `:ime-engine` 引擎：
+ * 桥接 Compose UI 组件与 `:engine` 引擎：
  * - 将 UI 手势（InputGesture）转换为引擎意图（ImeIntent）
  * - 暴露引擎状态（StateFlow<ImeState>）供 Compose 订阅
  * - 管理手势反馈状态（GestureFeedbackState）
@@ -473,13 +469,13 @@ data class ToolItem(
 
 `ImeEffect.PlayAudio` 携带 `AudioType` 枚举值，ViewModel 收到后检查 `ImeConfig.UiConfig.audioFeedbackEnabled` 配置和 `audioPlayer` 播放器的可用性。配置启用且播放器可用时，调用 `audioPlayer.play(effect.type)` 播放音效；配置禁用或播放器不可用时，静默跳过。这种「配置检查 + 播放器注入」的模式确保引擎不感知 UI 配置——引擎始终发射 `PlayAudio` 信号，UI 层根据配置和运行时环境决定是否播放。
 
-`AudioType` 包括 `KeyPress`（按键音）、`Slip`（滑行输入音）、`CandidateSelect`（候选选择音）、`PageFlip`（翻页音）四种类型。`candidatesPagingAudioEnabled` 是翻页音效的独立开关，ViewModel 在处理 `AudioType.PageFlip` 时额外检查此配置。音频播放器接口（`AudioPlayer`）定义在 `:ime-ui` 中，平台实现（`AndroidAudioPlayer`）由 `:app` 提供，详见 [engine/065-音效与触觉反馈](../engine/065-audio-haptic-feedback.md)。
+`AudioType` 包括 `KeyPress`（按键音）、`Slip`（滑行输入音）、`CandidateSelect`（候选选择音）、`PageFlip`（翻页音）四种类型。`candidatesPagingAudioEnabled` 是翻页音效的独立开关，ViewModel 在处理 `AudioType.PageFlip` 时额外检查此配置。音频播放器接口（`AudioPlayer`）定义在 `:ui` 中，平台实现（`AndroidAudioPlayer`）由 `:app` 提供。
 
 ### 5.4 `PlayHaptic` 处理
 
 `ImeEffect.PlayHaptic` 携带 `HapticType` 枚举值，ViewModel 收到后检查 `ImeConfig.UiConfig.hapticFeedbackEnabled` 配置和 `hapticPlayer` 播放器的可用性。配置启用且播放器可用时，调用 `hapticPlayer.play(effect.type)` 触发振动；配置禁用或播放器不可用时，静默跳过。处理模式与 `PlayAudio` 完全一致——配置检查在 ViewModel 层执行，不在引擎层执行。
 
-`HapticType` 包括 `LightTap`（轻触反馈，20ms / 50% 强度）、`MediumTap`（中等反馈，50ms / 70% 强度）、`HeavyTap`（重触反馈，100ms / 100% 强度）三种类型。轻触反馈用于按键点击和候选选择，中等反馈用于滑行识别和翻页，重触反馈用于长按触发。触觉播放器接口（`HapticPlayer`）定义在 `:ime-ui` 中，平台实现（`AndroidHapticPlayer`）由 `:app` 提供，详见 [engine/065-音效与触觉反馈](../engine/065-audio-haptic-feedback.md)。
+`HapticType` 包括 `LightTap`（轻触反馈，20ms / 50% 强度）、`MediumTap`（中等反馈，50ms / 70% 强度）、`HeavyTap`（重触反馈，100ms / 100% 强度）三种类型。轻触反馈用于按键点击和候选选择，中等反馈用于滑行识别和翻页，重触反馈用于长按触发。触觉播放器接口（`HapticPlayer`）定义在 `:ui` 中，平台实现（`AndroidHapticPlayer`）由 `:app` 提供。
 
 ### 5.5 收藏确认处理
 
@@ -611,7 +607,7 @@ class IMEService : InputMethodService() {
         engine?.start(StartupConfig(
             imeSubtype = IMESubtype.from(this),
             screenOrientation = ScreenOrientation.from(this),
-            editorInputType = null, // 不覆盖已识别到的编辑器类型
+            editorInputType = null,
         ))
     }
 
@@ -624,11 +620,6 @@ class IMEService : InputMethodService() {
         audioPlayer?.release()
         audioPlayer = null
         hapticPlayer = null
-        // 先断开桥梁，再销毁引擎。
-        // 必须显式调用 detachEditorBridge 而非依赖 destroy 自动注销，
-        // 因为桥梁的生命周期由宿主模块管理，引擎仅是桥梁的消费者。
-        // destroy() 内部仅对 _editorBridges 执行防御性 clear()，
-        // 不会调用 detachEditorBridge() 的注销逻辑。
         engine?.detachEditorBridge(bridge!!)
         engine?.destroy()
         engine = null
@@ -654,4 +645,4 @@ class IMEService : InputMethodService() {
 
 6. **启动输入**：`IMEService.onStartInputView()` 中调用 `engine.start(startupConfig)` 启动输入法，传入从 `EditorInfo` 解析的 `StartupConfig`。`onCurrentInputMethodSubtypeChanged()` 中同样调用 `engine.start()`，但 `editorInputType` 为 `null` 以确保不覆盖已识别的编辑器类型。
 
-7. **关闭与销毁**：`IMEService.onFinishInputView()` 中调用 `engine.close()` 关闭输入法（仅隐藏面板，状态保持不变）。`IMEService.onDestroy()` 中的清理遵循严格的顺序：先释放播放器资源，再断开桥梁，最后销毁引擎。`detachEditorBridge(bridge)` 必须在 `destroy()` 前显式调用，而非依赖 `destroy()` 自动注销，这是基于桥梁所有权原则——桥梁由 `IMEService` 创建和拥有，`attach`/`detach` 是宿主模块的对称操作，引擎仅是桥梁的消费者（详见 [010-引擎架构总览](../engine/010-engine-overview.md) §5.3 编辑器桥接）。`destroy()` 内部对 `_editorBridges` 仅执行防御性 `clear()`，不调用 `detachEditorBridge()` 的注销逻辑，与 Java 版 `IMEditor.destroy()` 中 `this.listener = null` 的模式一致。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。
+7. **关闭与销毁**：`IMEService.onFinishInputView()` 中调用 `engine.close()` 关闭输入法（仅隐藏面板，状态保持不变）。`IMEService.onDestroy()` 中的清理遵循严格的顺序：先释放播放器资源，再断开桥梁，最后销毁引擎。`detachEditorBridge(bridge)` 必须在 `destroy()` 前显式调用，而非依赖 `destroy()` 自动注销，这是基于桥梁所有权原则——桥梁由 `IMEService` 创建和拥有，`attach`/`detach` 是宿主模块的对称操作，引擎仅是桥梁的消费者。`destroy()` 内部对 `_editorBridges` 仅执行防御性 `clear()`，不调用 `detachEditorBridge()` 的注销逻辑。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。

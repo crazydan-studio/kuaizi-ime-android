@@ -6,10 +6,6 @@
 
 屏幕纵向划分为 Zone A（上半区）和 Zone B（下半区），Zone B 内部按三行结构组织面板。`KeyboardInputMode` 与 `KeyboardType` 作为两个独立的正交维度，任意 `KeyboardInputMode` 可与任意 Type 组合，通过 `KeyLayoutStrategy` 分发不同的布局策略。所有坐标数据使用归一化形式存储，绘制时根据面板实际尺寸转换为像素坐标，使得同一份反馈数据可以正确地在不同 Zone 和不同尺寸的面板实例上渲染。
 
-```plantuml
-@file:../diagrams/ui-panel-separation.puml
-```
-
 ---
 
 ## 1 三层分离架构
@@ -269,7 +265,7 @@ class GestureFeedbackState {
 
 `GestureFeedbackState` 包含三类核心视觉反馈：触摸轨迹点（`touchTrailPoints`，含按键间路径的插值点）、按键高亮集合（`pressedKeys`）、手指指示器状态（`fingerIndicator`）。弹出提示通过引擎 `ImeEffect` 副作用通道驱动，由 `KeyboardViewModel` 管理 `PopupTipState`，不属于视觉反馈。按键间路径统一合并到 `touchTrailPoints` 中，由 `KeyLayoutPanel` 根据 `KeyboardInputMode` 计算起止按键间的平滑曲线后，作为插值路径点统一写入。触摸轨迹、按键间路径统一为一种输入轨迹，简化了状态管理和绘制逻辑。
 
-`InputActionFingerIndicator` 的类型定义在 [engine/080-input-action.md](../engine/080-input-action.md) 中，此处直接引用。
+`InputActionFingerIndicator` 的类型定义在 engine 模块中，此处直接引用。
 
 ---
 

@@ -1,20 +1,18 @@
 # 音效与触觉反馈
 
-IME 的交互反馈分为两类：视觉反馈（按键动画、滑行轨迹、弹出提示等）和感官反馈（音效播放、触觉振动）。感官反馈的共同特征是「fire-and-forget」——引擎发出信号后不维护其状态，UI 层消费后即丢弃，不需要同步协调或状态回滚。本文档描述音效反馈和触觉反馈的设计，包括引擎信号定义、UI 层播放接口、平台实现、配置控制和注入装配。
+## 1. 设计决策
 
----
+感官反馈的共同特征是「fire-and-forget」——引擎发出信号后不维护其状态，UI 层消费后即丢弃，不需要同步协调或状态回滚。引擎决定「何时」触发反馈，UI 层决定「是否和如何」播放反馈。
 
-## 1. 设计决策：为何不采用桥接模式
-
-音效播放和触觉振动都属于交互反馈，不属于编辑器操作。虽然 `ImeEditorBridge` 提供了引擎与外部交互的桥接模式，但感官反馈不适合采用同一模式，原因如下：
+这种设计基于以下考量：
 
 **语义差异**：`ImeEditorBridge` 的语义是「引擎对目标编辑器的操作指令」——提交文本、撤销输入、移动光标，这些操作具有同步协调语义，引擎需要确保操作成功执行且状态一致。而感官反馈的语义是「引擎通知 UI 层发生了某件事」——按键音、振动，这些是 fire-and-forget 信号，不需要确认和回滚。
 
-**架构分层原则**：v4 设计的状态频率分层明确指出「引擎只拥有逻辑状态，UI 拥有展示状态和交互反馈状态」。音效和触觉属于交互反馈，应由 UI 层管理其播放策略和平台实现。引擎仅通过 `ImeEffect` 通道发出信号，不持有播放器实例，不管理播放器生命周期——这与 `ImeEditorBridge` 直接持有桥梁实例、引擎内部调用桥梁方法的设计模式根本不同。
+**架构分层原则**：设计的状态频率分层明确指出「引擎只拥有逻辑状态，UI 拥有展示状态和交互反馈状态」。音效和触觉属于交互反馈，应由 UI 层管理其播放策略和平台实现。引擎仅通过 `ImeEffect` 通道发出信号，不持有播放器实例，不管理播放器生命周期——这与 `ImeEditorBridge` 直接持有桥梁实例、引擎内部调用桥梁方法的设计模式根本不同。
 
-**扩展性考量**：如果为音效引入 `ImeAudioBridge`，为触觉引入 `ImeHapticBridge`，引擎需要管理越来越多的桥接接口（`attachAudioBridge` / `detachAudioBridge` / `attachHapticBridge` / `detachHapticBridge` ...），每次新增反馈类型都要修改引擎 API。而通过 `ImeEffect` 通道发送信号的方式，新增反馈类型只需在 `ImeEffect` 中添加子类型，引擎 API 无需任何变更。
+**扩展性考量**：通过 `ImeEffect` 通道发送信号的方式，新增反馈类型只需在 `ImeEffect` 中添加子类型，引擎 API 无需任何变更。
 
-**第三方友好性**：`ImeEffect` 作为通用副作用通道，第三方应用即使不使用 `:ime-ui`，也可以自行订阅 `SharedFlow<ImeEffect>` 实现自定义的音效和触觉处理逻辑。桥接模式则要求第三方必须实现引擎定义的接口，限制了灵活性。
+**第三方友好性**：`ImeEffect` 作为通用副作用通道，第三方应用即使不使用 `:ui`，也可以自行订阅 `SharedFlow<ImeEffect>` 实现自定义的音效和触觉处理逻辑。
 
 ---
 
@@ -69,11 +67,11 @@ enum class AudioType {
 }
 ```
 
-`KeyPress` 是最高频的音效类型，每次按键操作都会触发。引擎在 `PressKey` 意图的 reduce 过程中发射 `ImeEffect.PlayAudio(AudioType.KeyPress)`，无论当前键盘类型和输入模式——这与物理键盘的按键音行为一致，每个按键都有声音反馈。`CandidateSelect` 在用户从候选列表选择候选词时触发，频率仅次于 `KeyPress`。`Slip` 在滑行输入识别完成时触发，反馈滑行识别的成功。`PageFlip` 在候选列表翻页时触发，反馈翻页操作的完成。
+`KeyPress` 是最高频的音效类型，每次按键操作都会触发。`CandidateSelect` 在用户从候选列表选择候选词时触发。`Slip` 在滑行输入识别完成时触发。`PageFlip` 在候选列表翻页时触发。
 
 ### 2.3 HapticType 触觉类型
 
-`HapticType` 枚举定义了引擎可能触发的所有触觉反馈场景。每种触觉类型对应一种振动模式，由 `AndroidHapticPlayer` 通过 Android `Vibrator` 服务执行。与 `AudioType` 不同，触觉类型的区分不基于场景语义，而基于振动强度和持续时间的组合——不同场景可能使用相同的振动模式。
+`HapticType` 枚举定义了引擎可能触发的所有触觉反馈场景。每种触觉类型对应一种振动模式，由 `AndroidHapticPlayer` 通过 Android `Vibrator` 服务执行。
 
 ```kotlin
 enum class HapticType {
@@ -122,7 +120,7 @@ package org.crazydan.studio.ime.ui.feedback
 /**
  * 感官反馈播放器的通用接口。
  *
- * 定义在 :ime-ui 中，由 :app 提供平台实现。
+ * 定义在 :ui 中，由 :app 提供平台实现。
  * KeyboardViewModel 在收到 ImeEffect.PlayAudio/PlayHaptic 时调用此接口。
  *
  * @param T 反馈类型枚举，如 AudioType 或 HapticType
@@ -141,15 +139,13 @@ typealias HapticPlayer = FeedbackPlayer<HapticType>
 
 `FeedbackPlayer<T>` 是最简化的接口——只有一个 `play(type: T)` 方法，不返回结果，不抛出异常，不提供停止或查询能力。这种极简设计反映了感官反馈的 fire-and-forget 语义：调用方发出播放指令后不关心播放是否成功、何时结束，播放器内部处理所有错误和边界情况（如音频资源加载失败时静默跳过、振动服务不可用时降级处理）。
 
-使用 `typealias` 而非独立接口的设计理由是：音效播放和触觉播放的接口契约完全相同，只是类型参数不同。如果未来两者的接口需要分化（如音效播放需要 `stop()` 方法），可以在分化时将 `typealias` 替换为独立接口，不影响已有实现。
-
 ### 3.2 接口归属理由
 
-`AudioPlayer` 和 `HapticPlayer` 定义在 `:ime-ui` 而非 `:ime-engine`，理由如下：
+`AudioPlayer` 和 `HapticPlayer` 定义在 `:ui` 而非 `:engine`，理由如下：
 
 **架构分层**：音频播放和触觉振动属于 UI 层的交互反馈，不属于引擎的核心逻辑。引擎通过 `ImeEffect` 通道发出信号，UI 层决定是否和如何播放——这符合「引擎只拥有逻辑状态，UI 拥有展示状态和交互反馈状态」的频率分层原则。
 
-**第三方友好性**：定义在 `:ime-ui` 中，第三方引入 `:ime-engine` + `:ime-ui` 即可获得开箱即用的感官反馈能力（只需提供平台实现）。如果定义在 `:ime-engine` 中，第三方仅引入引擎时被迫依赖播放器接口（即使不需要感官反馈），增加了不必要的耦合。
+**第三方友好性**：定义在 `:ui` 中，第三方引入 `:engine` + `:ui` 即可获得开箱即用的感官反馈能力（只需提供平台实现）。如果定义在 `:engine` 中，第三方仅引入引擎时被迫依赖播放器接口（即使不需要感官反馈），增加了不必要的耦合。
 
 **配置检查归属**：`audioFeedbackEnabled` 和 `hapticFeedbackEnabled` 是 `ImeConfig.UiConfig` 的字段，属于 UI 配置。由 ViewModel 检查这些配置比引擎检查更合理——引擎不需要理解 UI 配置的语义，也不应该在 reduce 过程中根据 UI 配置决定是否发射副作用信号。
 
@@ -215,7 +211,7 @@ init {
 }
 ```
 
-配置检查使用 `state.value.config.ui.audioFeedbackEnabled` 和 `state.value.config.ui.hapticFeedbackEnabled`，而非引擎内部检查。这确保了引擎的 reduce 函数不感知 UI 配置——引擎始终发射副作用信号，UI 层根据配置决定是否消费。配置的运行时修改通过 `ImeEngine.updateConfig()` 生效，ViewModel 在下一次收到副作用信号时自动使用新配置。
+配置检查使用 `state.value.config.ui.audioFeedbackEnabled` 和 `state.value.config.ui.hapticFeedbackEnabled`，而非引擎内部检查。这确保了引擎的 reduce 函数不感知 UI 配置——引擎始终发射副作用信号，UI 层根据配置决定是否消费。
 
 ### 4.3 Factory 扩展
 
@@ -281,9 +277,7 @@ class AndroidAudioPlayer(context: Context) : AudioPlayer {
 }
 ```
 
-`setMaxStreams(4)` 限制最多同时播放 4 路音效——覆盖了极端场景下用户快速连续按键时多路音效重叠的需求，同时避免过多并发音效导致的资源消耗和听觉混乱。`soundPool.play()` 的参数依次为：音频 ID、左声道音量、右声道音量、优先级、循环次数（0 表示不循环）、播放速率（1.0 为正常速率）。所有音效使用统一音量和正常速率，未来可通过 `ImeConfig.UiConfig` 暴露音量和速率配置。
-
-音频资源文件存放在 `:app` 模块的 `res/raw/` 目录下，每个 `AudioType` 枚举值对应一个文件：`key_press.ogg`、`slip.ogg`、`candidate_select.ogg`、`page_flip.ogg`。使用 OGG 格式是因为其压缩率优于 WAV 且 Android 原生支持，文件体积通常在 10KB 以内。
+`setMaxStreams(4)` 限制最多同时播放 4 路音效——覆盖了极端场景下用户快速连续按键时多路音效重叠的需求，同时避免过多并发音效导致的资源消耗和听觉混乱。音频资源文件存放在 `:app` 模块的 `res/raw/` 目录下。
 
 ### 5.2 AndroidHapticPlayer
 
@@ -329,9 +323,7 @@ class AndroidHapticPlayer(context: Context) : HapticPlayer {
 }
 ```
 
-`LightTap` 使用 20ms / 振幅 128（约 50% 强度）的轻振动，适用于按键点击和候选选择——短促而轻柔，不会在连续输入时产生累加疲劳感。`MediumTap` 使用 50ms / 振幅 180（约 70% 强度）的中等振动，适用于滑行识别和翻页——比轻触稍强，用户可以明确感知操作已被识别。`HeavyTap` 使用 100ms / 振幅 255（100% 强度）的强振动，适用于长按触发——需要明确的触觉确认，用户不会误以为没有响应。
-
-Android 12（API 31）引入了 `VibratorManager` 替代直接获取 `Vibrator`，`AndroidHapticPlayer` 通过 `Build.VERSION.SDK_INT` 判断并使用兼容的 API 获取 `Vibrator` 实例。设备不支持振动或振动服务不可用时，`vibrator.vibrate()` 静默失败，不影响其他功能。
+`LightTap` 使用 20ms / 振幅 128（约 50% 强度）的轻振动，适用于按键点击和候选选择。`MediumTap` 使用 50ms / 振幅 180（约 70% 强度）的中等振动，适用于滑行识别和翻页。`HeavyTap` 使用 100ms / 振幅 255（100% 强度）的强振动，适用于长按触发。
 
 ### 5.3 可测试性设计
 
@@ -348,79 +340,9 @@ class RecordingFeedbackPlayer<T> : FeedbackPlayer<T> {
 
 ---
 
-## 6. IMEService 装配
+## 6. 配置控制
 
-`:app` 模块的 `IMEService` 负责创建播放器实例并注入 `KeyboardViewModel`。播放器的生命周期与 `IMEService` 相同——在 `onCreate()` 中创建，在 `onDestroy()` 中释放。播放器不随 `InputConnection` 变更而重建，因为 `SoundPool` 和 `Vibrator` 不依赖于当前输入目标。
-
-```kotlin
-class IMEService : InputMethodService() {
-    private var engine: ImeEngine? = null
-    private var bridge: InputConnectionBridge? = null
-    private var audioPlayer: AndroidAudioPlayer? = null
-    private var hapticPlayer: AndroidHapticPlayer? = null
-
-    override fun onCreate() {
-        super.onCreate()
-        engine = ImeEngine.create(
-            config = ImeConfig(),
-            dictProvider = ImeSqliteDictProvider(this),
-        )
-        bridge = InputConnectionBridge { currentInputConnection }
-        engine?.attachEditorBridge(bridge!!)
-        audioPlayer = AndroidAudioPlayer(this)
-        hapticPlayer = AndroidHapticPlayer(this)
-    }
-
-    override fun onCreateInputView(): View {
-        val engine = this.engine ?: error("Engine not initialized")
-        val audio = this.audioPlayer
-        val haptic = this.hapticPlayer
-        return ComposeView(this).also { composeView = it }.apply {
-            setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
-            )
-            setContent {
-                val viewModel: KeyboardViewModel = viewModel(
-                    factory = KeyboardViewModel.Factory(engine, audio, haptic)
-                )
-                KeyboardHost(viewModel = viewModel)
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        audioPlayer?.release()
-        audioPlayer = null
-        hapticPlayer = null
-        // 先断开桥梁，再销毁引擎。
-        // 必须显式调用 detachEditorBridge 而非依赖 destroy 自动注销，
-        // 因为桥梁的生命周期由宿主模块管理，引擎仅是桥梁的消费者。
-        // destroy() 内部仅对 _editorBridges 执行防御性 clear()，
-        // 不会调用 detachEditorBridge() 的注销逻辑。
-        engine?.detachEditorBridge(bridge!!)
-        engine?.destroy()
-        engine = null
-        bridge = null
-        composeView?.disposeComposition()
-        composeView = null
-        super.onDestroy()
-    }
-}
-```
-
-装配流程的关键步骤：
-
-1. **播放器创建**：`IMEService.onCreate()` 中创建 `AndroidAudioPlayer` 和 `AndroidHapticPlayer`，传入 `Context` 用于加载音频资源和获取 `Vibrator` 服务。播放器的创建在引擎创建和桥梁挂载之后，确保所有依赖项就绪。
-
-2. **播放器注入**：`IMEService.onCreateInputView()` 中通过 `KeyboardViewModel.Factory(engine, audio, haptic)` 将播放器注入 ViewModel。ViewModel 在收到 `ImeEffect.PlayAudio` 或 `ImeEffect.PlayHaptic` 时使用注入的播放器执行播放。
-
-3. **播放器释放与引擎销毁**：`IMEService.onDestroy()` 中调用 `audioPlayer.release()` 释放 `SoundPool` 资源。`AndroidHapticPlayer` 不需要显式释放（`Vibrator` 是系统服务），但引用置空以避免内存泄漏。播放器的释放先于引擎销毁，确保引擎在最后时刻仍可通过 `ImeEffect` 通道发送信号。播放器释放后，先显式调用 `detachEditorBridge(bridge)` 断开桥梁（桥梁所有权属于宿主模块，必须由宿主显式注销），再调用 `engine.destroy()` 销毁引擎——`destroy()` 内部仅对 `_editorBridges` 执行防御性 `clear()`，不会调用 `detachEditorBridge()` 的注销逻辑。
-
----
-
-## 7. 配置控制
-
-### 7.1 音效配置
+### 6.1 音效配置
 
 音效播放受 `ImeConfig.UiConfig.audioFeedbackEnabled` 控制，默认值为 `true`。ViewModel 在收到 `ImeEffect.PlayAudio` 时检查此配置：
 
@@ -428,9 +350,9 @@ class IMEService : InputMethodService() {
 - `audioFeedbackEnabled = true` 且 `audioPlayer == null`：静默跳过（未注入播放器）
 - `audioFeedbackEnabled = false`：静默跳过（用户关闭音效）
 
-`candidatesPagingAudioEnabled` 是候选翻页音效的独立开关，默认值为 `true`。当此配置为 `false` 时，ViewModel 在处理 `ImeEffect.PlayAudio(AudioType.PageFlip)` 时跳过播放，其他音效类型不受影响。这种细粒度控制的原因是翻页音效在某些场景下可能过于频繁（如用户快速滑动候选列表），用户希望单独关闭翻页音而不影响其他音效。
+`candidatesPagingAudioEnabled` 是候选翻页音效的独立开关，默认值为 `true`。当此配置为 `false` 时，ViewModel 在处理 `ImeEffect.PlayAudio(AudioType.PageFlip)` 时跳过播放，其他音效类型不受影响。
 
-### 7.2 触觉配置
+### 6.2 触觉配置
 
 触觉反馈受 `ImeConfig.UiConfig.hapticFeedbackEnabled` 控制，默认值为 `true`。ViewModel 在收到 `ImeEffect.PlayHaptic` 时检查此配置：
 
@@ -438,58 +360,46 @@ class IMEService : InputMethodService() {
 - `hapticFeedbackEnabled = true` 且 `hapticPlayer == null`：静默跳过（未注入播放器）
 - `hapticFeedbackEnabled = false`：静默跳过（用户关闭触觉反馈）
 
-触觉反馈没有细粒度开关（如 `hapticFeedbackOnKeyPressEnabled`），因为振动频率远低于音效——按键振动虽然频繁，但触觉的感知阈值比听觉高，不容易产生疲劳。如果未来用户反馈需要细粒度控制，可以在 `UiConfig` 中新增对应字段。
-
-### 7.3 配置变更流程
+### 6.3 配置变更流程
 
 配置的运行时修改通过 `ImeEngine.updateConfig()` 触发，ViewModel 不需要额外监听配置变更。当用户在设置页面关闭音效开关时，`ConfigDataStore` 持久化新配置后调用 `engine.updateConfig()` 更新运行时配置，引擎通过 `ImeState.config` 暴露新配置。ViewModel 在下一次收到 `ImeEffect.PlayAudio` 时自动读取新配置值，无需配置变更回调或观察者。
 
-这种「拉取式」配置检查的设计确保了 ViewModel 的简洁性——不维护配置的本地副本，不注册配置变更监听器，每次消费副作用信号时直接读取引擎状态中的最新配置。配置变更的生效延迟最多为一个 `ImeEffect` 发射周期（通常为一次按键操作的 reduce 时间，毫秒级），用户感知不到延迟。
-
 ---
 
-## 8. 扩展模式
+## 7. 扩展模式
 
 音效和触觉反馈的设计遵循统一的扩展模式——新增感官反馈类型只需四步，无需修改引擎 API 或 ViewModel 的核心逻辑。
 
-### 8.1 新增音效类型
+### 7.1 新增音效类型
 
-以新增「提交确认音」为例：
-
-1. **引擎层**：在 `AudioType` 枚举中新增 `CommitConfirm` 值，在 `CommitInput` 的 reduce 逻辑中发射 `ImeEffect.PlayAudio(AudioType.CommitConfirm)`
+1. **引擎层**：在 `AudioType` 枚举中新增值，在对应 reduce 逻辑中发射 `ImeEffect.PlayAudio`
 2. **UI 层**：无需修改——`AudioPlayer.play(type)` 的参数类型已覆盖新枚举值
-3. **平台层**：在 `AndroidAudioPlayer` 的 `soundIds` 映射中新增 `AudioType.CommitConfirm to soundPool.load(...)` 条目，提供对应的音频资源文件
-4. **配置层**：可选——在 `UiConfig` 中新增 `commitConfirmAudioEnabled: Boolean` 细粒度开关
+3. **平台层**：在 `AndroidAudioPlayer` 的 `soundIds` 映射中新增条目，提供对应的音频资源文件
+4. **配置层**：可选——在 `UiConfig` 中新增细粒度开关
 
-### 8.2 新增触觉类型
+### 7.2 新增触觉类型
 
-以新增「删除输入振动」为例：
-
-1. **引擎层**：在 `HapticType` 枚举中新增 `DeleteFeedback` 值，在 `DeleteInput` 的 reduce 逻辑中发射 `ImeEffect.PlayHaptic(HapticType.DeleteFeedback)`
+1. **引擎层**：在 `HapticType` 枚举中新增值，在对应 reduce 逻辑中发射 `ImeEffect.PlayHaptic`
 2. **UI 层**：无需修改——`HapticPlayer.play(type)` 的参数类型已覆盖新枚举值
-3. **平台层**：在 `AndroidHapticPlayer` 的 `effects` 映射中新增 `HapticType.DeleteFeedback to VibrationEffect.createOneShot(...)` 条目
-4. **配置层**：可选——在 `UiConfig` 中新增 `deleteHapticEnabled: Boolean` 细粒度开关
+3. **平台层**：在 `AndroidHapticPlayer` 的 `effects` 映射中新增条目
+4. **配置层**：可选——在 `UiConfig` 中新增细粒度开关
 
-### 8.3 新增感官通道
+### 7.3 新增感官通道
 
-以新增「LED 闪烁反馈」为例：
-
-1. **引擎层**：在 `ImeEffect` 中新增 `data class PlayLed(val type: LedType) : ImeEffect()`，定义 `LedType` 枚举，在对应 reduce 逻辑中发射
-2. **UI 层**：定义 `typealias LedPlayer = FeedbackPlayer<LedType>`，ViewModel 构造函数新增 `ledPlayer: LedPlayer? = null`，在 `ImeEffect` 订阅中新增 `is ImeEffect.PlayLed` 分支
-3. **平台层**：实现 `AndroidLedPlayer`，通过设备 LED 控制接口执行闪烁
-4. **配置层**：在 `UiConfig` 中新增 `ledFeedbackEnabled: Boolean` 开关
+1. **引擎层**：在 `ImeEffect` 中新增子类型，定义对应枚举，在对应 reduce 逻辑中发射
+2. **UI 层**：定义 `FeedbackPlayer<T>` 别名，ViewModel 构造函数新增可选参数，在 `ImeEffect` 订阅中新增分支
+3. **平台层**：实现播放器，通过设备相关接口执行操作
+4. **配置层**：在 `UiConfig` 中新增开关
 
 四步扩展模式的核心是：引擎只负责发信号（What），UI 层负责检查配置（Whether），平台层负责执行操作（How）。每层只需在自身职责范围内做最小变更，无需跨层协调。
 
 ---
 
-## 9. 三方模块集成指南
+## 8. 三方模块集成指南
 
-第三方应用引入 `:ime-engine` 和 `:ime-ui` 时，感官反馈的集成分三种场景：
+第三方应用引入 `:engine` 和 `:ui` 时，感官反馈的集成分三种场景：
 
-### 9.1 标准集成（使用 `:app` 的播放器实现）
-
-最简单的集成方式——直接使用 `AndroidAudioPlayer` 和 `AndroidHapticPlayer`，在创建 `KeyboardViewModel` 时注入：
+### 8.1 标准集成（使用 `:app` 的播放器实现）
 
 ```kotlin
 val engine = ImeEngine.create(config, dictProvider)
@@ -498,23 +408,23 @@ val hapticPlayer = AndroidHapticPlayer(context)
 val viewModel = KeyboardViewModel(engine, audioPlayer, hapticPlayer)
 ```
 
-### 9.2 自定义播放器实现
+### 8.2 自定义播放器实现
 
-第三方可以提供自定义的 `AudioPlayer` 或 `HapticPlayer` 实现，例如使用不同的音频引擎或振动模式：
+第三方可以提供自定义的 `AudioPlayer` 或 `HapticPlayer` 实现：
 
 ```kotlin
 class CustomAudioPlayer : AudioPlayer {
     override fun play(type: AudioType) {
-        // 使用 Oboi 或 ExoPlayer 播放音效
+        // 使用自定义音频引擎播放音效
     }
 }
 
 val viewModel = KeyboardViewModel(engine, CustomAudioPlayer(), hapticPlayer)
 ```
 
-### 9.3 仅使用引擎（不使用 `:ime-ui`）
+### 8.3 仅使用引擎（不使用 `:ui`）
 
-第三方仅引入 `:ime-engine` 时，自行订阅 `SharedFlow<ImeEffect>` 处理感官反馈：
+第三方仅引入 `:engine` 时，自行订阅 `SharedFlow<ImeEffect>` 处理感官反馈：
 
 ```kotlin
 val engine = ImeEngine.create(config, dictProvider)
@@ -527,4 +437,4 @@ engine.effect.collect { effect ->
 }
 ```
 
-引擎的 `ImeEffect` 通道不依赖 `:ime-ui`——第三方完全自主决定如何消费副作用信号，包括完全忽略感官反馈。
+引擎的 `ImeEffect` 通道不依赖 `:ui`——第三方完全自主决定如何消费副作用信号，包括完全忽略感官反馈。

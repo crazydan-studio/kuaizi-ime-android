@@ -1,4 +1,4 @@
-# 候选与字典
+# 候选列表与字典系统
 
 ## 1. CandidateList 候选列表模型
 
@@ -93,9 +93,7 @@ sealed class InputWord {
 
 四种候选词类型覆盖了输入法的所有候选来源：`Pinyin` 和 `PinyinPhrase` 来自拼音字典查询，`Emoji` 来自 Emoji 数据集，`Latin` 来自用户输入历史。每种类型的查询路径不同——`Pinyin` 和 `PinyinPhrase` 通过 `DictRepository` 的 `lookupPinyinWords()` 和 `lookupPinyinPhrases()` 查询，`Emoji` 通过预加载的 Emoji 数据集过滤，`Latin` 通过 `UserInputDao` 的 `getCompletions()` 查询。类型系统确保引擎在处理候选词时不会混淆不同来源的数据。
 
-### 2.1 PinyinWord 辅助类型
-
-`InputWord.Pinyin` 携带的辅助类型为拼音过滤和提交选项提供了结构化的数据基础。每个辅助类型承担独立的职责维度，组合使用时支持精细化的候选词筛选和显示模式切换。
+### 2.1 辅助类型
 
 ```kotlin
 data class Spell(val id: String, val value: String)
@@ -157,7 +155,7 @@ data class PinyinWordFilter(
 
 ## 4. ImeDictProvider 字典接口
 
-`ImeDictProvider` 是 `:ime-engine` 对外暴露的字典查询公共接口，定义了拼音字词查询、前缀查询和用户输入记录三个核心方法。接口与实现分离的设计允许第三方应用替换整个字典层——例如使用远程字典服务替代本地 SQLite，或使用自定义的候选排序算法——而无需修改引擎核心逻辑。`ImeDictProvider` 是引擎与字典数据之间的唯一契约，引擎不直接依赖任何具体的字典实现。
+`ImeDictProvider` 是 `:engine` 对外暴露的字典查询公共接口，定义了拼音字词查询、前缀查询和用户输入记录三个核心方法。接口与实现分离的设计允许第三方应用替换整个字典层——例如使用远程字典服务替代本地 SQLite，或使用自定义的候选排序算法——而无需修改引擎核心逻辑。`ImeDictProvider` 是引擎与字典数据之间的唯一契约，引擎不直接依赖任何具体的字典实现。
 
 ```kotlin
 interface ImeDictProvider {
@@ -229,7 +227,7 @@ class ImeSqliteDictProvider(
 }
 ```
 
-`ImeSqliteDictProvider` 的查询流程分为四步：首先通过 `PinyinCharsTree` 进行前缀匹配获取候选拼音集合，然后通过 `DictRepository` 查询精确字词，接着通过 `HmmModel` + `ViterbiDecoder` 计算上下文感知的短语预测排序，最后合并用户词频和收藏权重生成最终排序列表。这四步查询流程在 `query()` 和 `queryPrefix()` 方法中按需组合——完整拼音查询使用精确字词 + HMM 排序，前缀查询使用前缀匹配 + 精确字词。`recordInput()` 方法委托 `DictRepository.recordUserInput()` 异步更新用户输入频率，频率更新在独立协程中执行，不阻塞主线程。
+查询流程分为四步：首先通过 `PinyinCharsTree` 进行前缀匹配获取候选拼音集合，然后通过 `DictRepository` 查询精确字词，接着通过 `HmmModel` + `ViterbiDecoder` 计算上下文感知的短语预测排序，最后合并用户词频和收藏权重生成最终排序列表。这四步查询流程在 `query()` 和 `queryPrefix()` 方法中按需组合——完整拼音查询使用精确字词 + HMM 排序，前缀查询使用前缀匹配 + 精确字词。`recordInput()` 方法委托 `DictRepository.recordUserInput()` 异步更新用户输入频率，频率更新在独立协程中执行，不阻塞主线程。
 
 ---
 
@@ -280,7 +278,7 @@ data class FavoriteEntity(
 )
 ```
 
-`PinyinWordEntity` 是拼音字的数据库实体，包含拼写、文本、频率、变体、部首和声调等字段。`variant` 和 `variantType` 为可空字段，仅当该字存在繁体或异体变体时填充。`radical` 和 `strokeCount` 为可空字段，仅当该字有部首信息时填充。`tone` 为可空字段，0-4 对应一声到轻声，`null` 表示无声调信息。`PinyinPhraseEntity` 是拼音词组的数据库实体，`spells` 字段以逗号分隔存储各字拼音（如 `"zhong,guo"`），`text` 为词组文本，`freq` 为字典频率。`UserInputEntity` 是用户输入记录的数据库实体，`type` 区分输入类型（`"pinyin"`、`"latin"`、`"phrase"`），`freq` 为用户使用频率，`lastUsed` 为最后使用时间戳。`FavoriteEntity` 是用户收藏的数据库实体，`type` 为文本类型（复用 `InputTextType` 的值），`usageCount` 为使用次数，`createdAt` 为创建时间。
+`PinyinWordEntity` 是拼音字的数据库实体，包含拼写、文本、频率、变体、部首和声调等字段。`PinyinPhraseEntity` 是拼音词组的数据库实体，`spells` 字段以逗号分隔存储各字拼音（如 `"zhong,guo"`），`text` 为词组文本，`freq` 为字典频率。`UserInputEntity` 是用户输入记录的数据库实体，`type` 区分输入类型（`"pinyin"`、`"latin"`、`"phrase"`），`freq` 为用户使用频率，`lastUsed` 为最后使用时间戳。`FavoriteEntity` 是用户收藏的数据库实体，`type` 为文本类型（复用 `InputTextType` 的值），`usageCount` 为使用次数，`createdAt` 为创建时间。
 
 ### 5.2 DAO 接口
 
@@ -448,21 +446,15 @@ data class PinyinCharsTree(
         private val nodes = mutableMapOf<String, MutableMap<Char, PinyinCharsTree>>()
 
         fun addPath(path: String, key: InputKey.Char): Builder {
-            // 逐字符构建 Trie 路径
             var current = nodes.getOrPut("") { mutableMapOf() }
             for (c in path) {
-                val child = current.getOrPut(c) {
-                    PinyinCharsTree()
-                }
-                current = nodes.getOrPut(path.substring(0, path.indexOf(c) + 1)) {
-                    mutableMapOf()
-                }
+                val child = current.getOrPut(c) { PinyinCharsTree() }
+                current = nodes.getOrPut(path.substring(0, path.indexOf(c) + 1)) { mutableMapOf() }
             }
             return this
         }
 
         fun build(): PinyinCharsTree {
-            // 从构建数据生成不可变 Trie
             return PinyinCharsTree()
         }
     }
@@ -600,18 +592,18 @@ class ViterbiDecoder(private val model: HmmModel) {
 
 前缀匹配确认合法性后，引擎通过 `DictRepository` 执行精确的字典查询。查询分为两条路径：`lookupPinyinWords()` 查询单字候选，`lookupPinyinPhrases()` 查询词组候选。两条路径的查询在独立协程中并行执行，查询结果通过 `mergeAndSort()` 方法合并——字词候选按频率降序统一排序，高频候选排在前端。
 
-精确查询的 SQL 语句使用 `LIKE :prefix || '%'` 前缀匹配索引，配合 `spell` 和 `spells` 字段上的索引，查询性能在百万级数据量下仍然可控。查询结果通过 `toDomain()` 方法从 Room Entity 映射为领域模型，处理可空字段和枚举转换。词组查询的 `spells` 字段使用逗号分隔存储，查询时通过 `LIKE` 前缀匹配——这种设计牺牲了精确的词组拼写匹配能力（`LIKE` 无法精确匹配多字段前缀），换取了更简单的存储结构和更快的查询速度。
+精确查询的 SQL 语句使用 `LIKE :prefix || '%'` 前缀匹配索引，配合 `spell` 和 `spells` 字段上的索引，查询性能在百万级数据量下仍然可控。查询结果通过 `toDomain()` 方法从 Room Entity 映射为领域模型，处理可空字段和枚举转换。
 
 ### 8.3 阶段三：HMM 排序
 
-当 `ImeConfig.engine.inputPredictionEnabled` 为 `true` 时，引擎在精确查询结果之上执行 HMM 短语预测。`HmmModel` 接收当前拼音作为观测值，结合上文已输入的汉字作为上下文，通过 `ViterbiDecoder.decode()` 计算最可能的汉字序列。HMM 预测的结果为 Top-5 候选路径，每条路径包含一个汉字序列和对应概率。
+引擎在精确查询结果之上执行 HMM 短语预测。`HmmModel` 接收当前拼音作为观测值，结合上文已输入的汉字作为上下文，通过 `ViterbiDecoder.decode()` 计算最可能的汉字序列。HMM 预测的结果为 Top-5 候选路径，每条路径包含一个汉字序列和对应概率。
 
-HMM 预测结果与精确查询结果的合并策略是：预测结果的概率归一化后与字典频率线性加权，权重由 `ImeConfig` 配置控制。默认配置下，HMM 预测结果的权重较低（0.3），字典频率的权重较高（0.7）——这确保了字典频率作为基础排序依据的稳定性，HMM 预测作为辅助排序信号提供上下文感知的微调。当 `ImeConfig.engine.inputPredictionEnabled` 为 `false` 时，此阶段完全跳过，候选列表仅包含精确查询结果。
+HMM 预测结果与精确查询结果的合并策略是：预测结果的概率归一化后与字典频率线性加权。默认配置下，HMM 预测结果的权重较低（0.3），字典频率的权重较高（0.7）——这确保了字典频率作为基础排序依据的稳定性，HMM 预测作为辅助排序信号提供上下文感知的微调。
 
 ### 8.4 阶段四：用户频率合并
 
 最终阶段将用户输入历史中的频率数据合并到候选排序中。`DictRepository.recordUserInput()` 在用户每次选择候选词后异步更新用户频率——频率递增操作使用 SQL 原子语句 `SET freq = freq + 1`，确保并发安全。查询时，用户频率通过 `UserInputDao.getTopByType()` 获取，与字典频率加权合并后影响候选排序。
 
-用户频率合并的策略是：若候选词存在于用户输入历史中，使用用户频率替换字典频率作为排序依据；若不存在，使用字典频率。这种策略确保了用户常用词始终排在列表前端——即使用户常用词在字典中的频率较低（如人名、专业术语），用户频率的提升也会将其推到列表前端。用户频率数据同时用于拉丁词补全查询——`UserInputDao.getCompletions()` 根据用户历史输入频率返回拉丁词补全建议，补全结果按频率降序排列。
+用户频率合并的策略是：若候选词存在于用户输入历史中，使用用户频率替换字典频率作为排序依据；若不存在，使用字典频率。这种策略确保了用户常用词始终排在列表前端——即使用户常用词在字典中的频率较低（如人名、专业术语），用户频率的提升也会将其推到列表前端。
 
 四个阶段的完整查询流程确保了候选列表的质量：前缀匹配保证查询范围合法，精确查询提供基础候选集，HMM 排序引入上下文感知能力，用户频率合并反映个性化偏好。四个阶段的组合使得拼音输入的候选排序既准确又个性化，减少用户的翻页和选择成本。

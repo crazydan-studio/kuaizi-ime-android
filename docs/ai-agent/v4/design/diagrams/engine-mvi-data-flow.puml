@@ -7,50 +7,50 @@ skinparam RectangleBorderColor #888888
 skinparam NoteBorderColor #AAAAAA
 skinparam NoteBackgroundColor #F5F5F5
 
-title 引擎 MVI 数据流
+title Engine MVI Data Flow
 
-rectangle "用户操作" as user #FFF3E0 {
+rectangle "User Input" as user #FFF3E0 {
   card "InputGesture" as gesture
 }
 
-rectangle "UI 层" as ui #E8F5E9 {
+rectangle "UI Layer" as ui #E8F5E9 {
   card "KeyboardViewModel" as vm
   card "Compose UI" as compose
 }
 
-rectangle "引擎层 (:ime-engine)" as engine #E3F2FD {
+rectangle "Engine Layer (:engine)" as engine #E3F2FD {
   card "ImeEngine" as imeEngine
   card "KeyboardIntentHandler" as handler
   card "KeyboardStateMachine" as sm
   card "reduce" as reduce
-  
-  rectangle "状态" as states #FFF9C4 {
+
+  rectangle "State" as states #FFF9C4 {
     card "ImeState\n(StateFlow)" as state
     card "ImeEffect\n(SharedFlow)" as effect
   }
 }
 
-rectangle "输出" as output #FCE4EC {
+rectangle "Output" as output #FCE4EC {
   card "ImeEditorBridge" as bridge
-  card "目标编辑器" as editor
+  card "Target Editor" as editor
 }
 
-' 输入流
-gesture -down-> vm : 用户手势
+' Input flow
+gesture -down-> vm : user gesture
 vm -down-> imeEngine : ImeIntent\n(handleIntent)
 imeEngine -down-> handler : 1. ImeIntent →\nKeyboardStateTransition
 handler -down-> sm : 2. Transition →\nnew KeyboardState + sideEffects
-sm -down-> reduce : 3. sideEffects →\n异步 Intent
-reduce -down-> state : 4. copy() 更新 ImeState
+sm -down-> reduce : 3. sideEffects →\nasync Intent
+reduce -down-> state : 4. copy() updates ImeState
 
-' 输出流
+' Output flow
 imeEngine -right-> bridge : 5. EditorAction\n(dispatchEditorAction)
-bridge -right-> editor : 语义方法调用
+bridge -right-> editor : semantic method calls
 
-' 副作用流
+' Side effect flow
 imeEngine -right-> effect : 6. ImeEffect\n(tryEmit)
 
-' UI 订阅
+' UI subscriptions
 state -up-> compose : StateFlow\n(collectAsState)
 effect -up-> vm : SharedFlow\n(collect)
 

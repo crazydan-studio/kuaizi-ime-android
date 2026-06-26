@@ -3,16 +3,16 @@
 skinparam backgroundColor #FEFEFE
 skinparam defaultFontSize 12
 
-title UI 组件层次结构
+title UI Component Hierarchy
 
 legend right
-  |= 模块 |= 颜色 |= 说明 |
-  | :ime-ui | <#E8F5E9> | UI + ViewModel Layer |
-  | :ime-engine | <#FFF3E0> | Domain Layer (依赖) |
+  |= Module |= Color |= Description |
+  | :ui | <#E8F5E9> | UI + ViewModel Layer |
+  | :engine | <#FFF3E0> | Domain Layer (dependency) |
 endlegend
 
-' ===== ViewModel 层 =====
-package "ViewModel 层 [:ime-ui]" #E8F5E9 {
+' ===== ViewModel Layer =====
+package "ViewModel Layer [:ui]" #E8F5E9 {
   class KeyboardViewModel <<ViewModel>> {
     + state: StateFlow<ImeState>
     + config: ImeConfig
@@ -32,91 +32,91 @@ package "ViewModel 层 [:ime-ui]" #E8F5E9 {
   KeyboardViewModel *-- GestureFeedbackState
 }
 
-' ===== 集成组件 =====
-package "集成组件 [:ime-ui]" #E8F5E9 {
-  class KeyboardHost <<集成>> {
-    统一 Stacked/Separated 布局
-    订阅 viewModel.state / layoutMode / feedbackState
+' ===== Integration Components =====
+package "Integration Components [:ui]" #E8F5E9 {
+  class KeyboardHost <<Integration>> {
+    Unified Stacked/Separated layout
+    Subscribes viewModel.state / layoutMode / feedbackState
   }
-  class KeyboardInputActionPlayerHost <<集成>> {
-    UseMode.Animation (演示)
-    UseMode.DirectInput (输入辅助)
-    组合 KeyboardHost + 播放引擎
-    showIndicator 控制
+  class KeyboardInputActionPlayerHost <<Integration>> {
+    UseMode.Animation (demo)
+    UseMode.DirectInput (input assistance)
+    Composes KeyboardHost + playback engine
+    showIndicator control
   }
   KeyboardInputActionPlayerHost *-- KeyboardHost
   KeyboardHost --> KeyboardViewModel : viewModel
   KeyboardInputActionPlayerHost --> KeyboardViewModel : viewModel
 }
 
-' ===== 面板组件 =====
-package "面板组件 [:ime-ui]" #E8F5E9 {
+' ===== Panel Components =====
+package "Panel Components [:ui]" #E8F5E9 {
 
-  package "三层面板 (Row 3 / Zone A)" {
-    class GestureInputPanel <<面板>> {
-      透明手势拦截层 (最上层)
-      接收触摸事件
-      识别手势类型
-      输出 InputGesture
+  package "Three-Layer Panels (Row 3 / Zone A)" {
+    class GestureInputPanel <<Panel>> {
+      Transparent gesture interception layer (topmost)
+      Receives touch events
+      Recognizes gesture types
+      Outputs InputGesture
     }
-    class KeyLayoutPanel <<面板>> {
-      按键布局渲染层 (最下层)
-      根据 KeyboardInputMode + Type 渲染
-      onLayoutStateChanged 回调
+    class KeyLayoutPanel <<Panel>> {
+      Key layout rendering layer (bottommost)
+      Renders based on KeyboardInputMode + Type
+      onLayoutStateChanged callback
     }
-    class GestureFeedbackPanel <<面板>> {
-      透明反馈绘制层 (中间层)
-      归一化坐标绘制
-      支持多实例 (Zone A + Zone B)
+    class GestureFeedbackPanel <<Panel>> {
+      Transparent feedback drawing layer (middle)
+      Normalized coordinate drawing
+      Supports multi-instance (Zone A + Zone B)
     }
   }
 
-  package "信息面板 (Row 1)" {
-    class CandidateListPanel <<面板>> {
-      候选栏
-      含内建 IndicatorOverlay
+  package "Info Panels (Row 1)" {
+    class CandidateListPanel <<Panel>> {
+      Candidate bar
+      Built-in IndicatorOverlay
       showIndicator + indicatorState
     }
-    class PopupTipPanel <<面板>> {
-      弹出提示面板
-      从 viewModel.popupTipState 读取
-      叠加在 CandidateListPanel 上方
+    class PopupTipPanel <<Panel>> {
+      Popup tip panel
+      Reads from viewModel.popupTipState
+      Overlays above CandidateListPanel
     }
   }
 
-  package "交互面板 (Row 2)" {
-    class InputListPanel <<面板>> {
-      输入栏 (输入时显示)
-      含内建 IndicatorOverlay
-      互斥于 ToolListPanel
+  package "Interaction Panels (Row 2)" {
+    class InputListPanel <<Panel>> {
+      Input bar (visible during input)
+      Built-in IndicatorOverlay
+      Mutually exclusive with ToolListPanel
     }
-    class ToolListPanel <<面板>> {
-      工具列表面板 (空闲时显示)
-      含内建 IndicatorOverlay
-      含编辑功能键
+    class ToolListPanel <<Panel>> {
+      Tool list panel (visible when idle)
+      Built-in IndicatorOverlay
+      Includes editing function keys
     }
   }
 }
 
-' ===== 原子组件 =====
-package "原子组件 [:ime-ui]" #E8F5E9 {
-  class KeyView <<原子>> {
-    单个按键渲染
+' ===== Atomic Components =====
+package "Atomic Components [:ui]" #E8F5E9 {
+  class KeyView <<Atomic>> {
+    Single key rendering
   }
-  class CandidateItem <<原子>> {
-    单个候选项
+  class CandidateItem <<Atomic>> {
+    Single candidate item
   }
-  class CharInputItem <<原子>> {
-    输入栏字符项
+  class CharInputItem <<Atomic>> {
+    Input bar character item
   }
-  class GapInputItem <<原子>> {
-    输入栏间隙项
+  class GapInputItem <<Atomic>> {
+    Input bar gap item
   }
-  class PopupTipItem <<原子>> {
-    弹出提示内容项
+  class PopupTipItem <<Atomic>> {
+    Popup tip content item
   }
-  class ToolItem <<原子>> {
-    工具按钮项
+  class ToolItem <<Atomic>> {
+    Tool button item
   }
 
   KeyLayoutPanel *-- KeyView
@@ -127,43 +127,43 @@ package "原子组件 [:ime-ui]" #E8F5E9 {
   ToolListPanel *-- ToolItem
 }
 
-' ===== 主题系统 =====
-package "主题系统 [:ime-ui]" #E8F5E9 {
-  class KeyboardTheme <<主题>> {
-    支持跟随系统
-    Light / Night 预置
+' ===== Theme System =====
+package "Theme System [:ui]" #E8F5E9 {
+  class KeyboardTheme <<Theme>> {
+    Follows system
+    Light / Night presets
   }
-  class KeyboardColors <<主题>> {
-    键盘/候选/输入栏/X-Pad 颜色
+  class KeyboardColors <<Theme>> {
+    Keyboard/candidate/input bar colors
   }
-  class KeyboardThemes <<主题>> {
-    Light / Night 预置
+  class KeyboardThemes <<Theme>> {
+    Light / Night presets
   }
-  class LocalKeyboardColors <<主题>> {
-    CompositionLocal 提供颜色
+  class LocalKeyboardColors <<Theme>> {
+    CompositionLocal providing colors
   }
 }
 
-' ===== 工具组件 =====
-package "工具组件 [:ime-ui]" #E8F5E9 {
-  class CoordinateNormalizer <<工具>> {
+' ===== Utility Components =====
+package "Utility Components [:ui]" #E8F5E9 {
+  class CoordinateNormalizer <<Utility>> {
     + normalize(offset, sourceSize): OffsetF
     + denormalize(normalized, targetSize): Offset
   }
-  class ComposeInputActionPositionResolver <<工具>> {
-    实现 InputActionPositionResolver
-    从 KeyLayoutState 读取归一化坐标
+  class ComposeInputActionPositionResolver <<Utility>> {
+    Implements InputActionPositionResolver
+    Reads normalized coords from KeyLayoutState
   }
-  class InputActionScriptLoader <<工具>> {
+  class InputActionScriptLoader <<Utility>> {
     + loadPreset(name): InputActionScript
     + listPresets(): List<String>
     + loadFromFile(uri): InputActionScript
   }
 }
 
-' ===== 播放器组件 =====
-package "播放器组件 [:ime-ui]" #E8F5E9 {
-  class InputActionPlayer <<播放器>> {
+' ===== Player Components =====
+package "Player Components [:ui]" #E8F5E9 {
+  class InputActionPlayer <<Player>> {
     + playbackState
     + row1IndicatorState
     + row2IndicatorState
@@ -171,9 +171,9 @@ package "播放器组件 [:ime-ui]" #E8F5E9 {
   }
 }
 
-' ===== 引擎依赖 =====
-package "引擎依赖 [:ime-engine]" #FFF3E0 {
-  interface InputActionPositionResolver <<接口>> {
+' ===== Engine Dependencies =====
+package "Engine Dependencies [:engine]" #FFF3E0 {
+  interface InputActionPositionResolver <<Interface>> {
     + resolve(key): OffsetF?
     + resolveCandidatePosition(index): OffsetF?
     + resolveInputItemPosition(index): OffsetF?

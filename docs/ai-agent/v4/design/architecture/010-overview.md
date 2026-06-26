@@ -2,7 +2,7 @@
 
 ## 1 分层架构
 
-v4 采用三层库架构：引擎库（`:ime-engine`）、UI 库（`:ime-ui`）、应用模块（`:app`），自底向上分为五层：
+采用三层库架构：引擎库（`:engine`）、UI 库（`:ui`）、应用模块（`:app`），自底向上分为五层：
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -11,25 +11,25 @@ v4 采用三层库架构：引擎库（`:ime-engine`）、UI 库（`:ime-ui`）�
 │  ComposeView 桥接 → 注入 KeyboardViewModel.Factory(engine)      │
 │  配置持久化（DataStore）+ 设置页面 + 引导页面 + 输入练习 UI        │
 ├─────────────────────────────────────────────────────────────────┤
-│                   ViewModel Layer   ← :ime-ui 库                 │
+│                   ViewModel Layer   ← :ui 库                     │
 │  KeyboardViewModel：持有 ImeEngine，暴露 StateFlow<ImeState>     │
 │  InputGesture → ImeIntent 转换 → engine.handleIntent()          │
 │  GestureFeedbackState 管理 + updateConfig() 运行时配置修改       │
 ├─────────────────────────────────────────────────────────────────┤
-│                         UI Layer      ← :ime-ui 库               │
+│                         UI Layer      ← :ui 库                   │
 │  Compose 缺省 UI：GestureInputPanel / KeyLayoutPanel / GestureFeedbackPanel    │
 │  CandidateListPanel / InputListPanel / EditTextBridge / KeyboardHost      │
 │  (KeyboardHost 统一叠加模式与全屏模式，内部包含候选栏+输入栏+工具栏+键盘区域)             │
 │  主题系统 / 剪贴板与收藏 UI          │
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
-│                       Domain Layer     ← :ime-engine 库          │
+│                       Domain Layer     ← :engine 库              │
 │  ImeEngine / Keyboard / InputList / Inputboard / Favoriteboard  │
 │  ImeEditorBridge / BaseImeEditorBridge                          │
 │  ImeLog / ImeLogger / LogLevel / LogEntry / LogWriter / LogStorage│
 │  (逻辑层与 UI/应用分离，第三方可定制 UI 与交互)       │
 ├─────────────────────────────────────────────────────────────────┤
-│                        Data Layer      ← :ime-engine 库          │
+│                        Data Layer      ← :engine 库              │
 │  ImeDictProvider 接口 + ImeSqliteDictProvider 内置实现                  │
 │  PinyinDict / UserInputDataDict / UserInputFavoriteDict          │
 │  FileLogWriter (Channel 缓冲 + 异步批量写入)                       │
@@ -41,13 +41,13 @@ v4 采用三层库架构：引擎库（`:ime-engine`）、UI 库（`:ime-ui`）�
 @file:../diagrams/architecture.puml
 ```
 
-> **注意**：三层库架构的详细设计见 [030-三层模块划分](./030-module-division.md)。v4 采用三层库架构：引擎库（`:ime-engine`，逻辑层与 UI / 应用分离，Domain Layer + Data Layer）、UI 库（`:ime-ui`，Compose 缺省 UI + ViewModel Layer）、应用模块（`:app`，Platform Layer + 配置持久化 + 设置页面）。第三方应用可以引入 `:ime-engine` + `:ime-ui` 获得完整的输入法能力与缺省 UI（含 KeyboardViewModel），也可以仅引入 `:ime-engine` 自行实现 UI。
+> **注意**：三层库架构的详细设计见 [030-三层模块划分](./030-module-division.md)。采用三层库架构：引擎库（`:engine`，逻辑层与 UI / 应用分离，Domain Layer + Data Layer）、UI 库（`:ui`，Compose 缺省 UI + ViewModel Layer）、应用模块（`:app`，Platform Layer + 配置持久化 + 设置页面）。第三方应用可以引入 `:engine` + `:ui` 获得完整的输入法能力与缺省 UI（含 KeyboardViewModel），也可以仅引入 `:engine` 自行实现 UI。
 
 ---
 
 ## 2 数据流
 
-v4 采用 MVI（Model-View-Intent）架构，核心数据流如下：
+采用 MVI（Model-View-Intent）架构，核心数据流如下：
 
 ```plantuml
 @file:../diagrams/mvi-data-flow.puml
@@ -114,7 +114,6 @@ v4 采用 MVI（Model-View-Intent）架构，核心数据流如下：
 | Compose 在 IME 中的性能 | 键盘响应延迟 | 原型阶段性能验证，必要时降级为 View |
 | 状态机迁移的复杂度 | 功能缺失 | 先写测试验证 Java 行为，再迁移 |
 | 字典数据库迁移 | 数据丢失 | 保留升级路径，测试所有迁移场景 |
-| X-Pad Canvas 绘制 | 视觉不一致 | 逐步迁移，与 Java 版本对比截图验证 |
 | UI 测试工具在 release 中的残留 | 包体积增大、信息泄露 | Source Set 隔离 + Lint 规则 + CI 检查，三重保障 |
 | 输入练习动画的包体积 | APK 增大 | Compose Canvas 即时绘制，无额外图片资源；预置脚本控制在 50KB 以内 |
 | 日志系统性能影响 | I/O 阻塞主线程 | Channel 缓冲 + 独立协程批量写入，不阻塞调用线程（详见 [090-日志系统](../engine/090-logging.md)） |

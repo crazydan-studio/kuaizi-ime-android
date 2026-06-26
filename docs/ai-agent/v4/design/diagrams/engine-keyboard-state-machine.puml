@@ -1,0 +1,103 @@
+@startuml engine-keyboard-state-machine
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+
+title Keyboard State Machine
+
+legend right
+  |= Color |= Description |
+  | <#FFE0B2> | Top-level states |
+  | <#C8E6C9> | Pinyin input substates |
+  | <#BBDEFB> | Candidate selection substates |
+  | <#F3E5F5> | Editor substates |
+  | <#FFCDD2> | Symbol/Emoji substates |
+endlegend
+
+' ===== Top-level states =====
+state "Idle\nIdle" as Idle #FFE0B2
+
+' ===== Pinyin Input =====
+state "PinyinInput" as PinyinInput #C8E6C9 {
+  state "Waiting\nWaiting for input\npending: CharInput?" as Waiting #C8E6C9
+  state "Slipping\nSliding input\nstartKey, levels, nextChars" as Slipping #C8E6C9
+  state "Flipping\nFlipping input\nstartChar, candidates" as Flipping #C8E6C9
+}
+
+' ===== Candidate Selection =====
+state "CandidateSelection" as CandidateSelection #BBDEFB {
+  state "Choosing\nCandidate selection\ncandidates, pageIndex" as Choosing #BBDEFB
+  state "Filtering\nCandidate filtering\nspell, filtered" as Filtering #BBDEFB
+  state "AdvanceFiltering\nAdvanced filtering\nradical?, tone?, filtered" as AdvanceFiltering #BBDEFB
+}
+
+' ===== Commit Options =====
+state "CommitOptionChoosing\nCommit options\noptions: List<CommitOption>" as CommitOption #FFE0B2
+
+' ===== Editor =====
+state "EditorEditing" as EditorEditing #F3E5F5 {
+  state "CursorMoving\nCursor movement\nposition: Int" as CursorMoving #F3E5F5
+  state "TextSelecting\nText selection\nstart, end" as TextSelecting #F3E5F5
+}
+
+' ===== Symbol/Emoji =====
+state "SymbolChoosing\nSymbol selection\ngroupId?" as Symbol #FFCDD2
+state "EmojiChoosing\nEmoji selection\ngroupId?" as Emoji #FFCDD2
+
+' ===== Transitions =====
+
+Idle --> Waiting : InputPinyinChar\nSwitch keyboard to pinyin
+Idle --> Symbol : OpenSymbolGroup
+Idle --> Emoji : OpenEmojiGroup
+Idle --> CursorMoving : Editor operation
+
+Waiting --> Slipping : BeginSlip(startKey)
+Waiting --> Flipping : BeginFlip(startChar)
+Waiting --> Choosing : LoadCandidates
+
+Slipping --> Waiting : SelectSlipChar
+Slipping --> Choosing : LoadCandidates
+
+Flipping --> Waiting : SelectFlipChar
+Flipping --> Choosing : LoadCandidates
+
+Choosing --> Filtering : FilterCandidates(spell)
+Choosing --> AdvanceFiltering : AdvanceFilterCandidates
+Choosing --> Waiting : ReturnToIdle\n(after selecting candidate)
+Choosing --> CommitOption : LoadCommitOptions
+
+Filtering --> Choosing : BackToPrevious
+AdvanceFiltering --> Choosing : BackToPrevious
+
+CommitOption --> Waiting : ReturnToIdle
+
+CursorMoving --> TextSelecting : SelectText
+TextSelecting --> Idle : ReturnToIdle
+
+Symbol --> Idle : ReturnToIdle
+Emoji --> Idle : ReturnToIdle
+
+' ===== Keyboard Type Initial States =====
+note right of Idle
+  **Keyboard Type Initial States**
+  Pinyin → Waiting
+  Latin → Waiting
+  Number → Idle
+  Math → Idle
+  Symbol → SymbolChoosing
+  Emoji → EmojiChoosing
+  Candidate → Choosing
+  CommitOption → CommitOptionChoosing
+end note
+
+' ===== KeyboardStateHistory =====
+note left of Idle
+  **KeyboardStateHistory Bounded History Stack**
+  maxSize = 10
+  Cleared on keyboard switch
+  Substate rollback via pop()
+  Undo does not depend on state history
+  (Depends on InputList undo stack)
+end note
+
+@enduml

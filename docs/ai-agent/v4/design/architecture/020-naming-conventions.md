@@ -1,6 +1,6 @@
 # 命名规范
 
-本文档定义 v4 版本三层库架构下的统一命名规范，确保通过类名即可识别其所在模块和职能。所有设计文档和代码实现必须遵循本规范。
+本文档定义三层库架构下的统一命名规范，确保通过类名即可识别其所在模块和职能。所有设计文档和代码实现必须遵循本规范。
 
 ---
 
@@ -8,8 +8,8 @@
 
 | 模块 | 命名规则 | 示例 |
 |------|----------|------|
-| `:ime-engine` | 公开 class 以 `Ime` 为前缀 | `ImeEngine`, `ImeConfig`, `EditorAction`, `ImeState`, `ImeIntent`, `ImeEditorBridge` |
-| `:ime-ui` | 不使用 `Ime` 前缀，贴近 UI 业务命名 | `KeyboardHost`, `EditTextBridge`, `GestureFeedbackPanel`, `CandidateListPanel` |
+| `:engine` | 公开 class 以 `Ime` 为前缀 | `ImeEngine`, `ImeConfig`, `EditorAction`, `ImeState`, `ImeIntent`, `ImeEditorBridge` |
+| `:ui` | 不使用 `Ime` 前缀，贴近 UI 业务命名 | `KeyboardHost`, `EditTextBridge`, `GestureFeedbackPanel`, `CandidateListPanel` |
 | `:app` | 不使用 `Ime` 前缀，贴近应用业务命名 | `IMEService`, `ConfigDataStore`, `InputConnectionBridge` |
 
 ### 1.1 engine 模块
@@ -80,7 +80,7 @@ org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
 
 ## 5 命名选择指引
 
-以下列出 v4 设计中经过取舍后采用的命名及其替代方案，供后续设计决策参考。列出的替代方案并非错误，只是当前设计中选择了更合适的名称。
+以下列出经过取舍后采用的命名及其替代方案，供后续设计决策参考。列出的替代方案并非错误，只是当前设计中选择了更合适的名称。
 
 ### 5.1 面板与布局
 

@@ -4,18 +4,18 @@ skinparam backgroundColor #FEFEFE
 skinparam classAttributeIconSize 0
 skinparam defaultFontSize 11
 
-title 类组织总览
+title Class Organization Overview
 
 legend right
-  |= 模块 |= 颜色 |= 说明 |
+  |= Module |= Color |= Description |
   | :app | <#E3F2FD> | Platform Layer |
-  | :ime-ui | <#E8F5E9> | UI + ViewModel Layer |
-  | :ime-engine | <#FFF3E0> | Domain + Data Layer |
+  | :ui | <#E8F5E9> | UI + ViewModel Layer |
+  | :engine | <#FFF3E0> | Domain + Data Layer |
 endlegend
 
-' ==================== :ime-engine 模块 ====================
+' ==================== :engine module ====================
 
-package ":ime-engine" #FFF3E0 {
+package ":engine" #FFF3E0 {
 
   package "engine.core" {
     class ImeEngine <<(O,#FFF3E0)>> {
@@ -50,7 +50,6 @@ package ":ime-engine" #FFF3E0 {
       {static} SwitchKeyboard(type)
       {static} CommitInput
       {static} DeleteInput
-      {static} SelectXPadPath(startZone, path)
       {static} PerformEdit(action)
       {static} UpdateConfig(config)
     }
@@ -108,17 +107,14 @@ package ":ime-engine" #FFF3E0 {
       CommitOption
     }
     class KeyboardInputMode <<(E,#FFF3E0)>> {
-      XPad
       HexGrid
       RectGrid
-      MultiZone
     }
     class KeyboardState <<(S,#FFF3E0)>> {
       {static} Idle
       {static} PinyinInput.Waiting
       {static} PinyinInput.Slipping
       {static} PinyinInput.Flipping
-      {static} PinyinInput.XPadding
       {static} CandidateSelection.Choosing
       {static} CandidateSelection.Filtering
       {static} CandidateSelection.AdvanceFiltering
@@ -161,7 +157,6 @@ package ":ime-engine" #FFF3E0 {
       + compile(text, method, speed): InputActionScript
       - compileTapActions(...)
       - compileSwipeActions(...)
-      - compileXPadActions(...)
     }
     class InputActionFingerIndicator <<(D,#FFF3E0)>> {
       + position: OffsetF
@@ -293,9 +288,9 @@ package ":ime-engine" #FFF3E0 {
   }
 }
 
-' ==================== :ime-ui 模块 ====================
+' ==================== :ui module ====================
 
-package ":ime-ui" #E8F5E9 {
+package ":ui" #E8F5E9 {
 
   package "ui.viewmodel" {
     class KeyboardViewModel <<(C,#E8F5E9)>> {
@@ -335,44 +330,44 @@ package ":ime-ui" #E8F5E9 {
       + (Composable) KeyboardInputActionPlayerHost(viewModel, useMode)
     }
     class InputActionPlayerPanel <<(C,#E8F5E9)>> {
-      + 输入练习播放控制面板
+      + Input exercise playback control panel
     }
   }
 
   package "ui.panel" {
     class GestureInputPanel <<(C,#E8F5E9)>> {
-      + 透明手势拦截层
-      + 接收触摸事件
-      + 输出 InputGesture
+      + Transparent gesture interception layer
+      + Receives touch events
+      + Outputs InputGesture
     }
     class KeyLayoutPanel <<(C,#E8F5E9)>> {
-      + 按键布局渲染层
-      + onLayoutStateChanged 回调
-      + 根据 KeyboardInputMode + Type 渲染
+      + Key layout rendering layer
+      + onLayoutStateChanged callback
+      + Renders based on KeyboardInputMode + Type
     }
     class GestureFeedbackPanel <<(C,#E8F5E9)>> {
-      + 透明反馈绘制层
-      + 归一化坐标绘制
-      + 支持多实例
+      + Transparent feedback drawing layer
+      + Normalized coordinate drawing
+      + Supports multi-instance
     }
     class CandidateListPanel <<(C,#E8F5E9)>> {
-      + 候选栏（含内建 IndicatorOverlay）
+      + Candidate bar (built-in IndicatorOverlay)
       + showIndicator: Boolean
       + indicatorState: InputActionFingerIndicator?
     }
     class InputListPanel <<(C,#E8F5E9)>> {
-      + 输入栏（含内建 IndicatorOverlay）
+      + Input bar (built-in IndicatorOverlay)
       + showIndicator: Boolean
       + indicatorState: InputActionFingerIndicator?
     }
     class ToolListPanel <<(C,#E8F5E9)>> {
-      + 工具列表面板（含内建 IndicatorOverlay）
+      + Tool list panel (built-in IndicatorOverlay)
       + showIndicator: Boolean
       + indicatorState: InputActionFingerIndicator?
     }
     class PopupTipPanel <<(C,#E8F5E9)>> {
-      + 弹出提示面板
-      + 从 ImeState 读取状态
+      + Popup tip panel
+      + Reads state from ImeState
     }
   }
 
@@ -412,14 +407,13 @@ package ":ime-ui" #E8F5E9 {
       + keyBackground/Foreground/Pressed/...
       + candidatePanelBackground/...
       + inputListPanelBackground/...
-      + xPadBackground/...
     }
     class KeyboardThemes <<(O,#E8F5E9)>> {
       + Light: KeyboardColors
       + Night: KeyboardColors
     }
     class LocalKeyboardColors <<(O,#E8F5E9)>> {
-      CompositionLocal 提供颜色
+      CompositionLocal providing colors
     }
   }
 
@@ -442,7 +436,6 @@ package ":ime-ui" #E8F5E9 {
     }
     class KeyLayoutState <<(D,#E8F5E9)>> {
       + keyPositions: Map<InputKey, RectF>
-      + xPadLayoutInfo: XPadLayoutInfo?
       + panelSize: Size
       + findKeyAt(position, targetSize): InputKey?
       + denormalize(normalized, targetSize): Rect
@@ -460,7 +453,7 @@ package ":ime-ui" #E8F5E9 {
   }
 }
 
-' ==================== :app 模块 ====================
+' ==================== :app module ====================
 
 package ":app" #E3F2FD {
   class IMEService <<(C,#E3F2FD)>> {
@@ -480,27 +473,27 @@ package ":app" #E3F2FD {
     + updateConfig(transform)
   }
   class LogViewerScreen <<(C,#E3F2FD)>> {
-    + 日志浏览界面
+    + Log viewer screen
   }
   class LogExportScreen <<(C,#E3F2FD)>> {
-    + 日志导出界面
+    + Log export screen
   }
   class SettingsScreen <<(C,#E3F2FD)>> {
-    + 设置页面
+    + Settings page
   }
   class MainScreen <<(C,#E3F2FD)>> {
-    + 应用主界面
+    + App main screen
   }
   class ExerciseScreen <<(C,#E3F2FD)>> {
-    + 练习与演示界面
+    + Exercise and demo screen
   }
 }
 
-' ==================== 关键关系 ====================
+' ==================== Key Relationships ====================
 
 BaseImeEditorBridge <|-- InputConnectionBridge : :app
-BaseImeEditorBridge <|-- EditTextBridge : :ime-ui
-InputActionPositionResolver <|.. ComposeInputActionPositionResolver : :ime-ui
+BaseImeEditorBridge <|-- EditTextBridge : :ui
+InputActionPositionResolver <|.. ComposeInputActionPositionResolver : :ui
 
 ImeEngine *-- KeyboardStateMachine
 ImeEngine *-- InputListOperator
@@ -515,8 +508,8 @@ DictRepository --> ViterbiDecoder
 
 KeyboardViewModel *-- GestureFeedbackState
 KeyboardViewModel *-- InputActionPlayer
-KeyTableGenerator <|.. PinyinKeyTable : :ime-ui
-KeyTableGenerator <|.. SymbolEmojiKeyTable : :ime-ui
+KeyTableGenerator <|.. PinyinKeyTable : :ui
+KeyTableGenerator <|.. SymbolEmojiKeyTable : :ui
 KeyTableContext *-- Keyboard : keyboard
 KeyTableContext *-- InputList : inputList
 KeyTableContext *-- CandidateList : candidateList
@@ -534,13 +527,13 @@ CrashInterceptor --> LogWriter
 
 InputActionFingerIndicator *-- ClickAnimation : clickAnimation
 InputActionScript *-- InputAction : actions
-InputActionScriptCompiler ..> InputActionScript : 编译生成
-InputActionPathInterpolator ..> OffsetF : 输入输出
+InputActionScriptCompiler ..> InputActionScript : compiles
+InputActionPathInterpolator ..> OffsetF : io
 
 IMEService --> KeyboardViewModel : Factory(engine)
-IMEService --> InputConnectionBridge : 创建并挂载
-ConfigDataStore --> ImeConfig : 持久化
-ExerciseScreen --> InputActionPlayerPanel : 使用
-InputActionPlayerPanel --> KeyboardInputActionPlayerHost : 组合
+IMEService --> InputConnectionBridge : create & attach
+ConfigDataStore --> ImeConfig : persist
+ExerciseScreen --> InputActionPlayerPanel : uses
+InputActionPlayerPanel --> KeyboardInputActionPlayerHost : composition
 
 @enduml

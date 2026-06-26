@@ -5,91 +5,91 @@ skinparam backgroundColor #FEFEFE
 skinparam defaultFontSize 12
 skinparam arrowThickness 1.5
 
-title MVI 完整数据流
+title MVI Complete Data Flow
 
 legend right
-  |= 模块/类别 |= 颜色 |= 说明 |
+  |= Module/Category |= Color |= Description |
   | :app | <#E3F2FD> | Platform Layer |
-  | :ime-ui | <#E8F5E9> | UI + ViewModel Layer |
-  | :ime-engine | <#FFF3E0> | Domain + Data Layer |
-  | 反馈流 | <#FFF9C4> | GestureFeedbackState → GestureFeedbackPanel |
-  | 状态流 | <#E1F5FE> | ImeState → UI / ViewModel |
-  | 输出流 | <#F3E5F5> | ImeEngine → EditorAction → Bridge → Editor |
-  | 程序化输入流 | <#FCE4EC> | InputActionPlayer → KVM / GFS |
-  | UI 组件 | <#C8E6C9> | :ime-ui 内部组件 |
-  | 引擎组件 | <#FFE0B2> | :ime-engine 内部组件 |
-  | 平台组件 | <#BBDEFB> | :app 内部组件 |
+  | :ui | <#E8F5E9> | UI + ViewModel Layer |
+  | :engine | <#FFF3E0> | Domain + Data Layer |
+  | Feedback Flow | <#FFF9C4> | GestureFeedbackState → GestureFeedbackPanel |
+  | State Flow | <#E1F5FE> | ImeState → UI / ViewModel |
+  | Output Flow | <#F3E5F5> | ImeEngine → EditorAction → Bridge → Editor |
+  | Programmatic Input Flow | <#FCE4EC> | InputActionPlayer → KVM / GFS |
+  | UI Components | <#C8E6C9> | :ui internal components |
+  | Engine Components | <#FFE0B2> | :engine internal components |
+  | Platform Components | <#BBDEFB> | :app internal components |
 endlegend
 
-' ===== 用户手势输入流（主流程） =====
+' ===== User Gesture Input Flow (Main) =====
 
-rectangle "用户" as User #FFFFFF
+rectangle "User" as User #FFFFFF
 
-package "UI Layer [:ime-ui]" #E8F5E9 {
-  rectangle "GestureInputPanel\n(透明手势层)" as GIP #C8E6C9
-  rectangle "KeyboardViewModel\n(UI 协调中心)" as KVM #C8E6C9
-  rectangle "GestureFeedbackState\n(归一化坐标)" as GFS #C8E6C9
-  rectangle "GestureFeedbackPanel\n(透明绘制层)" as GFP #C8E6C9
-  rectangle "Compose UI\n面板组件" as UI #C8E6C9
-  rectangle "InputActionPlayer\n(程序化输入)" as IAP #C8E6C9
+package "UI Layer [:ui]" #E8F5E9 {
+  rectangle "GestureInputPanel\n(Transparent Gesture Layer)" as GIP #C8E6C9
+  rectangle "KeyboardViewModel\n(UI Coordination Center)" as KVM #C8E6C9
+  rectangle "GestureFeedbackState\n(Normalized Coordinates)" as GFS #C8E6C9
+  rectangle "GestureFeedbackPanel\n(Transparent Drawing Layer)" as GFP #C8E6C9
+  rectangle "Compose UI\nPanel Components" as UI #C8E6C9
+  rectangle "InputActionPlayer\n(Programmatic Input)" as IAP #C8E6C9
 }
 
-package "Domain Layer [:ime-engine]" #FFF3E0 {
-  rectangle "ImeEngine\n(核心引擎)" as IE #FFE0B2
-  rectangle "ImeIntent\n(用户意图)" as II #FFE0B2
-  rectangle "ImeState\n(不可变状态)" as IS #FFE0B2
-  rectangle "ImeEffect\n(一次性效果)" as IEF #FFE0B2
-  rectangle "EditorAction\n(编辑器操作)" as IO #FFE0B2
+package "Domain Layer [:engine]" #FFF3E0 {
+  rectangle "ImeEngine\n(Core Engine)" as IE #FFE0B2
+  rectangle "ImeIntent\n(User Intent)" as II #FFE0B2
+  rectangle "ImeState\n(Immutable State)" as IS #FFE0B2
+  rectangle "ImeEffect\n(One-Time Effect)" as IEF #FFE0B2
+  rectangle "EditorAction\n(Editor Operation)" as IO #FFE0B2
 }
 
 package "Platform Layer [:app]" #E3F2FD {
   rectangle "ImeEditorBridge\n(InputConnectionBridge)" as Bridge #BBDEFB
-  rectangle "编辑器\n(InputConnection)" as Editor #BBDEFB
+  rectangle "Editor\n(InputConnection)" as Editor #BBDEFB
 }
 
-' ===== 用户手势输入流 =====
-User -down-> GIP : 触摸事件
-GIP -down-> GFS : 归一化坐标\n+ touchTrailPoints\n+ pressedKeys
+' ===== User Gesture Input Flow =====
+User -down-> GIP : touch events
+GIP -down-> GFS : normalized coordinates\n+ touchTrailPoints\n+ pressedKeys
 GIP -down-> KVM : InputGesture
-KVM -down-> II : ImeIntent\n(手势→意图转换)
+KVM -down-> II : ImeIntent\n(gesture-to-intent conversion)
 II -down-> IE : handleIntent()
-IE -down-> IS : reduce\nStateFlow 更新
-IE -down-> IEF : ImeEffect\nSharedFlow 发射
+IE -down-> IS : reduce\nStateFlow update
+IE -down-> IEF : ImeEffect\nSharedFlow emit
 
-' ===== 反馈流 =====
-GFS -[#FFF9C4]-> GFP : collectAsState()\n反归一化绘制
+' ===== Feedback Flow =====
+GFS -[#FFF9C4]-> GFP : collectAsState()\ndenormalized drawing
 
-' ===== 状态流 =====
-IS -[#E1F5FE]-> UI : collectAsState()\n驱动面板重组
-IS -[#E1F5FE]-> KVM : state 引用
+' ===== State Flow =====
+IS -[#E1F5FE]-> UI : collectAsState()\ndrives panel recomposition
+IS -[#E1F5FE]-> KVM : state reference
 
-' ===== 效果流 =====
+' ===== Effect Flow =====
 IEF -[#FCE4EC]-> KVM : collect\nPopupTip / PlayAudio
 
-' ===== 输出流 =====
+' ===== Output Flow =====
 IE -[#F3E5F5]-> IO : EditorAction
 IO -[#F3E5F5]-> Bridge : dispatchEditorAction()
-Bridge -[#F3E5F5]-> Editor : 语义方法调用
+Bridge -[#F3E5F5]-> Editor : semantic method calls
 
-' ===== 程序化输入流 =====
+' ===== Programmatic Input Flow =====
 IAP -[#FCE4EC]-> KVM : handleIntent(ImeIntent)
 IAP -[#FCE4EC]-> GFS : setFingerIndicator()\nsetTouchTrailPoints()\nsetPressedKeys()
 
 note right of GIP
-  接收触摸事件
-  归一化坐标写入 GestureFeedbackState
-  查询 KeyLayoutState.findKeyAt()
-  输出 InputGesture
+  Receives touch events
+  Writes normalized coords to GestureFeedbackState
+  Queries KeyLayoutState.findKeyAt()
+  Outputs InputGesture
 end note
 
 note right of KVM
-  gestureToIntent() 转换
+  gestureToIntent() conversion
   handleGesture() / handleIntent()
-  管理 KeyboardLayoutMode
-  管理 GestureFeedbackState
-  维护 ToolListState (local)
-  订阅 ImeEffect → PopupTipState
-  集成 InputActionPlayer
+  Manages KeyboardLayoutMode
+  Manages GestureFeedbackState
+  Maintains ToolListState (local)
+  Subscribes ImeEffect → PopupTipState
+  Integrates InputActionPlayer
 end note
 
 note right of GFS
@@ -99,31 +99,31 @@ note right of GFS
 end note
 
 note right of GFP
-  反归一化: OffsetF * panelSize
-  绘制轨迹/高亮/手指指示器
-  Zone A / Zone B 多实例
+  Denormalize: OffsetF * panelSize
+  Draws trail / highlight / finger indicator
+  Zone A / Zone B multi-instance
 end note
 
 note right of UI
-  KeyLayoutPanel (按键渲染)
-  CandidateListPanel (候选栏)
-  InputListPanel / ToolListPanel (输入栏/工具栏)
-  PopupTipPanel (弹出提示)
+  KeyLayoutPanel (key rendering)
+  CandidateListPanel (candidate bar)
+  InputListPanel / ToolListPanel (input/tool bar)
+  PopupTipPanel (popup tips)
 end note
 
 note right of IAP
-  播放 InputActionScript
-  驱动 feedbackState
-  驱动 handleIntent()
-  管理 row1/row2 Indicator
+  Plays InputActionScript
+  Drives feedbackState
+  Drives handleIntent()
+  Manages row1/row2 indicator
 end note
 
 note right of IE
   handleIntent()
   reduce(state, intent)
-  状态机转换
-  字典查询
-  输出分发
+  State machine transitions
+  Dict query
+  Output dispatch
 end note
 
 note right of IS

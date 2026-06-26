@@ -5,152 +5,148 @@ skinparam componentStyle rectangle
 skinparam defaultFontSize 12
 skinparam packageStyle rectangle
 
-title 三层库架构总览
-
-' 颜色定义
-skinparam component<<app>> #E3F2FD
-skinparam component<<ime_ui>> #E8F5E9
-skinparam component<<ime_engine>> #FFF3E0
+title Three-Layer Architecture Overview
 
 legend right
-  |= 模块 |= 颜色 |= 说明 |
-  | :app | <#E3F2FD> | Platform Layer - 平台集成 |
-  | :ime-ui | <#E8F5E9> | UI Layer + ViewModel Layer |
-  | :ime-engine | <#FFF3E0> | Domain Layer + Data Layer |
+  |= Module |= Color |= Description |
+  | :app | <#E3F2FD> | Platform Layer |
+  | :ui | <#E8F5E9> | UI Layer + ViewModel Layer |
+  | :engine | <#FFF3E0> | Domain Layer + Data Layer |
+  | :app-codegen | <#FCE4EC> | KSP Code Generation |
 endlegend
 
-package ":app 模块\n(Platform Layer)" as app #E3F2FD {
-  component [IMEService\n(薄壳)] as IMEService <<app>>
+package ":app (Platform Layer)" as app #E3F2FD {
+  component [IMEService\n(Thin Shell)] as IMEService <<app>>
   component [InputConnectionBridge] as ICB <<app>>
   component [ConfigDataStore] as CDS <<app>>
   component [LogExportScreen\nLogViewerScreen\nLogLevelSetting] as AppLogUI <<app>>
   component [SettingsScreen\nMainScreen\nExerciseScreen] as AppScreens <<app>>
 }
 
-package ":ime-ui 模块\n(UI Layer + ViewModel Layer)" as ui #E8F5E9 {
+package ":ui (UI Layer + ViewModel Layer)" as ui #E8F5E9 {
   package "ViewModel Layer" {
-    component [KeyboardViewModel] as KVM <<ime_ui>>
-    component [GestureFeedbackState] as GFS <<ime_ui>>
+    component [KeyboardViewModel] as KVM <<ui>>
+    component [GestureFeedbackState] as GFS <<ui>>
   }
-  package "UI Layer - 集成组件" {
-    component [KeyboardHost] as KH <<ime_ui>>
-    component [KeyboardInputActionPlayerHost] as KIAPH <<ime_ui>>
-    component [InputActionPlayerPanel] as IAPP <<ime_ui>>
+  package "UI Layer - Integration" {
+    component [KeyboardHost] as KH <<ui>>
+    component [KeyboardInputActionPlayerHost] as KIAPH <<ui>>
+    component [InputActionPlayerPanel] as IAPP <<ui>>
   }
-  package "UI Layer - 面板组件" {
-    component [GestureInputPanel] as GIP <<ime_ui>>
-    component [KeyLayoutPanel] as KLP <<ime_ui>>
-    component [GestureFeedbackPanel] as GFP <<ime_ui>>
-    component [CandidateListPanel] as CLP <<ime_ui>>
-    component [InputListPanel] as ILP <<ime_ui>>
-    component [ToolListPanel] as TLP <<ime_ui>>
-    component [PopupTipPanel] as PTP <<ime_ui>>
+  package "UI Layer - Panels" {
+    component [GestureInputPanel] as GIP <<ui>>
+    component [KeyLayoutPanel] as KLP <<ui>>
+    component [GestureFeedbackPanel] as GFP <<ui>>
+    component [CandidateListPanel] as CLP <<ui>>
+    component [InputListPanel] as ILP <<ui>>
+    component [ToolListPanel] as TLP <<ui>>
+    component [PopupTipPanel] as PTP <<ui>>
   }
-  package "UI Layer - 主题与工具" {
-    component [KeyboardTheme\nKeyboardColors\nLocalKeyboardColors] as Theme <<ime_ui>>
-    component [CoordinateNormalizer] as CN <<ime_ui>>
-    component [ComposeInputActionPositionResolver] as CIAPR <<ime_ui>>
-    component [InputActionPlayer] as IAP <<ime_ui>>
-    component [InputActionScriptLoader] as IASL <<ime_ui>>
-    component [InputActionPlayerState] as IAPS <<ime_ui>>
-    component [EditTextBridge] as EB <<ime_ui>>
+  package "UI Layer - Theme & Tools" {
+    component [KeyboardTheme\nKeyboardColors\nLocalKeyboardColors] as Theme <<ui>>
+    component [CoordinateNormalizer] as CN <<ui>>
+    component [ComposeInputActionPositionResolver] as CIAPR <<ui>>
+    component [InputActionPlayer] as IAP <<ui>>
+    component [InputActionScriptLoader] as IASL <<ui>>
+    component [InputActionPlayerState] as IAPS <<ui>>
+    component [EditTextBridge] as EB <<ui>>
   }
 }
 
-package ":ime-engine 模块\n(Domain Layer + Data Layer)" as engine #FFF3E0 {
-  package "Domain Layer - 核心模型" {
-    component [ImeEngine] as IE <<ime_engine>>
-    component [ImeConfig\n(+ RuntimeConfig)] as IC <<ime_engine>>
-    component [ImeIntent] as II <<ime_engine>>
-    component [EditorAction] as IO <<ime_engine>>
-    component [ImeEditorBridge\nBaseImeEditorBridge] as IOB <<ime_engine>>
-    component [ImeState\n+ 子状态] as IS <<ime_engine>>
-    component [Keyboard\n(type, handMode, state)] as K <<ime_engine>>
-    component [KeyboardType\n(枚举)] as KT <<ime_engine>>
-    component [KeyboardInputMode\n(枚举)] as KIM <<ime_engine>>
+package ":engine (Domain Layer + Data Layer)" as engine #FFF3E0 {
+  package "Domain Layer - Core Models" {
+    component [ImeEngine] as IE <<engine>>
+    component [ImeConfig\n(+ RuntimeConfig)] as IC <<engine>>
+    component [ImeIntent] as II <<engine>>
+    component [EditorAction] as IO <<engine>>
+    component [ImeEditorBridge\nBaseImeEditorBridge] as IOB <<engine>>
+    component [ImeState\n+ Substates] as IS <<engine>>
+    component [Keyboard\n(type, handMode, state)] as K <<engine>>
+    component [KeyboardType\n(enum)] as KT <<engine>>
+    component [KeyboardInputMode\n(enum)] as KIM <<engine>>
   }
-  package "Domain Layer - 输入动作" {
-    component [InputAction\n(Sealed Class)] as IA <<ime_engine>>
-    component [InputActionScript] as IAS <<ime_engine>>
-    component [InputActionScriptCompiler] as IASC <<ime_engine>>
-    component [InputActionFingerIndicator] as IAFI <<ime_engine>>
-    component [ClickAnimation] as CA <<ime_engine>>
-    component [InputActionPathInterpolator] as IAPI <<ime_engine>>
-    component [InputActionPositionResolver\n(Interface)] as IAPR <<ime_engine>>
-    component [OffsetF / RectF] as OFRF <<ime_engine>>
+  package "Domain Layer - Input Action" {
+    component [InputAction\n(Sealed Class)] as IA <<engine>>
+    component [InputActionScript] as IAS <<engine>>
+    component [InputActionScriptCompiler] as IASC <<engine>>
+    component [InputActionFingerIndicator] as IAFI <<engine>>
+    component [ClickAnimation] as CA <<engine>>
+    component [InputActionPathInterpolator] as IAPI <<engine>>
+    component [InputActionPositionResolver\n(Interface)] as IAPR <<engine>>
+    component [OffsetF / RectF] as OFRF <<engine>>
   }
-  package "Domain Layer - 内部组件" {
-    component [KeyboardStateMachine] as KSM <<ime_engine>>
-    component [InputListOperator] as ILO <<ime_engine>>
+  package "Domain Layer - Internal" {
+    component [KeyboardStateMachine] as KSM <<engine>>
+    component [InputListOperator] as ILO <<engine>>
   }
-  package "Domain Layer - 日志" {
-    component [ImeLog / ImeLogger] as IL <<ime_engine>>
-    component [LogLevel / LogEntry] as LLE <<ime_engine>>
-    component [LogWriter\nFileLogWriter\nLogcatWriter\nCrashInterceptor] as LW <<ime_engine>>
-    component [LogStorage] as LS <<ime_engine>>
+  package "Domain Layer - Logging" {
+    component [ImeLog / ImeLogger] as IL <<engine>>
+    component [LogLevel / LogEntry] as LLE <<engine>>
+    component [LogWriter\nFileLogWriter\nLogcatWriter\nCrashInterceptor] as LW <<engine>>
+    component [LogStorage] as LS <<engine>>
   }
   package "Data Layer" {
-    component [ImeDictProvider\n(Interface)] as IDP <<ime_engine>>
-    component [ImeSqliteDictProvider] as ISDP <<ime_engine>>
-    component [DictRepository] as DR <<ime_engine>>
-    component [PinyinCharsTree] as PCT <<ime_engine>>
-    component [HmmModel\nViterbiDecoder] as HMM <<ime_engine>>
+    component [ImeDictProvider\n(Interface)] as IDP <<engine>>
+    component [ImeSqliteDictProvider] as ISDP <<engine>>
+    component [DictRepository] as DR <<engine>>
+    component [PinyinCharsTree] as PCT <<engine>>
+    component [HmmModel\nViterbiDecoder] as HMM <<engine>>
   }
 }
 
-' :app → :ime-ui 依赖
+': app -> ui dependencies
 IMEService --> KVM : Factory(engine)
-IMEService --> ICB : 创建并挂载
-ICB -up-|> IOB : 实现
-AppScreens --> KH : 使用
-AppScreens --> IAPP : 使用
-AppLogUI --> LS : 读取/导出
+IMEService --> ICB : create & attach
+ICB -up-|> IOB : implements
+AppScreens --> KH : uses
+AppScreens --> IAPP : uses
+AppLogUI --> LS : read/export
 
-' :ime-ui → :ime-engine 依赖
-KVM --> IE : 持有引用\nhandleIntent()
+': ui -> engine dependencies
+KVM --> IE : holds reference\nhandleIntent()
 KVM --> IS : collectAsState()
 KVM --> IC : config
-KVM --> GFS : 管理
-IAP --> IAPR : 坐标解析
-IAP --> IAPS : 播放状态
-IAP --> IAFI : 手指指示器
-IAP --> IAPI : 路径插值
-IAP --> CA : 点击涟漪
-CIAPR -up-|> IAPR : 实现
-KH --> GIP : 叠加
-KH --> KLP : 叠加
-KH --> GFP : 叠加
-KH --> CLP : 布局
-KH --> ILP : 布局
-KH --> TLP : 布局
-IAPP --> KIAPH : 组合
-EB -up-|> IOB : 实现
-Theme --> IC : 读取 UiConfig
+KVM --> GFS : manages
+IAP --> IAPR : coordinate resolution
+IAP --> IAPS : playback state
+IAP --> IAFI : finger indicator
+IAP --> IAPI : path interpolation
+IAP --> CA : click ripple
+CIAPR -up-|> IAPR : implements
+KH --> GIP : overlays
+KH --> KLP : overlays
+KH --> GFP : overlays
+KH --> CLP : layout
+KH --> ILP : layout
+KH --> TLP : layout
+IAPP --> KIAPH : composition
+EB -up-|> IOB : implements
+Theme --> IC : reads UiConfig
 
-' :ime-engine 内部
-IE *-- KSM : 组合
-IE *-- ILO : 组合
-IE --> II : 处理
-IE --> IO : 生成
-IE --> IOB : 分发
-IE --> IDP : 字典查询
-ISDP *-- DR : 委托
-ISDP *-- PCT : 组合
-ISDP *-- HMM : 组合
+': engine internal
+IE *-- KSM : composition
+IE *-- ILO : composition
+IE --> II : processes
+IE --> IO : generates
+IE --> IOB : dispatches
+IE --> IDP : dict query
+ISDP *-- DR : delegates
+ISDP *-- PCT : composition
+ISDP *-- HMM : composition
 IS *-- K : keyboard
 K *-- KT : type
-IASC --> IAS : 编译生成
-IAS *-- IA : 包含
-IAFI *-- CA : 包含\n(clickAnimation)
-IAFI *-- OFRF : 使用
-IAPI --> OFRF : 输入输出
-IL --> LW : 分发
-LW --> LS : 写入
+IASC --> IAS : compiles
+IAS *-- IA : contains
+IAFI *-- CA : contains\n(clickAnimation)
+IAFI *-- OFRF : uses
+IAPI --> OFRF : io
+IL --> LW : dispatches
+LW --> LS : writes
 
-package ":ime-codegen 模块\n(KSP Code Generation)" as codegen #FCE4EC {
-  component [ConfigDataStoreKeys\n代码生成器] as CDK <<codegen>>
+package ":app-codegen (KSP Code Generation)" as codegen #FCE4EC {
+  component [ConfigDataStoreKeys\nCode Generator] as CDK <<codegen>>
 }
 
-CDS --> CDK : 使用生成代码
+CDS --> CDK : uses generated code
 
 @enduml

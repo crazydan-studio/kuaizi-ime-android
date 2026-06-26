@@ -2,7 +2,7 @@
 
 ## 1. InputClip 剪贴内容
 
-`InputClip` 是剪贴板条目的核心数据模型，封装了系统剪贴板中提取的文本内容及其自动检测的语义类型。作为 `:ime-engine` 模块中剪贴板子系统的基础数据单元，`InputClip` 被设计为不可变的 `data class`，所有字段在构造时确定，不存在可变状态。`text` 字段存储从系统剪贴板提取的原始文本字符串，`type` 字段通过 `InputTextType.detect()` 自动检测并标注文本的语义类型，为下游服务（如 `ClipboardService`）和 UI 层提供类型信息，以便选择合适的展示图标和操作按钮。
+`InputClip` 是剪贴板条目的核心数据模型，封装了系统剪贴板中提取的文本内容及其自动检测的语义类型。作为 `:engine` 模块中剪贴板子系统的基础数据单元，`InputClip` 被设计为不可变的 `data class`，所有字段在构造时确定，不存在可变状态。`text` 字段存储从系统剪贴板提取的原始文本字符串，`type` 字段通过 `InputTextType.detect()` 自动检测并标注文本的语义类型，为下游服务（如 `ClipboardService`）和 UI 层提供类型信息，以便选择合适的展示图标和操作按钮。
 
 `InputClip` 的伴生对象提供了 `from()` 工厂方法，这是创建 `InputClip` 实例的推荐入口。`from()` 方法接收原始文本字符串，内部调用 `InputTextType.detect()` 执行类型检测，将结果作为 `type` 字段传入构造函数。这种设计将类型检测逻辑与实例构造绑定在一起，确保每个通过 `from()` 创建的 `InputClip` 都携带正确的语义类型标注，避免调用方遗漏类型检测步骤。
 
@@ -78,25 +78,23 @@ enum class InputTextType {
 
 ### 2.2 优先级链设计原理
 
-优先级链的排列顺序基于以下原则：**模式越窄、误匹配风险越低的类型排在越前面**。具体来说：
+优先级链的排列顺序基于以下原则：**模式越窄、误匹配风险越低的类型排在越前面**。
 
 | 优先级 | 类型 | 正则模式 | 排位理由 |
 |--------|------|----------|----------|
 | 1 | `Captcha` | 验证码关键字 + 4-6 位数字 | 最特异的模式：必须同时包含关键字和短数字序列，极低误匹配率 |
-| 2 | `CreditCard` | 16-19 位纯数字 | 较特异：长度约束严格，但纯数字模式可能与 `IdCard` 重叠 |
-| 3 | `IdCard` | 17 位数字 + 校验位 | 较特异：末位可为 X/x，与 `CreditCard` 区分的关键是长度和校验位格式 |
-| 4 | `Phone` | 1 开头 11 位数字 | 中等特异：中国手机号的格式约束明确，但纯数字模式需排在 `CreditCard` 和 `IdCard` 之后 |
-| 5 | `Email` | 含 @ 符号的邮箱格式 | 中等特异：@ 符号是强特征，但完整邮箱格式较复杂 |
+| 2 | `CreditCard` | 16-19 位纯数字 | 较特异：长度约束严格 |
+| 3 | `IdCard` | 17 位数字 + 校验位 | 较特异：末位可为 X/x |
+| 4 | `Phone` | 1 开头 11 位数字 | 中等特异：中国手机号的格式约束明确 |
+| 5 | `Email` | 含 @ 符号的邮箱格式 | 中等特异：@ 符号是强特征 |
 | 6 | `Url` | http(s):// 开头的链接 | 较宽泛：URL 格式变化多端，但协议前缀是强特征 |
 | 7 | `Address` | 包含地址关键字 | 宽泛：基于关键字匹配，可能产生误匹配 |
 | 8 | `Html` | 包含 HTML 标签 | 宽泛：仅检查尖括号标签模式 |
-| — | `null` | 不匹配任何模式 | 最宽泛的兜底：无法匹配任何已知类型时返回 `null` |
+| — | `null` | 不匹配任何模式 | 最宽泛的兜底 |
 
 当 `detect()` 无法将文本匹配到任何特定类型时，返回 `null` 而非 `InputTextType.Text`。这种设计使得调用方可以明确区分「检测到普通文本」和「未检测到特定类型」两种语义——`null` 表示无类型标注，UI 层按普通文本处理；`InputTextType.Text` 作为枚举成员保留，供需要显式标注普通文本的场景使用。
 
 ### 2.3 检测结果的 UI 影响
-
-检测到的 `InputTextType` 直接影响 UI 层的展示行为和交互方式：
 
 | 类型 | UI 图标 | 点击操作 | 提取行为 |
 |------|---------|----------|----------|
@@ -210,7 +208,7 @@ class ClipboardService(
 
 ### 3.2 状态暴露与线程安全
 
-`ClipboardService` 暴露两个只读 `StateFlow`：`clip` 表示当前剪贴内容（可空），`showTip` 表示是否应显示剪贴板提示。`StateFlow` 的值语义保证了线程安全——`value` 的读写是原子的，订阅者始终读取到最新的完整状态快照。`pasteClip()` 方法返回当前剪贴文本，供 `ImeEngine` 在处理 `ImeIntent.PasteClip` 时获取粘贴内容。`extractType()` 方法根据请求的类型从当前剪贴内容中提取特定格式的数据片段，例如从包含验证码关键字的文本中提取纯数字部分。
+`ClipboardService` 暴露两个只读 `StateFlow`：`clip` 表示当前剪贴内容（可空），`showTip` 表示是否应显示剪贴板提示。`StateFlow` 的值语义保证了线程安全——`value` 的读写是原子的，订阅者始终读取到最新的完整状态快照。`pasteClip()` 方法返回当前剪贴文本，供 `ImeEngine` 在处理 `ImeIntent.PasteClip` 时获取粘贴内容。`extractType()` 方法根据请求的类型从当前剪贴内容中提取特定格式的数据片段。
 
 ---
 
@@ -296,16 +294,47 @@ class FavoriteService(
 
 ---
 
-## 6. 与 ImeEffect 的协作
+## 6. ImeState 剪贴板与收藏状态
 
-剪贴板检测和收藏操作与引擎的副作用通道 `ImeEffect` 紧密协作，通过 `ImeEffect.PopupTip` 向用户发送一次性提示信号。`PopupTip` 分为两种子类型：`Message` 是纯信息性提示，短暂停留后自动消失；`Action` 是可交互的操作提示，附带一个可点击按钮，点击后触发一个 `ImeIntent`。剪贴板和收藏功能分别使用不同类型的 `PopupTip`，以匹配其交互语义。
-
-### 6.1 剪贴板检测触发 Action 提示
-
-当 `ClipboardService` 检测到系统剪贴板发生变更时（即 `OnPrimaryClipChangedListener` 被触发），引擎在 reduce 过程中产生 `ImeEffect.PopupTip.Action` 副作用信号：
+### 6.1 Clipboard 状态
 
 ```kotlin
-// 剪贴板变更检测 → 发出 Action 提示
+data class Clipboard(
+    val clipperText: String? = null,
+    val inputTextType: InputTextType? = null,
+    val disabled: Boolean = false,
+)
+```
+
+`clipperText` 为当前系统剪贴板的文本内容，`null` 表示无内容。`inputTextType` 为自动检测的文本类型。`disabled` 由 `UiConfig.clipPastePopupTipsEnabled` 与 `EngineConfig.favoriteClipEnabled` 共同确定——当两者均为 `false` 时 `ClipboardService` 不工作。
+
+### 6.2 FavoriteList 状态
+
+```kotlin
+data class FavoriteList(
+    val favorites: List<InputFavorite> = emptyList(),
+    val disabled: Boolean = false,
+    val isLoading: Boolean = false,
+)
+```
+
+`favorites` 为当前用户的收藏条目列表，按使用频次和时间排序。`disabled` 由 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 联合控制。`isLoading` 标识收藏列表是否正在从数据库加载。
+
+### 6.3 收藏功能门控
+
+剪贴板和收藏的 `ImeEffect` 发射受 `EngineConfig` 布尔门控约束。当 `EngineConfig.favoriteClipEnabled` 为 `false` 时，引擎不监听系统剪贴板变更，不发射剪贴板相关的 `PopupTip.Action`，`ImeState.clipboard` 始终保持禁用默认值。当 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 均为 `false` 时，调用 `ImeIntent.SaveFavorite` 立即抛出 `IllegalStateException`，不会产生任何副作用信号。门控逻辑在 `ImeEngine` 的 reduce 函数中执行，确保禁用功能的副作用信号不会泄漏到 UI 层。
+
+---
+
+## 7. 与 ImeEffect 的协作
+
+剪贴板检测和收藏操作与引擎的副作用通道 `ImeEffect` 紧密协作，通过 `ImeEffect.PopupTip` 向用户发送一次性提示信号。`PopupTip` 分为两种子类型：`Message` 是纯信息性提示，短暂停留后自动消失；`Action` 是可交互的操作提示，附带一个可点击按钮，点击后触发一个 `ImeIntent`。
+
+### 7.1 剪贴板检测触发 Action 提示
+
+当 `ClipboardService` 检测到系统剪贴板发生变更时，引擎在 reduce 过程中产生 `ImeEffect.PopupTip.Action` 副作用信号：
+
+```kotlin
 ImeEffect.PopupTip.Action(
     message = "可粘贴内容",
     actionLabel = "粘贴",
@@ -314,14 +343,11 @@ ImeEffect.PopupTip.Action(
 )
 ```
 
-`persistent = true` 表示该提示持续显示直到用户开始输入，不会因超时自动消失。这是剪贴板提示的合理策略：用户可能在阅读输入内容后再决定是否粘贴，此时提示应持续可见。`action` 字段绑定 `ImeIntent.PasteClip(text)`，用户点击「粘贴」按钮后，该 `ImeIntent` 被 `ImeEngine.handleIntent()` 接收并处理，最终通过 `ImeEditorBridge` 将文本提交到目标编辑器。
+### 7.2 输入提交触发收藏 Action 提示
 
-### 6.2 输入提交触发收藏 Action 提示
-
-当 `ImeIntent.CommitInput` 处理完成后，引擎检查已提交的文本是否已在收藏列表中。若文本未被收藏，引擎在 reduce 过程中产生 `ImeEffect.PopupTip.Action` 副作用信号：
+当 `ImeIntent.CommitInput` 处理完成后，引擎检查已提交的文本是否已在收藏列表中。若文本未被收藏，引擎产生 `ImeEffect.PopupTip.Action` 副作用信号：
 
 ```kotlin
-// 输入提交后检测可收藏内容 → 发出 Action 提示
 ImeEffect.PopupTip.Action(
     message = "可收藏内容",
     actionLabel = "收藏",
@@ -330,18 +356,10 @@ ImeEffect.PopupTip.Action(
 )
 ```
 
-`persistent = false` 表示该提示在超时后自动消失（默认 5000ms），不会持续占用 UI 空间。若文本已被收藏，则不发射任何提示，避免对已收藏内容重复提示。
-
-`action` 字段绑定 `ImeIntent.SaveFavorite(InputFavorite(text = committedText))`，用户点击「收藏」按钮后，该 `ImeIntent` 被 `ImeEngine.handleIntent()` 接收并处理，`FavoriteService` 执行保存操作，同时引擎发射 `ImeEffect.PopupTip.Message("已收藏")` 确认提示。收藏确认流程通过 `PopupTip.Action` 统一实现，无需独立的 `ConfirmFavorite` 副作用类型。
-
-### 6.3 完整协作流程
+### 7.3 完整协作流程
 
 ```plantuml
 @file:../diagrams/engine-clipboard-favorites.puml
 ```
 
-上图展示了剪贴板检测与收藏操作与 `ImeEffect` 的完整协作流程。系统剪贴板变更时，`ClipboardService` 更新内部 `StateFlow`，`ImeEngine` 在 reduce 过程中读取服务状态并更新 `ImeState.clipboard`，同时发射 `ImeEffect.PopupTip.Action` 提示。用户点击提示中的「粘贴」按钮后，`ImeIntent.PasteClip` 被 `ImeEngine` 处理，文本通过 `ImeEditorBridge` 提交到编辑器。收藏流程：用户输入提交后，引擎检查已提交文本是否已收藏；若未收藏，发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示；用户点击「收藏」按钮后，`ImeIntent.SaveFavorite` 被 `ImeEngine` 处理，`FavoriteService` 执行保存，引擎发射 `ImeEffect.PopupTip.Message("已收藏")` 确认提示。
-
-### 6.4 收藏功能门控与副作用
-
-剪贴板和收藏的 `ImeEffect` 发射受 `EngineConfig` 布尔门控约束。当 `EngineConfig.favoriteClipEnabled` 为 `false` 时，引擎不监听系统剪贴板变更，不发射剪贴板相关的 `PopupTip.Action`，`ImeState.clipboard` 始终保持禁用默认值。当 `EngineConfig.favoriteInputEnabled` 和 `EngineConfig.favoriteClipEnabled` 均为 `false` 时，调用 `ImeIntent.SaveFavorite` 立即抛出 `IllegalStateException`，不会产生任何副作用信号。门控逻辑在 `ImeEngine` 的 reduce 函数中执行，确保禁用功能的副作用信号不会泄漏到 UI 层。
+系统剪贴板变更时，`ClipboardService` 更新内部 `StateFlow`，`ImeEngine` 在 reduce 过程中读取服务状态并更新 `ImeState.clipboard`，同时发射 `ImeEffect.PopupTip.Action` 提示。用户点击提示中的「粘贴」按钮后，`ImeIntent.PasteClip` 被 `ImeEngine` 处理，文本通过 `ImeEditorBridge` 提交到编辑器。收藏流程类似：输入提交后若文本未收藏，发射收藏提示；用户点击「收藏」后，`FavoriteService` 执行保存，引擎发射确认提示。

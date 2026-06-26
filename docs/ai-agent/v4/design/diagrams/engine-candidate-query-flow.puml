@@ -1,21 +1,21 @@
-@startuml engine-dict-system
+@startuml engine-candidate-query-flow
 !theme plain
 skinparam backgroundColor #FEFEFE
 skinparam classAttributeIconSize 0
 skinparam defaultFontSize 11
 
-title 字典系统
+title Candidate & Dict Query Flow
 
 legend right
-  |= 颜色 |= 说明 |
-  | <#FFE0B2> | 公开接口 |
-  | <#FFF3E0> | 内部实现 |
-  | <#C8E6C9> | 数据模型 |
-  | <#BBDEFB> | Room 数据库层 |
+  |= Color |= Description |
+  | <#FFE0B2> | Public interface |
+  | <#FFF3E0> | Internal implementation |
+  | <#C8E6C9> | Data models |
+  | <#BBDEFB> | Room database layer |
 endlegend
 
-' ===== 公开接口 =====
-package "公开接口" #FFE0B2 {
+' ===== Public Interface =====
+package "Public Interface" #FFE0B2 {
   interface ImeDictProvider <<(I,#FFE0B2)>> {
     + query(pinyin): List<Candidate>
     + queryPrefix(prefix): List<Candidate>
@@ -23,8 +23,8 @@ package "公开接口" #FFE0B2 {
   }
 }
 
-' ===== 内部实现 =====
-package "内部实现" #FFF3E0 {
+' ===== Internal Implementation =====
+package "Internal Implementation" #FFF3E0 {
   class ImeSqliteDictProvider <<(C,#FFF3E0)>> {
     - dictRepository: DictRepository
     - pinyinCharsTree: PinyinCharsTree
@@ -49,8 +49,8 @@ package "内部实现" #FFF3E0 {
   }
 }
 
-' ===== 数据模型 =====
-package "数据模型" #C8E6C9 {
+' ===== Data Models =====
+package "Data Models" #C8E6C9 {
   class PinyinCharsTree <<(D,#C8E6C9)>> {
     + children: Map<Char, PinyinCharsTree>
     + keys: List<InputKey.Char>
@@ -79,15 +79,14 @@ package "数据模型" #C8E6C9 {
   }
 }
 
-' ===== Room 数据库层 =====
-package "Room 数据库层" #BBDEFB {
+' ===== Room Database Layer =====
+package "Room Database Layer" #BBDEFB {
   class DictDatabase <<(C,#BBDEFB)>> {
     + pinyinWordDao(): PinyinWordDao
     + pinyinPhraseDao(): PinyinPhraseDao
     + userInputDao(): UserInputDao
     + favoriteDao(): FavoriteDao
     + hmmDao(): HmmDao
-    + {static} MIGRATION_3_4
   }
 
   interface PinyinWordDao <<(I,#BBDEFB)>> {
@@ -156,44 +155,44 @@ package "Room 数据库层" #BBDEFB {
   }
 }
 
-' ===== 关系 =====
-ImeDictProvider <|.. ImeSqliteDictProvider : 内部实现
-ImeSqliteDictProvider *-- DictRepository : 委托
-ImeSqliteDictProvider *-- PinyinCharsTree : 组合
-ImeSqliteDictProvider *-- HmmModel : 组合
+' ===== Relationships =====
+ImeDictProvider <|.. ImeSqliteDictProvider : internal implementation
+ImeSqliteDictProvider *-- DictRepository : delegates
+ImeSqliteDictProvider *-- PinyinCharsTree : composition
+ImeSqliteDictProvider *-- HmmModel : composition
 
-DictRepository --> PinyinWordDao : 使用
-DictRepository --> PinyinPhraseDao : 使用
-DictRepository --> UserInputDao : 使用
-DictRepository --> FavoriteDao : 使用
-DictRepository --> HmmDao : 使用
-DictRepository --> ViterbiDecoder : 使用
+DictRepository --> PinyinWordDao : uses
+DictRepository --> PinyinPhraseDao : uses
+DictRepository --> UserInputDao : uses
+DictRepository --> FavoriteDao : uses
+DictRepository --> HmmDao : uses
+DictRepository --> ViterbiDecoder : uses
 
-HmmModel --> HmmState : 使用
-HmmModel --> HmmObservation : 使用
-ViterbiDecoder --> HmmModel : 使用
+HmmModel --> HmmState : uses
+HmmModel --> HmmObservation : uses
+ViterbiDecoder --> HmmModel : uses
 
-DictDatabase --> PinyinWordDao : 提供
-DictDatabase --> PinyinPhraseDao : 提供
-DictDatabase --> UserInputDao : 提供
-DictDatabase --> FavoriteDao : 提供
-DictDatabase --> HmmDao : 提供
+DictDatabase --> PinyinWordDao : provides
+DictDatabase --> PinyinPhraseDao : provides
+DictDatabase --> UserInputDao : provides
+DictDatabase --> FavoriteDao : provides
+DictDatabase --> HmmDao : provides
 
-' ===== 查询流程 =====
+' ===== Query Flow =====
 note right of ImeSqliteDictProvider
-  **查询流程**
-  1. PinyinCharsTree 前缀匹配获取候选
-  2. HmmModel 计算转移概率排序
-  3. ViterbiDecoder 解码最优路径
-  4. 合并用户词频和收藏权重
+  **Query Flow**
+  1. PinyinCharsTree prefix matching for candidates
+  2. HmmModel transition probability ranking
+  3. ViterbiDecoder optimal path decoding
+  4. Merge user word frequency and favorite weights
 end note
 
 note bottom of DictDatabase
-  **预构建字典 (assets/dict/)**
-  pinyin_word_dict.db ← 拼音字库
-  pinyin_phrase_dict.db ← 拼音词库
-  hmm_data.db ← HMM 数据
-  使用 Room createFromAsset() 初始化
+  **Prebuilt Dictionaries (assets/dict/)**
+  pinyin_word_dict.db ← Pinyin word library
+  pinyin_phrase_dict.db ← Pinyin phrase library
+  hmm_data.db ← HMM data
+  Initialized via Room createFromAsset()
 end note
 
 @enduml

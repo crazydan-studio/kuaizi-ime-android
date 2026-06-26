@@ -4,18 +4,18 @@ skinparam backgroundColor #FEFEFE
 skinparam classAttributeIconSize 0
 skinparam defaultFontSize 11
 
-title 日志系统 [:ime-engine]
+title Logging System [:engine]
 
 legend right
-  |= 颜色 |= 说明 |
-  | <#FFE0B2> | 门面与记录器 |
-  | <#C8E6C9> | 数据模型 |
-  | <#BBDEFB> | Writer 接口与实现 |
-  | <#F3E5F5> | 工具类 |
+  |= Color |= Description |
+  | <#FFE0B2> | Facade & logger |
+  | <#C8E6C9> | Data models |
+  | <#BBDEFB> | Writer interface & implementations |
+  | <#F3E5F5> | Utilities |
 endlegend
 
-' ===== 门面与记录器 =====
-package "门面与记录器" #FFE0B2 {
+' ===== Facade & Logger =====
+package "Facade & Logger" #FFE0B2 {
   class ImeLog <<(O,#FFE0B2)>> {
     - writers: MutableList<LogWriter>
     + level: LogLevel
@@ -27,9 +27,9 @@ package "门面与记录器" #FFE0B2 {
     - flush()
   }
   note right of ImeLog
-    平台无关的日志门面
-    单例 object
-    应用层注入 level 和 writers
+    Platform-independent logging facade
+    Singleton object
+    App layer injects level and writers
   end note
 
   class ImeLogger <<(C,#FFE0B2)>> {
@@ -44,14 +44,14 @@ package "门面与记录器" #FFE0B2 {
     + tree(title, block)
   }
   note right of ImeLogger
-    inline + lambda 延迟求值
-    等级不满足时 lambda 不执行
-    tree() 支持树形日志块
+    inline + lambda lazy evaluation
+    Lambda not executed when level insufficient
+    tree() supports tree-formatted log blocks
   end note
 }
 
-' ===== 数据模型 =====
-package "数据模型" #C8E6C9 {
+' ===== Data Models =====
+package "Data Models" #C8E6C9 {
   class LogLevel <<(E,#C8E6C9)>> {
     VERBOSE (2)
     DEBUG (3)
@@ -71,9 +71,9 @@ package "数据模型" #C8E6C9 {
     + format(): String
   }
   note right of LogEntry
-    不可变日志条目
-    format() 用于文件输出
-    格式: yyyy-MM-dd HH:mm:ss.SSS [LEVEL] [TAG] [Thread] msg
+    Immutable log entry
+    format() for file output
+    Format: yyyy-MM-dd HH:mm:ss.SSS [LEVEL] [TAG] [Thread] msg
   end note
 
   class LogBlock <<(D,#C8E6C9)>> {
@@ -83,8 +83,8 @@ package "数据模型" #C8E6C9 {
   }
 }
 
-' ===== Writer 接口与实现 =====
-package "Writer 接口与实现" #BBDEFB {
+' ===== Writer Interface & Implementations =====
+package "Writer Interface & Implementations" #BBDEFB {
   interface LogWriter <<(I,#BBDEFB)>> {
     + write(entry: LogEntry)
     + flush()
@@ -98,9 +98,9 @@ package "Writer 接口与实现" #BBDEFB {
     + flush()
   }
   note right of FileLogWriter
-    Channel 缓冲 + 独立协程批量写入
-    最多 100 条/批
-    不阻塞调用线程
+    Channel buffering + dedicated coroutine batch write
+    Max 100 entries per batch
+    Does not block calling thread
   end note
 
   class LogcatWriter <<(C,#BBDEFB)>> {
@@ -108,9 +108,9 @@ package "Writer 接口与实现" #BBDEFB {
     + flush()
   }
   note right of LogcatWriter
-    映射到 android.util.Log
-    位于 androidMain 源集
-    flush() 空实现 (即时输出)
+    Maps to android.util.Log
+    Located in androidMain source set
+    flush() is no-op (immediate output)
   end note
 
   class LogStorage <<(C,#BBDEFB)>> {
@@ -121,16 +121,16 @@ package "Writer 接口与实现" #BBDEFB {
     + updateDir(logDir)
   }
   note right of LogStorage
-    纯 Kotlin 实现
-    不依赖 Android Context
-    每天一个文件
-    保留 7 天，单文件最大 5MB
-    文件命名: kuaizi_ime_YYYY-MM-DD.log
+    Pure Kotlin implementation
+    No Android Context dependency
+    One file per day
+    Retains 7 days, max 5MB per file
+    File naming: kuaizi_ime_YYYY-MM-DD.log
   end note
 }
 
-' ===== 工具类 =====
-package "工具类" #F3E5F5 {
+' ===== Utilities =====
+package "Utilities" #F3E5F5 {
   class CrashInterceptor <<(C,#F3E5F5)>> {
     - defaultHandler: UncaughtExceptionHandler?
     - writers: List<LogWriter>
@@ -139,35 +139,35 @@ package "工具类" #F3E5F5 {
     - handleCrash(thread, throwable)
   }
   note right of CrashInterceptor
-    JVM 标准 UncaughtExceptionHandler
-    位于 commonMain 源集
-    崩溃时:
-    1. 直接写入 LogStorage (绕过 Channel)
-    2. 同步 flush 所有 Writer
-    3. 委托原始 Handler
+    JVM standard UncaughtExceptionHandler
+    Located in commonMain source set
+    On crash:
+    1. Write directly to LogStorage (bypass Channel)
+    2. Sync flush all Writers
+    3. Delegate to original Handler
   end note
 }
 
-' ===== 关系 =====
-ImeLog *-- LogWriter : 注册
-ImeLog --> ImeLogger : 创建
-ImeLog --> LogEntry : dispatch
-ImeLogger --> ImeLog : dispatch
+' ===== Relationships =====
+ImeLog *-- LogWriter : registers
+ImeLog --> ImeLogger : creates
+ImeLog --> LogEntry : dispatches
+ImeLogger --> ImeLog : dispatches
 ImeLogger --> LogBlock : tree()
 
-LogWriter <|.. FileLogWriter : 引擎内置
-LogWriter <|.. LogcatWriter : 引擎提供
+LogWriter <|.. FileLogWriter : engine built-in
+LogWriter <|.. LogcatWriter : engine provided
 
-FileLogWriter --> LogStorage : 写入
-CrashInterceptor --> LogStorage : 直接写入
+FileLogWriter --> LogStorage : writes
+CrashInterceptor --> LogStorage : direct write
 CrashInterceptor --> LogWriter : flush
 
 LogEntry --> LogLevel : level
-LogEntry *-- LogLevel : 包含
+LogEntry *-- LogLevel : contains
 
-' ===== 初始化流程 =====
+' ===== Initialization Flow =====
 note bottom of ImeLog
-  **应用层初始化示例**
+  **App Layer Initialization Example**
   val level = if (BuildConfig.DEBUG) VERBOSE else config.ui.logLevel
   val writers = buildList {
     if (BuildConfig.DEBUG) add(LogcatWriter())

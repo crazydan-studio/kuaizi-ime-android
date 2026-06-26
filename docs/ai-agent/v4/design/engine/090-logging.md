@@ -2,7 +2,7 @@
 
 ## 1. 日志架构概述
 
-`:ime-engine` 模块的日志系统采用三层架构设计：**门面层**（`ImeLog`）提供全局统一的日志 API 入口；**记录器层**（`ImeLogger`）提供带标签的日志记录能力和树形日志块支持；**写入器层**（`LogWriter` 实现）负责将日志条目输出到不同的目标（文件、Logcat、远程服务器等）。三层之间通过清晰的接口契约协作，每一层只依赖下一层的抽象接口，不依赖具体实现，实现了日志系统的可扩展性和可替换性。
+`:engine` 模块的日志系统采用三层架构设计：**门面层**（`ImeLog`）提供全局统一的日志 API 入口；**记录器层**（`ImeLogger`）提供带标签的日志记录能力和树形日志块支持；**写入器层**（`LogWriter` 实现）负责将日志条目输出到不同的目标（文件、Logcat、远程服务器等）。三层之间通过清晰的接口契约协作，每一层只依赖下一层的抽象接口，不依赖具体实现，实现了日志系统的可扩展性和可替换性。
 
 门面层的核心职责是管理日志等级和 `LogWriter` 注册表，所有日志操作通过 `ImeLog` 门面分发到已注册的 `LogWriter` 实例。记录器层的核心职责是为每个模块或类提供带标签的日志记录器，支持 `inline` + `lambda` 延迟求值模式和树形日志块。写入器层的核心职责是将 `LogEntry` 输出到具体目标，引擎内置 `FileLogWriter`（异步文件写入），同时提供 `LogcatWriter`（Android Logcat 输出）和 `CrashInterceptor`（JVM 崩溃拦截）作为直接可用的工具类。
 
@@ -36,13 +36,11 @@ enum class LogLevel(val priority: Int) {
 
 五个等级的语义划分遵循业界通用的日志分级约定：`VERBOSE` 用于细粒度流程追踪（如键盘状态机每次转换、输入列表每次变更），`DEBUG` 用于开发期调试信息（如候选词查询结果、按键事件参数），`INFO` 用于关键业务节点（如输入提交、键盘切换、字典加载完成），`WARN` 用于可恢复的异常情况（如字典查询超时降级、配置项缺失使用默认值），`ERROR` 用于不可恢复错误（如数据库损坏、`InputConnection` 丢失、崩溃异常）。
 
-`LogLevel` 本身不包含构建类型判断逻辑，该逻辑由应用层在初始化 `ImeLog` 时负责。Debug 构建通常设置等级为 `VERBOSE`，Release 构建通常设置等级为 `WARN`。Release 构建的日志等级作为配置项存储在 DataStore 中，用户可在设置页面调低等级以协助排查问题，调低后立即生效无需重启应用。
-
 ---
 
 ## 3. LogEntry 日志条目
 
-`LogEntry` 是不可变的日志条目数据类，每次日志调用创建一个新实例，所有字段在构造时确定，不存在可变状态。日志条目包含完整的上下文信息：等级、标签、消息、异常对象、时间戳、线程名和线程 ID。`format()` 方法将日志条目格式化为标准的可读字符串，用于文件输出和日志导出。
+`LogEntry` 是不可变的日志条目数据类，每次日志调用创建一个新实例，所有字段在构造时确定，不存在可变状态。日志条目包含完整的上下文信息：等级、标签、消息、异常对象、时间戳、线程名和线程 ID。
 
 ```kotlin
 data class LogEntry(
@@ -65,9 +63,7 @@ data class LogEntry(
 }
 ```
 
-`format()` 方法输出的字符串格式为 `yyyy-MM-dd HH:mm:ss.SSS [LEVEL] [TAG] [ThreadName] message`，异常对象的完整堆栈信息追加在消息之后。此格式兼顾了可读性和可解析性——人工阅读时可以快速定位时间、等级、标签和消息，程序解析时可以通过正则表达式提取结构化字段。`LogStorage` 的 `parseLine()` 方法使用与 `format()` 输出格式对应的正则表达式，实现日志行的反向解析。
-
-线程信息（`threadName` 和 `threadId`）的记录对于异步场景下的日志排查尤为重要。IME 引擎大量使用协程处理异步操作（字典查询、剪贴板监听、文件写入等），同一段逻辑可能在不同线程上交替执行。线程信息帮助开发者快速定位日志产生的协程或线程上下文，追踪异步操作的执行轨迹。`threadName` 在协程调度器切换线程时会自动更新，反映当前协程所在的调度线程。
+`format()` 方法输出的字符串格式为 `yyyy-MM-dd HH:mm:ss.SSS [LEVEL] [TAG] [ThreadName] message`，异常对象的完整堆栈信息追加在消息之后。此格式兼顾了可读性和可解析性——人工阅读时可以快速定位时间、等级、标签和消息，程序解析时可以通过正则表达式提取结构化字段。
 
 ---
 
@@ -86,8 +82,6 @@ interface LogWriter {
 ```
 
 `write()` 方法接收一个 `LogEntry` 实例，实现必须保证线程安全——日志可能从不同协程或线程同时写入，实现需要使用适当的同步机制（如 `Channel` 缓冲、锁或原子操作）避免数据竞争。`flush()` 方法用于确保所有缓冲日志落盘，在应用崩溃或主动导出时调用。实现可以选择同步写入（如 `LogcatWriter` 直接调用 `android.util.Log` 方法）或异步缓冲写入（如 `FileLogWriter` 通过 `Channel` 缓冲后批量写入），接口不做限制。
-
-`LogWriter` 接口的简洁设计（两个方法）降低了实现门槛，同时提供了足够的扩展空间。自定义 `LogWriter` 只需实现 `write()` 和 `flush()` 两个方法，即可接入引擎的日志分发系统。对于需要复杂初始化的 `LogWriter`（如远程日志服务需要建立网络连接），可以在构造时完成初始化，`write()` 方法只负责发送日志条目；对于需要优雅关闭的 `LogWriter`，可以在 `flush()` 中执行清理逻辑。
 
 ---
 
@@ -139,7 +133,7 @@ object ImeLog {
 }
 ```
 
-`init()` 方法接受日志等级和 `LogWriter` 列表，由应用层负责创建和注入平台特有的组件。这种设计使日志基础设施与 UI 和应用层解耦，方便第三方按需集成。`init()` 方法在应用启动时调用一次，后续通过 `updateLevel()` 动态调整日志等级。`dispatch()` 方法在分发前检查日志等级，低于当前等级的日志直接丢弃——这是 `ImeLogger` 的 `inline` + `lambda` 过滤之后的二次保障，确保即使 `ImeLogger` 的过滤逻辑被绕过，也不会产生无效的 `LogWriter` 调用。
+`init()` 方法接受日志等级和 `LogWriter` 列表，由应用层负责创建和注入平台特有的组件。这种设计使日志基础设施与 UI 和应用层解耦，方便第三方按需集成。`init()` 方法在应用启动时调用一次，后续通过 `updateLevel()` 动态调整日志等级。`dispatch()` 方法在分发前检查日志等级，低于当前等级的日志直接丢弃。
 
 `logger()` 方法支持两种标签创建方式：字符串标签和类引用标签。推荐使用类引用形式 `ImeLog.logger(ClassName::class)`，确保标签与类名一致，便于日志搜索和过滤。`dispatch()` 和 `flush()` 方法标记为 `internal`，仅对 `ImeLogger` 和 `CrashInterceptor` 可见，外部代码不应直接调用。
 
@@ -212,7 +206,7 @@ class ImeLogger(private val tag: String, private val log: ImeLog) {
 
 ### 6.2 树形日志块
 
-`tree()` 方法支持树形日志块，在调试复杂流程时提供结构化的日志输出。块内所有日志作为子节点嵌套显示，帮助理解执行流程的层次关系。`tree()` 方法内部创建 `TreeLogWriter` 临时拦截日志输出，在块结束时将收集的日志按树形结构格式化后统一输出。树形日志块的典型使用场景包括：拼音输入的完整处理流程（从按键事件到候选提交）、字典查询的多级匹配过程（前缀树查询 → HMM 预测 → Viterbi 解码）、输入列表的复杂编辑操作（多步撤销/恢复）。
+`tree()` 方法支持树形日志块，在调试复杂流程时提供结构化的日志输出。块内所有日志作为子节点嵌套显示，帮助理解执行流程的层次关系。`tree()` 方法内部创建 `TreeLogWriter` 临时拦截日志输出，在块结束时将收集的日志按树形结构格式化后统一输出。
 
 ---
 
@@ -339,7 +333,7 @@ class LogStorage(
 }
 ```
 
-`LogStorage` 的平台无关设计确保了引擎的可测试性和可移植性。在 Android 应用中，应用层将 `context.filesDir.resolve("logs")` 传入；在纯 JVM 测试环境中，可以传入任意临时目录。`updateDir()` 方法支持运行时切换日志目录，当用户在设置中修改日志存储路径时，应用层调用此方法更新目录，`FileLogWriter` 无需感知路径变更——因为 `FileLogWriter` 持有 `LogStorage` 的引用，所有写入操作都委托给 `LogStorage` 完成。
+`LogStorage` 的平台无关设计确保了引擎的可测试性和可移植性。在 Android 应用中，应用层将 `context.filesDir.resolve("logs")` 传入；在纯 JVM 测试环境中，可以传入任意临时目录。
 
 ---
 
@@ -400,7 +394,7 @@ class FileLogWriter(private val storage: LogStorage) : LogWriter {
 
 ## 9. LogcatWriter Android Logcat 输出
 
-`LogcatWriter` 将引擎的 `LogEntry` 映射到 `android.util.Log` 的对应方法，使日志在 Android Studio 的 Logcat 面板中实时可见。由于 `LogcatWriter` 依赖 Android 框架的 `android.util.Log` 类，它位于引擎库的 Android 特定源集（`src/androidMain/kotlin`）中，而非纯 Kotlin 公共源集。
+`LogcatWriter` 将引擎的 `LogEntry` 映射到 `android.util.Log` 的对应方法，使日志在 Android Studio 的 Logcat 面板中实时可见。
 
 ```kotlin
 class LogcatWriter : LogWriter {
@@ -420,15 +414,15 @@ class LogcatWriter : LogWriter {
 }
 ```
 
-`LogcatWriter` 的 `write()` 方法是同步实现，直接调用 `android.util.Log` 的静态方法，日志立即出现在 Logcat 面板中，不存在缓冲延迟。`flush()` 方法为空实现，因为 Android Logcat 是即时输出通道，不存在缓冲区。这与 `FileLogWriter` 的异步缓冲写入形成互补：开发调试时 `LogcatWriter` 提供实时日志查看，`FileLogWriter` 提供持久化日志存储。
+`LogcatWriter` 的 `write()` 方法是同步实现，直接调用 `android.util.Log` 的静态方法，日志立即出现在 Logcat 面板中，不存在缓冲延迟。`flush()` 方法为空实现，因为 Android Logcat 是即时输出通道，不存在缓冲区。
 
-通常仅在 Debug 构建中注册 `LogcatWriter`，Release 构建不包含此 Writer，确保发布版本不会向 Logcat 输出敏感信息。应用层在 `ImeLog.init()` 时根据 `BuildConfig.DEBUG` 决定是否注册 `LogcatWriter`。源集分离确保了仅引入纯 Kotlin 公共源集的消费者不会受到 Android 依赖的影响，而 Android 消费者可以直接使用 `LogcatWriter`，无需自行实现。
+通常仅在 Debug 构建中注册 `LogcatWriter`，Release 构建不包含此 Writer，确保发布版本不会向 Logcat 输出敏感信息。
 
 ---
 
 ## 10. CrashInterceptor 崩溃拦截
 
-`CrashInterceptor` 是引擎库提供的崩溃防护工具类，安装为 JVM 的 `Thread.UncaughtExceptionHandler`，在应用崩溃时执行三个关键操作：记录完整异常信息到日志文件、刷新所有 `LogWriter` 的缓冲区确保待写入日志落盘、委托系统默认处理器正常处理崩溃。由于 `Thread.UncaughtExceptionHandler` 是 JVM 标准 API（并非 Android 特有），`CrashInterceptor` 位于引擎库的纯 Kotlin 公共源集中，可以在任何 Kotlin/JVM 环境中使用。
+`CrashInterceptor` 是引擎库提供的崩溃防护工具类，安装为 JVM 的 `Thread.UncaughtExceptionHandler`，在应用崩溃时执行三个关键操作：记录完整异常信息到日志文件、刷新所有 `LogWriter` 的缓冲区确保待写入日志落盘、委托系统默认处理器正常处理崩溃。
 
 ```kotlin
 class CrashInterceptor(
@@ -475,6 +469,34 @@ class CrashInterceptor(
 
 崩溃日志使用固定的标签 `"Crash"`，消息格式为 `"未捕获异常 [线程名]"`，异常对象包含完整的堆栈信息。这种一致的标签和消息格式使得崩溃日志在日志查看和搜索时可以快速定位——搜索标签 `"Crash"` 即可找到所有崩溃记录，消息中的线程名帮助区分主线程崩溃和工作线程崩溃。
 
-### 10.3 将 CrashInterceptor 放在引擎库的理由
+### 10.3 初始化流程
 
-将 `CrashInterceptor` 放在引擎库而非应用层的原因在于：崩溃拦截是日志系统的核心能力之一，每个使用引擎库的 Android 应用都需要此功能。如果放在应用层，每个消费者都需要重复实现相同的逻辑——记录异常、刷新缓冲、委托系统处理。将其作为引擎库提供的工具类，消费者只需调用 `CrashInterceptor(writers, storage).install()` 即可完成安装，无需关心实现细节。`CrashInterceptor` 不自动安装，由应用层在合适的时机显式调用 `install()`，保持调用方对崩溃处理流程的完全控制。
+日志系统的完整初始化流程如下：
+
+```kotlin
+// 1. 应用层创建日志存储和 Writer
+val logDir = context.filesDir.resolve("logs")
+val storage = LogStorage(logDir)
+val fileWriter = FileLogWriter(storage)
+val writers = mutableListOf<LogWriter>(fileWriter)
+
+// Debug 构建时添加 LogcatWriter
+if (BuildConfig.DEBUG) {
+    writers.add(LogcatWriter())
+}
+
+// 2. 初始化 ImeLog 门面
+ImeLog.init(
+    level = if (BuildConfig.DEBUG) LogLevel.VERBOSE else LogLevel.WARN,
+    writers = writers,
+)
+
+// 3. 安装崩溃拦截器
+CrashInterceptor(writers, storage).install()
+
+// 4. 获取 Logger 并使用
+val logger = ImeLog.logger("MyApp")
+logger.info { "应用启动完成" }
+```
+
+崩溃拦截器不自动安装，由应用层在合适的时机显式调用 `install()`，保持调用方对崩溃处理流程的完全控制。

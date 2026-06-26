@@ -1,6 +1,6 @@
 # 配置管理设计
 
-v4 版本使用 DataStore + Flow 实现类型安全的配置管理和响应式更新。`ImeConfig` 包含 `EngineConfig`（引擎配置）、`UiConfig`（UI 配置）和 `RuntimeConfig`（运行时配置）三个嵌套 data class，引擎与 UI 配置在数据结构上明确隔离。`:app` 模块的 `ConfigDataStore` 仅持久化 `EngineConfig` 和 `UiConfig`，`RuntimeConfig` 不做持久化。
+使用 DataStore + Flow 实现类型安全的配置管理和响应式更新。`ImeConfig` 包含 `EngineConfig`（引擎配置）、`UiConfig`（UI 配置）和 `RuntimeConfig`（运行时配置）三个嵌套 data class，引擎与 UI 配置在数据结构上明确隔离。`:app` 模块的 `ConfigDataStore` 仅持久化 `EngineConfig` 和 `UiConfig`，`RuntimeConfig` 不做持久化。
 
 ---
 
@@ -8,7 +8,7 @@ v4 版本使用 DataStore + Flow 实现类型安全的配置管理和响应式�
 
 `ImeConfig` 包含 `EngineConfig`、`UiConfig` 和 `RuntimeConfig` 三个嵌套配置。`EngineConfig` 和 `UiConfig` 由 `ConfigDataStore` 持久化，`RuntimeConfig` 不做持久化，应用重启时根据 `StartupConfig` 重新初始化。
 
-> `ImeConfig` 定义在 `:ime-engine` 库中，包含 `EngineConfig`、`UiConfig` 和 `RuntimeConfig`。完整的 ImeConfig 定义见[010-引擎库设计总览](../engine/010-engine-overview.md) §3.2。
+> `ImeConfig` 定义在 `:engine` 库中，包含 `EngineConfig`、`UiConfig` 和 `RuntimeConfig`。完整的 ImeConfig 定义见 [010-引擎库设计总览](../engine/010-engine-overview.md) §3.2。
 
 ---
 
@@ -22,7 +22,6 @@ class ConfigDataStore(private val context: Context) {
         ImeConfig(
             engine = EngineConfigDataStoreKeys.readEngineConfig(prefs),
             ui = UiConfigDataStoreKeys.readUiConfig(prefs),
-            // runtime 不做持久化，始终使用默认值
         )
     }
 
@@ -32,13 +31,12 @@ class ConfigDataStore(private val context: Context) {
             val new = transform(current)
             EngineConfigDataStoreKeys.writeEngineConfig(prefs, new.engine)
             UiConfigDataStoreKeys.writeUiConfig(prefs, new.ui)
-            // runtime 不做持久化
         }
     }
 }
 ```
 
-> **注意**：ConfigDataStore 仅持久化 `EngineConfig` 和 `UiConfig`，`RuntimeConfig` 不做持久化。`EngineConfigDataStoreKeys` 和 `UiConfigDataStoreKeys` 由 `:ime-codegen` 模块通过 KSP 自动生成，详见 [架构/模块划分](../architecture/030-module-division.md)。
+> `EngineConfigDataStoreKeys` 和 `UiConfigDataStoreKeys` 由 `:app-codegen` 模块通过 KSP 自动生成，详见 [010-代码生成](../app-codegen/010-codegen.md)。
 
 ---
 
@@ -67,12 +65,6 @@ data class KeyboardColors(
     val inputListPanelForeground: Color,
     val inputListPanelCursorColor: Color,
 
-    // X-Pad
-    val xPadBackground: Color,
-    val xPadZoneBorder: Color,
-    val xPadZoneForeground: Color,
-    val xPadActiveZoneBackground: Color,
-
     // 通用
     val background: Color,
     val foreground: Color,
@@ -83,13 +75,11 @@ object KeyboardThemes {
     val Light = KeyboardColors(
         keyBackground = Color(0xFFE8E8E8),
         keyForeground = Color(0xFF333333),
-        // ...
     )
 
     val Night = KeyboardColors(
         keyBackground = Color(0xFF333333),
         keyForeground = Color(0xFFE8E8E8),
-        // ...
     )
 }
 
@@ -137,7 +127,7 @@ fun KeyboardTheme(
 
 | ImeConfig.UiConfig 属性 | UI 显示名称（正向） | UI 默认值 | 映射关系 |
 |-------------------------|---------------------|-----------|----------|
-| `keyboardInputMode` | 键盘输入模式 | XPad | 直接映射 |
+| `keyboardInputMode` | 键盘输入模式 | Pinyin | 直接映射 |
 | `keyboardHandMode` | 键盘手 mode | Right | 直接映射 |
 | `keyboardThemeType` | 键盘主题 | 跟随系统 | 直接映射 |
 | `audioFeedbackEnabled` | 按键音效 | 开 | 直接映射 |

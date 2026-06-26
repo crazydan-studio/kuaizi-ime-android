@@ -4,18 +4,18 @@ skinparam backgroundColor #FEFEFE
 skinparam classAttributeIconSize 0
 skinparam defaultFontSize 11
 
-title 编辑器操作与桥接模式
+title Editor Action & Bridge Pattern
 
 legend right
-  |= 模块 |= 颜色 |= 说明 |
-  | :ime-engine | <#FFF3E0> | 接口/抽象定义 |
-  | :ime-ui | <#E8F5E9> | UI 层实现 |
-  | :app | <#E3F2FD> | 应用层实现 |
-  | 第三方 | <#F5F5F5> | 自定义实现 |
+  |= Module |= Color |= Description |
+  | :engine | <#FFF3E0> | Interface/abstract definition |
+  | :ui | <#E8F5E9> | UI layer implementation |
+  | :app | <#E3F2FD> | App layer implementation |
+  | Third Party | <#F5F5F5> | Custom implementation |
 endlegend
 
 ' ===== EditorAction =====
-package ":ime-engine" #FFF3E0 {
+package ":engine" #FFF3E0 {
 
   class EditorAction <<(S,#FFF3E0)>> {
     + timestamp: Long
@@ -57,16 +57,16 @@ package ":ime-engine" #FFF3E0 {
   }
 
   note right of BaseImeEditorBridge
-    **撤销机制 (单快照)**
-    - 仅支持撤销最近一次可撤回输入
-    - 记录提交前后的选区快照
-    - 新可撤回输入覆盖旧快照
-    - revokeCommit() 消费后清空
+    **Undo Mechanism (Single Snapshot)**
+    - Only supports undoing last revertible input
+    - Records selection snapshots before/after commit
+    - New revertible input overwrites old snapshot
+    - revokeCommit() clears after consumption
   end note
 }
 
-' ===== :ime-ui 实现 =====
-package ":ime-ui" #E8F5E9 {
+' ===== :ui Implementation =====
+package ":ui" #E8F5E9 {
   class EditTextBridge <<(C,#E8F5E9)>> {
     - targetSupplier: () -> EditText?
     + doNormalCommitText(text)
@@ -80,13 +80,13 @@ package ":ime-ui" #E8F5E9 {
     # onRevokeCommit(snapshot)
   }
   note right of EditTextBridge
-    面向 EditText 目标
-    直接操作 Editable 文本
-    适用于非系统 IME 场景
+    For EditText targets
+    Directly manipulates Editable text
+    Suitable for non-system IME scenarios
   end note
 }
 
-' ===== :app 实现 =====
+' ===== :app Implementation =====
 package ":app" #E3F2FD {
   class InputConnectionBridge <<(C,#E3F2FD)>> {
     - targetSupplier: () -> InputConnection?
@@ -101,36 +101,36 @@ package ":app" #E3F2FD {
     # onRevokeCommit(snapshot)
   }
   note right of InputConnectionBridge
-    面向系统 InputConnection
-    由 IMEService 创建管理
-    supplier 模式获取当前 IC
+    For system InputConnection
+    Created and managed by IMEService
+    Supplier pattern for current IC access
   end note
 }
 
-' ===== 第三方自定义 =====
-package "第三方扩展" #F5F5F5 {
+' ===== Third-Party Custom =====
+package "Third-Party Extension" #F5F5F5 {
   class CustomBridge <<(C,#F5F5F5)>> {
-    自定义实现
-    (Web编辑器/游戏引擎/终端)
+    Custom implementation
+    (Web editor / Game engine / Terminal)
   }
   note right of CustomBridge
-    简单场景: 直接实现 ImeEditorBridge
-    需要撤销: 继承 BaseImeEditorBridge
+    Simple case: directly implement ImeEditorBridge
+    Needs undo: extend BaseImeEditorBridge
   end note
 }
 
-' ===== 关系 =====
-ImeEngine --> EditorAction : 生成
+' ===== Relationships =====
+ImeEngine --> EditorAction : generates
 ImeEngine --> ImeEditorBridge : dispatchEditorAction()
 
-ImeEditorBridge <|-- BaseImeEditorBridge : 抽象实现
+ImeEditorBridge <|-- BaseImeEditorBridge : abstract implementation
 BaseImeEditorBridge <|-- InputConnectionBridge : :app
-BaseImeEditorBridge <|-- EditTextBridge : :ime-ui
-ImeEditorBridge <|.. CustomBridge : 第三方
+BaseImeEditorBridge <|-- EditTextBridge : :ui
+ImeEditorBridge <|.. CustomBridge : third-party
 
-' ===== 分发流程 =====
+' ===== Dispatch Flow =====
 note left of ImeEngine
-  **dispatchEditorAction() 分发流程**
+  **dispatchEditorAction() Flow**
   when(action) {
     is CommitText -> bridge.commitText(text, replacements)
     is RevokeCommit -> bridge.revokeCommit()

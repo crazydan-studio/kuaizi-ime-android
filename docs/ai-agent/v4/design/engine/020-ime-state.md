@@ -11,19 +11,21 @@ data class ImeState(
     val candidateList: CandidateList = CandidateList(),
     val clipboard: Clipboard = Clipboard(),
     val favoriteList: FavoriteList = FavoriteList(),
+    val toolListState: ToolListState = ToolListState(),
     val config: ImeConfig = ImeConfig(),
+    val effect: ImeEffect? = null,
 )
 ```
 
-`ImeState` 的六个字段覆盖了输入法的全部逻辑状态：`keyboard` 描述当前键盘的类型、输入模式和状态机位置；`inputList` 管理用户输入的字符序列与游标；`candidateList` 承载候选词的分页和过滤数据；`clipboard` 和 `favoriteList` 分别维护剪贴板检测与收藏管理的状态；`config` 提供运行时配置的快照。这种扁平组合的设计使得每个子状态都有清晰的职责边界，任何子状态的变更仅影响对应字段的 `copy()` 操作，不会意外波及其他子状态。
+`ImeState` 的八个字段覆盖了输入法的全部逻辑状态和一次性效果信号：`keyboard` 描述当前键盘的类型、输入模式和状态机位置；`inputList` 管理用户输入的字符序列与游标；`candidateList` 承载候选词的分页和过滤数据；`clipboard` 和 `favoriteList` 分别维护剪贴板检测与收藏管理的状态；`toolListState` 管理工具栏按钮的配置与启用状态；`config` 提供运行时配置的快照；`effect` 承载一次性副作用信号，UI 层消费后由引擎清除。这种扁平组合的设计使得每个子状态都有清晰的职责边界，任何子状态的变更仅影响对应字段的 `copy()` 操作，不会意外波及其他子状态。
 
-需要特别指出的是，`ImeState` 中**不包含**以下三类数据：`isInputting`（由 `KeyboardViewModel` 从 `inputList.pending` 直接派生）、`toolList`（由 `KeyboardViewModel` 维护本地 `StateFlow<ToolListState>`）、弹出提示（通过 `ImeEffect` 副作用通道实现，见第 6 节）。这种分离确保了高频帧级状态（如手势反馈）和低频 UI 状态（如工具栏配置）不会污染引擎的核心状态树，避免了不必要的 Compose 重组开销。
+需要特别指出的是，`ImeState` 中**不包含**以下两类数据：`isInputting`（由 `KeyboardViewModel` 从 `inputList.pending` 直接派生）、帧级手势反馈状态（如触摸轨迹、按键高亮，由 `:ui` 的 `KeyboardViewModel` 维护本地 `StateFlow`）。这种分离确保了高频帧级状态不会污染引擎的核心状态树，避免了不必要的 Compose 重组开销。
 
 ---
 
 ## 2. Keyboard 模型
 
-`Keyboard` 将键盘的类型、左右手模式临时状态和交互状态封装为一个不可变的 `data class`，通过组合模式替代继承。三个字段各自承担独立的职责维度：`type` 决定按键集合的语义内容（拼音字母、数字、符号等），`handMode` 记录左右手模式的临时切换状态（`null` 表示未切换，此时使用 `UiConfig.keyboardHandMode` 的值），`state` 记录当前键盘状态机的精确位置。`KeyboardInputMode` 不再作为 `Keyboard` 的字段——键盘输入模式只能通过 `UiConfig.keyboardInputMode` 配置变更，不支持临时性修改。
+`Keyboard` 将键盘的类型、左右手模式临时状态和交互状态封装为一个不可变的 `data class`，通过组合模式替代继承。三个字段各自承担独立的职责维度：`type` 决定按键集合的语义内容（拼音字母、数字、符号等），`handMode` 记录左右手模式的临时切换状态（`null` 表示未切换，此时使用 `UiConfig.keyboardHandMode` 的值），`state` 记录当前键盘状态机的精确位置。键盘输入模式只能通过 `UiConfig.keyboardInputMode` 配置变更，不支持临时性修改。
 
 ```kotlin
 data class Keyboard(
@@ -262,13 +264,34 @@ data class InputFavorite(
 
 ---
 
-## 6. ImeEffect 副作用通道
+## 6. ToolListState 模型
 
-`ImeEffect` 是引擎的副作用通道，用于向 UI 层发送一次性效果信号。与 `ImeState` 的持续状态语义不同，`ImeEffect` 表达的是「发生了某件事」的事件语义——引擎发出信号后不维护其状态，UI 层消费后即丢弃。将一次性效果从 `ImeState` 中分离，避免了状态清理负担、语义不匹配和重复消费风险。
+`ToolListState` 是工具栏状态的不可变 `data class`，管理键盘上方工具栏中各按钮的可用性和配置。工具栏内容根据 `keyboard.type`、`keyboard.state` 和收藏功能门控动态配置。将 `ToolListState` 纳入 `ImeState` 而非由 ViewModel 本地维护，使得引擎可以统一管理和持久化工具栏配置，UI 层无需额外订阅本地状态。
 
-### 6.1 重新设计的 PopupTip 体系
+```kotlin
+data class ToolListState(
+    val tools: List<ToolItem> = emptyList(),
+)
 
-`PopupTip` 被重新设计为两种语义明确的子类型：`Message` 和 `Action`。`Message` 是纯信息性提示，短暂停留后自动消失，不提供交互操作。`Action` 是可交互的操作提示，附带一个可点击的按钮，点击后触发一个 `ImeIntent`，引擎接收该 Intent 后执行对应操作。
+data class ToolItem(
+    val label: String,
+    val icon: String? = null,
+    val intent: ImeIntent,
+    val disabled: Boolean = false,
+)
+```
+
+`ToolItem` 的 `intent` 字段存储点击该工具后发送的 `ImeIntent`，`disabled` 字段根据运行时状态动态控制——例如撤销/重做工具根据 `InputListEditor` 的 undoStack/redoStack 状态启用或禁用。工具栏的内容按 `keyboard.type` 动态配置：`Pinyin`/`Latin` 键盘显示全选、复制、粘贴、剪贴板、撤销、重做；`Editor` 键盘显示全选、复制、剪切、粘贴、撤销；`Symbol`/`Emoji`/`Number`/`Math` 键盘显示全选、复制、粘贴。剪贴板工具项始终显示（剪贴板粘贴功能不再受门控限制），收藏工具项仅在 `favoriteInputEnabled` 或 `favoriteClipEnabled` 至少一个为 `true` 时显示。
+
+---
+
+## 7. ImeEffect 副作用信号
+
+`ImeEffect` 是引擎的副作用信号，通过 `ImeState.effect` 字段承载一次性效果。与持续性状态语义不同，`ImeEffect` 表达的是「发生了某件事」的事件语义——引擎设置 `effect` 字段后，UI 层消费并调用 `consumeEffect()` 清除，确保同一效果不会被重复消费。
+
+### 7.1 PopupTip 体系
+
+`PopupTip` 被设计为两种语义明确的子类型：`Message` 和 `Action`。`Message` 是纯信息性提示，短暂停留后自动消失，不提供交互操作。`Action` 是可交互的操作提示，附带一个可点击的按钮，点击后触发一个 `ImeIntent`，引擎接收该 Intent 后执行对应操作。
 
 ```kotlin
 sealed class ImeEffect {
@@ -303,13 +326,13 @@ enum class HapticType {
 }
 ```
 
-`PlayAudio` 和 `PlayHaptic` 是感官反馈信号，遵循 fire-and-forget 语义——引擎发出信号后不维护其状态，UI 层消费后即丢弃。感官反馈的播放器接口定义在 `:ime-ui` 中，平台实现由 `:app` 提供，配置检查由 `KeyboardViewModel` 执行。这种分层确保引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
+`PlayAudio` 和 `PlayHaptic` 是感官反馈信号，遵循 fire-and-forget 语义——引擎发出信号后 UI 层消费即丢弃。感官反馈的播放器接口定义在 `:ui` 中，平台实现由 `:app` 提供，配置检查由 `KeyboardViewModel` 执行。这种分层确保引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
 
-### 6.2 Message 提示
+### 7.2 Message 提示
 
 `Message` 提示是最简单的 PopupTip 类型，用于展示短暂的纯信息性消息。默认超时 3000ms（3 秒），超时后自动消失。典型场景包括：键盘类型切换提示（如「已切换到拉丁键盘」）、输入字符反馈（如输入特殊符号时的字符名称提示）、编辑器操作反馈（如「已全选」）。`Message` 提示不携带任何交互操作，用户无法点击它触发动作，仅作为视觉反馈存在。UI 层收到 `Message` 提示后显示 Toast 风格的浮动文字条，超时后自动 dismiss。
 
-### 6.3 Action 提示
+### 7.3 Action 提示
 
 `Action` 提示是可交互的 PopupTip 类型，携带一个可点击按钮，点击后触发一个 `ImeIntent`。`persistent` 字段控制提示的停留策略：
 
@@ -324,38 +347,17 @@ enum class HapticType {
 | 检测到可收藏内容 | "可收藏内容" | "收藏" | `ImeIntent.SaveFavorite(favorite)` | `false` | 5 秒后自动消失 |
 | 剪贴板持续可用 | "剪贴板内容可用" | "粘贴" | `ImeIntent.PasteClip(text)` | `true` | 持续显示直到用户输入 |
 
-### 6.4 通道集成
+### 7.4 通道集成
 
-`ImeEngine` 在 `handleIntent()` 处理过程中，通过内部 `MutableSharedFlow<ImeEffect>`（`extraBufferCapacity = 16`）发射副作用信号，对外暴露只读 `SharedFlow<ImeEffect>` 供 UI 层订阅。`KeyboardViewModel` 订阅引擎的 `effect` 通道，根据 `ImeEffect` 类型驱动对应的 UI 行为：`PopupTip.Message` 显示浮动提示条并启动自动 dismiss 定时器；`PopupTip.Action` 显示带按钮的提示条，按钮点击触发对应的 `ImeIntent`；`PlayAudio` 检查 `audioFeedbackEnabled` 配置后调用 `AudioPlayer.play()`；`PlayHaptic` 检查 `hapticFeedbackEnabled` 配置后调用 `HapticPlayer.play()`。收藏确认通过 `PopupTip.Action` 实现——输入提交后若内容未收藏，引擎发射 `PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示，用户点击「收藏」按钮即可保存。
+`ImeEngine` 在 `handleIntent()` 处理过程中，将 `ImeEffect` 设置到 `ImeState.effect` 字段。UI 层通过 `collectAsState()` 观察到 `effect` 非 null 时立即消费：`PopupTip.Message` 显示浮动提示条并启动自动 dismiss 定时器；`PopupTip.Action` 显示带按钮的提示条，按钮点击触发对应的 `ImeIntent`；`PlayAudio` 检查 `audioFeedbackEnabled` 配置后调用 `AudioPlayer.play()`；`PlayHaptic` 检查 `hapticFeedbackEnabled` 配置后调用 `HapticPlayer.play()`。收藏确认通过 `PopupTip.Action` 实现——输入提交后若内容未收藏，引擎设置 `PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示，用户点击「收藏」按钮即可保存。
 
-`PopupTip.Action` 的 dismiss 策略在 UI 层实现：`persistent = false` 时启动 `delay(timeoutMs)` 协程，超时后自动 dismiss；`persistent = true` 时不启动超时定时器，改为监听 `keyboard.state` 变更——当用户开始输入（状态从 `Idle` 转换到 `PinyinInput.Waiting`）时自动 dismiss。新的 `PopupTip` Effect 到来时取消前一个定时器和提示，确保同一时刻只有一个 PopupTip 可见。
-
----
-
-## 7. ToolListState（ViewModel 本地状态）
-
-`ToolListState` **不属于 `ImeState`**，由 `KeyboardViewModel` 维护本地 `StateFlow<ToolListState>`。工具栏内容根据 `keyboard.type`、`keyboard.state` 和收藏功能门控动态配置。将 `ToolListState` 从 `ImeState` 中分离的设计决策基于以下考量：工具栏的配置是 UI 层的展示逻辑，不属于引擎的核心状态；工具栏的变更频率（键盘切换级，秒级）远低于 `ImeState` 的变更频率（按键级，毫秒级）；引擎不需要感知工具栏的具体内容，仅通过 `ImeIntent` 接收工具栏按钮的操作。
-
-```kotlin
-data class ToolListState(
-    val tools: List<ToolItem>,
-)
-
-data class ToolItem(
-    val label: String,
-    val icon: ImageVector?,
-    val intent: ImeIntent,
-    val disabled: Boolean = false,
-)
-```
-
-`ToolItem` 的 `intent` 字段存储点击该工具后发送的 `ImeIntent`，`disabled` 字段根据运行时状态动态控制——例如撤销/重做工具根据 `InputListEditor` 的 undoStack/redoStack 状态启用或禁用。工具栏的内容按 `keyboard.type` 动态配置：`Pinyin`/`Latin` 键盘显示全选、复制、粘贴、剪贴板、撤销、重做；`Editor` 键盘显示全选、复制、剪切、粘贴、撤销；`Symbol`/`Emoji`/`Number`/`Math` 键盘显示全选、复制、粘贴。剪贴板工具项始终显示（剪贴板粘贴功能不再受门控限制），收藏工具项仅在 `favoriteInputEnabled` 或 `favoriteClipEnabled` 至少一个为 `true` 时显示。
+`PopupTip.Action` 的 dismiss 策略在 UI 层实现：`persistent = false` 时启动 `delay(timeoutMs)` 协程，超时后自动 dismiss；`persistent = true` 时不启动超时定时器，改为监听 `keyboard.state` 变更——当用户开始输入（状态从 `Idle` 转换到 `PinyinInput.Waiting`）时自动 dismiss。
 
 ---
 
 ## 8. 收藏功能门控规则
 
-收藏功能门控由 `ImeConfig.EngineConfig` 中的 `favoriteInputEnabled` 和 `favoriteClipEnabled` 两个布尔字段联合控制，替代原有的 `Feature` 枚举门控机制。门控规则遵循 **Fail Fast** 原则——禁用功能后调用相关操作立即抛出异常。
+收藏功能门控由 `ImeConfig.EngineConfig` 中的 `favoriteInputEnabled` 和 `favoriteClipEnabled` 两个布尔字段联合控制。门控规则遵循 **Fail Fast** 原则——禁用功能后调用相关操作立即抛出异常。
 
 ### 8.1 收藏功能总门控
 
@@ -394,18 +396,18 @@ data class ToolItem(
 
 - `ImeState.clipboard.disabled = true`
 - `ClipboardService` 停止监听系统剪贴板
-- 不发射任何剪贴板相关的 `ImeEffect` 提示
+- 不设置任何剪贴板相关的 `ImeEffect` 信号
 
 当 `EngineConfig.favoriteClipEnabled` 为 `false` 但 `UiConfig.clipPastePopupTipsEnabled` 为 `true` 时：
 
 - `ClipboardService` 正常运行，`ImeEngine.start()` 时检查剪贴板可粘贴内容并弹出粘贴确认提示
-- 不发射剪贴板收藏相关的 `ImeEffect.PopupTip.Action` 提示
+- 不设置剪贴板收藏相关的 `ImeEffect.PopupTip.Action` 信号
 - 不影响输入收藏功能（若 `favoriteInputEnabled` 为 `true`）
 
 当 `EngineConfig.favoriteClipEnabled` 为 `true` 但 `UiConfig.clipPastePopupTipsEnabled` 为 `false` 时：
 
 - `ClipboardService` 正常运行，但 `ImeEngine.start()` 时不检查剪贴板可粘贴内容
-- 剪贴板收藏提示正常发射
+- 剪贴板收藏提示正常设置
 - 用户仍可通过工具栏的剪贴板按钮手动粘贴
 
 ### 8.4 收藏同步门控
@@ -418,7 +420,7 @@ data class ToolItem(
 
 ### 8.5 剪贴板粘贴功能说明
 
-剪贴板粘贴功能（`ImeIntent.PasteClip`）始终可用，不受任何门控限制。即使在 `Clipboard.disabled = true` 的情况下，用户仍可通过工具栏的剪贴板按钮手动粘贴——只是不会有自动的可粘贴内容提示。这与旧版 `Feature.Clipboard` 门控不同——旧版禁用后粘贴功能也被禁用，新版将粘贴功能与提示/收藏功能解耦。
+剪贴板粘贴功能（`ImeIntent.PasteClip`）始终可用，不受任何门控限制。即使在 `Clipboard.disabled = true` 的情况下，用户仍可通过工具栏的剪贴板按钮手动粘贴——只是不会有自动的可粘贴内容提示。
 
 ---
 
@@ -440,6 +442,8 @@ data class ToolItem(
 
 7. **`keyboard` 切换清空历史**：`KeyboardType` 切换时 `KeyboardStateHistory` 必须被清空。不同键盘类型之间不存在状态回退关系，残留的历史栈会导致回退到语义不兼容的状态。此不变式由 `KeyboardStateMachine.resetTo()` 保证。
 
+8. **`effect` 单次消费**：`effect` 字段在 UI 层调用 `consumeEffect()` 后必须被清除，确保同一效果不会在多次重组中被重复消费。此不变式由 `ImeEngine.consumeEffect()` 保证。
+
 ---
 
 ## 10. 状态频率分层
@@ -448,13 +452,12 @@ IME 系统中的状态变更频率差异极大——从每帧 60fps 的手势反
 
 | 状态 | 变更频率 | 所有者 | 通道 |
 |------|---------|--------|------|
-| `ImeState` | 按键级（ms 级） | `:ime-engine` | `StateFlow<ImeState>` |
-| `ImeEffect` | 按键级（ms 级） | `:ime-engine` | `SharedFlow<ImeEffect>` |
-| `GestureFeedbackState` | 帧级（16ms 级） | `:ime-ui` | ViewModel 本地 `StateFlow` |
-| `ToolListState` | 键盘切换级（s 级） | `:ime-ui` | ViewModel 本地 `StateFlow` |
-| `InputActionPlayerState` | 播放控制级（s 级） | `:ime-ui` | ViewModel 本地 `StateFlow` |
-| `KeyLayoutState` | 布局变更级（s 级） | `:ime-ui` | ViewModel 本地 `StateFlow` |
+| `ImeState` | 按键级（ms 级） | `:engine` | `StateFlow<ImeState>` |
+| `GestureFeedbackState` | 帧级（16ms 级） | `:ui` | ViewModel 本地 `StateFlow` |
+| `ToolListState` | 键盘切换级（s 级） | `:engine` | `StateFlow<ImeState>.toolListState` |
+| `InputActionPlayerState` | 播放控制级（s 级） | `:ui` | ViewModel 本地 `StateFlow` |
+| `KeyLayoutState` | 布局变更级（s 级） | `:ui` | ViewModel 本地 `StateFlow` |
 
-`ImeState` 和 `ImeEffect` 由 `:ime-engine` 拥有，通过 `StateFlow` 和 `SharedFlow` 向外暴露，是引擎与 UI 之间的核心契约。`GestureFeedbackState`（触摸轨迹、按键高亮、手指指示器）属于帧级高频状态，由 `:ime-ui` 的 `KeyboardViewModel` 独立管理，不经过 `ImeState`——这确保了每帧的手势反馈更新不会触发引擎状态的变更和 Compose 重组的级联传播。`ToolListState`、`InputActionPlayerState` 和 `KeyLayoutState` 均为秒级低频状态，由 `:ime-ui` 的 ViewModel 本地管理，不属于引擎的核心状态树。
+`ImeState` 由 `:engine` 拥有，通过 `StateFlow` 向外暴露，是引擎与 UI 之间的核心契约。`GestureFeedbackState`（触摸轨迹、按键高亮、手指指示器）属于帧级高频状态，由 `:ui` 的 `KeyboardViewModel` 独立管理，不经过 `ImeState`——这确保了每帧的手势反馈更新不会触发引擎状态的变更和 Compose 重组的级联传播。`ToolListState` 纳入 `ImeState`，由引擎统一管理工具栏配置和门控状态。`InputActionPlayerState` 和 `KeyLayoutState` 均为秒级低频状态，由 `:ui` 的 ViewModel 本地管理。
 
 这种频率分层架构的核心原则是：**引擎只拥有逻辑状态，UI 拥有展示状态和交互反馈状态**。逻辑状态的变更频率与用户的按键操作同步（ms 级），展示状态和交互反馈的变更频率与 UI 渲染帧率同步（16ms 级）或更低（s 级）。通过将两者分配到不同的所有者和通道，避免了高频 UI 更新对引擎状态树的污染，也避免了引擎状态变更对低频 UI 组件的不必要触发。

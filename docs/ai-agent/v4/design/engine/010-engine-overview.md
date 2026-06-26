@@ -1,6 +1,6 @@
 # 引擎架构总览
 
-`:ime-engine` 是筷字输入法的引擎库，提供核心 IME 引擎能力。引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现彻底分离与解耦，从而方便第三方定制自己的 UI、修改交互逻辑等。第三方应用只需引入 `:ime-engine` 即可获得完整的输入法能力——拼音输入、滑行输入、候选选择、输入列表管理、撤销重做等——无需依赖系统 IME 服务或任何 UI 框架。
+`:engine` 是筷字输入法的引擎库，提供核心 IME 引擎能力。引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现彻底分离与解耦，从而方便第三方定制自己的 UI、修改交互逻辑等。第三方应用只需引入 `:engine` 即可获得完整的输入法能力——拼音输入、滑行输入、候选选择、输入列表管理、撤销重做等——无需依赖系统 IME 服务或任何 UI 框架。
 
 ---
 
@@ -10,15 +10,15 @@
 |------|------|
 | **逻辑与 UI 分离** | 引擎库独立设计的目标是使输入法的逻辑层与 UI 和应用之间实现分离、解耦，从而方便第三方定制自己的 UI、修改交互逻辑等 |
 | **MVI 驱动** | 通过 `StateFlow<ImeState>` 暴露状态，通过 `ImeIntent` 接收操作，通过 `ImeEditorBridge` 输出编辑器操作 |
-| **可嵌入** | 第三方应用只需引入 `:ime-engine` 即可获得完整输入法能力，无需系统 IME 服务 |
+| **可嵌入** | 第三方应用只需引入 `:engine` 即可获得完整输入法能力，无需系统 IME 服务 |
 | **可扩展** | 字典接口与实现分离（`ImeDictProvider`），编辑器桥接可自定义（`ImeEditorBridge`），收藏功能可裁剪（`favoriteInputEnabled` / `favoriteClipEnabled`） |
 | **Fail Fast** | 非法操作（如禁用收藏后调用收藏功能）立即抛出异常而非静默忽略 |
 
-引擎库的「逻辑与 UI 分离」定位意味着第三方应用可以完全用自定义 UI 替换 `:ime-ui` 而不影响引擎功能，也可以仅引入 `:ime-engine` 自行实现视图层和交互逻辑。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来消除 Android 依赖。
+引擎库的「逻辑与 UI 分离」定位意味着第三方应用可以完全用自定义 UI 替换 `:ui` 而不影响引擎功能，也可以仅引入 `:engine` 自行实现视图层和交互逻辑。唯一依赖 Android 的部分是字典 I/O（`ImeSqliteDictProvider` 使用 Room），但第三方可以提供自己的 `ImeDictProvider` 实现来消除 Android 依赖。
 
 「MVI 驱动」定位是引擎与 UI 完全分离的技术基础。引擎不依赖任何 UI 框架，所有状态变更通过 `StateFlow` 暴露，所有用户操作通过 `ImeIntent` 接收，所有编辑器操作通过 `ImeEditorBridge` 输出。这种单向数据流使得引擎可以被任意 UI 框架（Compose、View、Web、游戏引擎等）消费，而不需要引擎感知 UI 的存在。
 
-「可嵌入」定位使得 `:ime-engine` 可以在多种场景下使用：作为系统输入法引擎、嵌入到应用内的自定义输入组件中、甚至作为纯 JVM 环境下的输入法逻辑核心。引擎的创建和销毁完全由宿主控制，不持有任何全局状态或单例。
+「可嵌入」定位使得 `:engine` 可以在多种场景下使用：作为系统输入法引擎、嵌入到应用内的自定义输入组件中、甚至作为纯 JVM 环境下的输入法逻辑核心。引擎的创建和销毁完全由宿主控制，不持有任何全局状态或单例。
 
 「可扩展」定位通过三个扩展点实现：`ImeDictProvider` 允许替换整个字典层（例如使用远程字典服务替代本地 SQLite）；`ImeEditorBridge` 允许替换输出目标（例如接入 WebView 编辑器或游戏引擎文本框）；`EngineConfig.favoriteInputEnabled` / `EngineConfig.favoriteClipEnabled` 允许裁剪收藏功能（例如禁用剪贴板收藏以减少权限需求）。
 
@@ -28,7 +28,7 @@
 
 ## 2. 核心 API 面
 
-引擎库的核心 API 面由六个核心类型构成，形成 `:ime-engine` 与 `:ime-ui`、`:app` 之间的核心契约。这六个类型是第三方应用使用引擎库的主要接口，也是引擎内部各组件协作的基础协议。
+引擎库的核心 API 面由六个核心类型构成，形成 `:engine` 与 `:ui`、`:app` 之间的核心契约。这六个类型是第三方应用使用引擎库的主要接口，也是引擎内部各组件协作的基础协议。
 
 ### 2.1 ImeEngine
 
@@ -131,15 +131,17 @@ data class ImeState(
     val candidateList: CandidateList = CandidateList(),
     val clipboard: Clipboard = Clipboard(),
     val favoriteList: FavoriteList = FavoriteList(),
+    val toolListState: ToolListState = ToolListState(),
     val config: ImeConfig = ImeConfig(),
+    val effect: ImeEffect? = null,
 )
 ```
 
-`ImeState` 的不可变性是线程安全的根本保证：`StateFlow.value` 的读写是原子的，所有状态变更在 `reduce` 中串行执行，不可变 `data class` 无需同步。UI 层通过 `collectAsState()` 订阅 `StateFlow<ImeState>`，状态变更自动驱动 Compose 重组，无需手动通知。详细子状态设计见 [020-ImeState](020-ime-state.md)。
+`ImeState` 的不可变性是线程安全的根本保证：`StateFlow.value` 的读写是原子的，所有状态变更在 `reduce` 中串行执行，不可变 `data class` 无需同步。UI 层通过 `collectAsState()` 订阅 `StateFlow<ImeState>`，状态变更自动驱动 Compose 重组，无需手动通知。`effect` 字段承载一次性副作用信号，UI 层消费后由引擎在下一状态更新中清除。详细子状态设计见 [020-ImeState](020-ime-state.md)。
 
 ### 2.6 ImeEffect
 
-引擎副作用通道，表达一次性效果信号。与 `ImeState` 的持续状态不同，`ImeEffect` 表达的是「发生了某件事」的事件语义——引擎发出信号后不维护其状态，UI 层消费后即丢弃。
+引擎副作用信号，表达一次性效果。与 `ImeState` 的持续性字段不同，`ImeEffect` 通过 `effect` 字段表达「发生了某件事」的事件语义——引擎发出信号后在下一次状态更新中清除，UI 层消费后即丢弃。
 
 ```kotlin
 sealed class ImeEffect {
@@ -171,7 +173,7 @@ enum class HapticType {
 }
 ```
 
-`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，UI 层收集后立即消费，不存在重复消费和状态清理问题。`ImeState` 专注于持续性状态，`ImeEffect` 专注于一次性效果，两者共同构成引擎的完整输出。将弹出提示、音效播放、触觉振动等一次性效果从 `ImeState` 中分离，避免了状态清理负担、语义不匹配和重复消费风险。感官反馈（`PlayAudio` / `PlayHaptic`）的播放器接口定义在 `:ime-ui` 中，平台实现由 `:app` 提供——引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
+`ImeEffect` 嵌入在 `ImeState.effect` 字段中，UI 层在 `collectAsState()` 中观察到 `effect` 非 null 时立即消费并调用 `consumeEffect()` 通知引擎清除。将弹出提示、音效播放、触觉振动等一次性效果编码为 sealed class，确保编译期类型安全。感官反馈（`PlayAudio` / `PlayHaptic`）的播放器接口定义在 `:ui` 中，平台实现由 `:app` 提供——引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
 
 ---
 
@@ -184,9 +186,9 @@ enum class HapticType {
 MVI 数据流由四条通道构成，每条通道有明确的语义和方向：
 
 - **输入通道**：`ImeIntent` → `ImeEngine.handleIntent()` → `reduce(state, intent)` → 新 `ImeState`。用户操作统一编码为 `ImeIntent`，由 `ImeEngine` 的 `handleIntent()` 方法接收。`reduce` 函数是纯函数，接收当前 `ImeState` 和 `ImeIntent`，返回新的 `ImeState`，不产生副作用。
-- **状态通道**：`ImeState` 通过 `StateFlow<ImeState>` 暴露。UI 层订阅 `StateFlow`，状态变更自动驱动重组。`StateFlow` 保证值的原子性和一致性——订阅者始终读取到最新的完整状态快照，不存在部分更新的问题。
+- **状态通道**：`ImeState` 通过 `StateFlow<ImeState>` 暴露。UI 层订阅 `StateFlow`，状态变更自动驱动重组。`StateFlow` 保证值的原子性和一致性——订阅者始终读取到最新的完整状态快照，不存在部分更新的问题。`ImeEffect` 作为 `ImeState.effect` 字段嵌入状态树，UI 层消费后通过 `consumeEffect()` 清除。
 - **编辑器操作通道**：`EditorAction` 由 `ImeEngine` 的 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`。桥梁实现者只需实现语义方法，无需理解 `EditorAction` 类型体系。编辑器操作通道承担所有对目标编辑器的操作（提交文本、移动光标、插入配对符号等）。
-- **副作用通道**：`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射。一次性效果（弹出提示、音效、确认对话框）通过此通道传递，UI 层消费后即丢弃。副作用通道与状态通道的分离确保了一次性效果不会在配置变更或进程重建时被重复消费。
+- **副作用通道**：一次性效果（弹出提示、音效、确认对话框）通过 `ImeState.effect` 字段承载。`reduce` 函数在产生新状态时设置 `effect` 字段，UI 层消费后调用 `consumeEffect()` 清除。副作用通道与状态通道合一，确保一次性效果不会在配置变更或进程重建时被重复消费。
 
 ### 3.2 数据流图
 
@@ -194,16 +196,16 @@ MVI 数据流由四条通道构成，每条通道有明确的语义和方向：
 @file:../diagrams/engine-mvi-data-flow.puml
 ```
 
-上图展示了引擎的 MVI 数据流全景。用户操作（`InputGesture`）经 `KeyboardViewModel` 转换为 `ImeIntent`，由 `ImeEngine.handleIntent()` 接收。引擎内部经过 `KeyboardIntentHandler` → `KeyboardStateMachine` → `reduce` 的处理链，产生新的 `ImeState`（通过 `StateFlow` 暴露）、`EditorAction`（通过 `ImeEditorBridge` 分发）和 `ImeEffect`（通过 `SharedFlow` 发射）。UI 层同时订阅 `StateFlow<ImeState>` 和 `SharedFlow<ImeEffect>`，分别驱动界面重组和一次性效果展示。
+上图展示了引擎的 MVI 数据流全景。用户操作（`InputGesture`）经 `KeyboardViewModel` 转换为 `ImeIntent`，由 `ImeEngine.handleIntent()` 接收。引擎内部经过 `KeyboardIntentHandler` → `KeyboardStateMachine` → `reduce` 的处理链，产生新的 `ImeState`（通过 `StateFlow` 暴露，`effect` 字段承载副作用）和 `EditorAction`（通过 `ImeEditorBridge` 分发）。UI 层订阅 `StateFlow<ImeState>` 驱动界面重组和一次性效果展示。
 
 ### 3.3 数据流不变式
 
 MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测性：
 
-1. **单一状态源**：`ImeState` 是引擎对外的唯一状态源，不存在其他状态通道或旁路。UI 层的所有渲染数据均来自 `StateFlow<ImeState>`，不持有独立的业务状态副本。
-2. **单向数据流**：数据从 `ImeIntent` 流向 `ImeState`/`EditorAction`/`ImeEffect`，不存在反向依赖。`ImeState` 的变更不触发新的 `ImeIntent`——状态变更是 reduce 的结果而非原因。
+1. **单一状态源**：`ImeState` 是引擎对外的唯一状态源，不存在其他状态通道或旁路。UI 层的所有渲染数据均来自 `StateFlow<ImeState>`，不持有独立的业务状态副本。副作用信号通过 `ImeState.effect` 字段承载，与持续性状态共用同一状态源。
+2. **单向数据流**：数据从 `ImeIntent` 流向 `ImeState`/`EditorAction`，不存在反向依赖。`ImeState` 的变更不触发新的 `ImeIntent`——状态变更是 reduce 的结果而非原因。
 3. **纯函数 reduce**：`reduce(state, intent)` 是纯函数，相同输入始终产生相同输出，不依赖外部状态，不产生副作用。异步操作（如字典查询）通过 `sideEffects` 列表延迟执行。
-4. **副作用隔离**：需要异步处理的操作通过 `KeyboardStateTransition.Result.sideEffects` 返回 `List<ImeIntent>`，由 `ImeEngine` 异步处理。一次性 UI 效果通过 `ImeEffect` 通道发射。两种副作用机制互不干扰。
+4. **副作用隔离**：需要异步处理的操作通过 `KeyboardStateTransition.Result.sideEffects` 返回 `List<ImeIntent>`，由 `ImeEngine` 异步处理。一次性 UI 效果通过 `ImeState.effect` 字段承载。两种副作用机制互不干扰。
 
 ---
 
@@ -219,7 +221,7 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 ### 4.2 ImeState 子状态
 
-`ImeState` 是 MVI 架构的单一状态树根节点，包含 `keyboard`、`inputList`、`candidateList`、`clipboard`、`favoriteList`、`config` 六个字段。各子状态均为不可变 `data class`，通过 `copy()` 模式创建新实例。`ImeEffect` 副作用通道与 `ImeState` 分离，表达一次性效果信号。
+`ImeState` 是 MVI 架构的单一状态树根节点，包含 `keyboard`、`inputList`、`candidateList`、`clipboard`、`favoriteList`、`toolListState`、`config`、`effect` 八个字段。各子状态均为不可变 `data class`，通过 `copy()` 模式创建新实例。`ImeEffect` 副作用信号作为 `effect` 字段嵌入状态树，与持续性状态共用同一状态源。
 
 详见 [020-ImeState](020-ime-state.md)。
 
@@ -243,7 +245,7 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 ### 4.6 音效与触觉反馈
 
-`ImeEffect.PlayAudio` 和 `ImeEffect.PlayHaptic` 是感官反馈信号，遵循 fire-and-forget 语义。感官反馈的播放器接口（`AudioPlayer` / `HapticPlayer`）定义在 `:ime-ui` 中，平台实现（`AndroidAudioPlayer` / `AndroidHapticPlayer`）由 `:app` 提供。引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。
+`ImeEffect.PlayAudio` 和 `ImeEffect.PlayHaptic` 是感官反馈信号，遵循 fire-and-forget 语义。感官反馈的播放器接口（`AudioPlayer` / `HapticPlayer`）定义在 `:ui` 中，平台实现（`AndroidAudioPlayer` / `AndroidHapticPlayer`）由 `:app` 提供。引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。
 
 详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
 
@@ -281,9 +283,6 @@ class ImeEngine internal constructor(
     private val _state = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()
 
-    private val _effect = MutableSharedFlow<ImeEffect>(extraBufferCapacity = 16)
-    val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
-
     private val _editorBridges = mutableListOf<ImeEditorBridge>()
 
     // ─── 生命周期方法 ──────────────────────────────────────────
@@ -304,6 +303,9 @@ class ImeEngine internal constructor(
     fun handleIntent(intent: ImeIntent) { ... }
     fun updateConfig(block: (ImeConfig) -> ImeConfig) { ... }
 
+    /** 消费当前 effect，将 effect 字段置为 null */
+    fun consumeEffect() { ... }
+
     companion object {
         fun create(config: ImeConfig = ImeConfig(), dictProvider: ImeDictProvider): ImeEngine
     }
@@ -321,7 +323,7 @@ class ImeEngine internal constructor(
 
 ### 5.2 状态暴露
 
-`_state` 是内部的 `MutableStateFlow<ImeState>`，对外暴露只读的 `StateFlow<ImeState>`。`StateFlow` 保证值的原子性——订阅者始终读取到最新的完整状态快照。`_effect` 是内部的 `MutableSharedFlow<ImeEffect>`，`extraBufferCapacity = 16` 确保高频率发射时不会因订阅者处理慢而丢弃事件。对外暴露只读的 `SharedFlow<ImeEffect>`。
+`_state` 是内部的 `MutableStateFlow<ImeState>`，对外暴露只读的 `StateFlow<ImeState>`。`StateFlow` 保证值的原子性——订阅者始终读取到最新的完整状态快照。`ImeEffect` 作为 `ImeState.effect` 字段嵌入状态树，UI 层消费后通过 `consumeEffect()` 方法清除。
 
 ### 5.3 编辑器桥接
 
@@ -335,7 +337,7 @@ class ImeEngine internal constructor(
 
 ### 5.5 生命周期方法
 
-`ImeEngine` 提供三个生命周期方法，分别对应输入法的启动、隐藏和销毁。这三个方法的语义参考 Java 版本 `IMEditor` 的 `start`/`close`/`destroy`，但适配了 v4 的 MVI 架构——所有状态变更通过 `applyStateUpdate()` 统一出口，确保日志、断言和状态不变式检查的一致性。
+`ImeEngine` 提供三个生命周期方法，分别对应输入法的启动、隐藏和销毁。所有状态变更通过 `applyStateUpdate()` 统一出口，确保日志、断言和状态不变式检查的一致性。
 
 #### `start(startupConfig: StartupConfig)`
 
@@ -345,7 +347,7 @@ class ImeEngine internal constructor(
 2. **确定 KeyboardType**：通过两级级联规则确定启动时的键盘类型。首先根据 `StartupConfig.imeSubtype` 确定基础键盘（`Latin` → 拉丁键盘，其余 → 拼音键盘），然后根据 `RuntimeConfig.editorInputType` 修正（`Number/Datetime/Phone` → 数字键盘，`Password` → 拉丁键盘，其余保持）。
 3. **更新 keyPopupTipsEnabled**：若 `editorInputType` 为 `Password`，强制设置 `RuntimeConfig.keyPopupTipsEnabled = false` 并清空输入列表。
 4. **重置 KeyboardStateMachine**：根据确定的 `KeyboardType` 调用 `stateMachine.resetTo(initialState)` 并清空历史栈。
-5. **检查剪贴板可粘贴内容**：若 `UiConfig.clipPastePopupTipsEnabled` 为 `true`，检查系统剪贴板是否有新的可粘贴内容，若有，发射 `ImeEffect.PopupTip.Action(message="可粘贴内容", actionLabel="粘贴", action=ImeIntent.PasteClip(text), persistent=true)` 提示。
+5. **检查剪贴板可粘贴内容**：若 `UiConfig.clipPastePopupTipsEnabled` 为 `true`，检查系统剪贴板是否有新的可粘贴内容，若有，设置 `effect` 字段为 `ImeEffect.PopupTip.Action(message="可粘贴内容", actionLabel="粘贴", action=ImeIntent.PasteClip(text), persistent=true)` 提示。
 6. **通过 `applyStateUpdate()` 原子更新 ImeState**：一次 `copy()` 操作完成所有子状态的协调变更。
 
 调用时机：`InputMethodService#onStartInputView` 和 `InputMethodService#onCurrentInputMethodSubtypeChanged`。
@@ -361,10 +363,6 @@ class ImeEngine internal constructor(
 销毁引擎，回收所有资源。`destroy()` 是终态操作——停止异步任务、关闭字典连接、注销剪贴板监听、清空编辑器桥接列表，并将所有内部引用置为 `null`。调用 `destroy()` 后引擎不可再启动，任何对引擎方法的调用将抛出 `IllegalStateException`。
 
 调用时机：`InputMethodService#onDestroy`。
-
-> **设计决策——`destroy()` 与 `detachEditorBridge()` 的关系**：`destroy()` 内部对 `_editorBridges` 执行 `clear()` 是**防御性清空**，仅清除引擎持有的外部对象引用，**不调用 `detachEditorBridge()`**。这是因为 `ImeEditorBridge` 的生命周期由宿主模块（如 `:app` 的 `IMEService`）管理，引擎仅是桥梁的**消费者**而非**拥有者**——这与 Java 版 `IMEditor.destroy()` 中 `this.listener = null` 的模式一致。调用方应在 `destroy()` 前显式调用 `detachEditorBridge(bridge)`，确保 `attach`/`detach` 对称，保留对清理顺序的显式控制权。若调用方忘记 detach，`destroy()` 的防御性清空确保桥梁引用不会泄漏到已销毁的引擎中，但不会替外部对象执行注销逻辑。详见 §5.3 编辑器桥接。
-
-> **设计决策**：`start()`/`close()`/`destroy()` 作为独立的生命周期方法，而非 `ImeIntent` 子类，是因为它们是系统回调驱动的生命周期事件，语义上不属于「用户意图」。将生命周期事件与用户意图分离，确保 `ImeIntent` 的语义契约——「表达用户想要做什么」——不被稀释。同时，所有状态变更（包括 `start()` 中的初始化）均通过 `applyStateUpdate()` 统一出口，保证日志、断言和状态不变式检查的一致性。
 
 ### 5.6 applyStateUpdate() 统一状态更新出口
 
@@ -430,8 +428,6 @@ engine.handleIntent(ImeIntent.SwitchKeyboard(KeyboardType.Latin))
 ## 6. ImeConfig 配置模型
 
 `ImeConfig` 是统一的运行时配置，包含引擎配置、UI 配置和运行时配置三个子配置，各自在数据结构上明确隔离。引擎配置（`EngineConfig`）和 UI 配置（`UiConfig`）均为持久化配置项，运行时配置（`RuntimeConfig`）不做持久化。`StartupConfig` 仅作为 `ImeEngine.start()` 的参数，用于初始化 `RuntimeConfig`。对配置项的修改在 UI 和引擎层面都是即时生效的。库不内置配置持久化，所有配置通过 `ImeConfig` 在创建时或运行时设置，持久化是应用层的职责（如 `:app` 模块使用 DataStore）。
-
-> **设计决策**：`ImeConfig` 包含引擎配置、UI 配置和运行时配置三个子配置，各自在数据结构上明确隔离。引擎配置（`EngineConfig`）和 UI 配置（`UiConfig`）均为持久化配置项，运行时配置（`RuntimeConfig`）不做持久化。`StartupConfig` 仅作为 `ImeEngine.start()` 的参数，用于初始化 `RuntimeConfig`。对配置项的修改在 UI 和引擎层面都是即时生效的。
 
 ```kotlin
 data class ImeConfig(
@@ -576,9 +572,7 @@ enum class IMESubtype { Latin, Hans }
 
 ## 7. 收藏功能门控
 
-收藏功能的门控机制取代了旧的 `Feature` 枚举门控设计，采用直接的布尔配置字段来控制功能的启用与禁用。
-
-旧的 `Feature` 枚举、`FeatureRegistry` 和 `Feature.DefaultSet` 已被移除，取而代之的是 `EngineConfig` 中的 `favoriteInputEnabled`、`favoriteClipEnabled` 和 `favoriteSyncToUserDictEnabled` 三个布尔字段。
+收藏功能的门控机制采用直接的布尔配置字段来控制功能的启用与禁用。
 
 ### 7.1 门控规则
 
@@ -619,7 +613,7 @@ Step 4: 通过 copy() 模式更新 ImeState
 Step 5: 分发 EditorAction 到 ImeEditorBridge
   │
   ▼
-Step 6: 发射 ImeEffect 到 SharedFlow
+Step 6: 设置 effect 字段到 ImeState
 ```
 
 ### 8.2 Step 1：ImeIntent → KeyboardStateTransition
@@ -655,6 +649,7 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 - `inputList`：根据意图类型更新输入列表（追加字符、确认候选、删除输入等）
 - `candidateList`：根据字典查询结果更新候选列表
 - `clipboard` / `favoriteList`：根据剪贴板和收藏操作更新对应子状态
+- `effect`：设置副作用信号，UI 层消费后通过 `consumeEffect()` 清除
 
 各子状态的变更通过 `applyStateUpdate()` 统一出口完成，不存在绕过日志和断言的旁路。`start()` 中的状态初始化也经过 `applyStateUpdate()`，确保所有状态变更——无论来源是生命周期方法还是用户意图——都经过统一的质量保证流程。
 
@@ -671,14 +666,12 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 
 若 `_editorBridges` 为空，分发操作被静默跳过。所有桥接方法在主线程调用，确保线程安全。
 
-### 8.7 Step 6：发射 ImeEffect 到 SharedFlow
+### 8.7 Step 6：设置 effect 字段到 ImeState
 
-`ImeEngine` 在 `reduce` 过程中收集需要发射的 `ImeEffect` 实例，在状态更新和输出分发完成后统一发射。发射通过 `_effect.tryEmit()` 实现，`extraBufferCapacity = 16` 确保高频率发射时不会因订阅者处理慢而丢弃事件。
+`ImeEngine` 在 `reduce` 过程中收集需要发射的 `ImeEffect` 实例，在状态更新完成后将 effect 设置到 `ImeState.effect` 字段。UI 层通过 `collectAsState()` 观察到 `effect` 非 null 时立即消费，消费后调用 `consumeEffect()` 通知引擎清除 effect 字段。
 
-典型的 `ImeEffect` 发射场景：
-- 键盘类型切换时发射 `ImeEffect.PopupTip.Message("已切换到拉丁键盘")`
-- 按键处理时发射 `ImeEffect.PlayAudio(AudioType.KeyPress)` 和 `ImeEffect.PlayHaptic(HapticType.LightTap)`
-- 候选词选择时发射 `ImeEffect.PlayAudio(AudioType.CandidateSelect)`
-- 输入提交后若内容未收藏且 `EngineConfig.favoriteInputEnabled` 为 `true`，发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...), persistent=false)`
-
-`ImeEffect` 的发射时机在 `ImeState` 更新之后，确保 UI 层先观察到状态变更，再处理副作用信号。这种时序保证了一次性效果（如弹出提示）所依赖的渲染状态已经就绪。
+典型的 `ImeEffect` 场景：
+- 键盘类型切换时设置 `ImeEffect.PopupTip.Message("已切换到拉丁键盘")`
+- 按键处理时设置 `ImeEffect.PlayAudio(AudioType.KeyPress)` 和 `ImeEffect.PlayHaptic(HapticType.LightTap)`
+- 候选词选择时设置 `ImeEffect.PlayAudio(AudioType.CandidateSelect)`
+- 输入提交后若内容未收藏且 `EngineConfig.favoriteInputEnabled` 为 `true`，设置 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...), persistent=false)`

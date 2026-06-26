@@ -1,6 +1,6 @@
 # 设计文档索引
 
-本目录存放筷字输入法 v4 版本的设计文档，按模块组织在子目录中。
+本目录存放筷字输入法的设计文档，按模块组织在子目录中。
 
 ---
 
@@ -16,7 +16,7 @@
 
 ---
 
-## `:ime-engine` 引擎模块
+## `:engine` 引擎模块
 
 引擎库，逻辑层与 UI / 应用分离，提供核心输入引擎能力。
 
@@ -34,7 +34,7 @@
 
 ---
 
-## `:ime-ui` UI 模块
+## `:ui` UI 模块
 
 基于 Compose 的缺省 UI 实现 + KeyboardViewModel，对第三方应用开放。
 
@@ -59,3 +59,13 @@
 | [020-日志系统](app/020-logging.md) | LogcatWriter、CrashInterceptor、ImeLog 初始化、LogViewerScreen/LogExportScreen、LogLevelSetting/LogStoragePathSetting |
 | [030-UI 测试方案](app/030-ui-testing.md) | UITestOverlay 工具集、Release 自动移除、截图对比测试、Compose 编译器报告 |
 | [040-用户数据导入导出](app/040-user-data.md) | UserDataService、JSON 备份格式、导入策略、权限与安全 |
+
+---
+
+## `:app-codegen` 代码生成模块
+
+通过 KSP（Kotlin Symbol Processing）自动生成 `EngineConfig` 和 `UiConfig` 的 DataStore 持久化读写代码，消除手动维护 DataStore key 的样板代码。
+
+| 文档 | 简述 |
+|------|------|
+| [配置管理设计](app/010-config.md) | ConfigDataStore（DataStore）、ImeConfig 运行时 / 持久化配置管理（含 KSP 生成代码的使用方式） |

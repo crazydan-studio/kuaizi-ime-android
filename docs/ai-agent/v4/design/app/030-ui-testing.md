@@ -1,6 +1,6 @@
 # UI 测试方案设计
 
-v4 版本设计应用内置的 UI 测试方案，用于在开发和测试阶段快速定位 UI 渲染、组件布局等问题。核心约束是：**发布版本构建时自动移除所有 UI 测试支持代码和依赖**，确保发布 APK 不包含任何调试专用代码、资源或依赖。
+UI 测试方案设计应用内置的 UI 测试工具集，用于在开发和测试阶段快速定位 UI 渲染、组件布局等问题。核心约束是：**发布版本构建时自动移除所有 UI 测试支持代码和依赖**，确保发布 APK 不包含任何调试专用代码、资源或依赖。
 
 ---
 
@@ -27,16 +27,13 @@ code/app/src/
 android {
     buildTypes {
         debug {
-            // UI 测试依赖仅添加到 debug 构建
         }
         release {
-            // 不添加 UI 测试依赖
         }
     }
 }
 
 dependencies {
-    // UI 测试工具（仅 debug）
     debugImplementation "androidx.compose.ui:ui-tooling:{compose_bom_version}"
     debugImplementation "androidx.compose.ui:ui-test-manifest:{compose_bom_version}"
 }
@@ -47,7 +44,6 @@ dependencies {
 通过 `main` 源集中的接口定义 UI 测试能力，`debug` 源集中的实现类提供具体功能：
 
 ```kotlin
-// main 源集：接口定义（空实现，不引入任何依赖）
 interface UITestOverlay {
     fun enable()
     fun disable()
@@ -55,21 +51,18 @@ interface UITestOverlay {
     fun isActive(): Boolean
 
     companion object {
-        /** 获取 UI 测试覆盖层实例。debug 构建返回真实实现，release 构建返回空实现 */
-        fun create(): UITestOverlay = UITestOverlayImpl()
+        fun create(): UITestOverlay = NoopUITestOverlay()
     }
 }
 
-// main 源集：工具枚举
 enum class UITestTool {
-    LayoutBounds,     // 布局边界可视化
-    ComponentInfo,    // 组件信息查看
-    ColorPicker,      // 颜色拾取
-    GridGuides,       // 栅格对齐参考线
-    Recomposition,    // 重组追踪
+    LayoutBounds,
+    ComponentInfo,
+    ColorPicker,
+    GridGuides,
+    Recomposition,
 }
 
-// main 源集：空实现（作为 fallback）
 private class NoopUITestOverlay : UITestOverlay {
     override fun enable() {}
     override fun disable() {}
@@ -79,12 +72,10 @@ private class NoopUITestOverlay : UITestOverlay {
 ```
 
 ```kotlin
-// debug 源集：真实实现
 class DebugUITestOverlay : UITestOverlay {
     private val activeTools = mutableSetOf<UITestTool>()
 
     override fun enable() {
-        // 激活 UI 测试覆盖层
     }
 
     override fun disable() {
@@ -98,7 +89,6 @@ class DebugUITestOverlay : UITestOverlay {
     override fun isActive() = activeTools.isNotEmpty()
 }
 
-// 通过反射或编译期常量提供真实实现
 internal fun UITestOverlay.Companion.createImpl(): UITestOverlay = DebugUITestOverlay()
 ```
 
@@ -107,14 +97,12 @@ internal fun UITestOverlay.Companion.createImpl(): UITestOverlay = DebugUITestOv
 通过 ProGuard/R8 规则确保 release 构建中不残留任何 UI 测试类：
 
 ```proguard
-# release 构建移除 UI 测试相关类
 -assumenosideeffects class androidx.compose.ui.tooling.** { *; }
 ```
 
-同时，在 CI 流水线中增加验证步骤，确保 release APK 不包含 UI 测试代码：
+同时在 CI 流水线中增加验证步骤，确保 release APK 不包含 UI 测试代码：
 
 ```bash
-# 检查 release APK 中是否包含 UI 测试类
 if aapt dump classes release.apk | grep -i "uitest\|debugoverlay"; then
     echo "ERROR: Release APK contains UI test classes!"
     exit 1
@@ -130,7 +118,6 @@ fi
 在 Compose 组件周围绘制边界线和间距标注，类似 Android View 系统的「显示布局边界」开发者选项，但更精细——支持按组件类型选择显示范围，并标注具体尺寸数值。
 
 ```kotlin
-// debug 源集
 @Composable
 fun LayoutBoundsOverlay(
     content: @Composable () -> Unit,
@@ -149,14 +136,12 @@ fun LayoutBoundsOverlay(
 @Composable
 private fun LayoutBoundsCanvas(modifier: Modifier = Modifier) {
     Canvas(modifier) {
-        // 从 Compose 的 LayoutInfo 树收集所有组件边界
         val rootInfo = (view as? View)?.let { findRootLayoutInfo(it) }
         rootInfo?.let { drawBounds(it) }
     }
 }
 
 private fun DrawScope.drawBounds(info: LayoutInfo) {
-    // 绘制组件边界矩形
     drawRect(
         color = Color.Red.copy(alpha = 0.5f),
         topLeft = Offset(info.offsetX.toFloat(), info.offsetY.toFloat()),
@@ -164,7 +149,6 @@ private fun DrawScope.drawBounds(info: LayoutInfo) {
         style = Stroke(width = 1.dp.toPx()),
     )
 
-    // 绘制尺寸标注
     drawContext.canvas.nativeCanvas.drawText(
         "${info.width.toInt()}x${info.height.toInt()}",
         info.offsetX.toFloat(),
@@ -172,7 +156,6 @@ private fun DrawScope.drawBounds(info: LayoutInfo) {
         textPaint,
     )
 
-    // 递归绘制子组件
     info.children.forEach { drawBounds(it) }
 }
 ```
@@ -184,7 +167,6 @@ private fun DrawScope.drawBounds(info: LayoutInfo) {
 点击任意 UI 组件，显示该组件的详细信息面板：
 
 ```kotlin
-// debug 源集
 @Composable
 fun ComponentInfoOverlay(
     modifier: Modifier = Modifier,
@@ -203,7 +185,6 @@ fun ComponentInfoOverlay(
             }
         }
     }) {
-        // 信息面板
         selectedInfo?.let { info ->
             ComponentInfoPanel(
                 info = info,
@@ -214,12 +195,12 @@ fun ComponentInfoOverlay(
 }
 
 data class ComponentDebugInfo(
-    val name: String,                    // Composable 函数名
-    val size: IntSize,                   // 实际尺寸
-    val position: Offset,               // 在父容器中的位置
-    val modifiers: List<String>,         // Modifier 链描述
-    val recompositionCount: Int,         // 重组次数
-    val parentInfo: ComponentDebugInfo?, // 父组件信息
+    val name: String,
+    val size: IntSize,
+    val position: Offset,
+    val modifiers: List<String>,
+    val recompositionCount: Int,
+    val parentInfo: ComponentDebugInfo?,
 )
 ```
 
@@ -227,14 +208,14 @@ data class ComponentDebugInfo(
 
 ```
 ┌──────────────────────────────────┐
-│  CandidateListPanel                    │
+│  CandidateListPanel               │
 │  ─────────────────────────────   │
 │  Size:    1080 x 48 dp           │
 │  Position: (0, 1200)             │
 │  Modifiers:                      │
 │    fillMaxWidth()                 │
 │    height(48.dp)                  │
-│    background(CandidateListPanelBg)     │
+│    background(CandidateListPanelBg)│
 │    padding(horizontal=8.dp)       │
 │  Recompositions: 12              │
 │  ─────────────────────────────   │
@@ -247,7 +228,6 @@ data class ComponentDebugInfo(
 在键盘界面上拾取任意像素的颜色值：
 
 ```kotlin
-// debug 源集
 @Composable
 fun ColorPickerOverlay(
     modifier: Modifier = Modifier,
@@ -264,16 +244,13 @@ fun ColorPickerOverlay(
                 cursorPosition = position
 
                 if (event.changes.any { it.pressed }) {
-                    // 从 Bitmap 获取像素颜色
                     pickedColor = capturePixelColorAt(position)
                 }
             }
         }
     }) {
-        // 放大镜 + 十字准心
         ColorPickerCursor(position = cursorPosition)
 
-        // 颜色信息弹窗
         pickedColor?.let { color ->
             ColorInfoPopup(
                 color = color,
@@ -289,15 +266,13 @@ fun ColorPickerOverlay(
 显示栅格线、间距参考和安全区域，验证键盘布局的对齐精度：
 
 ```kotlin
-// debug 源集
 @Composable
 fun GridGuidesOverlay(
     modifier: Modifier = Modifier,
 ) {
     Canvas(modifier = modifier.fillMaxSize()) {
-        val gridSpacing = 8.dp.toPx() // 8dp 栅格间距
+        val gridSpacing = 8.dp.toPx()
 
-        // 绘制垂直栅格线
         var x = 0f
         while (x < size.width) {
             drawLine(
@@ -309,7 +284,6 @@ fun GridGuidesOverlay(
             x += gridSpacing
         }
 
-        // 绘制水平栅格线
         var y = 0f
         while (y < size.height) {
             drawLine(
@@ -321,7 +295,6 @@ fun GridGuidesOverlay(
             y += gridSpacing
         }
 
-        // 绘制安全区域
         val safeArea = getSafeAreaInsets()
         drawRect(
             color = Color.Red.copy(alpha = 0.1f),
@@ -342,7 +315,6 @@ fun GridGuidesOverlay(
 利用 Compose Compiler 的重组追踪能力，标记频繁重组的组件：
 
 ```kotlin
-// debug 源集
 /**
  * 重组追踪覆盖层。
  *
@@ -378,13 +350,11 @@ fun RecompositionOverlay(
 自定义重组追踪 Modifier：
 
 ```kotlin
-// debug 源集：自定义重组追踪 Modifier
 private fun Modifier.recomposeTracker(): Modifier = this.then(
     Modifier.layout { measurable, constraints ->
         val placeable = measurable.measure(constraints)
         layout(placeable.width, placeable.height) {
             placeable.placeRelative(0, 0)
-            // 增加重组计数
             RecompositionTracker.record(this@layout)
         }
     }
@@ -411,7 +381,6 @@ object RecompositionTracker {
 所有 UI 测试工具通过一个可拖动的浮动工具栏切换：
 
 ```kotlin
-// debug 源集
 @Composable
 fun UITestToolbar(
     overlay: UITestOverlay,
@@ -431,7 +400,6 @@ fun UITestToolbar(
             ),
     ) {
         if (expanded) {
-            // 工具面板
             Card(
                 modifier = Modifier.padding(bottom = 48.dp),
             ) {
@@ -455,7 +423,6 @@ fun UITestToolbar(
             }
         }
 
-        // 触发按钮
         FloatingActionButton(
             onClick = { expanded = !expanded },
             modifier = Modifier.size(40.dp),
@@ -483,7 +450,6 @@ val UITestTool.displayName: String
 在 `IMEService` 的 ComposeView 层次中，debug 构建额外包裹 UI 测试覆盖层：
 
 ```kotlin
-// main 源集
 @Composable
 fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
     KeyboardTheme(type = state.config.ui.keyboardThemeType) {
@@ -491,14 +457,12 @@ fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
     }
 }
 
-// debug 源集
 @Composable
 fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
     KeyboardTheme(type = state.config.ui.keyboardThemeType) {
         Box {
             KeyboardHost(state, intentHandler)
 
-            // UI 测试覆盖层（仅 debug 构建存在）
             val overlay = remember { UITestOverlay.create() }
             if (overlay.isActive()) {
                 UITestOverlays(overlay)
@@ -520,11 +484,9 @@ fun InputRoot(state: ImeState, intentHandler: (ImeIntent) -> Unit) {
 Compose Compiler 支持在编译时生成重组分析报告，帮助开发者识别不稳定的参数和不必要的重组。在 debug 构建中启用：
 
 ```groovy
-// code/app/build.gradle
 android {
     buildTypes {
         debug {
-            // 启用 Compose 编译器报告
             composeCompiler {
                 reportsDestination = layout.buildDirectory.dir("compose_compiler_reports")
                 metricsDestination = layout.buildDirectory.dir("compose_compiler_metrics")
@@ -623,11 +585,11 @@ class PinyinKeyboardScreenshotTest {
 截图对比测试在 CI 流水线中作为独立阶段执行，检测到差异时上传对比图作为 Artifacts：
 
 ```bash
-# 运行截图测试
 ./gradlew verifyPaparazziDebug
 
-# 如果失败，生成差异报告
-./gradlew recordPaparazziDebug  # 更新基准截图
+if [ $? -ne 0 ]; then
+    ./gradlew recordPaparazziDebug
+fi
 ```
 
 ---
@@ -657,7 +619,6 @@ class PinyinKeyboardScreenshotTest {
 自定义 Lint 规则，防止在 `main` 源集中意外引用 `debug` 源集的类：
 
 ```kotlin
-// 自定义 Lint 规则（放在 tools/lint 模块）
 class UITestReferenceDetector : Detector(), Detector.UastScanner {
     override fun getApplicableUastTypes() = listOf(UCallExpression::class.java)
 
@@ -666,7 +627,6 @@ class UITestReferenceDetector : Detector(), Detector.UastScanner {
             override fun visitCallExpression(node: UCallExpression) {
                 val className = node.classReference?.qualifiedName ?: return
                 if (className.startsWith("org.crazydan.studio.app.ime.kuaizi.uitest.")) {
-                    // 检查是否在 main 源集中
                     val sourceSet = context.file.path.substringAfter("/src/").substringBefore("/")
                     if (sourceSet == "main") {
                         context.report(
@@ -709,13 +669,11 @@ UI 测试方案与应用日志系统协同工作：
 | 日志等级联动 | UI 测试工具激活时，自动将日志等级降至 DEBUG 以获取更完整信息 |
 
 ```kotlin
-// debug 源集：UI 测试与日志联动
 class DebugUITestOverlay(
     private val log: ImeLog,
 ) : UITestOverlay {
 
     override fun enable() {
-        // UI 测试激活时降级日志等级
         if (log.level > LogLevel.DEBUG) {
             log.updateLevel(LogLevel.DEBUG)
             log.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }

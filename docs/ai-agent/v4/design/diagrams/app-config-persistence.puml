@@ -5,19 +5,19 @@ skinparam backgroundColor #FEFEFE
 skinparam defaultFontSize 11
 skinparam arrowThickness 1.5
 
-title 配置持久化协作
+title Config Persistence Collaboration
 
 legend right
-  |= 模块 |= 颜色 |= 说明 |
-  | :app | <#E3F2FD> | 应用层 |
-  | :ime-ui | <#E8F5E9> | UI 层 |
-  | :ime-engine | <#FFF3E0> | 引擎层 |
-  | 设置变更 | <#FFF9C4> | 设置变更路径 |
-  | 日志配置 | <#F3E5F5> | 日志配置路径 |
+  |= Module |= Color |= Description |
+  | :app | <#E3F2FD> | App layer |
+  | :ui | <#E8F5E9> | UI layer |
+  | :engine | <#FFF3E0> | Engine layer |
+  | Settings Change | <#FFF9C4> | Settings change path |
+  | Log Config | <#F3E5F5> | Log config path |
 endlegend
 
-' ===== :ime-engine =====
-package ":ime-engine" #FFF3E0 {
+' ===== :engine =====
+package ":engine" #FFF3E0 {
   class ImeConfig <<(D,#FFF3E0)>> {
     + engine: EngineConfig
     + ui: UiConfig
@@ -28,13 +28,13 @@ package ":ime-engine" #FFF3E0 {
     + state: StateFlow<ImeState>
   }
   note right of ImeConfig
-    RuntimeConfig 不做持久化，
-    应用重启时根据 StartupConfig 重新初始化
+    RuntimeConfig is not persisted,
+    Reinitialized on app restart via StartupConfig
   end note
 }
 
-' ===== :ime-ui =====
-package ":ime-ui" #E8F5E9 {
+' ===== :ui =====
+package ":ui" #E8F5E9 {
   class KeyboardViewModel <<(C,#E8F5E9)>> {
     + state: StateFlow<ImeState>
     + config: ImeConfig
@@ -42,14 +42,14 @@ package ":ime-ui" #E8F5E9 {
     + setKeyboardLayoutMode(mode)
   }
   class KeyboardHost <<(C,#E8F5E9)>> {
-    订阅 viewModel.state
-    订阅 viewModel.layoutMode
+    Subscribes viewModel.state
+    Subscribes viewModel.layoutMode
   }
   note right of KeyboardViewModel
-    **updateConfig() 仅修改运行时**
-    不做持久化
-    委托 engine.updateConfig()
-    UI 通过 ImeState.config 自动同步
+    **updateConfig() modifies runtime only**
+    Does not persist
+    Delegates to engine.updateConfig()
+    UI auto-syncs via ImeState.config
   end note
 }
 
@@ -60,11 +60,11 @@ package ":app" #E3F2FD {
     + config: Flow<ImeConfig>
     + updateConfig(transform)
     --
-    持久化 EngineConfig:
+    Persists EngineConfig:
       keyboardType (→ Keyboard.type), keyboardHandMode,
       candidatePredictionEnabled, singleLineInput
-    持久化 UiConfig:
-      keyboardThemeType, xPadEnabled, audioFeedback,
+    Persists UiConfig:
+      keyboardThemeType, audioFeedback,
       hapticFeedback, keyAnimation, keyPopupTips,
       gestureSlippingTrail, clipPopupTips,
       logLevel, logStoragePath, ...
@@ -74,10 +74,10 @@ package ":app" #E3F2FD {
     + onCreateInputView(): View
   }
   class SettingsScreen <<(C,#E3F2FD)>> {
-    设置页面
+    Settings page
   }
   class QuickSettingsPopup <<(C,#E3F2FD)>> {
-    键盘内快捷设置
+    In-keyboard quick settings
   }
   class ImeLog <<(O,#E3F2FD)>> {
     + updateLevel(newLevel)
@@ -87,64 +87,64 @@ package ":app" #E3F2FD {
   }
 }
 
-' ===== 配置变更双路径 =====
+' ===== Config Change Dual Path =====
 
-rectangle "设置页面变更\n(持久化 + 运行时)" #FFF9C4 {
-  SettingsScreen --> ConfigDataStore : updateConfig\n(持久化到 DataStore)
-  SettingsScreen --> KeyboardViewModel : updateConfig\n(修改运行时配置)
+rectangle "Settings Page Change\n(Persist + Runtime)" #FFF9C4 {
+  SettingsScreen --> ConfigDataStore : updateConfig\n(persist to DataStore)
+  SettingsScreen --> KeyboardViewModel : updateConfig\n(modify runtime config)
 }
 
-rectangle "快捷设置变更\n(仅运行时)" #E8F5E9 {
-  QuickSettingsPopup --> KeyboardViewModel : updateConfig\n(仅修改运行时)
+rectangle "Quick Settings Change\n(Runtime Only)" #E8F5E9 {
+  QuickSettingsPopup --> KeyboardViewModel : updateConfig\n(runtime only)
 }
 
 note right of QuickSettingsPopup
-  通过 QuickSettingsPopup 等键盘 UI
-  进行的临时修改只调用
+  Temporary changes via QuickSettingsPopup
+  and other keyboard UI only call
   viewModel.updateConfig()
-  不写入 DataStore
+  Do not write to DataStore
 end note
 
-' ===== 协作关系 =====
-IMEService --> ImeEngine : 创建\nImeEngine.create(config)
+' ===== Collaboration Relationships =====
+IMEService --> ImeEngine : create\nImeEngine.create(config)
 IMEService --> KeyboardViewModel : Factory(engine)
-IMEService --> ConfigDataStore : 读取初始配置
+IMEService --> ConfigDataStore : read initial config
 
 KeyboardViewModel --> ImeEngine : updateConfig()
-ImeEngine --> ImeConfig : 运行时修改
-ImeEngine --> ImeState : state.config 自动同步
+ImeEngine --> ImeConfig : runtime modifications
+ImeEngine --> ImeState : state.config auto-sync
 
-ConfigDataStore --> ImeConfig : 读取恢复
+ConfigDataStore --> ImeConfig : read/restore
 KeyboardHost --> KeyboardViewModel : collectAsState()
 
-' ===== 日志配置特殊路径 =====
-rectangle "日志等级变更\n(持久化 + 运行时)" #F3E5F5 {
+' ===== Log Config Special Path =====
+rectangle "Log Level Change\n(Persist + Runtime)" #F3E5F5 {
   ConfigDataStore --> ImeLog : updateLevel(newLevel)
 }
 
-rectangle "日志路径变更\n(持久化 + 运行时)" #F3E5F5 {
+rectangle "Log Path Change\n(Persist + Runtime)" #F3E5F5 {
   ConfigDataStore --> LogStorage : updateDir(newDir)
 }
 
-' ===== 流程说明 =====
+' ===== Flow Description =====
 note bottom
-  **配置变更双路径**
+  **Config Change Dual Path**
 
-  1. 设置页面 → 同时执行:
-     - ConfigDataStore.updateConfig() (持久化)
-     - viewModel.updateConfig() (运行时，触发 UI 更新)
+  1. Settings page → executes both:
+     - ConfigDataStore.updateConfig() (persist)
+     - viewModel.updateConfig() (runtime, triggers UI update)
 
-  2. 快捷设置 → 仅执行:
-     - viewModel.updateConfig() (运行时)
-     - 不写入 DataStore
+  2. Quick settings → executes only:
+     - viewModel.updateConfig() (runtime)
+     - Does not write to DataStore
 
-  3. RuntimeConfig 不持久化:
-     - 运行时配置（屏幕方向、编辑器类型、工具按钮状态等）不做持久化
-     - 重启时由 StartupConfig 重新初始化
+  3. RuntimeConfig not persisted:
+     - Runtime config (screen orientation, editor type, tool button state, etc.) not persisted
+     - Reinitialized on restart via StartupConfig
 
-  4. 日志配置特殊:
-     - logLevel 变更 → ImeLog.updateLevel() (立即生效)
-     - logStoragePath 变更 → LogStorage.updateDir() (切换目录)
+  4. Log config special:
+     - logLevel change → ImeLog.updateLevel() (immediate effect)
+     - logStoragePath change → LogStorage.updateDir() (switch directory)
 end note
 
 @enduml

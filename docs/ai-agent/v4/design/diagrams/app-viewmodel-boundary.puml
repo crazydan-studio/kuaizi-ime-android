@@ -4,17 +4,17 @@ skinparam backgroundColor #FEFEFE
 skinparam defaultFontSize 11
 skinparam arrowThickness 1.5
 
-title :app 与 :ime-ui 模块边界
+title :app and :ui Module Boundary
 
 legend right
-  |= 模块 |= 颜色 |= 说明 |
+  |= Module |= Color |= Description |
   | :app | <#E3F2FD> | Platform Layer |
-  | :ime-ui | <#E8F5E9> | UI + ViewModel Layer |
-  | :ime-engine | <#FFF3E0> | Domain + Data Layer |
+  | :ui | <#E8F5E9> | UI + ViewModel Layer |
+  | :engine | <#FFF3E0> | Domain + Data Layer |
 endlegend
 
-' ===== :app 模块 =====
-package ":app 模块" #E3F2FD {
+' ===== :app Module =====
+package ":app Module" #E3F2FD {
 
   class IMEService {
     - engine: ImeEngine?
@@ -39,18 +39,18 @@ package ":app 模块" #E3F2FD {
   }
 
   note right of IMEService
-    **职责**
-    - 创建 ImeEngine (需要 ImeDictProvider)
-    - 创建并挂载 InputConnectionBridge
-    - 注入 KeyboardViewModel.Factory(engine)
-    - 管理 Service 生命周期
-    - 配置持久化 (DataStore)
-    - 日志系统初始化
+    **Responsibilities**
+    - Creates ImeEngine (needs ImeDictProvider)
+    - Creates and attaches InputConnectionBridge
+    - Injects KeyboardViewModel.Factory(engine)
+    - Manages Service lifecycle
+    - Config persistence (DataStore)
+    - Log system initialization
   end note
 }
 
-' ===== :ime-ui 模块 =====
-package ":ime-ui 模块" #E8F5E9 {
+' ===== :ui Module =====
+package ":ui Module" #E8F5E9 {
 
   class KeyboardViewModel {
     - engine: ImeEngine
@@ -83,7 +83,7 @@ package ":ime-ui 模块" #E8F5E9 {
 
   class InputActionPlayer {
     + playbackState
-    + row1/row2 Indicator
+    + row1/row2 indicator
   }
 
   class EditTextBridge {
@@ -91,25 +91,25 @@ package ":ime-ui 模块" #E8F5E9 {
   }
 
   note right of KeyboardViewModel
-    **职责**
-    - 手势→意图分发
-    - 状态暴露 (StateFlow<ImeState>)
-    - 布局模式管理
-    - 反馈状态持有
-    - 动作播放器集成
-    - 布局状态缓存
-    - 运行时配置修改
+    **Responsibilities**
+    - Gesture-to-intent dispatch
+    - State exposure (StateFlow<ImeState>)
+    - Layout mode management
+    - Feedback state holder
+    - Action player integration
+    - Layout state caching
+    - Runtime config modification
 
-    **不属于 ViewModel 的**
-    - 创建 ImeEngine (:app)
-    - 管理 InputConnectionBridge (:app)
-    - 配置持久化 (:app)
-    - 系统服务生命周期 (:app)
+    **Not in ViewModel**
+    - Creating ImeEngine (:app)
+    - Managing InputConnectionBridge (:app)
+    - Config persistence (:app)
+    - System service lifecycle (:app)
   end note
 }
 
-' ===== :ime-engine 模块 =====
-package ":ime-engine 模块" #FFF3E0 {
+' ===== :engine Module =====
+package ":engine Module" #FFF3E0 {
   class ImeEngine {
     + state: StateFlow<ImeState>
     + handleIntent(intent)
@@ -121,48 +121,48 @@ package ":ime-engine 模块" #FFF3E0 {
   }
 }
 
-' ===== 交互关系 =====
+' ===== Interaction Relationships =====
 
-IMEService --> ImeEngine : 创建\nImeEngine.create(config, dictProvider)
-IMEService --> InputConnectionBridge : 创建并挂载\nengine.attachEditorBridge(bridge)
-IMEService --> KeyboardViewModel : 注入\nKeyboardViewModel.Factory(engine)
+IMEService --> ImeEngine : create\nImeEngine.create(config, dictProvider)
+IMEService --> InputConnectionBridge : create & attach\nengine.attachEditorBridge(bridge)
+IMEService --> KeyboardViewModel : inject\nKeyboardViewModel.Factory(engine)
 
-KeyboardViewModel --> ImeEngine : 持有引用\nhandleIntent() / state / updateConfig()
-KeyboardViewModel *-- GestureFeedbackState : 管理
-KeyboardViewModel *-- InputActionPlayer : 集成
+KeyboardViewModel --> ImeEngine : holds reference\nhandleIntent() / state / updateConfig()
+KeyboardViewModel *-- GestureFeedbackState : manages
+KeyboardViewModel *-- InputActionPlayer : integrates
 
 KeyboardHost --> KeyboardViewModel : viewModel
 KeyboardInputActionPlayerHost --> KeyboardViewModel : viewModel
 
-InputConnectionBridge -up-|> ImeEditorBridge : 实现 [:app]
-EditTextBridge -up-|> ImeEditorBridge : 实现 [:ime-ui]
+InputConnectionBridge -up-|> ImeEditorBridge : implements [:app]
+EditTextBridge -up-|> ImeEditorBridge : implements [:ui]
 
-' ===== 数据流标注 =====
+' ===== Data Flow Notes =====
 
 note bottom of KeyboardViewModel
-  **ViewModel 与 :app 的交互**
-  仅通过构造参数注入的 ImeEngine 完成
+  **ViewModel Interaction with :app**
+  Only through ImeEngine injected via constructor
 
-  三类 API:
-  1. 状态读取: state, config, layoutMode, feedbackState, actionPlayer
-  2. 意图分发: handleGesture(), handleIntent()
-  3. 运行时配置: updateConfig(), setKeyboardLayoutMode(), updateKeyLayoutState()
+  Three API categories:
+  1. State reading: state, config, layoutMode, feedbackState, actionPlayer
+  2. Intent dispatch: handleGesture(), handleIntent()
+  3. Runtime config: updateConfig(), setKeyboardLayoutMode(), updateKeyLayoutState()
 
-  ViewModel 不感知:
-  - InputConnectionBridge (由 :app 管理)
-  - ConfigDataStore (由 :app 管理)
-  - IMEService 生命周期 (由 :app 管理)
+  ViewModel does not know about:
+  - InputConnectionBridge (managed by :app)
+  - ConfigDataStore (managed by :app)
+  - IMEService lifecycle (managed by :app)
 end note
 
 note top of IMEService
-  **IMEService 创建流程**
-  1. onCreate(): 创建 ImeEngine + 挂载 InputConnectionBridge
+  **IMEService Creation Flow**
+  1. onCreate(): Create ImeEngine + attach InputConnectionBridge
   2. onCreateInputView(): ComposeView → KeyboardViewModel.Factory(engine) → KeyboardHost
-  3. onDestroy(): 断开桥梁 → 清空引用
+  3. onDestroy(): Disconnect bridges → clear references
 
-  **关键设计**: ViewModel 不持有桥梁
-  桥梁由 IMEService 管理
-  与 ViewModel 生命周期独立
+  **Key Design**: ViewModel does not hold bridges
+  Bridges managed by IMEService
+  Lifecycle independent of ViewModel
 end note
 
 @enduml

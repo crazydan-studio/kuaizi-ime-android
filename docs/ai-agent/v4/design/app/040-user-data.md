@@ -1,6 +1,6 @@
 # 用户数据导入导出设计
 
-v4 版本新增用户数据的导入与导出功能，允许用户将输入历史、收藏列表等个人数据导出为文件备份，以及从文件中导入恢复。目的是保护用户数据安全，方便换机迁移和灾难恢复。
+用户数据的导入与导出功能，允许用户将输入历史、收藏列表等个人数据导出为文件备份，以及从文件中导入恢复。目的是保护用户数据安全，方便换机迁移和灾难恢复。
 
 ---
 
@@ -85,14 +85,12 @@ class UserDataService(
                 return@withContext ImportResult.Failure("Invalid backup file format: ${it.message}")
             }
 
-            // 版本兼容性检查
             if (backup.version > BACKUP_FORMAT_VERSION) {
                 return@withContext ImportResult.Failure(
                     "Backup format version ${backup.version} is not supported (max: $BACKUP_FORMAT_VERSION)"
                 )
             }
 
-            // 按策略执行导入
             when (strategy) {
                 ImportStrategy.Replace -> importReplace(backup)
                 ImportStrategy.Merge -> importMerge(backup)
@@ -101,7 +99,6 @@ class UserDataService(
     }
 
     private suspend fun importReplace(backup: UserBackup): ImportResult {
-        // 先保存当前数据用于回滚
         val currentInputData = userInputDao.getAll()
         val currentFavorites = favoriteDao.getAll()
 
@@ -125,7 +122,6 @@ class UserDataService(
                 conflictCount = 0,
             )
         }.getOrElse { error ->
-            // 回滚
             runCatching {
                 userInputDao.clearAll()
                 favoriteDao.clearAll()
@@ -144,7 +140,6 @@ class UserDataService(
             val existing = userInputDao.getByTextAndType(entry.text, entry.type)
             if (existing != null) {
                 conflictCount++
-                // 取较高频率和较新时间
                 val merged = existing.copy(
                     freq = maxOf(existing.freq, entry.freq),
                     lastUsed = maxOf(existing.lastUsed, entry.lastUsed),
@@ -227,9 +222,7 @@ data class FavoriteBackupEntry(
 
 @Serializable
 data class ConfigBackupEntry(
-    // 引擎配置（对应 ImeConfig.EngineConfig）
     val engine: EngineConfigBackupEntry? = null,
-    // UI 配置（对应 ImeConfig.UiConfig）
     val ui: UiConfigBackupEntry? = null,
 )
 
@@ -247,7 +240,6 @@ data class EngineConfigBackupEntry(
 
 @Serializable
 data class UiConfigBackupEntry(
-    val keyboard_input_mode: String? = null,
     val keyboard_hand_mode: String? = null,
     val keyboard_theme_type: String? = null,
     val key_popup_tips_enabled: Boolean? = null,
@@ -293,8 +285,6 @@ data class UiConfigBackupEntry(
         "log_level": "WARN"
       },
       "ui": {
-        "keyboard_input_mode": "XPad",
-        "keyboard_hand_mode": "Right",
         "keyboard_theme_type": "FollowSystem",
         "audio_feedback_enabled": true,
         "key_animation_enabled": true,
@@ -337,8 +327,8 @@ sealed class ImportResult {
 }
 
 enum class ImportStrategy {
-    Replace,  // 替换：清除现有数据后导入
-    Merge,    // 合并：与现有数据合并
+    Replace,
+    Merge,
 }
 ```
 
@@ -373,19 +363,16 @@ fun DataManagementSection(
 ### 4.2 文件选择
 
 ```kotlin
-// 导出：使用 Activity Result API 创建文件
 val createFileLauncher = rememberLauncherForActivityResult(
     ActivityResultContracts.CreateDocument("application/json")
 ) { uri ->
     uri?.let { viewModel.handleIntent(ImeIntent.ExportUserData(it)) }
 }
 
-// 导入：使用 Activity Result API 打开文件
 val openFileLauncher = rememberLauncherForActivityResult(
     ActivityResultContracts.OpenDocument(arrayOf("application/json"))
 ) { uri ->
     uri?.let {
-        // 显示导入策略选择对话框
         showImportStrategyDialog = true
         selectedImportUri = it
     }
@@ -407,17 +394,15 @@ fun ImportStrategyDialog(
             Column {
                 Text("请选择数据导入方式：")
                 Spacer(modifier = Modifier.height(16.dp))
-                // 替换选项
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = true, onClick = { /* ... */ })
+                    RadioButton(selected = true, onClick = { })
                     Column {
                         Text("替换现有数据", fontWeight = FontWeight.Bold)
                         Text("清除当前所有数据后导入备份数据", style = bodySmall)
                     }
                 }
-                // 合并选项
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = false, onClick = { /* ... */ })
+                    RadioButton(selected = false, onClick = { })
                     Column {
                         Text("与现有数据合并", fontWeight = FontWeight.Bold)
                         Text("保留现有数据，相同条目取较高频率", style = bodySmall)
@@ -460,7 +445,6 @@ fun ImportStrategyDialog(
 用户数据导入导出新增以下 `ImeIntent` 子类：
 
 ```kotlin
-// 新增于 ImeIntent
 data class ExportUserData(val uri: Uri) : ImeIntent()
 data class ImportUserData(val uri: Uri, val strategy: ImportStrategy) : ImeIntent()
 ```
