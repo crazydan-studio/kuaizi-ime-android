@@ -209,7 +209,13 @@ fun KeyboardTheme(
 | `candidatesPagingAudioEnabled` | 翻页提示音 | 开 | 直接映射 |
 | `keyPopupTipsEnabled` | 按键放大提示 | 开 | 直接映射 |
 | `gestureSlippingTrailEnabled` | 滑行轨迹显示 | 开 | 直接映射 |
-| `clipPopupTipsEnabled` | 剪贴板粘贴提示 | 开 | 直接映射 |
+| `clipPopupTipsEnabled` | 剪贴板收藏弹出提示 | 开 | 直接映射 |
+| `clipPastePopupTipsEnabled` | 可粘贴内容弹出提示 | 开 | 直接映射 |
+| `clipPopupTipsTimeout` | 剪贴板弹出提示超时 | 15 | 直接映射 |
+| `adaptDesktopSwipeUpGesture` | 桌面下滑手势适配 | 关 | 直接映射 |
+| `practicePlaybackSpeed` | 练习回放速度倍率 | 1.0f | 直接映射 |
+| `practiceShowFingerOverlay` | 练习手指覆盖层显示 | 开 | 直接映射 |
+| `practiceShowSwipeTrail` | 练习滑行轨迹显示 | 开 | 直接映射 |
 
 映射规则：
 - 所有字段统一使用肯定式命名（`*Enabled` 后缀）：UI 开关值 = `config.engine.*Enabled` 或 `config.ui.*Enabled`

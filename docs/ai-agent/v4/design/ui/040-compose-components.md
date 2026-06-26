@@ -106,7 +106,40 @@ fun KeyboardHost(viewModel: KeyboardViewModel) {
 
 ---
 
-## 2. KeyLayoutPanel 按键布局面板
+## 2. KeyboardInputActionPlayerHost 输入动作播放集成组件
+
+`KeyboardInputActionPlayerHost` 在 `KeyboardHost` 基础上叠加输入动作播放引擎，支持 `Animation` 和 `DirectInput` 两种使用模式。播放期间通过 `showIndicator` 参数控制 `CandidateListPanel`、`InputListPanel`、`ToolListPanel` 内建指示器的显示。
+
+```kotlin
+@Composable
+fun KeyboardInputActionPlayerHost(
+    viewModel: KeyboardViewModel,
+    useMode: UseMode,
+) {
+    KeyboardHost(
+        viewModel = viewModel,
+        showIndicator = useMode != UseMode.DirectInput,
+    )
+    if (useMode == UseMode.Animation) {
+        InputActionPlayerPanel(
+            player = viewModel.actionPlayer,
+        )
+    }
+}
+```
+
+**设计说明**：
+- 输入练习 UI 层（ExerciseScreen）属于 `:app` 模块，`InputActionPlayerPanel` 和 `KeyboardInputActionPlayerHost` 属于 `:ui` 模块
+- `showIndicator` 参数控制 CandidateListPanel、InputListPanel、ToolListPanel 内建指示器的显示
+- Animation 模式下显示播放控制面板，DirectInput 模式仅叠加指示器
+
+### InputActionPlayerPanel 播放控制面板
+
+播放控制面板，包含播放/暂停、进度条、速度调节等控件。详情见 [050-输入动作播放](050-input-action-player.md)。
+
+---
+
+## 3. KeyLayoutPanel 按键布局面板
 
 `KeyLayoutPanel` 负责按键布局的渲染和状态展示，根据当前键盘的 `InputMode` 将渲染委托给具体的子面板实现。该组件仅负责展示，不处理任何触摸事件。
 
