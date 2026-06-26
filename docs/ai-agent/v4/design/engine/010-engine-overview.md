@@ -281,6 +281,7 @@ class ImeEngine internal constructor(
     private val dictProvider: ImeDictProvider,
     private val stateMachine: KeyboardStateMachine,
     private val inputListOp: InputListOperator,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     private val _state = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()
@@ -299,7 +300,12 @@ class ImeEngine internal constructor(
     fun close() { ... }
 
     /** 销毁引擎，回收所有资源，不可再启动 */
-    fun destroy() { ... }
+    fun destroy() {
+        scope.cancel()  // 取消所有异步操作（字典查询、用户数据记录等）
+        // 原有清理代码...
+        _editorBridges.clear()
+        // ...
+    }
 
     // ─── 意图与配置 ──────────────────────────────────────────
 
@@ -322,6 +328,7 @@ class ImeEngine internal constructor(
 | `dictProvider` | `ImeDictProvider` | 字典查询接口，由外部注入。默认实现 `ImeSqliteDictProvider` 基于 Room，第三方可替换 |
 | `stateMachine` | `KeyboardStateMachine` | 键盘状态机，集中管理 `KeyboardState` 的转换规则和状态历史 |
 | `inputListOp` | `InputListOperator` | 输入列表操作器，提供线程安全的 `InputList` 变更方法 |
+| `scope` | `CoroutineScope` | 引擎内部的结构化协程作用域，所有异步操作（字典查询、用户数据记录、剪贴板监听等）均在该作用域内启动。`destroy()` 时通过 `scope.cancel()` 统一取消，确保无泄漏。第三方可以通过构造函数注入自定义 scope，与外部生命周期绑定。默认值使用 `SupervisorJob()` + `Dispatchers.Default` |
 
 ### 5.2 状态暴露
 
@@ -637,21 +644,23 @@ Step 6: 发射 ImeEffect 到 SharedFlow
 
 ### 8.4 Step 3：处理 sideEffects
 
-`sideEffects` 是 `KeyboardStateTransition.Result` 中返回的 `List<ImeIntent>`，包含状态转换产生的异步操作意图。sideEffects 通过 `ArrayDeque<ImeIntent>` 显式工作队列循环处理，而非递归调用。队列最大深度 5，超过上限抛出 `IllegalStateException` 防止栈溢出。每个 sideEffect 在独立协程中通过 `Dispatchers.Default` 调度执行，不阻塞主线程：
+`sideEffects` 是 `KeyboardStateTransition.Result` 中返回的 `List<ImeIntent>`，包含状态转换产生的异步操作意图。sideEffects 通过 `ArrayDeque<ImeIntent>` 显式工作队列循环处理，而非递归调用。队列最大深度 5 作为安全网防止无限递归，主要清理机制由 `destroy()` 中的 `scope.cancel()` 保证——引擎销毁时所有异步操作统一取消，确保无泄漏。整个处理在 `scope.launch` 中异步执行，不阻塞主线程：
 
 ```kotlin
 private fun processSideEffects(sideEffects: List<ImeIntent>) {
-    val queue = ArrayDeque(sideEffects)
-    var depth = 0
-    val maxDepth = 5
+    scope.launch {
+        val queue = ArrayDeque(sideEffects)
+        var depth = 0
+        val maxDepth = 5
 
-    while (queue.isNotEmpty()) {
-        if (++depth > maxDepth) {
-            throw IllegalStateException("Side effect recursion exceeds max depth $maxDepth")
+        while (queue.isNotEmpty()) {
+            if (++depth > maxDepth) {
+                throw IllegalStateException("Side effect recursion exceeds max depth $maxDepth")
+            }
+            val intent = queue.removeFirst()
+            val result = doHandleIntent(intent)
+            queue.addAll(result.sideEffects)
         }
-        val intent = queue.removeFirst()
-        val result = doHandleIntent(intent) // internal, no recursion guard
-        queue.addAll(result.sideEffects)
     }
 }
 ```

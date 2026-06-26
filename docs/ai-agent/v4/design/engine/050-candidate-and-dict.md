@@ -2,15 +2,22 @@
 
 ## 1. CandidateList 候选列表模型
 
-`CandidateList` 管理拼音输入的候选词数据，包括候选词列表、分页控制、过滤状态和加载标记。它是一个不可变的 `data class`，所有变更通过 `copy()` 生成新实例。候选列表的生命周期与 `KeyboardState.CandidateSelection` 状态绑定——进入候选选择时加载候选词，退出候选选择时清空列表。`CandidateList` 是 `ImeState` 的子状态，引擎在 `reduce` 函数中根据字典查询结果和用户操作更新候选列表。
+`CandidateList` 管理拼音输入的候选词数据，包括候选词列表（惰性分页加载）、分页控制、过滤状态、加载标记和近似总数。它是一个不可变的 `data class`，所有变更通过 `copy()` 生成新实例。候选列表的生命周期与 `KeyboardState.CandidateSelection` 状态绑定——进入候选选择时加载候选词，退出候选选择时清空列表。`CandidateList` 是 `ImeState` 的子状态，引擎在 `reduce` 函数中根据字典查询结果和用户操作更新候选列表。
 
 ```kotlin
 data class CandidateList(
+    /** 当前页的候选词列表（非全量，按需加载） */
     val candidates: List<InputWord> = emptyList(),
+    /** 当前页码 */
     val pageIndex: Int = 0,
+    /** 每页大小 */
     val pageSize: Int = 20,
+    /** 字典中是否还有更多候选词可供加载（用于"加载更多"按钮） */
     val hasMore: Boolean = false,
-    val filter: PinyinWordFilter = PinyinWordFilter(),
+    /** 查询总结果数（近似值，用于分页控件） */
+    val totalApprox: Int = 0,
+    /** 应用的过滤条件 */
+    val filter: PinyinWordFilter? = null,
 ) {
     val isEmpty: Boolean get() = candidates.isEmpty()
     val totalPages: Int get() = if (candidates.isEmpty()) 0 else (candidates.size + pageSize - 1) / pageSize
@@ -46,6 +53,10 @@ data class CandidateList(
 ```
 
 候选列表采用轮播分页模式：`nextPage()` 翻到下一页，到末页后继续翻页回到首页；`prevPage()` 翻到上一页，到首页前继续翻页跳到末页。`pageSize` 默认为 20，与 UI 层的候选面板布局匹配。`hasMore` 标识字典中是否还有更多候选词可供加载，当查询结果数量等于 `pageSize` 时 `hasMore` 为 `true`，表示字典中可能存在更多匹配项。应用过滤条件后 `pageIndex` 重置为 0，过滤后的候选列表替换原始列表。若 `pageIndex * pageSize >= candidates.size`，`currentPage` 返回空列表而非抛出异常——这种防御式设计避免了过滤后页面越界的问题。
+
+惰性分页加载：查询结果不全部保留在内存中，仅缓存当前页的 candidates。hasMore 标记指示后端还有更多结果。用户翻页到最后一页时，通过 ImeIntent.LoadMoreCandidates 异步加载下一页，结果通过 ImeIntent.SetCandidates 合并到现有列表。totalApprox 为近似总数，仅用于分页指示器显示，无需精确值。
+
+全量保留候选词列表在内存中的场景（如高频汉字 'yi' 返回 200+ 候选词）已被惰性分页替代——每页仅保留 pageSize=20 条，总内存占用从 30-60KB 降至 4-6KB。
 
 `CandidateList` 的候选词按以下优先级排序：用户输入频率（`frequency` 高的排前面）→ 字典频率 → HMM 预测概率。用户选择候选词后，引擎通过 `ImeDictProvider.recordInput()` 更新用户词频，后续查询中该候选词的排序位置提升。这种频率驱动的排序策略使得常用词自然浮动到列表前端，减少用户的翻页次数。
 
@@ -177,6 +188,8 @@ interface ImeDictProvider {
 ```
 
 `query()` 方法根据完整拼音字符串查询候选词，返回按频率排序的 `List<InputWord>`。查询结果包含 `InputWord.Pinyin`（单字）和 `InputWord.PinyinPhrase`（词组）两种类型，混合排序后返回。`queryPrefix()` 方法根据拼音前缀查询候选词，支持模糊匹配——用户输入部分拼音时即可获得候选建议，无需输入完整拼音。`recordInput()` 方法记录用户选择，更新用户输入频率，影响后续查询的排序。`queryLatinCompletions()` 和 `queryPhraseCompletions()` 分别查询拉丁词和拼音词组的补全建议。
+
+字典查询限制：单次查询最多返回 maxResults=100 条结果。超出部分可通过翻页或"加载更多"获取。查询结果按频率排序后截断，确保高频候选词优先展示。词组查询沿用 LIMIT 20 的限制。
 
 ### 4.1 ImeSqliteDictProvider 实现
 
