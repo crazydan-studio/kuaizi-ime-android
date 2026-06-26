@@ -53,7 +53,56 @@ fun KeyboardHost(
 └──────────────────────────┘
 ```
 
-`KeyboardHost` 从 `viewModel` 读取 `ImeState`，并通过 `LocalKeyboardColors` 提供当前主题色彩上下文。所有子组件的 `modifier` 均由 `KeyboardHost` 统一管理，确保布局一致性。`KeyboardHost` 自身不处理任何触摸事件，所有交互由 `GestureInputPanel` 统一捕获后转换为 `InputGesture` 事件。
+```kotlin
+@Composable
+fun KeyboardHost(viewModel: KeyboardViewModel) {
+    // 使用 snapshotFlow + derivedStateOf 分别订阅独立子状态
+    // 任一子状态变化仅触发依赖该子状态的组件重组
+    val keyboard by viewModel.state.let { state ->
+        remember { derivedStateOf { state.value.keyboard } }
+    }
+    val inputList by viewModel.state.let { state ->
+        remember { derivedStateOf { state.value.inputList } }
+    }
+    val candidateList by viewModel.state.let { state ->
+        remember { derivedStateOf { state.value.candidateList } }
+    }
+    val config by viewModel.state.let { state ->
+        remember { derivedStateOf { state.value.config } }
+    }
+    
+    val layoutMode by viewModel.layoutMode.collectAsState()
+    val popupTipState by viewModel.popupTipState.collectAsState()
+    val toolListState by viewModel.toolListState.collectAsState()
+    val feedbackState = viewModel.feedbackState
+    
+    // KeyboardTheme 仅依赖 config.ui 变化
+    KeyboardTheme(config.ui) {
+        // 各面板组件仅接收其所需的最小状态切片
+        // KeyLayoutPanel 仅依赖 keyboard 变化
+        // CandidateListPanel 仅依赖 candidateList 变化
+        // InputListPanel/ToolListPanel 互斥组件仅依赖 inputList 变化
+        when (layoutMode) {
+            KeyboardLayoutMode.Stacked -> StackedLayout(
+                keyboard = keyboard,
+                inputList = inputList,
+                candidateList = candidateList,
+                // ...
+            )
+            KeyboardLayoutMode.Separated -> SeparatedLayout(
+                keyboard = keyboard,
+                inputList = inputList,
+                candidateList = candidateList,
+                // ...
+            )
+        }
+    }
+}
+```
+
+通过 derivedStateOf 分别订阅 ImeState 的各个子字段，任一子字段的变化仅触发依赖该字段的面板重组。例如键盘按键面板仅订阅 keyboard 字段，输入列表面板仅订阅 inputList 字段——候选列表更新时键盘按键面板不会重组。Collecting the full ImeState at the top level would cause the entire keyboard tree to recompose on every state change (every keystroke, candidate update, clipboard change, etc.).
+
+`KeyboardHost` 从 `viewModel` 读取 `ImeState`，并通过 `KeyboardTheme` 提供当前主题色彩上下文。所有子组件的 `modifier` 均由 `KeyboardHost` 统一管理，确保布局一致性。`KeyboardHost` 自身不处理任何触摸事件，所有交互由 `GestureInputPanel` 统一捕获后转换为 `InputGesture` 事件。
 
 ---
 
@@ -113,6 +162,10 @@ fun KeyView(
 ### 视觉实现
 
 按压状态通过 `KeyboardColors` 中的按键颜色控制色彩变化，配合 `animateColorAsState` 实现平滑过渡动画。按键的圆角半径由 `KeyboardColors.keyCornerShape` 统一控制，确保视觉一致性。
+
+### 性能说明
+
+KeyView 的 isPressed 参数来自 GestureFeedbackState.pressedKeys——这是一个非 StateFlow 的手势反馈状态。手势过程中 pressedKeys 通过 GestureInputPanel 的直接方法调用更新，不经过 StateFlow 发射链路，避免了 60fps 更新对 Compose 重组系统造成的压力。
 
 ---
 

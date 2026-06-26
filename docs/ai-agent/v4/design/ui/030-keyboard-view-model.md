@@ -224,50 +224,37 @@ class KeyboardViewModel(
     init {
         // 订阅引擎副作用通道
         viewModelScope.launch {
-            engine.effect.collect { effect ->
-                when (effect) {
-                    is ImeEffect.PopupTip.Message -> {
-                        _popupTipState.value = PopupTipState.Message(
-                            message = effect.message,
-                            timeoutMs = effect.timeoutMs,
-                        )
-                        // 启动自动 dismiss 定时器
-                        dismissPopupTipAfter(effect.timeoutMs)
-                    }
-                    is ImeEffect.PopupTip.Action -> {
-                        _popupTipState.value = PopupTipState.Action(
-                            message = effect.message,
-                            actionLabel = effect.actionLabel,
-                            action = effect.action,
-                            persistent = effect.persistent,
-                            timeoutMs = effect.timeoutMs,
-                        )
-                        // persistent=false 时启动自动 dismiss 定时器
-                        if (!effect.persistent) {
-                            dismissPopupTipAfter(effect.timeoutMs)
-                        }
-                        // persistent=true 时提示在输入开始前保持显示，
-                        // 输入开始后由 isInputting 变更触发清除
-                    }
-                    is ImeEffect.PlayAudio -> {
-                        if (state.value.config.ui.audioFeedbackEnabled && audioPlayer != null) {
-                            audioPlayer.play(effect.type)
-                        }
-                    }
-                    is ImeEffect.PlayHaptic -> {
-                        if (state.value.config.ui.hapticFeedbackEnabled && hapticPlayer != null) {
-                            hapticPlayer.play(effect.type)
+            engine.effect
+                .channelFlow {
+                    // 将 SharedFlow 转为 conflated Channel
+                    // 相同类型的连续效果会被合并，只保留最后一个
+                    engine.effect.collect { effect ->
+                        when (effect) {
+                            is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
+                                // 感官反馈：使用 trySend 非阻塞发送，
+                                // Channel 满时静默丢弃旧的未消费事件
+                                trySend(effect)
+                            }
+                            is ImeEffect.PopupTip -> {
+                                // 弹出提示：确保不丢失，使用 send（会等待）  
+                                send(effect)
+                            }
                         }
                     }
                 }
-            }
+                .collect { effect ->
+                    processEffect(effect)
+                }
         }
 
         // 订阅引擎状态变更，动态更新工具列表
         viewModelScope.launch {
-            engine.state.collect { state ->
-                _toolListState.value = computeToolList(state)
-            }
+            engine.state
+                .map { state -> state.keyboard.type }
+                .distinctUntilChanged()
+                .collect { keyboardType ->
+                    _toolListState.value = computeToolList(keyboardType)
+                }
         }
     }
 
@@ -294,6 +281,40 @@ class KeyboardViewModel(
         }
     }
 
+    private fun processEffect(effect: ImeEffect) {
+        when (effect) {
+            is ImeEffect.PopupTip.Message -> {
+                _popupTipState.value = PopupTipState.Message(
+                    message = effect.message,
+                    timeoutMs = effect.timeoutMs,
+                )
+                dismissPopupTipAfter(effect.timeoutMs)
+            }
+            is ImeEffect.PopupTip.Action -> {
+                _popupTipState.value = PopupTipState.Action(
+                    message = effect.message,
+                    actionLabel = effect.actionLabel,
+                    action = effect.action,
+                    persistent = effect.persistent,
+                    timeoutMs = effect.timeoutMs,
+                )
+                if (!effect.persistent) {
+                    dismissPopupTipAfter(effect.timeoutMs)
+                }
+            }
+            is ImeEffect.PlayAudio -> {
+                if (state.value.config.ui.audioFeedbackEnabled && audioPlayer != null) {
+                    audioPlayer.play(effect.type)
+                }
+            }
+            is ImeEffect.PlayHaptic -> {
+                if (state.value.config.ui.hapticFeedbackEnabled && hapticPlayer != null) {
+                    hapticPlayer.play(effect.type)
+                }
+            }
+        }
+    }
+
     private fun gestureToIntent(gesture: InputGesture): ImeIntent {
         return when (gesture) {
             is InputGesture.Tap -> ImeIntent.PressKey(gesture.key, KeyGesture.Tap)
@@ -309,8 +330,8 @@ class KeyboardViewModel(
         }
     }
 
-    private fun computeToolList(state: ImeState): ToolListState {
-        val tools = when (state.keyboard.type) {
+    private fun computeToolList(keyboardType: KeyboardType): ToolListState {
+        val tools = when (keyboardType) {
             KeyboardType.Pinyin, KeyboardType.Latin -> listOf(
                 // 全选、复制、粘贴、剪贴板、撤销、重做
             )
@@ -445,13 +466,46 @@ data class ToolItem(
 )
 ```
 
-`KeyboardViewModel` 通过 `computeToolList(state: ImeState)` 方法根据当前 `ImeState` 动态计算工具列表。工具列表的内容随 `keyboard.type` 和收藏功能门控（`EngineConfig.favoriteInputEnabled` / `EngineConfig.favoriteClipEnabled`）变化：拼音和拉丁键盘提供完整的编辑功能键（全选、复制、粘贴、剪贴板、撤销、重做）和键盘切换键；编辑键盘专注于编辑操作（全选、复制、剪切、粘贴、撤销）；符号、表情、数字和数学键盘提供基本编辑功能（全选、复制、粘贴）和返回主键盘的切换键。`ToolItem.disabled` 字段用于在某些状态下禁用特定工具（如输入列表为空时禁用复制），`ToolListPanel` 渲染禁用工具时降低视觉权重并阻止点击。
+`KeyboardViewModel` 通过 `computeToolList(keyboardType: KeyboardType)` 方法根据当前键盘类型动态计算工具列表。工具列表的内容随 `keyboard.type` 和收藏功能门控（`EngineConfig.favoriteInputEnabled` / `EngineConfig.favoriteClipEnabled`）变化：拼音和拉丁键盘提供完整的编辑功能键（全选、复制、粘贴、剪贴板、撤销、重做）和键盘切换键；编辑键盘专注于编辑操作（全选、复制、剪切、粘贴、撤销）；符号、表情、数字和数学键盘提供基本编辑功能（全选、复制、粘贴）和返回主键盘的切换键。`ToolItem.disabled` 字段用于在某些状态下禁用特定工具（如输入列表为空时禁用复制），`ToolListPanel` 渲染禁用工具时降低视觉权重并阻止点击。
+
+`toolListState` 仅依赖 keyboard.type 而非完整 ImeState。使用 distinctUntilChanged 过滤后，仅在键盘类型切换时才重算工具列表，避免每次按键输入都触发不必要的重算。
 
 ---
 
 ## 5 `ImeEffect` 订阅与处理
 
-`KeyboardViewModel` 在 `init` 块中订阅引擎的 `effect: SharedFlow<ImeEffect>` 通道，根据 `ImeEffect` 类型驱动对应的 UI 行为。引擎的 `ImeEffect.PopupTip` 经过重新设计，分为 `Message` 和 `Action` 两种子类型，ViewModel 分别处理：
+ImeEffect 通过 `Channel<ImeEffect>(capacity = Channel.CONFLATED)` 消费，确保高频效果（连续按键音）不会积压。ViewModel 内部维护一个将 SharedFlow 转为 conflated Channel 的适配层：
+
+```kotlin
+// 在 KeyboardViewModel init 中
+viewModelScope.launch {
+    engine.effect
+        .channelFlow {
+            // 将 SharedFlow 转为 conflated Channel
+            // 相同类型的连续效果会被合并，只保留最后一个
+            engine.effect.collect { effect ->
+                when (effect) {
+                    is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
+                        // 感官反馈：使用 trySend 非阻塞发送，
+                        // Channel 满时静默丢弃旧的未消费事件
+                        trySend(effect)
+                    }
+                    is ImeEffect.PopupTip -> {
+                        // 弹出提示：确保不丢失，使用 send（会等待）  
+                        send(effect)
+                    }
+                }
+            }
+        }
+        .collect { effect ->
+            processEffect(effect)
+        }
+}
+```
+
+这种分层策略确保不同类型的 effect 有不同的背压行为：感官反馈（PlayAudio/PlayHaptic）容忍丢弃，弹出提示（PopupTip）必须可靠送达。Channel.CONFLATED 确保 Channel 中最多只有一个待处理效果，新的效果覆盖旧的效果。
+
+ViewModel 在独立的 collectEffect() 协程中消费 ImeEffect，不参与 ImeState 的 StateFlow 订阅链。因此 effect 的到达不会触发任何 Compose 重组——只有 effect 处理逻辑修改了 PopupTipState（MutableStateFlow）后，弹出提示面板才会局部重组。
 
 ### 5.1 `PopupTip.Message` 处理
 
