@@ -10,6 +10,7 @@
 data class InputClip(
     val text: String,
     val type: InputTextType? = null,
+    val code: String = "",
 ) {
     companion object {
         /** 根据文本内容自动检测类型并创建 InputClip 实例 */
@@ -19,6 +20,8 @@ data class InputClip(
     }
 }
 ```
+
+注意：Clipboard 数据类与 ImeState 中的定义保持一致（engine/020-ime-state.md）。clips 存储历史剪贴内容列表，code 为可选的追踪标识符。
 
 `type` 字段为可空类型 `InputTextType?`，当 `detect()` 无法匹配任何已知类型时返回 `null`，表示该文本为普通文本。UI 层在 `type` 为 `null` 时按普通文本渲染，不显示类型特有的图标或操作按钮。`InputClip` 的 `equals()` 和 `hashCode()` 由 `data class` 自动生成，基于 `text` 和 `type` 两个字段，确保内容相同的剪贴条目在集合操作中被正确判等。
 
@@ -304,8 +307,9 @@ class FavoriteService(
 
 ```kotlin
 data class Clipboard(
-    val clipperText: String? = null,
+    val currentText: String? = null,
     val inputTextType: InputTextType? = null,
+    val clips: List<InputClip> = emptyList(),
     val disabled: Boolean = false,
 )
 ```
@@ -361,9 +365,5 @@ ImeEffect.PopupTip.Action(
 ```
 
 ### 7.3 完整协作流程
-
-```plantuml
-@file:../diagrams/engine-clipboard-favorites.puml
-```
 
 系统剪贴板变更时，`ClipboardService` 更新内部 `StateFlow`，`ImeEngine` 在 reduce 过程中读取服务状态并更新 `ImeState.clipboard`，同时发射 `ImeEffect.PopupTip.Action` 提示。用户点击提示中的「粘贴」按钮后，`ImeIntent.PasteClip` 被 `ImeEngine` 处理，文本通过 `ImeEditorBridge` 提交到编辑器。收藏流程类似：输入提交后若文本未收藏，发射收藏提示；用户点击「收藏」后，`FavoriteService` 执行保存，引擎发射确认提示。

@@ -1,7 +1,7 @@
 # 键盘状态机
 
 ```plantuml
-@file:../diagrams/engine-state-machine.puml
+@file:../diagrams/engine-keyboard-state-machine.puml
 ```
 
 ## 1. KeyboardState 层次结构
@@ -697,5 +697,5 @@ ImeIntent → KeyboardStateTransition → KeyboardState
 | **副作用延迟执行** | 副作用在状态计算完成后统一处理，避免状态计算过程中的时序竞争 |
 
 ```plantuml
-@file:../diagrams/engine-state-machine.puml
+@file:../diagrams/engine-keyboard-state-machine.puml
 ```

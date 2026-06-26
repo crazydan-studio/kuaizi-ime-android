@@ -592,7 +592,7 @@ class ViterbiDecoder(private val model: HmmModel) {
 字典查询的完整流程从用户按键触发到候选列表渲染，经过四个阶段：前缀匹配 → 精确查询 → HMM 排序 → 用户频率合并。每个阶段有明确的输入输出和职责边界，阶段之间通过数据流串联，整体流程在引擎的 `reduce` 函数中编排。
 
 ```plantuml
-@file:../diagrams/engine-dict-system.puml
+@file:../diagrams/engine-candidate-query-flow.puml
 ```
 
 ### 8.1 阶段一：前缀匹配
@@ -625,8 +625,9 @@ HMM 预测结果与精确查询结果的合并策略是：预测结果的概率�
 
 字典查询通过 sideEffects 异步执行：当 KeyboardStateMachine 产生查询需求时，返回 `ImeIntent.LoadCandidates(pinyin)` 作为 sideEffect。`ImeEngine` 的工作队列将其分发到 `Dispatchers.Default` 协程执行，查询结果通过 `ImeIntent.SetCandidates(candidates)` 重新回到 reduce 处理链。
 
+LoadCandidates 和 SetCandidates 已整合到 ImeIntent sealed class 中，定义见 engine/060-intent-editor-action-bridge.md。
+
 ```kotlin
-// ImeIntent 补充两个新子类型（如果未定义）
 data class LoadCandidates(val pinyin: String) : ImeIntent()
 data class SetCandidates(val candidates: CandidateList) : ImeIntent()
 
@@ -647,3 +648,7 @@ private fun handleAsyncIntent(intent: ImeIntent) {
 查询流程：Prefix matching → (sideEffect) → DB query on Default → Viterbi on Default → SetCandidates → reduce
 
 字典查询通过 `Dispatchers.Default` 异步化后，主线程仅处理缓存命中场景（纯 Trie 查找），DB I/O 和 Viterbi 计算不阻塞 UI 线程。
+
+### 8.6 字典查询错误处理
+
+字典查询失败处理：当 `ImeDictProvider.query()` 或 `ImeDictProvider.queryPrefix()` 抛出异常（数据库损坏、IO 错误等）时，由 `LoadCandidates` 的协程作用域捕获并记录错误日志。引擎保持当前候选列表不变，不替换为空列表——用户看到的仍是上次查询结果，而非空白候选栏。数据库初始化失败在 `ImeSqliteDictProvider` 构造时即抛出，遵循 Fail Fast 原则。
