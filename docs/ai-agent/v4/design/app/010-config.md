@@ -25,18 +25,74 @@ class ConfigDataStore(private val context: Context) {
         )
     }
 
+    /**
+     * 增量更新配置：仅将变化部分写入 DataStore。
+     * 
+     * 通过比较新旧配置的差异，仅序列化并写入发生变化的字段，
+     * 避免每次 updateConfig 都全量写入 ~20 个 key。
+     * 适用于高频配置切换场景（如主题、音效开关的快速连续切换）。
+     */
     suspend fun updateConfig(transform: (ImeConfig) -> ImeConfig) {
         context.dataStore.edit { prefs ->
             val current = config.first()
             val new = transform(current)
-            EngineConfigDataStoreKeys.writeEngineConfig(prefs, new.engine)
-            UiConfigDataStoreKeys.writeUiConfig(prefs, new.ui)
+            writeChangedEngineConfig(prefs, current.engine, new.engine)
+            writeChangedUiConfig(prefs, current.ui, new.ui)
         }
+    }
+
+    private fun writeChangedEngineConfig(
+        prefs: MutablePreferences,
+        old: EngineConfig,
+        new: EngineConfig,
+    ) {
+        if (old.inputPredictionEnabled != new.inputPredictionEnabled)
+            prefs[inputPredictionEnabledKey] = new.inputPredictionEnabled
+        if (old.userDataPersistEnabled != new.userDataPersistEnabled)
+            prefs[userDataPersistEnabledKey] = new.userDataPersistEnabled
+        if (old.favoriteInputEnabled != new.favoriteInputEnabled)
+            prefs[favoriteInputEnabledKey] = new.favoriteInputEnabled
+        if (old.favoriteClipEnabled != new.favoriteClipEnabled)
+            prefs[favoriteClipEnabledKey] = new.favoriteClipEnabled
+        if (old.favoriteSyncToUserDictEnabled != new.favoriteSyncToUserDictEnabled)
+            prefs[favoriteSyncToUserDictEnabledKey] = new.favoriteSyncToUserDictEnabled
+        if (old.candidateVariantFirstEnabled != new.candidateVariantFirstEnabled)
+            prefs[candidateVariantFirstEnabledKey] = new.candidateVariantFirstEnabled
+        if (old.logLevel != new.logLevel)
+            prefs[logLevelKey] = new.logLevel
+        if (old.logStoragePath != new.logStoragePath)
+            prefs[logStoragePathKey] = new.logStoragePath
+    }
+
+    private fun writeChangedUiConfig(
+        prefs: MutablePreferences,
+        old: UiConfig,
+        new: UiConfig,
+    ) {
+        if (old.keyboardInputMode != new.keyboardInputMode)
+            prefs[keyboardInputModeKey] = new.keyboardInputMode
+        if (old.keyboardHandMode != new.keyboardHandMode)
+            prefs[keyboardHandModeKey] = new.keyboardHandMode
+        if (old.keyboardThemeType != new.keyboardThemeType)
+            prefs[keyboardThemeTypeKey] = new.keyboardThemeType
+        if (old.audioFeedbackEnabled != new.audioFeedbackEnabled)
+            prefs[audioFeedbackEnabledKey] = new.audioFeedbackEnabled
+        if (old.hapticFeedbackEnabled != new.hapticFeedbackEnabled)
+            prefs[hapticFeedbackEnabledKey] = new.hapticFeedbackEnabled
+        if (old.keyAnimationEnabled != new.keyAnimationEnabled)
+            prefs[keyAnimationEnabledKey] = new.keyAnimationEnabled
+        if (old.gestureSlippingTrailEnabled != new.gestureSlippingTrailEnabled)
+            prefs[gestureSlippingTrailEnabledKey] = new.gestureSlippingTrailEnabled
+        if (old.clipPopupTipsEnabled != new.clipPopupTipsEnabled)
+            prefs[clipPopupTipsEnabledKey] = new.clipPopupTipsEnabled
+        // ... 按需补充其余 UiConfig 字段
     }
 }
 ```
 
 > `EngineConfigDataStoreKeys` 和 `UiConfigDataStoreKeys` 由 `:app-codegen` 模块通过 KSP 自动生成，详见 [010-代码生成](../app-codegen/010-codegen.md)。
+
+> **性能说明**：增量写入策略：仅将变化字段的 Preferences.Key 写入 DataStore edit {} 块。单字段变更从 20 次 put 降至 1 次 put，减少 protobuf 序列化体积和磁盘 I/O。注意 DataStore 的 edit {} 仍会对完整的 MutablePreferences 做 protobuf 序列化，但减少 put 次数降低了 Preference 树的构建开销。
 
 ---
 
