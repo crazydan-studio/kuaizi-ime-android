@@ -107,21 +107,21 @@ v4 版本采用 MVI（Model-View-Intent）架构，基于 Kotlin 协程 + Flow �
 ```
 Platform Layer  ← :app 模块     — IMEService 桥接
      ↓
-ViewModel Layer ← :app 模块     — MVI 状态管理（使用 :ime-ui 的 KeyboardViewModel）
+ViewModel Layer ← :app 模块     — MVI 状态管理（使用 :ui 的 KeyboardViewModel）
      ↓
-UI Layer        ← :ime-ui 库    — Jetpack Compose 缺省 UI
+UI Layer        ← :ui 库    — Jetpack Compose 缺省 UI
      ↓
-Domain Layer    ← :ime-engine 库 — 键盘逻辑、输入列表、状态机
+Domain Layer    ← :engine 库 — 键盘逻辑、输入列表、状态机
      ↓
-Data Layer      ← :ime-engine 库 — 字典、用户数据、配置
+Data Layer      ← :engine 库 — 字典、用户数据、配置
 ```
 
 ### 三层库架构
 
 v4 采用三层库架构，支持其他程序以库的形式引入输入法能力：
 
-- **引擎库 `:ime-engine`**：纯 Kotlin，不依赖 Android 框架，提供核心输入引擎能力
-- **UI 库 `:ime-ui`**：基于 Compose 的缺省 UI 实现，对第三方应用开放，可整体或部分替换
+- **引擎库 `:engine`**：纯 Kotlin，不依赖 Android 框架，提供核心输入引擎能力
+- **UI 库 `:ui`**：基于 Compose 的缺省 UI 实现，对第三方应用开放，可整体或部分替换
 - **应用模块 `:app`**：系统 IME 服务壳、设置页面、配置持久化，是库的官方消费者
 
 所有配置通过 `ImeConfig`（含引擎配置 `EngineConfig` 和 UI 配置 `UiConfig` 的明确隔离）统一管理，运行时修改始终优先于持久化配置，直到应用重启时从持久化配置初始化。

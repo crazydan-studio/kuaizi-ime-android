@@ -66,7 +66,7 @@
 
 ```
 code/
-├── ime-engine/src/test/                    ← :ime-engine 库单元测试
+├── engine/src/test/                    ← :engine 库单元测试
 │   └── org/crazydan/studio/app/ime/kuaizi/engine/
 │       ├── api/                            ← 引擎公开 API 测试
 │       │   ├── ImeEngineTest.kt
@@ -79,7 +79,7 @@ code/
 │       └── dict/                           ← 字典接口测试
 │           └── ImeInMemoryDictProviderTest.kt
 │
-├── ime-ui/src/test/                        ← :ime-ui 库单元测试
+├── ui/src/test/                        ← :ui 库单元测试
 │   └── org/crazydan/studio/app/ime/kuaizi/ui/
 │       └── theme/                          ← 主题系统测试
 │           └── KeyboardThemeTest.kt
