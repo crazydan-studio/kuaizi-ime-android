@@ -72,7 +72,7 @@ find . -not -path './.git/*' -type f -perm /111 -not -name '*.sh' -exec chmod 64
 3. **跨模块文档**：确认上游/下游模块的文档中对被修改概念的引用也被同步更新（如引擎层类名变更需同步到 UI 层和应用层文档）
 4. **索引文档**：确认各 `index.md` 中的描述文本已被同步更新
 5. **技能文档**：若变更涉及项目命名或设计约定，需同步更新 `docs/ai-agent/skills/` 下的相关文档
-6. **迁移映射文档**：确认 `docs/ai-agent/v4/design/migration/` 下的映射表已被同步更新
+6. **模块划分文档**：确认 `docs/ai-agent/v4/design/architecture/030-module-division.md` 中的模块职责与依赖描述已被同步更新
 
 **操作流程**：
 
