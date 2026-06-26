@@ -126,7 +126,7 @@ v4 采用三层库架构，支持其他程序以库的形式引入输入法能�
 
 所有配置通过 `ImeConfig`（含引擎配置 `EngineConfig` 和 UI 配置 `UiConfig` 的明确隔离）统一管理，运行时修改始终优先于持久化配置，直到应用重启时从持久化配置初始化。
 
-详细的架构设计和技术选型请参阅 [v4 版本文档](docs/ai-agent/v4/index.md)和[架构总览](docs/ai-agent/v4/design/000-architecture-overview.md)。
+详细的架构设计和技术选型请参阅 [v4 版本文档](docs/ai-agent/v4/index.md)和[架构总览](docs/ai-agent/v4/design/architecture/010-overview.md)。
 
 ## 开发实践
 
