@@ -371,7 +371,7 @@ class ImeEngine internal constructor(
 `applyStateUpdate()` 是 `ImeEngine` 内部的私有方法，所有 `ImeState` 变更——无论是 `handleIntent()` 中的 reduce 逻辑、`SwitchKeyboard` 的直接切换，还是 `start()`/`close()`/`destroy()` 中的生命周期操作——都必须经过此方法更新 `_state`。该方法是引擎状态更新的唯一出口，提供以下统一能力：
 
 - **日志**：每次状态变更记录旧状态与新状态的 diff，便于调试和追踪（仅 DEBUG 等级以上执行）
-- **断言**：验证状态不变式（如 `keyboard.type` 与 `keyboard.state` 一致性、`candidateList` 非空前提、`favoriteList` 禁用一致性等），断言失败时抛出 `IllegalStateException`
+- **断言**：验证状态不变式（如 `keyboard.type` 与 `keyboard.state` 一致性、`candidateList` 非空前提、`favoriteList` 禁用一致性等），assertStateInvariants 包装在 DEBUG 等级守卫中，release 构建中零开销。使用 check() 而非 assert() 的设计变更为等级守卫，确保不变式在开发阶段充分验证
 - **状态不变式检查**：确保 §3.3 中定义的所有不变式在每次状态变更后仍然成立
 
 ```kotlin
@@ -379,17 +379,17 @@ class ImeEngine internal constructor(
 private fun applyStateUpdate(transform: (ImeState) -> ImeState) {
     val oldState = _state.value
     val newState = transform(oldState)
-    // 日志记录（仅 DEBUG 等级以上执行，release 构建中零开销）
     if (ImeLog.level <= LogLevel.DEBUG) {
         ImeLogger.d("ImeEngine", "State updated: ${oldState.diff(newState)}")
+        assertStateInvariants(newState)  // 仅在 debug 下执行不变式检查
     }
-    // 状态不变式断言
-    assertStateInvariants(newState)
     _state.value = newState
 }
 ```
 
-`applyStateUpdate()` 的引入确保了即使 `start()` 和 `handleIntent()` 的处理路径不同，状态更新的质量保证是统一的——不存在绕过日志和断言的旁路。diff 计算在 DEBUG 等级以上才执行，release 构建中零开销。
+`applyStateUpdate()` 的引入确保了即使 `start()` 和 `handleIntent()` 的处理路径不同，状态更新的质量保证是统一的——不存在绕过日志和断言的旁路。assertStateInvariants 包装在 DEBUG 等级守卫中，release 构建中零开销。使用 check() 而非 assert() 的设计变更为等级守卫，确保不变式在开发阶段充分验证。
+
+> **性能优化记录**：不可变集合的 `addTouchTrailPoint()` 之前使用 `ArrayList` 逐次添加导致 O(n²) 复杂度，现已改用 `toMutableList()` 模式将逐个追加转为批量重建，O(n) 复杂度。详情见 UI 层手势反馈文档。
 
 ### 5.7 使用示例
 

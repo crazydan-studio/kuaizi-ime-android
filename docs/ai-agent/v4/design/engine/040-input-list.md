@@ -186,33 +186,45 @@ data class PairSymbol(
 
 ## 6. InputListEditor 撤销/重做
 
-`InputListEditor` 提供输入列表的撤销和重做能力，采用 `ArrayDeque` 双端队列实现两个有界栈：`undoStack` 记录可撤销的历史状态，`redoStack` 记录可重做的未来状态。栈的最大容量为 50，超过容量时自动丢弃最早的状态。撤销/重做机制利用 `InputList` 的不可变性——历史状态无需深拷贝，直接保存引用即可，内存开销极低。
+`InputListEditor` 提供输入列表的撤销和重做能力，采用 `ArrayDeque` 双端队列实现两个有界栈：`undoStack` 记录可撤销的历史状态，`redoStack` 记录可重做的未来状态。栈的最大容量为 50，采用 FIFO 淘汰策略——超出上限时淘汰最旧条目（`removeFirst()`），确保栈大小始终不超过上限。撤销/重做机制利用 `InputList` 的不可变性——历史状态无需深拷贝，直接保存引用即可，内存开销极低。
 
 ```kotlin
 class InputListEditor {
-    private val undoStack = ArrayDeque<InputList>(maxSize = 50)
-    private val redoStack = ArrayDeque<InputList>(maxSize = 50)
+    private val undoStack = ArrayDeque<InputList>(50)  // initialCapacity
+    private val redoStack = ArrayDeque<InputList>(50)  // initialCapacity
+    private val maxStackSize = 50
 
     val canUndo: Boolean get() = undoStack.isNotEmpty()
     val canRedo: Boolean get() = redoStack.isNotEmpty()
 
-    /** 在状态变更前推入当前状态到撤销栈 */
-    fun pushUndo(state: InputList) {
-        undoStack.addLast(state)
-        redoStack.clear()
+    /** 保存快照到撤销栈，超出上限时淘汰最旧条目 */
+    fun pushUndo(list: InputList) {
+        if (undoStack.size >= maxStackSize) {
+            undoStack.removeFirst()
+        }
+        undoStack.addLast(list)
+        redoStack.clear()  // 新操作清空重做栈
+    }
+
+    /** 保存快照到重做栈，超出上限时淘汰最旧条目 */
+    private fun pushRedo(list: InputList) {
+        if (redoStack.size >= maxStackSize) {
+            redoStack.removeFirst()
+        }
+        redoStack.addLast(list)
     }
 
     /** 撤销：恢复到上一个状态 */
     fun undo(current: InputList): InputList {
         val previous = undoStack.removeLastOrNull() ?: return current
-        redoStack.addLast(current)
+        pushRedo(current)
         return previous
     }
 
     /** 重做：前进到下一个状态 */
     fun redo(current: InputList): InputList {
         val next = redoStack.removeLastOrNull() ?: return current
-        undoStack.addLast(current)
+        pushUndo(current)
         return next
     }
 }
@@ -222,7 +234,7 @@ class InputListEditor {
 
 `InputListEditor` 由 `InputListOperator` 内部持有和管理，外部不直接操作编辑器。`InputListOperator` 在每次执行输入列表变更操作时自动调用 `pushUndo()`，确保撤销栈与实际状态变更同步。撤销和重做操作通过 `ImeIntent.PerformEdit(EditorEditAction.UNDO)` 和 `ImeIntent.PerformEdit(EditorEditAction.REDO)` 触发，引擎在 `reduce` 函数中委托 `InputListOperator` 执行对应的撤销/重做逻辑。
 
-`ArrayDeque` 的 `maxSize` 参数为 50，意味着撤销栈最多保存 50 个历史状态。这个容量设计在内存占用和撤销深度之间取得平衡：50 个不可变 `InputList` 实例的内存占用通常在 KB 级别，而 50 层撤销深度覆盖了绝大多数用户的使用场景。超过 50 层时，最早的状态被自动丢弃，用户无法撤销到更早的状态。
+撤销栈和重做栈的最大容量均为 50，采用手动 FIFO 淘汰策略：`pushUndo()` / `pushRedo()` 在栈大小达到上限时调用 `removeFirst()` 移除最旧条目，再添加新条目。这一设计确保了栈大小始终不超过上限，同时淘汰行为显式可控。容量选择在内存占用和撤销深度之间取得平衡：50 个不可变 `InputList` 实例的内存占用通常在 KB 级别，而 50 层撤销深度覆盖了绝大多数用户的使用场景。
 
 ---
 

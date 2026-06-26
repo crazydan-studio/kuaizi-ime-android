@@ -428,7 +428,7 @@ enum class HapticType {
 
 ## 9. 状态不变式
 
-以下不变式在任何时刻对 `ImeState` 都必须成立，`ImeEngine` 的 reduce 函数在每次状态转换后必须维护这些约束：
+以下不变式在任何时刻对 `ImeState` 都必须成立，`ImeEngine` 的 reduce 函数在每次状态转换后必须维护这些约束。所有状态不变式在 DEBUG 日志等级下通过 `assertStateInvariants()` 检查，使用 `assert()` 断言。Release 构建中跳过的断言以 0 额外开销运行。
 
 1. **`keyboard.type` 与 `keyboard.state` 一致性**：`keyboard.state` 必须与 `keyboard.type` 的初始状态兼容。例如 `keyboard.type == Symbol` 时 `keyboard.state` 应为 `SymbolChoosing`，`keyboard.type == Pinyin` 时 `keyboard.state` 应为 `PinyinInput.*` 或 `CandidateSelection.*`，`keyboard.type == Candidate` 时 `keyboard.state` 应为 `CandidateSelection.*`。此不变式由 `KeyboardStateMachine.transition()` 保证——键盘类型切换时自动设置对应的初始状态。
 
