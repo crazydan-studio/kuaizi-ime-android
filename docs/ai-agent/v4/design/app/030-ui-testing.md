@@ -72,10 +72,16 @@ private class NoopUITestOverlay : UITestOverlay {
 ```
 
 ```kotlin
-class DebugUITestOverlay : UITestOverlay {
+class DebugUITestOverlay(
+    private val log: ImeLog = ImeLog,
+) : UITestOverlay {
     private val activeTools = mutableSetOf<UITestTool>()
 
     override fun enable() {
+        if (log.level > LogLevel.DEBUG) {
+            log.updateLevel(LogLevel.DEBUG)
+            log.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
+        }
     }
 
     override fun disable() {
@@ -83,7 +89,12 @@ class DebugUITestOverlay : UITestOverlay {
     }
 
     override fun toggle(tool: UITestTool) {
-        if (tool in activeTools) activeTools.remove(tool) else activeTools.add(tool)
+        if (tool in activeTools) {
+            activeTools.remove(tool)
+        } else {
+            activeTools.add(tool)
+            log.logger("UITest").debug { "激活工具: ${tool.displayName}" }
+        }
     }
 
     override fun isActive() = activeTools.isNotEmpty()
@@ -668,25 +679,4 @@ UI 测试方案与应用日志系统协同工作：
 | 布局异常 → 日志警告 | 检测到布局溢出（组件尺寸超出父容器）时自动记录 WARN 日志 |
 | 日志等级联动 | UI 测试工具激活时，自动将日志等级降至 DEBUG 以获取更完整信息 |
 
-```kotlin
-class DebugUITestOverlay(
-    private val log: ImeLog,
-) : UITestOverlay {
-
-    override fun enable() {
-        if (log.level > LogLevel.DEBUG) {
-            log.updateLevel(LogLevel.DEBUG)
-            log.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
-        }
-    }
-
-    override fun toggle(tool: UITestTool) {
-        if (tool in activeTools) {
-            activeTools.remove(tool)
-        } else {
-            activeTools.add(tool)
-            log.logger("UITest").debug { "激活工具: ${tool.displayName}" }
-        }
-    }
-}
-```
+`DebugUITestOverlay` 的完整定义见 §1.2。此处仅说明其与日志系统的协作流程。

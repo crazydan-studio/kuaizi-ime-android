@@ -24,7 +24,7 @@
 │  (对第三方应用开放的缺省 UI 实现，可整体替换或部分替换)             │
 ├─────────────────────────────────────────────────────────────────┤
 │                       Domain Layer     ← :engine 库              │
-│  ImeEngine / Keyboard / InputList / Inputboard / Favoriteboard  │
+│  ImeEngine / Keyboard / InputList / Clipboard / FavoriteList  │
 │  ImeEditorBridge / BaseImeEditorBridge                          │
 │  ImeLog / ImeLogger / LogLevel / LogEntry / LogWriter / LogStorage│
 │  (逻辑层与 UI/应用分离，第三方可定制 UI 与交互)       │

@@ -89,20 +89,7 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 | `KeyTableGenerator` | `keyboard` | 按键布局生成器接口，根据键盘类型、输入模式、键盘状态和相关数据生成按键布局矩阵 |
 | `KeyTableContext` | `keyboard` | 按键生成上下文，包含 `config`、`keyboard`、`inputList`、`candidateList` |
 
-`KeyTableGenerator` 是按键布局生成器接口，归属于 `:ui` 模块，因为按键布局是 UI 关注点，由 UI 层根据键盘状态决定按键的排列和显示。`KeyTableGenerator` 根据 `KeyTableContext` 中的信息生成 `List<List<InputKey>>` 二维矩阵，每一行对应键盘的一行按键，每个 `InputKey` 描述按键的语义标识和标签内容。`KeyTableContext` 包含 `config: ImeConfig`（运行时配置）、`keyboard: Keyboard`（当前键盘实例，含 `type`、`mode`、`state` 三个维度）、`inputList: InputList`（当前输入列表，用于确定功能键状态）、`candidateList: CandidateList`（当前候选列表，用于确定候选键内容）。不同 `KeyboardInputMode`（`HexGrid` 和 `RectGrid`）下，`KeyTableGenerator` 的实现可能不同——`HexGrid` 生成六边形排列的按键矩阵，`RectGrid` 生成矩形排列的按键矩阵。
-
-```kotlin
-interface KeyTableGenerator {
-    fun generate(context: KeyTableContext): List<List<InputKey>>
-}
-
-data class KeyTableContext(
-    val config: ImeConfig,
-    val keyboard: Keyboard,
-    val inputList: InputList,
-    val candidateList: CandidateList,
-)
-```
+`KeyTableGenerator` 是按键布局生成器接口（完整定义见 §5），归属于 `:ui` 模块。不同 `KeyboardInputMode`（`HexGrid` 和 `RectGrid`）下实现不同——`HexGrid` 生成六边形排列的按键矩阵，`RectGrid` 生成矩形排列的按键矩阵。
 
 ### 2.7 工具组件
 

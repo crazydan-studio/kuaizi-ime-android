@@ -117,47 +117,20 @@ class ConfigDataStore(private val context: Context) {
 
 ### 3.1 主题定义
 
+`KeyboardColors`、`KeyboardThemes`、`KeyboardTheme` 和 `LocalKeyboardColors` 的完整定义见 `:ui` 模块的 [040-Compose 组件](../ui/040-compose-components.md#主题系统)。此处仅说明其在 `:app` 模块中的持久化和配置流程：
+
 ```kotlin
-data class KeyboardColors(
-    // 键盘
-    val keyBackground: Color,
-    val keyForeground: Color,
-    val keyPressedBackground: Color,
-    val keyActiveBackground: Color,
-    val keyDisabledBackground: Color,
-    val keyBorder: Color,
+// :app 模块保存用户选择的主题类型到 DataStore
+val themeTypeKey = stringPreferencesKey("ui_keyboard_theme_type")
 
-    // 候选栏
-    val candidatePanelBackground: Color,
-    val candidateChipBackground: Color,
-    val candidateChipForeground: Color,
-    val candidateChipActiveBackground: Color,
-
-    // 输入栏
-    val inputListPanelBackground: Color,
-    val inputListPanelForeground: Color,
-    val inputListPanelCursorColor: Color,
-
-    // 通用
-    val background: Color,
-    val foreground: Color,
-    val divider: Color,
-)
-
-object KeyboardThemes {
-    val Light = KeyboardColors(
-        keyBackground = Color(0xFFE8E8E8),
-        keyForeground = Color(0xFF333333),
-    )
-
-    val Night = KeyboardColors(
-        keyBackground = Color(0xFF333333),
-        keyForeground = Color(0xFFE8E8E8),
-    )
+suspend fun saveThemeType(type: KeyboardThemeType) {
+    context.dataStore.edit { prefs ->
+        prefs[themeTypeKey] = type.name
+    }
 }
-
-val LocalKeyboardColors = compositionLocalOf { KeyboardThemes.Light }
 ```
+
+主题通过 `ImeEngine.updateConfig()` 的 `UiConfig.keyboardThemeType` 字段同步到 `ImeState.config`，UI 层通过 `KeyboardTheme` Composable 消费。
 
 ### 3.2 跟随系统主题
 

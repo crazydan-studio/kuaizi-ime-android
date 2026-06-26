@@ -281,7 +281,9 @@ function sidebarAiAgent() {
       collapsed: true,
       items: [
         { text: '索引', link: '/ai-agent/v4/discussions/' },
-        { text: '设计决策与文档评审', link: '/ai-agent/v4/discussions/001-design-decisions-and-doc-review' },
+          { text: '设计总览', link: '/ai-agent/v4/design/' },
+          { text: '架构索引', link: '/ai-agent/v4/design/architecture/' },
+          { text: '设计决策与文档评审', link: '/ai-agent/v4/discussions/001-design-decisions-and-doc-review' },
         { text: '命名规范细化', link: '/ai-agent/v4/discussions/002-naming-convention-refinement' },
       ],
     },
