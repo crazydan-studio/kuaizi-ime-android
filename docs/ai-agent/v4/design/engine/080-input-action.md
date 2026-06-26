@@ -398,3 +398,77 @@ data class RectF(
 `RectF` 是二维归一化矩形的不可变数据类，以 `left`、`top`、`right`、`bottom` 四个 `Float` 字段表达矩形的边界。`RectF` 派生 `width`、`height`、`centerX`、`centerY` 和 `center` 五个计算属性，提供矩形的几何特征访问。`contains()` 方法判断一个 `OffsetF` 点是否落在矩形内部，用于命中测试。`RectF.Zero` 为零面积矩形常量。
 
 归一化坐标到屏幕像素坐标的转换由 UI 层在渲染时完成：`screenX = offsetF.x * panelWidth`，`screenY = offsetF.y * panelHeight`。这种转换是单向的——引擎层只产出归一化坐标，UI 层负责转换为屏幕坐标。
+
+---
+
+## 9. InputActionPlayer 动画帧驱动机制
+
+`InputActionPlayer` 是输入动作播放的核心控制器，负责加载脚本、驱动回放、解析位置、写入视觉反馈状态并发射 `ImeIntent`。播放器的动画循环采用帧驱动机制——基于 `withFrameNanos` 与 Choreographer 同步，而非传统的 `delay()` 定时器，确保动画进度与屏幕刷新率精确对齐。
+
+### 9.1 帧定时器 FrameTimer
+
+```kotlin
+/**
+ * 帧定时器：使用 withFrameNanos 驱动动画帧循环，
+ * 确保与屏幕刷新率同步，避免 delay() 的定时误差。
+ */
+class FrameTimer(private val scope: CoroutineScope) {
+    private var startNanos: Long = 0L
+    private var lastFrameNanos: Long = 0L
+    private var paused = false
+
+    /**
+     * 启动帧循环。
+     * @param onFrame 每帧回调，接收当前进度 [0f..1f]
+     * @param durationMs 动画总时长（毫秒）
+     * @param onComplete 动画完成回调
+     */
+    fun start(
+        durationMs: Long,
+        onFrame: (progress: Float) -> Unit,
+        onComplete: () -> Unit,
+    ) {
+        scope.launch {
+            startNanos = System.nanoTime()
+            lastFrameNanos = startNanos
+            val durationNanos = durationMs * 1_000_000L
+
+            while (true) {
+                withFrameNanos { frameTimeNanos ->
+                    if (paused) return@withFrameNanos
+                    
+                    val elapsed = frameTimeNanos - startNanos
+                    val progress = (elapsed.toFloat() / durationNanos).coerceIn(0f, 1f)
+                    
+                    onFrame(progress)
+                    lastFrameNanos = frameTimeNanos
+
+                    if (progress >= 1f) {
+                        onComplete()
+                        return@withFrameNanos
+                    }
+                }
+            }
+        }
+    }
+
+    fun pause() { paused = true }
+    fun resume() { paused = false }
+}
+```
+
+`FrameTimer` 封装了基于 `withFrameNanos` 的帧循环逻辑。`start()` 启动一个协程，在无限循环中调用 `withFrameNanos` 挂起函数——每次挂起直到下一帧信号到达（由 Compose 的 Choreographer 驱动）。帧信号到达后，计算当前进度 `elapsed / durationNanos` 并回调 `onFrame`。`paused` 标志控制暂停/恢复：暂停时 `withFrameNanos` 仍会挂起等待下一帧，但回调内部直接返回，不更新进度，因此动画时钟暂停而不会出现跳帧。
+
+### 9.2 播放器 play() 的帧驱动行为
+
+播放器使用 `FrameTimer` 驱动帧循环，每帧通过 `withFrameNanos` 与 Choreographer 同步。帧间隔与屏幕刷新率一致（通常 16.6ms @60fps）。插值点实时计算而非预分配——每帧根据当前进度计算手指位置，避免大量对象的预分配。帧回调中直接写入 `GestureFeedbackState` 的 StateFlow，确保反馈绘制与渲染管线对齐。
+
+`play()` 在开始播放时创建 `FrameTimer` 实例并调用 `start()`，传入脚本中当前动作的持续时长作为 `durationMs`。`onFrame` 回调读取当前进度，调用 `InputActionPathInterpolator.interpolate()` 实时计算插值位置，然后立即写入 `feedbackState` 的 `fingerIndicator` 和 `touchTrailPoints`。`onComplete` 回调推进到下一个动作——若动作列表未完成则递归调用 `play()`，否则切换状态为 `Finished`。
+
+### 9.3 背压与帧跳过
+
+当系统负载导致帧回调延迟时（如连续两帧间隔超过 32ms），`FrameTimer` 自动跳过中间状态——`onFrame` 仅以最新进度调用一次，不累积过期帧。这确保动画始终追赶上最新进度，不会因卡顿而累积延迟。
+
+帧跳过的工作原理：`withFrameNanos` 返回的 `frameTimeNanos` 永远是最新的帧时间戳。即便前一帧因 UI 线程繁忙而被跳过，`frameTimeNanos` 仍然是当前帧的实际时间，`elapsed = frameTimeNanos - startNanos` 计算出的进度已经包含了被跳过的帧时间。因此动画进度总是基于真实时间而非帧计数，不会因丢帧而滞后于真实时间。
+
+这种设计使得播放器在低端设备上也能够保持动画的同步性——可能帧率降低（跳过的帧不渲染），但动画的最终总时长始终精确等于 `durationMs`，与设备帧率无关。

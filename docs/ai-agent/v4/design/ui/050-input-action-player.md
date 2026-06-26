@@ -102,6 +102,10 @@ class InputActionPlayer(
 | `row1IndicatorState` | `StateFlow<InputActionFingerIndicator?>` | Row 1（`CandidateListPanel`）指示器状态 |
 | `row2IndicatorState` | `StateFlow<InputActionFingerIndicator?>` | Row 2（`InputListPanel`）指示器状态 |
 
+### 生命周期与清理
+
+`InputActionPlayer` 的动画循环由 `FrameTimer` 驱动，`FrameTimer` 的协程运行在构造函数传入的 `scope` 中。`scope` 通常来自 ViewModel 的 `viewModelScope`。ViewModel 销毁时，通过将 `FrameTimer` 的作用域取消来停止播放——无需额外清理步骤。`FrameTimer` 的协程在父作用域取消时自动终止。
+
 ### 动作分发逻辑
 
 `InputActionPlayer` 在执行每个 `InputAction` 时，通过 `positionResolver` 将语义标识解析为归一化坐标，经由 `feedbackState` 写入视觉反馈，同时通过 `viewModel.handleIntent()` 发射引擎意图。
@@ -255,7 +259,7 @@ data class PlayerRowIndicator(
 
 ### Interpolate 阶段
 
-对于需要路径动画的动作（如 `SwipeTo`），`InputActionPlayer` 在起始点和目标点之间进行路径插值。插值算法生成一组有序的归一化坐标点序列，点间距由动画时长和帧率决定（默认 60fps）。插值使用二次贝塞尔曲线，控制点沿法线方向偏移。对于 `KeyDown` 和 `KeyUp` 等点动作，不进行插值，直接使用解析后的单点坐标。
+对于需要路径动画的动作（如 `SwipeTo`），`InputActionPlayer` 在起始点和目标点之间进行路径插值。插值坐标点由 `FrameTimer` 驱动的每帧回调实时计算——每帧根据当前进度调用 `InputActionPathInterpolator.interpolate()` 生成单点坐标，帧间隔由 `withFrameNanos` 与 Choreographer 同步（通常 16.6ms @60fps）。插值使用二次贝塞尔曲线，控制点沿法线方向偏移。对于 `KeyDown` 和 `KeyUp` 等点动作，不进行插值，直接使用解析后的单点坐标。
 
 ### Write 阶段
 
@@ -263,4 +267,4 @@ data class PlayerRowIndicator(
 
 ### Draw 阶段
 
-`GestureFeedbackPanel` 作为数据管线的终端，读取 `GestureFeedbackState` 中的归一化坐标，通过反归一化转换为像素坐标后在 `Canvas` 上绘制。绘制内容包括：手指指示器圆形、按键高亮矩形、触摸轨迹贝塞尔曲线。同时，`CandidateListPanel` 和 `InputListPanel` 分别读取各自的行指示器状态，绘制行级指示器。整个管线的帧率由 Compose 的重组机制保证，默认与屏幕刷新率同步。
+`GestureFeedbackPanel` 作为数据管线的终端，读取 `GestureFeedbackState` 中的归一化坐标，通过反归一化转换为像素坐标后在 `Canvas` 上绘制。绘制内容包括：手指指示器圆形、按键高亮矩形、触摸轨迹贝塞尔曲线。同时，`CandidateListPanel` 和 `InputListPanel` 分别读取各自的行指示器状态，绘制行级指示器。动画帧循环由 `FrameTimer` 的 `withFrameNanos` 驱动，而非依赖 Compose 重组——每帧回调中写入 `StateFlow` 的值，`GestureFeedbackPanel` 通过 `collectAsState()` 订阅变化，重组仅发生在值实际变化时。这种设计避免了无意义的连续重组，将绘制与帧信号精确对齐。

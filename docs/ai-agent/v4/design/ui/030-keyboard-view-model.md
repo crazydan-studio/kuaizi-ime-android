@@ -260,8 +260,8 @@ class KeyboardViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        // ViewModel 不负责销毁引擎——引擎的生命周期由 :app 管理
-        feedbackState.clear()
+        actionPlayer.stop()           // 停止播放器动画
+        feedbackState.clear()          // 清理手势反馈状态
     }
 
     // ─── 内部实现 ────────────────────────────────────────────────
@@ -363,6 +363,10 @@ class KeyboardViewModel(
     }
 }
 ```
+
+`onCleared()` 确保 ViewModel 被清除时释放所有资源：停止 InputActionPlayer 的动画帧循环（通过取消其内部协程）、清理 GestureFeedbackState 的临时状态。由于 InputActionPlayer 的 scope 基于 viewModelScope，其协程在 ViewModel 清除时自动取消——onCleared() 中的 stop() 调用确保播放器内部状态标记已清理，而非仅依赖协程取消的隐式行为。
+
+ViewModel 清除 → onCleared() → actionPlayer.stop() → FrameTimer 协程取消 → feedbackState.clear() → 手指指示器/轨迹清除。每一步都是显式调用，不依赖最终化或 GC。
 
 ---
 
@@ -699,4 +703,4 @@ class IMEService : InputMethodService() {
 
 6. **启动输入**：`IMEService.onStartInputView()` 中调用 `engine.start(startupConfig)` 启动输入法，传入从 `EditorInfo` 解析的 `StartupConfig`。`onCurrentInputMethodSubtypeChanged()` 中同样调用 `engine.start()`，但 `editorInputType` 为 `null` 以确保不覆盖已识别的编辑器类型。
 
-7. **关闭与销毁**：`IMEService.onFinishInputView()` 中调用 `engine.close()` 关闭输入法（仅隐藏面板，状态保持不变）。`IMEService.onDestroy()` 中的清理遵循严格的顺序：先释放播放器资源，再断开桥梁，最后销毁引擎。`detachEditorBridge(bridge)` 必须在 `destroy()` 前显式调用，而非依赖 `destroy()` 自动注销，这是基于桥梁所有权原则——桥梁由 `IMEService` 创建和拥有，`attach`/`detach` 是宿主模块的对称操作，引擎仅是桥梁的消费者。`destroy()` 内部对 `_editorBridges` 仅执行防御性 `clear()`，不调用 `detachEditorBridge()` 的注销逻辑。ViewModel 的 `onCleared()` 仅清理自身资源（如 `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。
+7. **关闭与销毁**：`IMEService.onFinishInputView()` 中调用 `engine.close()` 关闭输入法（仅隐藏面板，状态保持不变）。`IMEService.onDestroy()` 中的清理遵循严格的顺序：先释放播放器资源，再断开桥梁，最后销毁引擎。`detachEditorBridge(bridge)` 必须在 `destroy()` 前显式调用，而非依赖 `destroy()` 自动注销，这是基于桥梁所有权原则——桥梁由 `IMEService` 创建和拥有，`attach`/`detach` 是宿主模块的对称操作，引擎仅是桥梁的消费者。`destroy()` 内部对 `_editorBridges` 仅执行防御性 `clear()`，不调用 `detachEditorBridge()` 的注销逻辑。ViewModel 的 `onCleared()` 仅清理自身资源（`actionPlayer.stop()` + `feedbackState.clear()`），不负责销毁引擎和播放器——引擎和播放器的生命周期由 `:app` 管理，比 ViewModel 更长（引擎和播放器在 `onCreate()` 中创建，ViewModel 在 `onCreateInputView()` 中创建）。
