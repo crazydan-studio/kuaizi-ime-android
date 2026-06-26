@@ -70,11 +70,13 @@ class ConfigDataStore(private val context: Context) {
         new: UiConfig,
     ) {
         if (old.keyboardInputMode != new.keyboardInputMode)
-            prefs[keyboardInputModeKey] = new.keyboardInputMode
+            prefs[keyboardInputModeKey] = new.keyboardInputMode.name
         if (old.keyboardHandMode != new.keyboardHandMode)
-            prefs[keyboardHandModeKey] = new.keyboardHandMode
+            prefs[keyboardHandModeKey] = new.keyboardHandMode.name
         if (old.keyboardThemeType != new.keyboardThemeType)
-            prefs[keyboardThemeTypeKey] = new.keyboardThemeType
+            prefs[keyboardThemeTypeKey] = new.keyboardThemeType.name
+        if (old.keyPopupTipsEnabled != new.keyPopupTipsEnabled)
+            prefs[keyPopupTipsEnabledKey] = new.keyPopupTipsEnabled
         if (old.audioFeedbackEnabled != new.audioFeedbackEnabled)
             prefs[audioFeedbackEnabledKey] = new.audioFeedbackEnabled
         if (old.hapticFeedbackEnabled != new.hapticFeedbackEnabled)
@@ -85,10 +87,25 @@ class ConfigDataStore(private val context: Context) {
             prefs[gestureSlippingTrailEnabledKey] = new.gestureSlippingTrailEnabled
         if (old.clipPopupTipsEnabled != new.clipPopupTipsEnabled)
             prefs[clipPopupTipsEnabledKey] = new.clipPopupTipsEnabled
-        // ... 按需补充其余 UiConfig 字段
+        if (old.clipPastePopupTipsEnabled != new.clipPastePopupTipsEnabled)
+            prefs[clipPastePopupTipsEnabledKey] = new.clipPastePopupTipsEnabled
+        if (old.clipPopupTipsTimeout != new.clipPopupTipsTimeout)
+            prefs[clipPopupTipsTimeoutKey] = new.clipPopupTipsTimeout
+        if (old.adaptDesktopSwipeUpGesture != new.adaptDesktopSwipeUpGesture)
+            prefs[adaptDesktopSwipeUpGestureKey] = new.adaptDesktopSwipeUpGesture
+        if (old.candidatesPagingAudioEnabled != new.candidatesPagingAudioEnabled)
+            prefs[candidatesPagingAudioEnabledKey] = new.candidatesPagingAudioEnabled
+        if (old.practicePlaybackSpeed != new.practicePlaybackSpeed)
+            prefs[practicePlaybackSpeedKey] = new.practicePlaybackSpeed
+        if (old.practiceShowFingerOverlay != new.practiceShowFingerOverlay)
+            prefs[practiceShowFingerOverlayKey] = new.practiceShowFingerOverlay
+        if (old.practiceShowSwipeTrail != new.practiceShowSwipeTrail)
+            prefs[practiceShowSwipeTrailKey] = new.practiceShowSwipeTrail
     }
 }
 ```
+
+> **完整字段覆盖**：所有 16 个 UiConfig 字段均被差异检查覆盖。枚举类型（KeyboardInputMode、KeyboardHandMode、KeyboardThemeType）通过 `name` 序列化。
 
 > `EngineConfigDataStoreKeys` 和 `UiConfigDataStoreKeys` 由 `:app-codegen` 模块通过 KSP 自动生成，详见 [010-代码生成](../app-codegen/010-codegen.md)。
 
