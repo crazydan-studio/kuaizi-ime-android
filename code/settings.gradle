@@ -18,3 +18,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Kuaizi IME"
 include ':app'
+include ':engine'
+include ':ui'
+include ':app-codegen'
