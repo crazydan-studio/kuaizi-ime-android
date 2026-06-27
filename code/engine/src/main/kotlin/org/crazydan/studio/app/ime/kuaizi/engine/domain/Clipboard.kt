@@ -5,7 +5,7 @@ import kotlinx.coroutines.withContext
 
 data class Clipboard(
     val currentText: String? = null,
-    val inputTextType: InputTextType? = null,
+    val showTip: Boolean = false,
     val clips: List<InputClip> = emptyList(),
     val disabled: Boolean = false,
 )

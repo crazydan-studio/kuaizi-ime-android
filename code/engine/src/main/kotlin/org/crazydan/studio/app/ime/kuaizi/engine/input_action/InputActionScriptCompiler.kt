@@ -108,7 +108,7 @@ class InputActionScriptCompiler {
     }
 
     private fun requireKeyForChar(char: String): InputKey {
-        return InputKey.Char
+        return InputKey.Char(text = char)
     }
 
     private fun textToPinyinSegments(text: String): List<PinyinSegment> {

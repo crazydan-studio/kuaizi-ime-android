@@ -10,5 +10,6 @@ data class InputFavorite(
     val text: String,
     val type: InputTextType? = null,
     val usageCount: Int = 0,
-    val createdAt: Long = System.currentTimeMillis(),
+    val createdAt: Long = 0L,
+    val usedAt: Long = 0L,
 )

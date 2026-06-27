@@ -1,46 +1,64 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.dict
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 class ViterbiDecoder(private val model: HmmModel) {
-    data class Result(
+
+    data class DecodeResult(
         val states: List<HmmState>,
         val probability: Double,
     )
 
-    fun decode(observations: List<HmmObservation>, topN: Int = 5): List<Result> {
-        if (observations.isEmpty() || model.states.isEmpty()) return emptyList()
+    suspend fun decode(observations: List<HmmObservation>): List<DecodeResult> =
+        withContext(Dispatchers.Default) {
+            if (observations.isEmpty()) return@withContext emptyList()
 
-        var currentPaths: Map<List<HmmState>, Double> = model.initialProb.mapKeys {
-            listOf(it.key)
-        }
+            val results = mutableListOf<DecodeResult>()
+            val viterbi = Array(observations.size) { mutableMapOf<HmmState, Double>() }
+            val backpointer = Array(observations.size) { mutableMapOf<HmmState, HmmState>() }
 
-        for (obs in observations) {
-            val newPaths = mutableMapOf<List<HmmState>, Double>()
+            for (state in model.states) {
+                val p = model.initialProb(state) * model.emissionProb(state, observations[0])
+                if (p > 0.0) {
+                    viterbi[0][state] = p
+                }
+            }
 
-            for ((path, prob) in currentPaths) {
-                val lastState = path.last()
-                val transitions = model.transitionProb[lastState] ?: continue
-
-                for ((nextState, transProb) in transitions) {
-                    val emission = model.emissionProb[nextState]?.get(obs) ?: continue
-                    val newProb = prob + transProb + emission
-                    val newPath = path + nextState
-
-                    val currentBest = newPaths[newPath]
-                    if (currentBest == null || newProb > currentBest) {
-                        newPaths[newPath] = newProb
+            for (t in 1 until observations.size) {
+                for (currState in model.states) {
+                    var maxProb = 0.0
+                    var bestPrev: HmmState? = null
+                    for (prevState in viterbi[t - 1].keys) {
+                        val p = viterbi[t - 1][prevState]!! *
+                            model.transitionProb(prevState, currState) *
+                            model.emissionProb(currState, observations[t])
+                        if (p > maxProb) {
+                            maxProb = p
+                            bestPrev = prevState
+                        }
+                    }
+                    if (maxProb > 0.0 && bestPrev != null) {
+                        viterbi[t][currState] = maxProb
+                        backpointer[t][currState] = bestPrev
                     }
                 }
             }
 
-            currentPaths = newPaths.entries
-                .sortedByDescending { it.value }
-                .take(topN)
-                .associate { it.toPair() }
-        }
+            val lastStates = viterbi.last().entries.sortedByDescending { it.value }
+            for (entry in lastStates.take(5)) {
+                val path = mutableListOf<HmmState>()
+                var state: HmmState = entry.key
+                for (t in observations.size - 1 downTo 1) {
+                    path.add(0, state)
+                    state = backpointer[t][state] ?: break
+                }
+                path.add(0, state)
+                if (path.size == observations.size) {
+                    results.add(DecodeResult(path, entry.value))
+                }
+            }
 
-        return currentPaths.entries
-            .sortedByDescending { it.value }
-            .take(topN)
-            .map { (path, prob) -> Result(path, prob) }
-    }
+            results
+        }
 }

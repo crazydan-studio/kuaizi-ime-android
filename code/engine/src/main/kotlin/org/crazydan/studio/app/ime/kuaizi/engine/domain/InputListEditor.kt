@@ -16,7 +16,7 @@ class InputListEditor {
         redoStack.clear()
     }
 
-    fun pushRedo(list: InputList) {
+    private fun pushRedo(list: InputList) {
         if (redoStack.size >= maxStackSize) {
             redoStack.removeFirst()
         }
@@ -24,19 +24,14 @@ class InputListEditor {
     }
 
     fun undo(current: InputList): InputList {
-        if (undoStack.isEmpty()) return current
+        val previous = undoStack.removeLastOrNull() ?: return current
         pushRedo(current)
-        return undoStack.removeLast()
+        return previous
     }
 
-    fun redo(current: InputList): InputList? {
-        if (redoStack.isEmpty()) return null
+    fun redo(current: InputList): InputList {
+        val next = redoStack.removeLastOrNull() ?: return current
         pushUndo(current)
-        return redoStack.removeLast()
-    }
-
-    fun clear() {
-        undoStack.clear()
-        redoStack.clear()
+        return next
     }
 }
