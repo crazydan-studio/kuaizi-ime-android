@@ -5,8 +5,8 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import org.crazydan.studio.app.ime.kuaizi.engine.HapticPlayer
 import org.crazydan.studio.app.ime.kuaizi.engine.HapticType
+import org.crazydan.studio.app.ime.kuaizi.ui.HapticPlayer
 
 class AndroidHapticPlayer(context: Context) : HapticPlayer {
 

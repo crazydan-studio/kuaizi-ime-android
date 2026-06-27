@@ -2,8 +2,8 @@ package org.crazydan.studio.app.ime.kuaizi
 
 import android.content.Context
 import android.media.SoundPool
-import org.crazydan.studio.app.ime.kuaizi.engine.AudioPlayer
 import org.crazydan.studio.app.ime.kuaizi.engine.AudioType
+import org.crazydan.studio.app.ime.kuaizi.ui.AudioPlayer
 
 class AndroidAudioPlayer(context: Context) : AudioPlayer {
 
