@@ -17,4 +17,6 @@ kotlin {
 dependencies {
     implementation(libs.ksp.api)
     implementation(libs.kotlin.compiler.embeddable)
+
+    implementation(libs.kotlinpoet.ksp)
 }
