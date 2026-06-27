@@ -1,19 +1,20 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.panel
 
 import androidx.compose.runtime.Composable
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
+import androidx.compose.ui.Modifier
+import org.crazydan.studio.app.ime.kuaizi.engine.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerIndicator
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 
 @Composable
 fun CandidateListPanel(
     candidates: List<InputWord>,
-    pageIndex: Int,
-    hasMore: Boolean,
+    selectedIndex: Int,
+    layoutState: CandidateListLayoutState,
+    onLayoutStateChanged: (CandidateListLayoutState) -> Unit = {},
     showIndicator: Boolean = false,
-    onCandidateSelected: (InputWord) -> Unit = {},
-    onPageChanged: (PageDirection) -> Unit = {},
+    indicatorState: InputActionFingerIndicator? = null,
+    onCandidateTap: (Int) -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
-    // TODO: Implement candidate list panel
-    //   - Renders scrollable candidate list
-    //   - Supports carousel paging
-    //   - Built-in IndicatorOverlay when showIndicator is true
 }

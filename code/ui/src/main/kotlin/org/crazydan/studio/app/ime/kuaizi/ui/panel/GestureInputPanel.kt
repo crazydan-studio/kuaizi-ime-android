@@ -1,14 +1,14 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.panel
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
+import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.InputGesture
 
 @Composable
 fun GestureInputPanel(
-    onGesture: (Any) -> Unit,
+    keyLayoutState: KeyLayoutState,
+    onGesture: (InputGesture) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    // TODO: Implement transparent touch layer
-    //   - Captures touch events
-    //   - Normalizes coordinates
-    //   - Recognizes gestures (tap, long press, swipe, flip)
-    //   - Outputs InputGesture to ViewModel
 }

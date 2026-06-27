@@ -73,22 +73,9 @@ class KeyboardViewModel(
 
     private fun launchEffectCollection() {
         viewModelScope.launch {
-            engine.effect
-                .channelFlow {
-                    engine.effect.collect { effect ->
-                        when (effect) {
-                            is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
-                                trySend(effect)
-                            }
-                            is ImeEffect.PopupTip -> {
-                                send(effect)
-                            }
-                        }
-                    }
-                }
-                .collect { effect ->
-                    processEffect(effect)
-                }
+            engine.effect.collect { effect ->
+                processEffect(effect)
+            }
         }
     }
 
@@ -125,6 +112,9 @@ class KeyboardViewModel(
                 }
             }
             is ImeEffect.PlayAudio -> {
+                if (effect.type == AudioType.PageFlip && !config.ui.candidatesPagingAudioEnabled) {
+                    return
+                }
                 if (config.ui.audioFeedbackEnabled) {
                     audioPlayer?.play(effect.type)
                 }

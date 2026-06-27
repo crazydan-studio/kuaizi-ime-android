@@ -55,8 +55,8 @@ class InputActionPlayer(
         job?.cancel()
         job = scope.launch {
             _playbackState.value = InputActionPlayerState.Playing(0, s.actions.size)
-            
-            val frameNanos = 16_666_667L // ~60fps
+
+            val frameNanos = 16_666_667L
             var currentIndex = 0
             val startTime = System.nanoTime()
 
@@ -64,7 +64,6 @@ class InputActionPlayer(
                 val frameTime = System.nanoTime()
                 val elapsed = frameTime - startTime
 
-                // Process due actions
                 while (currentIndex < s.actions.size) {
                     val action = s.actions[currentIndex]
                     val actionTimeMs = action.startTime
@@ -84,7 +83,6 @@ class InputActionPlayer(
                     break
                 }
 
-                // Wait for next frame
                 val nextFrameTime = ((elapsed / frameNanos) + 1) * frameNanos
                 val delayNanos = nextFrameTime - (System.nanoTime() - startTime)
                 if (delayNanos > 0) {
@@ -106,7 +104,6 @@ class InputActionPlayer(
     }
 
     fun resume() {
-        // restart from paused position
         play()
     }
 
@@ -135,15 +132,14 @@ class InputActionPlayer(
                         )
                     )
                 }
-                val key = try { InputKey.valueOf(action.key) } catch (_: Exception) { InputKey.Char }
-                viewModel.handleIntent(ImeIntent.PressKey(key, KeyGesture.Tap))
+                viewModel.handleIntent(ImeIntent.PressKey(action.key, KeyGesture.Tap))
             }
+
             is InputAction.SwipeTo -> {
                 val fromPos = positionResolver.resolve(action.fromKey)
                 val toPos = positionResolver.resolve(action.toKey)
                 if (fromPos != null && toPos != null) {
-                    val interpolator = InputActionPathInterpolator()
-                    val path = interpolator.interpolate(fromPos, toPos, steps = 10)
+                    val path = generateSmoothPath(fromPos, toPos, 10)
                     feedbackState.setTouchTrailPoints(path)
                     feedbackState.setFingerIndicator(
                         InputActionFingerIndicator(
@@ -153,18 +149,19 @@ class InputActionPlayer(
                         )
                     )
                 }
-                val key = try { InputKey.valueOf(action.toKey) } catch (_: Exception) { InputKey.Char }
-                viewModel.handleIntent(ImeIntent.PressKey(key, KeyGesture.Swipe))
+                viewModel.handleIntent(ImeIntent.PressKey(action.toKey, KeyGesture.Swipe))
             }
+
             is InputAction.KeyUp -> {
                 feedbackState.setFingerIndicator(
                     InputActionFingerIndicator(
-                        position = positionResolver.resolve(action.key) ?: OffsetF(),
+                        position = positionResolver.resolve(action.key) ?: OffsetF.Zero,
                         pressed = false,
                         visible = true,
                     )
                 )
             }
+
             is InputAction.SelectCandidate -> {
                 val pos = positionResolver.resolveCandidatePosition(action.candidateIndex)
                 if (pos != null) {
@@ -173,11 +170,7 @@ class InputActionPlayer(
                             position = pos,
                             pressed = true,
                             visible = true,
-                            clickAnimation = ClickAnimation(
-                                progress = 1f,
-                                maxRadius = 15f,
-                                color = 0xFF1976D2,
-                            ),
+                            clickAnimation = InputActionFingerIndicator.ClickAnimation.Pressing,
                         )
                     )
                     _row1IndicatorState.value = InputActionFingerIndicator(
@@ -189,11 +182,19 @@ class InputActionPlayer(
                 val word = InputWord.Pinyin(text = "", spell = "")
                 viewModel.handleIntent(ImeIntent.SelectCandidate(word))
             }
+
             is InputAction.Wait -> { /* no-op */ }
+
             is InputAction.SwitchKeyboard -> {
-                val type = try { KeyboardType.valueOf(action.targetType) } catch (_: Exception) { KeyboardType.Pinyin }
-                viewModel.handleIntent(ImeIntent.SwitchKeyboard(type))
+                viewModel.handleIntent(ImeIntent.SwitchKeyboard(action.targetType))
             }
+        }
+    }
+
+    private fun generateSmoothPath(from: OffsetF, to: OffsetF, steps: Int): List<OffsetF> {
+        return (0..steps).map { i ->
+            val t = i.toFloat() / steps
+            InputActionPathInterpolator.interpolate(from, to, t)
         }
     }
 }
@@ -215,9 +216,9 @@ class ComposeInputActionPositionResolver : InputActionPositionResolver {
         _currentInputListLayout = state
     }
 
-    override fun resolve(key: String): OffsetF? {
-        // Simple heuristic: position in center of panel
-        return OffsetF(0.5f, 0.5f)
+    override fun resolve(key: InputKey): OffsetF? {
+        val layout = _currentKeyLayoutState ?: return null
+        return layout.keyPositions[key]?.center
     }
 
     override fun resolveCandidatePosition(index: Int): OffsetF? {
