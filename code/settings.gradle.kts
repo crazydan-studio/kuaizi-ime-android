@@ -1,3 +1,5 @@
+rootProject.name = "Kuaizi-IME"
+
 pluginManagement {
     repositories {
         mavenLocal()
@@ -16,8 +18,6 @@ dependencyResolutionManagement {
         maven { url = uri("https://jitpack.io") }
     }
 }
-
-rootProject.name = "Kuaizi-IME"
 
 include(":app")
 include(":engine")
