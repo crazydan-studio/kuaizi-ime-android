@@ -1,16 +1,15 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.dict
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputCompletion
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
 
 interface ImeDictProvider {
-    fun query(pinyin: String): List<InputWord>
+    suspend fun query(pinyin: String): List<InputWord>
 
-    fun queryPrefix(prefix: String): List<InputWord>
+    suspend fun queryPrefix(prefix: String): List<InputWord>
 
-    fun recordInput(pinyin: String, word: String)
+    suspend fun queryLatinCompletions(prefix: String): List<InputWord>
 
-    fun queryLatinCompletions(prefix: String): List<InputCompletion.LatinWord>
+    suspend fun queryPhraseCompletions(prefix: String): List<InputWord>
 
-    fun queryPhraseCompletions(prefix: String): List<InputCompletion.PhraseWord>
+    suspend fun recordInput(pinyin: String, word: String)
 }

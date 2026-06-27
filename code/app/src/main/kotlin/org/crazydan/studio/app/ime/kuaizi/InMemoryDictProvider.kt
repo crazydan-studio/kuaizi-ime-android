@@ -17,23 +17,27 @@ class InMemoryDictProvider : ImeDictProvider {
         "xiao" to listOf("小", "晓", "肖"),
     )
 
-    override fun query(pinyin: String): List<InputWord> {
+    override suspend fun query(pinyin: String): List<InputWord> {
         return dict[pinyin]?.mapIndexed { i, text ->
-            InputWord.Pinyin(text = text, spell = pinyin, frequency = 100 - i * 10)
+            InputWord.Pinyin(text = text, spell = null, frequency = 100 - i * 10)
         } ?: emptyList()
     }
 
-    override fun queryPrefix(prefix: String): List<InputWord> {
+    override suspend fun queryPrefix(prefix: String): List<InputWord> {
         return dict.entries.filter { (key, _) ->
             key.startsWith(prefix)
         }.flatMap { (_, values) ->
             values.mapIndexed { i, text ->
-                InputWord.Pinyin(text = text, spell = prefix, frequency = 100 - i * 10)
+                InputWord.Pinyin(text = text, spell = null, frequency = 100 - i * 10)
             }
         }
     }
 
-    override fun recordInput(pinyin: String, word: String) {
+    override suspend fun queryLatinCompletions(prefix: String): List<InputWord> = emptyList()
+
+    override suspend fun queryPhraseCompletions(prefix: String): List<InputWord> = emptyList()
+
+    override suspend fun recordInput(pinyin: String, word: String) {
         // no-op in memory implementation
     }
 }
