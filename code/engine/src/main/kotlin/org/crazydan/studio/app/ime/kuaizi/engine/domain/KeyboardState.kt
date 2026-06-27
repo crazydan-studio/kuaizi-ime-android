@@ -6,10 +6,11 @@ sealed class KeyboardState {
     sealed class PinyinInput : KeyboardState() {
         data class Waiting(val pending: InputItem.Char? = null) : PinyinInput()
         data class Slipping(
-            val startKey: String = "",
-            val level0Key: String = "",
-            val level1Key: String? = null,
-            val level2Key: String? = null,
+            val startKey: InputKey,
+            val level0Key: InputKey,
+            val level1Key: InputKey? = null,
+            val level2Key: InputKey? = null,
+            val nextCharsByLength: Map<Int, List<String>> = emptyMap(),
         ) : PinyinInput()
 
         data class Flipping(
@@ -26,17 +27,21 @@ sealed class KeyboardState {
         ) : CandidateSelection()
 
         data class Filtering(
-            val spell: String = "",
+            val filter: PinyinWordFilter,
+            val filtered: List<InputWord> = emptyList(),
         ) : CandidateSelection()
 
         data class AdvanceFiltering(
-            val radical: String? = null,
-            val tone: Int? = null,
+            val radical: Radical? = null,
+            val tone: Tone? = null,
+            val filtered: List<InputWord> = emptyList(),
         ) : CandidateSelection()
     }
 
     data class CommitOptionChoosing(
-        val options: List<InputWord.CommitOption> = emptyList(),
+        val options: List<CommitOption> = emptyList(),
+        val hasSpell: Boolean = false,
+        val hasVariant: Boolean = false,
     ) : KeyboardState()
 
     sealed class EditorEditing : KeyboardState() {

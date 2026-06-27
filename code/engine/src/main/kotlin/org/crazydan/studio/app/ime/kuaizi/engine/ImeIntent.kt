@@ -22,12 +22,12 @@ sealed class ImeIntent {
     data class LoadCandidates(val pinyin: String) : ImeIntent()
     data class SetCandidates(val candidates: CandidateList) : ImeIntent()
     data class UpdateConfig(val config: ImeConfig) : ImeIntent()
-    data class ExportUserData(val filePath: String) : ImeIntent()
-    data class ImportUserData(val filePath: String, val strategy: ImportStrategy) : ImeIntent()
+    data object ExportUserData : ImeIntent()
+    data class ImportUserData(val filePath: String) : ImeIntent()
 }
 
 enum class EditorEditAction {
-    SELECT_ALL, COPY, PASTE, CUT, UNDO, REDO, BACKSPACE,
+    BACKSPACE, SELECT_ALL, COPY, CUT, PASTE, UNDO, REDO,
 }
 
 enum class PageDirection { Next, Previous }

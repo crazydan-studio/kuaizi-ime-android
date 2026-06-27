@@ -12,68 +12,61 @@ class PinyinIntentHandler(override val type: KeyboardType) : KeyboardIntentHandl
         return when (intent) {
             is ImeIntent.PressKey -> {
                 when {
-                    currentState is KeyboardState.PinyinInput.Waiting && intent.key == InputKey.Char -> {
-                        KeyboardStateTransition(
-                            targetState = KeyboardState.PinyinInput.Waiting,
-                        )
+                    currentState is KeyboardState.PinyinInput.Waiting && intent.key is InputKey.Char -> {
+                        KeyboardStateTransition.InputPinyinChar(' ')
                     }
                     currentState is KeyboardState.PinyinInput.Waiting -> {
-                        KeyboardStateTransition(
-                            targetState = KeyboardState.CandidateSelection.Choosing(),
-                            sideEffects = listOf(ImeIntent.LoadCandidates("")),
-                        )
+                        KeyboardStateTransition.LoadCandidates(emptyList())
                     }
-                    else -> KeyboardStateTransition(currentState)
+                    else -> KeyboardStateTransition.ReturnToIdle
                 }
             }
             is ImeIntent.DeleteInput -> {
-                KeyboardStateTransition(
-                    targetState = KeyboardState.PinyinInput.Waiting,
-                )
+                KeyboardStateTransition.ReturnToIdle
             }
-            else -> KeyboardStateTransition(currentState)
+            else -> KeyboardStateTransition.ReturnToIdle
         }
     }
 }
 
 class NumberKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return KeyboardStateTransition(currentState)
+        return KeyboardStateTransition.ReturnToIdle
     }
 }
 
 class SymbolKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return KeyboardStateTransition(currentState)
+        return KeyboardStateTransition.ReturnToIdle
     }
 }
 
 class EmojiKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return KeyboardStateTransition(currentState)
+        return KeyboardStateTransition.ReturnToIdle
     }
 }
 
 class MathKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return KeyboardStateTransition(currentState)
+        return KeyboardStateTransition.ReturnToIdle
     }
 }
 
 class EditorKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return KeyboardStateTransition(currentState)
+        return KeyboardStateTransition.ReturnToIdle
     }
 }
 
 class CandidateKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return KeyboardStateTransition(currentState)
+        return KeyboardStateTransition.ReturnToIdle
     }
 }
 
 class CommitOptionKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return KeyboardStateTransition(currentState)
+        return KeyboardStateTransition.ReturnToIdle
     }
 }

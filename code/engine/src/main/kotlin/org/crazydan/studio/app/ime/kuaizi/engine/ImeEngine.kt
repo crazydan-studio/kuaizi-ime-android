@@ -30,16 +30,32 @@ class ImeEngine internal constructor(
         val keyboardType = resolveKeyboardType(startupConfig)
         stateMachine.resetTo(keyboardType.initialState())
 
+        val isPassword = startupConfig.editorInputType == EditorInputType.Password
+
         val newState = _state.value.copy(
             keyboard = _state.value.keyboard.copy(type = keyboardType),
+            inputList = if (isPassword) InputList() else _state.value.inputList,
             config = _state.value.config.copy(
                 runtime = _state.value.config.runtime.copy(
-                    keyPopupTipsEnabled = if (startupConfig.editorInputType == EditorInputType.Password) false
-                    else _state.value.config.ui.keyPopupTipsEnabled,
+                    keyPopupTipsEnabled = if (isPassword) false
+                    else _state.value.config.runtime.keyPopupTipsEnabled,
                 ),
             ),
         )
         applyStateUpdate { newState }
+
+        if (_state.value.config.ui.clipPastePopupTipsEnabled
+            && _state.value.clipboard.currentText != null
+        ) {
+            _effect.tryEmit(
+                ImeEffect.PopupTip.Action(
+                    message = "可粘贴内容",
+                    actionLabel = "粘贴",
+                    action = ImeIntent.PasteClip(_state.value.clipboard.currentText!!),
+                    persistent = true,
+                ),
+            )
+        }
     }
 
     fun close() {
@@ -204,11 +220,12 @@ class ImeEngine internal constructor(
             config: ImeConfig = ImeConfig(),
             dictProvider: ImeDictProvider,
         ): ImeEngine {
+            val inputListOp = InputListOperator(InputListEditor())
             return ImeEngine(
                 config = config,
                 dictProvider = dictProvider,
-                stateMachine = KeyboardStateMachine(),
-                inputListOp = InputListOperator(InputListEditor()),
+                stateMachine = KeyboardStateMachine(inputListOp = inputListOp),
+                inputListOp = inputListOp,
             )
         }
     }

@@ -18,7 +18,7 @@ enum class KeyboardType {
             Symbol -> KeyboardState.SymbolChoosing()
             Emoji -> KeyboardState.EmojiChoosing()
             Candidate -> KeyboardState.CandidateSelection.Choosing()
-            CommitOption -> KeyboardState.CommitOptionChoosing
+            CommitOption -> KeyboardState.CommitOptionChoosing()
             Editor -> KeyboardState.EditorEditing.CursorMoving()
         }
     }
@@ -28,8 +28,13 @@ enum class KeyboardInputMode { HexGrid, RectGrid }
 enum class KeyboardHandMode { Left, Right }
 enum class KeyboardThemeType { Light, Night, FollowSystem }
 
-enum class InputKey {
-    Char, Ctrl, Candidate, MathOp, Symbol, Null;
+sealed class InputKey {
+    data class Char(val text: String) : InputKey()
+    data class Ctrl(val type: String) : InputKey()
+    data object Candidate : InputKey()
+    data object MathOp : InputKey()
+    data object Symbol : InputKey()
+    data object Null : InputKey()
 }
 
 enum class KeyGesture { Tap, Slip, Flip, Hold }
