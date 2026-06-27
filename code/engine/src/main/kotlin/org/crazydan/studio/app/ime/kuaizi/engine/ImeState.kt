@@ -18,6 +18,7 @@ data class ToolListState(
 
 data class ToolItem(
     val label: String,
-    val icon: String = "",
+    val icon: String? = null,
+    val intent: ImeIntent? = null,
     val disabled: Boolean = false,
 )

@@ -1,5 +1,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine
 
+typealias ImeEditorAction = EditorAction
+
 sealed class EditorAction {
     abstract val timestamp: Long
 

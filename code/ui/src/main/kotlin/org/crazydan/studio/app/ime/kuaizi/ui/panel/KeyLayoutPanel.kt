@@ -10,24 +10,26 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
 @Composable
 fun KeyLayoutPanel(
-    keyLayoutState: KeyLayoutState,
+    keyTable: List<List<InputKey>> = emptyList(),
+    keyLayoutState: KeyLayoutState = KeyLayoutState(),
+    keyboardInputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
     onLayoutStateChanged: (KeyLayoutState) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalKeyboardColors.current
-    val keyCount = keyLayoutState.keyPositions.size
 
     LaunchedEffect(keyLayoutState) {
-        // Notify parent when layout is computed
+        onLayoutStateChanged(keyLayoutState)
     }
 
     Canvas(modifier = modifier.fillMaxWidth().height(200.dp)) {
-        // Draw key backgrounds
         keyLayoutState.keyPositions.forEach { (key, rectF) ->
             val pixelRect = keyLayoutState.denormalize(rectF, size)
             drawRoundRect(

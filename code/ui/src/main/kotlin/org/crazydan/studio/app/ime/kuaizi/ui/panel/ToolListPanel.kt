@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.ToolListState
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerIndicator
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
@@ -19,7 +20,7 @@ fun ToolListPanel(
     onLayoutStateChanged: (KeyLayoutState) -> Unit = {},
     showIndicator: Boolean = false,
     indicatorState: InputActionFingerIndicator? = null,
-    onToolClick: (String) -> Unit = {},
+    onToolClick: (ImeIntent) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalKeyboardColors.current
@@ -30,11 +31,13 @@ fun ToolListPanel(
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         toolList.tools.forEach { tool ->
-            TextButton(
-                onClick = { onToolClick(tool.label) },
-                enabled = !tool.disabled,
-            ) {
-                Text(text = tool.label, color = colors.functionKeyForeground)
+            if (tool.intent != null) {
+                TextButton(
+                    onClick = { onToolClick(tool.intent) },
+                    enabled = !tool.disabled,
+                ) {
+                    Text(text = tool.label, color = colors.functionKeyForeground)
+                }
             }
         }
     }

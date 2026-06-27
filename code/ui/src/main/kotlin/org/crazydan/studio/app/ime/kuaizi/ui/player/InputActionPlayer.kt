@@ -44,6 +44,7 @@ class InputActionPlayer(
 
     private var job: Job? = null
     private var script: InputActionScript? = null
+    private val frameTimer = FrameTimer(scope)
 
     fun load(script: InputActionScript) {
         this.script = script
@@ -53,43 +54,31 @@ class InputActionPlayer(
     fun play() {
         val s = script ?: return
         job?.cancel()
-        job = scope.launch {
-            _playbackState.value = InputActionPlayerState.Playing(0, s.actions.size)
+        _playbackState.value = InputActionPlayerState.Playing(0, s.actions.size)
 
-            val frameNanos = 16_666_667L
-            var currentIndex = 0
-            val startTime = System.nanoTime()
+        if (s.actions.isEmpty()) {
+            _playbackState.value = InputActionPlayerState.Finished
+            return
+        }
 
-            while (currentIndex < s.actions.size) {
-                val frameTime = System.nanoTime()
-                val elapsed = frameTime - startTime
-
-                while (currentIndex < s.actions.size) {
-                    val action = s.actions[currentIndex]
-                    val actionTimeMs = action.startTime
-                    val actionTimeNanos = actionTimeMs * 1_000_000L
-
-                    if (elapsed < actionTimeNanos) break
-
-                    processAction(action, s.actions.getOrNull(currentIndex + 1))
-                    currentIndex++
-                }
-
+        val totalDuration = s.totalDuration.coerceAtLeast(1L)
+        frameTimer.start(
+            durationMs = totalDuration,
+            onFrame = { progress ->
+                val currentIndex = (progress * s.actions.size).toInt().coerceAtMost(s.actions.size - 1)
                 _playbackState.value = InputActionPlayerState.Playing(currentIndex, s.actions.size)
 
-                if (currentIndex >= s.actions.size) {
-                    _playbackState.value = InputActionPlayerState.Finished
-                    feedbackState.clear()
-                    break
+                var i = 0
+                while (i <= currentIndex && i < s.actions.size) {
+                    processAction(s.actions[i], s.actions.getOrNull(i + 1))
+                    i++
                 }
-
-                val nextFrameTime = ((elapsed / frameNanos) + 1) * frameNanos
-                val delayNanos = nextFrameTime - (System.nanoTime() - startTime)
-                if (delayNanos > 0) {
-                    delay(delayNanos / 1_000_000)
-                }
-            }
-        }
+            },
+            onComplete = {
+                _playbackState.value = InputActionPlayerState.Finished
+                feedbackState.clear()
+            },
+        )
     }
 
     fun pause() {
