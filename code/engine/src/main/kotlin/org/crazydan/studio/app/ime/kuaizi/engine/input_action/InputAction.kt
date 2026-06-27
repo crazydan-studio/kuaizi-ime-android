@@ -1,23 +1,26 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.input_action
 
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
+
 sealed class InputAction {
     abstract val startTime: Long
 
     data class KeyDown(
         override val startTime: Long,
-        val key: String,
+        val key: InputKey,
     ) : InputAction()
 
     data class SwipeTo(
         override val startTime: Long,
-        val fromKey: String,
-        val toKey: String,
+        val fromKey: InputKey,
+        val toKey: InputKey,
         val duration: Long,
     ) : InputAction()
 
     data class KeyUp(
         override val startTime: Long,
-        val key: String,
+        val key: InputKey,
     ) : InputAction()
 
     data class Wait(
@@ -32,6 +35,6 @@ sealed class InputAction {
 
     data class SwitchKeyboard(
         override val startTime: Long,
-        val targetType: String,
+        val targetType: KeyboardType,
     ) : InputAction()
 }

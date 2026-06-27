@@ -22,8 +22,8 @@ sealed class ImeIntent {
     data class LoadCandidates(val pinyin: String) : ImeIntent()
     data class SetCandidates(val candidates: CandidateList) : ImeIntent()
     data class UpdateConfig(val config: ImeConfig) : ImeIntent()
-    data object ExportUserData : ImeIntent()
-    data class ImportUserData(val filePath: String) : ImeIntent()
+    data class ExportUserData(val filePath: String) : ImeIntent()
+    data class ImportUserData(val filePath: String, val strategy: ImportStrategy) : ImeIntent()
 }
 
 enum class EditorEditAction {
