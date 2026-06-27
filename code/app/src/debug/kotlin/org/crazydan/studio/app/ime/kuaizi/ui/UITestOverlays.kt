@@ -3,10 +3,12 @@ package org.crazydan.studio.app.ime.kuaizi.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
 @Composable
 fun LayoutBoundsOverlay(
@@ -30,7 +32,11 @@ fun ComponentInfoOverlay(
     info: Map<String, String>,
     modifier: Modifier = Modifier,
 ) {
-    // Handled by DebugUITestOverlay logging
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val infoText = info.entries.joinToString("\n") { "${it.key}: ${it.value}" }
+    LaunchedEffect(componentName) {
+        android.util.Log.d("UITest", "Component: $componentName\n$infoText")
+    }
 }
 
 @Composable
@@ -38,7 +44,7 @@ fun ColorPickerOverlay(
     onColorPicked: (Color) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    // Stub - color picker overlay
+    // Stub for debug color picker
 }
 
 @Composable
@@ -64,5 +70,10 @@ fun RecompositionOverlay(
     recompositionCount: Int,
     modifier: Modifier = Modifier,
 ) {
-    // Handled by DebugUITestOverlay logging
+    val context = androidx.compose.ui.platform.LocalContext.current
+    LaunchedEffect(recompositionCount) {
+        if (recompositionCount > 0 && recompositionCount % 10 == 0) {
+            android.util.Log.d("UITest", "Recompositions: $recompositionCount")
+        }
+    }
 }

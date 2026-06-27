@@ -13,19 +13,30 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.Tone
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Variant
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.VariantType
 
-class ImeSqliteDictProvider(context: Context) : ImeDictProvider {
+class ImeSqliteDictProvider(
+    context: Context,
+    private val favoriteDao: FavoriteDao? = null,
+) : ImeDictProvider {
     private val db = DictDatabase.getInstance(context)
     private val repository = DictRepository(
         wordDao = db.pinyinWordDao(),
         phraseDao = db.pinyinPhraseDao(),
         userInputDao = db.userInputDao(),
-        favoriteDao = object : FavoriteDao {
-            override fun getAllFlow() = emptyFlow()
-            override suspend fun getAll(): List<FavoriteEntity> = emptyList()
-            override suspend fun getByText(text: String) = null
-            override suspend fun upsert(entity: FavoriteEntity) {}
-            override suspend fun delete(text: String) {}
-            override suspend fun clearAll() {}
+        favoriteDao = favoriteDao ?: object : FavoriteDao {
+            override fun getAllFlow() = kotlinx.coroutines.flow.emptyFlow()
+            override fun getAll(): List<FavoriteEntity> = emptyList()
+            override fun getByText(text: String) = null
+            override fun upsert(entity: FavoriteEntity) {
+                db.userInputDao().upsert(
+                    org.crazydan.studio.app.ime.kuaizi.engine.dict.db.UserInputEntity(
+                        text = entity.text,
+                        type = "favorite",
+                        freq = entity.usageCount,
+                    )
+                )
+            }
+            override fun delete(text: String) {}
+            override fun clearAll() {}
         },
         hmmDao = db.hmmDao(),
     )
@@ -60,8 +71,13 @@ class ImeSqliteDictProvider(context: Context) : ImeDictProvider {
         }
     }
 
-    override suspend fun queryLatinCompletions(prefix: String): List<InputWord> {
-        return emptyList()
+    override suspend fun queryLatinCompletions(prefix: String): List<InputWord> = withContext(Dispatchers.Default) {
+        repository.lookupByPrefix(prefix).map { entity ->
+            InputWord.Latin(
+                text = entity.text,
+                frequency = entity.freq,
+            )
+        }
     }
 
     override suspend fun queryPhraseCompletions(prefix: String): List<InputWord> {

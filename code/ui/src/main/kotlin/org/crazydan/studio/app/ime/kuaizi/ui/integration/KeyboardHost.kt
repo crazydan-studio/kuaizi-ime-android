@@ -15,6 +15,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.CandidateList
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputList
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Keyboard
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
@@ -59,16 +60,12 @@ fun KeyboardHost(
             candidateList = candidateList,
         )
     }
-    val keyTableGenerator = remember {
-        object : KeyTableGenerator {
-            override fun generate(context: KeyTableContext): List<List<InputKey>> {
-                return emptyList()
-            }
+    val generator = remember {
+        KeyTableGenerator { context ->
+            generateBasicLayout(context)
         }
     }
-    val keyTable = remember(keyTableContext, keyTableGenerator) {
-        keyTableGenerator.generate(keyTableContext)
-    }
+    val keyTable = remember(keyTableContext) { generator.generate(keyTableContext) }
 
     KeyboardTheme(config.ui) {
         when (layoutMode) {
@@ -83,7 +80,7 @@ fun KeyboardHost(
                 viewModel = viewModel,
                 showIndicator = showIndicator,
                 keyTable = keyTable,
-                keyTableGenerator = keyTableGenerator,
+                keyTableGenerator = generator,
                 keyTableContext = keyTableContext,
                 modifier = modifier,
             )
@@ -98,7 +95,7 @@ fun KeyboardHost(
                 viewModel = viewModel,
                 showIndicator = showIndicator,
                 keyTable = keyTable,
-                keyTableGenerator = keyTableGenerator,
+                keyTableGenerator = generator,
                 keyTableContext = keyTableContext,
                 modifier = modifier,
             )
@@ -231,5 +228,37 @@ private fun SeparatedLayout(
                 onGesture = { viewModel.handleGesture(it) },
             )
         }
+    }
+}
+
+private fun generateBasicLayout(context: KeyTableContext): List<List<InputKey>> {
+    return when (context.keyboard.type) {
+        KeyboardType.Pinyin, KeyboardType.Latin -> listOf(
+            listOf(
+                InputKey.Char(text = "q"), InputKey.Char(text = "w"), InputKey.Char(text = "e"),
+                InputKey.Char(text = "r"), InputKey.Char(text = "t"), InputKey.Char(text = "y"),
+                InputKey.Char(text = "u"), InputKey.Char(text = "i"), InputKey.Char(text = "o"),
+                InputKey.Char(text = "p"),
+            ),
+            listOf(
+                InputKey.Char(text = "a"), InputKey.Char(text = "s"), InputKey.Char(text = "d"),
+                InputKey.Char(text = "f"), InputKey.Char(text = "g"), InputKey.Char(text = "h"),
+                InputKey.Char(text = "j"), InputKey.Char(text = "k"), InputKey.Char(text = "l"),
+            ),
+            listOf(
+                InputKey.Ctrl, InputKey.Char(text = "z"), InputKey.Char(text = "x"),
+                InputKey.Char(text = "c"), InputKey.Char(text = "v"), InputKey.Char(text = "b"),
+                InputKey.Char(text = "n"), InputKey.Char(text = "m"), InputKey.Ctrl,
+            ),
+        )
+        KeyboardType.Number -> listOf(
+            listOf(InputKey.Char(text = "1"), InputKey.Char(text = "2"), InputKey.Char(text = "3")),
+            listOf(InputKey.Char(text = "4"), InputKey.Char(text = "5"), InputKey.Char(text = "6")),
+            listOf(InputKey.Char(text = "7"), InputKey.Char(text = "8"), InputKey.Char(text = "9")),
+            listOf(InputKey.Ctrl, InputKey.Char(text = "0"), InputKey.Ctrl),
+        )
+        else -> listOf(
+            listOf(InputKey.Char(text = "a"), InputKey.Char(text = "b"), InputKey.Char(text = "c")),
+        )
     }
 }

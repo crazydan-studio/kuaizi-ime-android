@@ -106,7 +106,12 @@ class InputActionPlayer(
     }
 
     fun setSpeed(speed: Float) {
-        // adjust timing, re-run if playing
+        // Adjust timing, re-run if playing
+        val currentState = _playbackState.value
+        if (currentState is InputActionPlayerState.Playing) {
+            stop()
+            play()
+        }
     }
 
     private fun processAction(action: InputAction, nextAction: InputAction?) {
