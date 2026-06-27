@@ -2,7 +2,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
 import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
 
-class ImeLogger(private val tag: String, private val log: ImeLog) {
+class ImeLogger(private val tag: String, @PublishedApi internal val log: ImeLog) {
 
     inline fun verbose(msg: () -> String) {
         if (log.level.priority <= LogLevel.VERBOSE.priority) {

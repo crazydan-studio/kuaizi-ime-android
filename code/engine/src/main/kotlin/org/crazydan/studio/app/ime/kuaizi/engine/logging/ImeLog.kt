@@ -23,7 +23,7 @@ object ImeLog {
 
     fun logger(cls: KClass<*>): ImeLogger = logger(cls.simpleName ?: "Unknown")
 
-    internal fun dispatch(entry: LogEntry) {
+    @PublishedApi internal fun dispatch(entry: LogEntry) {
         if (entry.level.priority < level.priority) return
         writers.forEach { writer -> writer.write(entry) }
     }
