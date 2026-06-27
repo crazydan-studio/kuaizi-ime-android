@@ -6,18 +6,20 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenLocal()
         mavenCentral()
         google()
-        maven { url 'https://jitpack.io' }
+        maven { url = uri("https://jitpack.io") }
     }
 }
 
-rootProject.name = "Kuaizi IME"
-include ':app'
-include ':engine'
-include ':ui'
-include ':app-codegen'
+rootProject.name = "Kuaizi-IME"
+
+include(":app")
+include(":engine")
+include(":ui")
+include(":app-codegen")
