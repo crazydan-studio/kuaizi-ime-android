@@ -49,7 +49,7 @@ fun KeyboardHost(
     val layoutMode by viewModel.layoutMode.collectAsState()
     val popupTipState by viewModel.popupTipState.collectAsState()
     val toolListState by viewModel.toolListState.collectAsState()
-    val feedbackState = viewModel.feedbackStateRef
+    val feedbackState = viewModel.feedbackState
 
     val keyTableContext = remember(keyboard, inputList, candidateList, config) {
         KeyTableContext(

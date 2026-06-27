@@ -199,30 +199,18 @@ class InputActionPlayer(
     }
 }
 
-class ComposeInputActionPositionResolver : InputActionPositionResolver {
-    private var _currentKeyLayoutState: KeyLayoutState? = null
-    private var _currentCandidateLayout: CandidateListLayoutState? = null
-    private var _currentInputListLayout: InputListLayoutState? = null
-
-    fun updateKeyLayout(state: KeyLayoutState) {
-        _currentKeyLayoutState = state
-    }
-
-    fun updateCandidateLayout(state: CandidateListLayoutState?) {
-        _currentCandidateLayout = state
-    }
-
-    fun updateInputListLayout(state: InputListLayoutState?) {
-        _currentInputListLayout = state
-    }
-
+class ComposeInputActionPositionResolver(
+    private val keyboardLayoutStateProvider: () -> KeyLayoutState?,
+    private val candidateLayoutStateProvider: () -> CandidateListLayoutState?,
+    private val inputListLayoutStateProvider: () -> InputListLayoutState?,
+) : InputActionPositionResolver {
     override fun resolve(key: InputKey): OffsetF? {
-        val layout = _currentKeyLayoutState ?: return null
+        val layout = keyboardLayoutStateProvider() ?: return null
         return layout.keyPositions[key]?.center
     }
 
     override fun resolveCandidatePosition(index: Int): OffsetF? {
-        val layout = _currentCandidateLayout ?: return null
+        val layout = candidateLayoutStateProvider() ?: return null
         val pos = layout.locateItem(index) ?: return null
         val size = layout.panelSize
         return OffsetF(
@@ -232,7 +220,7 @@ class ComposeInputActionPositionResolver : InputActionPositionResolver {
     }
 
     override fun resolveInputItemPosition(index: Int): OffsetF? {
-        val layout = _currentInputListLayout ?: return null
+        val layout = inputListLayoutStateProvider() ?: return null
         val pos = layout.locateItem(index) ?: return null
         val size = layout.panelSize
         return OffsetF(

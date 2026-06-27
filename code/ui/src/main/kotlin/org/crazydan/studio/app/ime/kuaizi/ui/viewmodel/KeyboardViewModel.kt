@@ -1,28 +1,18 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.crazydan.studio.app.ime.kuaizi.engine.*
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.*
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
-
-sealed class PopupTipState {
-    data class Message(
-        val message: String,
-        val timeoutMs: Long = 3000L,
-    ) : PopupTipState()
-
-    data class Action(
-        val message: String,
-        val actionLabel: String,
-        val action: ImeIntent,
-        val persistent: Boolean = false,
-        val timeoutMs: Long = 5000L,
-    ) : PopupTipState()
-}
+import org.crazydan.studio.app.ime.kuaizi.ui.player.ComposeInputActionPositionResolver
+import org.crazydan.studio.app.ime.kuaizi.ui.player.InputActionPlayer
 
 sealed class KeyboardLayoutMode {
     data object Stacked : KeyboardLayoutMode()
@@ -31,7 +21,6 @@ sealed class KeyboardLayoutMode {
 
 class KeyboardViewModel(
     private val engine: ImeEngine,
-    private val feedbackState: GestureFeedbackState = GestureFeedbackState(),
     private val audioPlayer: AudioPlayer? = null,
     private val hapticPlayer: HapticPlayer? = null,
 ) : ViewModel() {
@@ -39,32 +28,35 @@ class KeyboardViewModel(
     val state: StateFlow<ImeState> = engine.state
     val config: ImeConfig get() = state.value.config
 
+    val feedbackState = GestureFeedbackState()
+
     private val _layoutMode = MutableStateFlow<KeyboardLayoutMode>(KeyboardLayoutMode.Stacked)
     val layoutMode: StateFlow<KeyboardLayoutMode> = _layoutMode.asStateFlow()
-
-    val feedbackStateRef: GestureFeedbackState get() = feedbackState
 
     private val _popupTipState = MutableStateFlow<PopupTipState?>(null)
     val popupTipState: StateFlow<PopupTipState?> = _popupTipState.asStateFlow()
 
-    private val _toolListState = MutableStateFlow<ToolListState>(ToolListState())
+    private val _toolListState = MutableStateFlow(ToolListState(emptyList()))
     val toolListState: StateFlow<ToolListState> = _toolListState.asStateFlow()
 
     private var popupTipDismissJob: Job? = null
 
-    private val _actionPlayer = InputActionPlayer(
+    private var _currentKeyLayoutState: KeyLayoutState? = null
+    private var _currentCandidateLayoutState: CandidateListLayoutState? = null
+    private var _currentInputListLayoutState: InputListLayoutState? = null
+
+    val actionPlayer = InputActionPlayer(
         viewModel = this,
         feedbackState = feedbackState,
-        positionResolver = ComposeInputActionPositionResolver(),
+        positionResolver = ComposeInputActionPositionResolver(
+            keyboardLayoutStateProvider = { _currentKeyLayoutState },
+            candidateLayoutStateProvider = { _currentCandidateLayoutState },
+            inputListLayoutStateProvider = { _currentInputListLayoutState },
+        ),
         scope = viewModelScope,
     )
-    val actionPlayer: InputActionPlayer get() = _actionPlayer
 
     val isInputting: Boolean get() = state.value.inputList.hasPending
-
-    private var currentKeyLayoutState = MutableStateFlow(KeyLayoutState())
-    private var currentCandidateLayoutState: Any? = null
-    private var currentInputListLayoutState: Any? = null
 
     init {
         launchEffectCollection()
@@ -73,9 +65,22 @@ class KeyboardViewModel(
 
     private fun launchEffectCollection() {
         viewModelScope.launch {
-            engine.effect.collect { effect ->
-                processEffect(effect)
-            }
+            engine.effect
+                .channelFlow {
+                    engine.effect.collect { effect ->
+                        when (effect) {
+                            is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
+                                trySend(effect)
+                            }
+                            is ImeEffect.PopupTip -> {
+                                send(effect)
+                            }
+                        }
+                    }
+                }
+                .collect { effect ->
+                    processEffect(effect)
+                }
         }
     }
 
@@ -112,16 +117,13 @@ class KeyboardViewModel(
                 }
             }
             is ImeEffect.PlayAudio -> {
-                if (effect.type == AudioType.PageFlip && !config.ui.candidatesPagingAudioEnabled) {
-                    return
-                }
-                if (config.ui.audioFeedbackEnabled) {
-                    audioPlayer?.play(effect.type)
+                if (state.value.config.ui.audioFeedbackEnabled && audioPlayer != null) {
+                    audioPlayer.play(effect.type)
                 }
             }
             is ImeEffect.PlayHaptic -> {
-                if (config.ui.hapticFeedbackEnabled) {
-                    hapticPlayer?.play(effect.type)
+                if (state.value.config.ui.hapticFeedbackEnabled && hapticPlayer != null) {
+                    hapticPlayer.play(effect.type)
                 }
             }
         }
@@ -176,15 +178,15 @@ class KeyboardViewModel(
     }
 
     fun updateKeyLayoutState(state: KeyLayoutState) {
-        currentKeyLayoutState.value = state
+        _currentKeyLayoutState = state
     }
 
-    fun updateCandidateLayoutState(state: Any?) {
-        currentCandidateLayoutState = state
+    fun updateCandidateLayoutState(state: CandidateListLayoutState) {
+        _currentCandidateLayoutState = state
     }
 
-    fun updateInputListLayoutState(state: Any?) {
-        currentInputListLayoutState = state
+    fun updateInputListLayoutState(state: InputListLayoutState) {
+        _currentInputListLayoutState = state
     }
 
     private fun computeToolList(keyboardType: KeyboardType): ToolListState {
@@ -208,5 +210,16 @@ class KeyboardViewModel(
         super.onCleared()
         actionPlayer.stop()
         feedbackState.clear()
+    }
+
+    class Factory(
+        private val engine: ImeEngine,
+        private val audioPlayer: AudioPlayer? = null,
+        private val hapticPlayer: HapticPlayer? = null,
+    ) : ViewModelProvider.Factory {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return KeyboardViewModel(engine, audioPlayer, hapticPlayer) as T
+        }
     }
 }
