@@ -1,64 +1,75 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
 
 interface LogWriter {
     fun write(entry: LogEntry)
-    fun flush()
+    suspend fun flush()
 }
 
 class LogcatWriter(
     private val bufferSize: Int = 0,
 ) : LogWriter {
-    private val channel: java.util.concurrent.BlockingQueue<LogEntry>? =
-        if (bufferSize > 0) java.util.concurrent.LinkedBlockingQueue(bufferSize) else null
+    private val channel: Channel<LogEntry>? =
+        if (bufferSize > 0) Channel(bufferSize) else null
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
-        if (channel != null) {
-            Thread {
-                while (true) {
-                    val entry = channel.take()
+        channel?.let { ch ->
+            scope.launch {
+                for (entry in ch) {
                     android.util.Log.println(entry.level.priority, entry.tag, entry.message)
                 }
-            }.apply { isDaemon = true }.start()
+            }
         }
     }
 
     override fun write(entry: LogEntry) {
         val ch = channel
         if (ch != null) {
-            ch.offer(entry)
+            ch.trySend(entry)
         } else {
             android.util.Log.println(entry.level.priority, entry.tag, entry.message)
         }
     }
 
-    override fun flush() {
-        // no-op for Logcat
+    override suspend fun flush() {
+        channel?.let {
+            while (!it.isEmpty) {
+                delay(10)
+            }
+        }
     }
 }
 
 class CrashInterceptor(
-    private val writers: List<LogWriter> = emptyList(),
-    private val storage: LogStorage? = null,
+    private val writers: List<LogWriter>,
+    private val storage: LogStorage,
 ) {
     private var defaultHandler: Thread.UncaughtExceptionHandler? = null
 
     fun install() {
         defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            storage?.appendEntries(
-                listOf(
-                    LogEntry(
-                        level = LogLevel.ERROR,
-                        tag = "Crash",
-                        message = "Uncaught exception on ${thread.name}",
-                        throwable = throwable,
-                    )
-                )
-            )
-            writers.forEach { it.flush() }
-            defaultHandler?.uncaughtException(thread, throwable)
+            handleCrash(thread, throwable)
         }
+    }
+
+    private fun handleCrash(thread: Thread, throwable: Throwable) {
+        val entry = LogEntry(
+            level = LogLevel.ERROR,
+            tag = "Crash",
+            message = "未捕获异常 [${thread.name}]",
+            throwable = throwable,
+        )
+
+        runBlocking {
+            storage.appendEntries(listOf(entry))
+            writers.forEach { it.flush() }
+        }
+
+        defaultHandler?.uncaughtException(thread, throwable)
     }
 }

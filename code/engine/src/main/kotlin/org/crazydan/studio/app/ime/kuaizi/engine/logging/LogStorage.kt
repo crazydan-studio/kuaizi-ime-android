@@ -1,34 +1,42 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
+import kotlinx.coroutines.delay
 import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
 import java.io.File
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
-class LogStorage(private var logDir: File) {
+class LogStorage(
+    logDir: File,
+) {
+    private var logDir: File = logDir
     private var cachedTodayDate: LocalDate? = null
     private var cachedTodayFile: File? = null
     private var lastCleanupTime: Long = 0L
     private val cleanupIntervalMs = 60_000L
 
-    private fun todayFile(): File {
-        val today = LocalDate.now()
-        if (cachedTodayDate != today) {
-            cachedTodayDate = today
-            cachedTodayFile = fileForDate(today)
-        }
-        return cachedTodayFile!!
+    companion object {
+        const val MAX_FILE_SIZE_BYTES = 5L * 1024 * 1024
+        const val MAX_RETENTION_DAYS = 7L
+        const val FILE_NAME_PREFIX = "kuaizi_ime_"
+        const val FILE_NAME_SUFFIX = ".log"
+
+        private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     }
 
-    private fun fileForDate(date: LocalDate): File {
-        return File(logDir, "kuaizi_ime_${date}.log")
+    fun updateDir(logDir: File) {
+        this.logDir = logDir
+        cachedTodayDate = null
+        cachedTodayFile = null
     }
 
-    fun appendEntries(entries: List<LogEntry>) {
+    suspend fun appendEntries(entries: List<LogEntry>) {
         val file = todayFile()
-        file.parentFile?.mkdirs()
-
-        val text = entries.joinToString("\n") { it.format() } + "\n"
-        file.appendText(text)
+        if (file.exists() && file.length() > MAX_FILE_SIZE_BYTES) {
+            rotateFile(file)
+        }
+        file.appendText(entries.joinToString("\n") { it.format() } + "\n")
 
         val now = System.currentTimeMillis()
         if (now - lastCleanupTime > cleanupIntervalMs) {
@@ -39,78 +47,88 @@ class LogStorage(private var logDir: File) {
 
     fun readLogs(
         date: LocalDate? = null,
-        levelFilter: String? = null,
+        levelFilter: LogLevel? = null,
         keyword: String? = null,
     ): List<LogEntry> {
-        val targetDate = date ?: LocalDate.now()
-        val file = fileForDate(targetDate)
+        val file = if (date != null) fileForDate(date) else todayFile()
         if (!file.exists()) return emptyList()
 
-        return file.readLines().mapNotNull { line ->
-            parseLine(line)
-        }.filter { entry ->
-            (levelFilter == null || entry.level.name == levelFilter) &&
-                (keyword == null || entry.message.contains(keyword, ignoreCase = true))
-        }
+        return file.readLines()
+            .mapNotNull { parseLine(it) }
+            .filter { levelFilter == null || it.level.priority >= levelFilter.priority }
+            .filter { keyword == null || it.message.contains(keyword, ignoreCase = true) }
     }
 
-    fun exportLogs(destination: File, fromDate: LocalDate, toDate: LocalDate) {
-        destination.parentFile?.mkdirs()
-        destination.bufferedWriter().use { writer ->
-            var date = fromDate
-            while (!date.isAfter(toDate)) {
-                val file = fileForDate(date)
-                if (file.exists()) {
-                    file.forEachLine { line ->
-                        writer.write(line)
-                        writer.newLine()
-                    }
-                }
-                date = date.plusDays(1)
+    fun exportLogs(
+        destination: File,
+        fromDate: LocalDate,
+        toDate: LocalDate,
+    ) {
+        val lines = mutableListOf<String>()
+        var date = fromDate
+        while (date <= toDate) {
+            val file = fileForDate(date)
+            if (file.exists()) {
+                lines += "= ${file.name} ="
+                lines += file.readLines()
+                lines += ""
             }
+            date = date.plusDays(1)
         }
+        destination.writeText(lines.joinToString("\n"))
     }
 
-    fun updateDir(newDir: File) {
-        logDir = newDir
-        cachedTodayDate = null
-        cachedTodayFile = null
+    private fun todayFile(): File {
+        val today = LocalDate.now(ZoneId.systemDefault())
+        if (cachedTodayDate != today) {
+            cachedTodayDate = today
+            cachedTodayFile = fileForDate(today)
+        }
+        return cachedTodayFile!!
+    }
+
+    private fun fileForDate(date: LocalDate): File =
+        File(logDir, "$FILE_NAME_PREFIX${dateFormat.format(date)}$FILE_NAME_SUFFIX")
+
+    private fun rotateFile(file: File) {
+        val rotated = File(
+            file.parent,
+            file.nameWithoutExtension + "_rotated_${System.currentTimeMillis()}.log",
+        )
+        file.renameTo(rotated)
     }
 
     private fun cleanupOldFiles() {
-        val files = logDir.listFiles { f -> f.name.startsWith("kuaizi_ime_") } ?: return
-        val cutoff = LocalDate.now().minusDays(7)
-        files.forEach { file ->
-            val dateStr = file.name.removePrefix("kuaizi_ime_").removeSuffix(".log")
-            try {
-                val date = LocalDate.parse(dateStr)
-                if (date.isBefore(cutoff)) {
-                    file.delete()
-                }
-                if (file.length() > 5 * 1024 * 1024) {
-                    file.renameTo(File(file.absolutePath + ".old"))
-                }
-            } catch (_: Exception) {
-                // skip unparseable files
-            }
-        }
+        val cutoff = LocalDate.now(ZoneId.systemDefault()).minusDays(MAX_RETENTION_DAYS)
+        logDir.listFiles()
+            ?.filter { it.name.startsWith(FILE_NAME_PREFIX) && it.name.endsWith(FILE_NAME_SUFFIX) }
+            ?.filter { extractDateFromFileName(it.name)?.let { d -> d < cutoff } == true }
+            ?.forEach { it.delete() }
     }
 
+    private fun extractDateFromFileName(name: String): LocalDate? = runCatching {
+        val dateStr = name.removePrefix(FILE_NAME_PREFIX).removeSuffix(FILE_NAME_SUFFIX)
+        LocalDate.parse(dateStr)
+    }.getOrNull()
+
     private fun parseLine(line: String): LogEntry? {
-        // Simple parser - in production use a more robust format
-        return try {
-            val parts = line.split("] [", limit = 4)
-            if (parts.size < 3) return null
-            val levelPart = parts[0].substringAfter("[").substringBefore("]")
-            val tagPart = parts[1]
-            val msgPart = parts.last().removeSuffix("]")
-            LogEntry(
-                level = LogLevel.fromPriority(LogLevel.valueOf(levelPart).priority),
-                tag = tagPart,
-                message = msgPart,
+        return runCatching {
+            val regex = Regex(
+                """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(\w+)] \[(\w+)] \[(\w+)] (.+)"""
             )
-        } catch (_: Exception) {
-            null
-        }
+            val match = regex.matchEntire(line) ?: return null
+            LogEntry(
+                level = LogLevel.valueOf(match.groupValues[2]),
+                tag = match.groupValues[3],
+                message = match.groupValues[5],
+                timestamp = try {
+                    java.time.LocalDateTime.parse(
+                        match.groupValues[1],
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+                    ).atZone(ZoneId.systemDefault()).toInstant().toEpochMilliseconds()
+                } catch (_: Exception) { System.currentTimeMillis() },
+                threadName = match.groupValues[4],
+            )
+        }.getOrNull()
     }
 }

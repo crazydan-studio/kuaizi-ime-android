@@ -1,7 +1,8 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
 import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
-import java.time.LocalDateTime
+import java.time.Instant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 data class LogEntry(
@@ -11,11 +12,13 @@ data class LogEntry(
     val throwable: Throwable? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val threadName: String = Thread.currentThread().name,
-    val threadId: Long = Thread.currentThread().id,
+    val threadId: Long = Thread.currentThread().threadId(),
 ) {
     fun format(): String {
-        val time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
-        val base = "$time [${level.name}] [$tag] [$threadName] $message"
-        return if (throwable != null) "$base\n${throwable.stackTraceToString()}" else base
+        val time = Instant.ofEpochMilli(timestamp)
+            .atZone(ZoneId.systemDefault())
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
+        val throwableStr = throwable?.stackTraceToString()?.let { "\n$it" } ?: ""
+        return "$time [${level.name}] [$tag] [$threadName] $message$throwableStr"
     }
 }

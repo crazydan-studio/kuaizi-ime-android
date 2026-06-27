@@ -3,24 +3,24 @@ package org.crazydan.studio.app.ime.kuaizi.engine.logging
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 
-class FileLogWriter(
-    private val storage: LogStorage,
-    bufferSize: Int = Channel.BUFFERED,
-) : LogWriter {
-    private val channel = Channel<LogEntry>(bufferSize)
+class FileLogWriter(private val storage: LogStorage) : LogWriter {
+    private val channel = Channel<LogEntry>(capacity = Channel.BUFFERED)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     init {
         scope.launch {
+            val buffer = mutableListOf<LogEntry>()
             while (true) {
-                val batch = mutableListOf<LogEntry>()
-                batch.add(channel.receive())
-                while (true) {
-                    val entry = channel.tryReceive().getOrNull() ?: break
-                    batch.add(entry)
-                    if (batch.size >= 100) break
+                val entry = channel.receive()
+                buffer.add(entry)
+
+                while (buffer.size < 100) {
+                    val polled = channel.tryReceive().getOrNull() ?: break
+                    buffer.add(polled)
                 }
-                storage.appendEntries(batch)
+
+                storage.appendEntries(buffer)
+                buffer.clear()
             }
         }
     }
@@ -29,11 +29,9 @@ class FileLogWriter(
         channel.trySend(entry)
     }
 
-    override fun flush() {
-        runBlocking {
-            while (!channel.isEmpty) {
-                delay(50)
-            }
+    override suspend fun flush() {
+        while (!channel.isEmpty) {
+            delay(50)
         }
     }
 }

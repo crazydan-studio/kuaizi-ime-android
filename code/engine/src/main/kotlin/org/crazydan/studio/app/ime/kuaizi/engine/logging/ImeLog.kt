@@ -1,12 +1,13 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
+import kotlin.reflect.KClass
 import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
 
 object ImeLog {
+    private val writers = mutableListOf<LogWriter>()
+
     var level: LogLevel = LogLevel.WARN
         private set
-
-    private val writers: MutableList<LogWriter> = mutableListOf()
 
     fun init(level: LogLevel, writers: List<LogWriter>) {
         this.level = level
@@ -19,14 +20,15 @@ object ImeLog {
     }
 
     fun logger(tag: String): ImeLogger = ImeLogger(tag, this)
-    fun logger(cls: Class<*>): ImeLogger = logger(cls.simpleName)
+
+    fun logger(cls: KClass<*>): ImeLogger = logger(cls.simpleName ?: "Unknown")
 
     internal fun dispatch(entry: LogEntry) {
         if (entry.level.priority < level.priority) return
         writers.forEach { writer -> writer.write(entry) }
     }
 
-    internal fun flush() {
+    internal suspend fun flush() {
         writers.forEach { it.flush() }
     }
 }
