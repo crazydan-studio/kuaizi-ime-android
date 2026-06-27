@@ -2,8 +2,8 @@ package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import org.crazydan.studio.app.ime.kuaizi.engine.*
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.*
@@ -19,6 +19,7 @@ sealed class PopupTipState {
         val message: String,
         val actionLabel: String,
         val action: ImeIntent,
+        val persistent: Boolean = false,
         val timeoutMs: Long = 5000L,
     ) : PopupTipState()
 }
@@ -31,6 +32,8 @@ sealed class KeyboardLayoutMode {
 class KeyboardViewModel(
     private val engine: ImeEngine,
     private val feedbackState: GestureFeedbackState = GestureFeedbackState(),
+    private val audioPlayer: AudioPlayer? = null,
+    private val hapticPlayer: HapticPlayer? = null,
 ) : ViewModel() {
 
     val state: StateFlow<ImeState> = engine.state
@@ -47,7 +50,10 @@ class KeyboardViewModel(
     private val _toolListState = MutableStateFlow<ToolListState>(ToolListState())
     val toolListState: StateFlow<ToolListState> = _toolListState.asStateFlow()
 
+    private var popupTipDismissJob: Job? = null
+
     private val _actionPlayer = InputActionPlayer(
+        viewModel = this,
         feedbackState = feedbackState,
         positionResolver = ComposeInputActionPositionResolver(),
         scope = viewModelScope,
@@ -104,25 +110,38 @@ class KeyboardViewModel(
                     message = effect.message,
                     timeoutMs = effect.timeoutMs,
                 )
+                dismissPopupTipAfter(effect.timeoutMs)
             }
             is ImeEffect.PopupTip.Action -> {
                 _popupTipState.value = PopupTipState.Action(
                     message = effect.message,
                     actionLabel = effect.actionLabel,
                     action = effect.action,
+                    persistent = effect.persistent,
                     timeoutMs = effect.timeoutMs,
                 )
+                if (!effect.persistent) {
+                    dismissPopupTipAfter(effect.timeoutMs)
+                }
             }
             is ImeEffect.PlayAudio -> {
                 if (config.ui.audioFeedbackEnabled) {
-                    // delegate to audio player
+                    audioPlayer?.play(effect.type)
                 }
             }
             is ImeEffect.PlayHaptic -> {
                 if (config.ui.hapticFeedbackEnabled) {
-                    // delegate to haptic player
+                    hapticPlayer?.play(effect.type)
                 }
             }
+        }
+    }
+
+    private fun dismissPopupTipAfter(timeoutMs: Long) {
+        popupTipDismissJob?.cancel()
+        popupTipDismissJob = viewModelScope.launch {
+            delay(timeoutMs)
+            _popupTipState.value = null
         }
     }
 
@@ -179,11 +198,20 @@ class KeyboardViewModel(
     }
 
     private fun computeToolList(keyboardType: KeyboardType): ToolListState {
-        return ToolListState(
-            settings = true,
-            switchIME = true,
-            closeKeyboard = true,
-        )
+        val tools = mutableListOf<ToolItem>()
+        tools.add(ToolItem(label = "全选", disabled = false))
+        tools.add(ToolItem(label = "复制", disabled = false))
+        tools.add(ToolItem(label = "粘贴", disabled = false))
+        tools.add(ToolItem(label = "剪切", disabled = false))
+        when (keyboardType) {
+            KeyboardType.Pinyin, KeyboardType.Latin -> {
+                tools.add(ToolItem(label = "设置"))
+                tools.add(ToolItem(label = "切换输入法"))
+                tools.add(ToolItem(label = "关闭键盘"))
+            }
+            else -> {}
+        }
+        return ToolListState(tools = tools)
     }
 
     override fun onCleared() {

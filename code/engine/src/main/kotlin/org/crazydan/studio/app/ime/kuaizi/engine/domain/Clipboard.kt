@@ -14,13 +14,13 @@ data class InputClip(
 )
 
 enum class InputTextType {
-    Captcha, CreditCard, IdCard, Phone, Email, Url, Address, Html;
+    Captcha, CreditCard, IdCard, Phone, Email, Url, Address, Html, Text;
 
     companion object {
-        fun detect(text: String): InputTextType? {
+        fun detect(text: String): InputTextType {
             return entries.firstOrNull { type ->
                 when (type) {
-                    Captcha -> text.matches(Regex("^\\d{4,6}$", RegexOption.IGNORE_CASE))
+                    Captcha -> text.matches(Regex("^\\d{4,6}$"))
                     CreditCard -> text.matches(Regex("^\\d{13,19}$"))
                     IdCard -> text.matches(Regex("^\\d{17}[\\dXx]$"))
                     Phone -> text.matches(Regex("^1[3-9]\\d{9}$"))
@@ -28,8 +28,9 @@ enum class InputTextType {
                     Url -> text.matches(Regex("^https?://", RegexOption.IGNORE_CASE))
                     Address -> text.contains(Regex("省|市|区|路|号"))
                     Html -> text.matches(Regex("^\\s*<", RegexOption.IGNORE_CASE))
+                    Text -> true
                 }
-            }
+            } ?: Text
         }
     }
 }

@@ -5,6 +5,9 @@ class InputListEditor {
     private val redoStack = ArrayDeque<InputList>(50)
     private val maxStackSize = 50
 
+    val canUndo: Boolean get() = undoStack.isNotEmpty()
+    val canRedo: Boolean get() = redoStack.isNotEmpty()
+
     fun pushUndo(list: InputList) {
         if (undoStack.size >= maxStackSize) {
             undoStack.removeFirst()
@@ -20,8 +23,8 @@ class InputListEditor {
         redoStack.addLast(list)
     }
 
-    fun undo(current: InputList): InputList? {
-        if (undoStack.isEmpty()) return null
+    fun undo(current: InputList): InputList {
+        if (undoStack.isEmpty()) return current
         pushRedo(current)
         return undoStack.removeLast()
     }

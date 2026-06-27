@@ -2,8 +2,14 @@ package org.crazydan.studio.app.ime.kuaizi.ui.player
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
+import org.crazydan.studio.app.ime.kuaizi.engine.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyGesture
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.*
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.GestureFeedbackState
+import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 
 sealed class InputActionPlayerState {
     data object Idle : InputActionPlayerState()
@@ -22,6 +28,7 @@ sealed class InputActionPlayerState {
 }
 
 class InputActionPlayer(
+    private val viewModel: KeyboardViewModel,
     private val feedbackState: GestureFeedbackState,
     private val positionResolver: InputActionPositionResolver,
     private val scope: CoroutineScope,
@@ -128,6 +135,8 @@ class InputActionPlayer(
                         )
                     )
                 }
+                val key = try { InputKey.valueOf(action.key) } catch (_: Exception) { InputKey.Char }
+                viewModel.handleIntent(ImeIntent.PressKey(key, KeyGesture.Tap))
             }
             is InputAction.SwipeTo -> {
                 val fromPos = positionResolver.resolve(action.fromKey)
@@ -144,6 +153,8 @@ class InputActionPlayer(
                         )
                     )
                 }
+                val key = try { InputKey.valueOf(action.toKey) } catch (_: Exception) { InputKey.Char }
+                viewModel.handleIntent(ImeIntent.PressKey(key, KeyGesture.Swipe))
             }
             is InputAction.KeyUp -> {
                 feedbackState.setFingerIndicator(
@@ -175,9 +186,14 @@ class InputActionPlayer(
                         visible = true,
                     )
                 }
+                val word = InputWord.Pinyin(text = "", spell = "")
+                viewModel.handleIntent(ImeIntent.SelectCandidate(word))
             }
             is InputAction.Wait -> { /* no-op */ }
-            is InputAction.SwitchKeyboard -> { /* handled externally */ }
+            is InputAction.SwitchKeyboard -> {
+                val type = try { KeyboardType.valueOf(action.targetType) } catch (_: Exception) { KeyboardType.Pinyin }
+                viewModel.handleIntent(ImeIntent.SwitchKeyboard(type))
+            }
         }
     }
 }

@@ -75,6 +75,8 @@ class ConfigDataStore(private val context: Context) {
     ) {
         if (old.inputPredictionEnabled != new.inputPredictionEnabled)
             prefs[booleanPreferencesKey("engine_input_prediction_enabled")] = new.inputPredictionEnabled
+        if (old.userDataPersistEnabled != new.userDataPersistEnabled)
+            prefs[booleanPreferencesKey("engine_user_data_persist_enabled")] = new.userDataPersistEnabled
         if (old.favoriteInputEnabled != new.favoriteInputEnabled)
             prefs[booleanPreferencesKey("engine_favorite_input_enabled")] = new.favoriteInputEnabled
         if (old.favoriteClipEnabled != new.favoriteClipEnabled)

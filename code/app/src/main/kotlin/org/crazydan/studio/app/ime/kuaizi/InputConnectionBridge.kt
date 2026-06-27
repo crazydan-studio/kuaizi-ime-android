@@ -5,6 +5,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.CursorDirection
 import org.crazydan.studio.app.ime.kuaizi.engine.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.TextRange
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.BaseImeEditorBridge
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.SelectionSnapshot
 
 class InputConnectionBridge(
     private val targetSupplier: () -> InputConnection?,
@@ -80,13 +81,21 @@ class InputConnectionBridge(
     override fun performEdit(action: EditorEditAction) {
         val ic = targetSupplier() ?: return
         when (action) {
-            EditorEditAction.SelectAll -> ic.performContextMenuAction(android.R.id.selectAll)
-            EditorEditAction.Copy -> ic.performContextMenuAction(android.R.id.copy)
-            EditorEditAction.Paste -> ic.performContextMenuAction(android.R.id.paste)
-            EditorEditAction.Cut -> ic.performContextMenuAction(android.R.id.cut)
-            EditorEditAction.Undo -> ic.performContextMenuAction(android.R.id.undo)
-            EditorEditAction.Redo -> ic.performContextMenuAction(android.R.id.redo)
+            EditorEditAction.SELECT_ALL -> ic.performContextMenuAction(android.R.id.selectAll)
+            EditorEditAction.COPY -> ic.performContextMenuAction(android.R.id.copy)
+            EditorEditAction.PASTE -> ic.performContextMenuAction(android.R.id.paste)
+            EditorEditAction.CUT -> ic.performContextMenuAction(android.R.id.cut)
+            EditorEditAction.UNDO -> ic.performContextMenuAction(android.R.id.undo)
+            EditorEditAction.REDO -> ic.performContextMenuAction(android.R.id.redo)
         }
+    }
+
+    override fun onRevokeCommit(snapshot: SelectionSnapshot) {
+        val ic = targetSupplier() ?: return
+        ic.beginBatchEdit()
+        ic.setSelection(snapshot.beforeStart, snapshot.beforeEnd)
+        ic.commitText(snapshot.beforeContent, 1)
+        ic.endBatchEdit()
     }
 
     override fun getText(): CharSequence {

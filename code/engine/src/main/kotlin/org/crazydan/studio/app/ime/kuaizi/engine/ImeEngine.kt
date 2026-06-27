@@ -22,6 +22,7 @@ class ImeEngine internal constructor(
     val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
 
     private val _editorBridges: MutableList<ImeEditorBridge> = mutableListOf()
+    private var clipboardJob: Job? = null
 
     fun start(startupConfig: StartupConfig) {
         updateRuntimeConfig(startupConfig)
@@ -42,7 +43,8 @@ class ImeEngine internal constructor(
     }
 
     fun close() {
-        // lightweight: stop clipboard monitoring, keep state
+        clipboardJob?.cancel()
+        clipboardJob = null
     }
 
     fun destroy() {
@@ -100,40 +102,45 @@ class ImeEngine internal constructor(
         }
 
         processSideEffects(sideEffects)
+
+        val editorAction = result.editorAction
+        if (editorAction != null) {
+            dispatchEditorAction(editorAction)
+        }
     }
 
     private fun processSideEffects(sideEffects: List<ImeIntent>) {
-        val queue = ArrayDeque(sideEffects)
-        var depth = 0
-        val maxDepth = 5
+        scope.launch(Dispatchers.Default) {
+            val queue = ArrayDeque(sideEffects)
+            var depth = 0
+            val maxDepth = 5
 
-        while (queue.isNotEmpty()) {
-            if (++depth > maxDepth) {
-                throw IllegalStateException("Side effect recursion exceeds max depth $maxDepth")
-            }
-            val intent = queue.removeFirst()
-            when (intent) {
-                is ImeIntent.LoadCandidates -> {
-                    scope.launch {
+            while (queue.isNotEmpty()) {
+                if (++depth > maxDepth) {
+                    throw IllegalStateException("Side effect recursion exceeds max depth $maxDepth")
+                }
+                val intent = queue.removeFirst()
+                when (intent) {
+                    is ImeIntent.LoadCandidates -> {
                         val candidates = dictProvider.query(intent.pinyin)
                         handleIntent(ImeIntent.SetCandidates(candidates))
                     }
+                    else -> handleIntent(intent)
                 }
-                else -> handleIntent(intent)
             }
         }
     }
 
     private fun resolveHandler(type: KeyboardType): KeyboardIntentHandler {
         return when (type) {
-            KeyboardType.Pinyin, KeyboardType.Latin -> PinyinIntentHandler()
-            KeyboardType.Number -> NumberKeyboardIntentHandler()
-            KeyboardType.Symbol -> SymbolKeyboardIntentHandler()
-            KeyboardType.Emoji -> EmojiKeyboardIntentHandler()
-            KeyboardType.Math -> MathKeyboardIntentHandler()
-            KeyboardType.Editor -> EditorKeyboardIntentHandler()
-            KeyboardType.Candidate -> CandidateKeyboardIntentHandler()
-            KeyboardType.CommitOption -> CommitOptionKeyboardIntentHandler()
+            KeyboardType.Pinyin, KeyboardType.Latin -> PinyinIntentHandler(type)
+            KeyboardType.Number -> NumberKeyboardIntentHandler(type)
+            KeyboardType.Symbol -> SymbolKeyboardIntentHandler(type)
+            KeyboardType.Emoji -> EmojiKeyboardIntentHandler(type)
+            KeyboardType.Math -> MathKeyboardIntentHandler(type)
+            KeyboardType.Editor -> EditorKeyboardIntentHandler(type)
+            KeyboardType.Candidate -> CandidateKeyboardIntentHandler(type)
+            KeyboardType.CommitOption -> CommitOptionKeyboardIntentHandler(type)
         }
     }
 
@@ -141,7 +148,7 @@ class ImeEngine internal constructor(
         applyStateUpdate { state ->
             state.copy(
                 config = state.config.copy(
-                    runtime = ImeConfig.RuntimeConfig(
+                    runtime = state.config.runtime.copy(
                         screenOrientation = startupConfig.screenOrientation,
                         editorInputType = startupConfig.editorInputType ?: state.config.runtime.editorInputType,
                     ),
@@ -201,7 +208,7 @@ class ImeEngine internal constructor(
                 config = config,
                 dictProvider = dictProvider,
                 stateMachine = KeyboardStateMachine(),
-                inputListOp = InputListOperator(),
+                inputListOp = InputListOperator(InputListEditor()),
             )
         }
     }

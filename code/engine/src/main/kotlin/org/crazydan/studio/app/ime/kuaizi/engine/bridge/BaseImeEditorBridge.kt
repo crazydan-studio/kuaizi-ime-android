@@ -37,15 +37,21 @@ abstract class BaseImeEditorBridge : ImeEditorBridge {
         )
     }
 
+    override fun commitText(text: String, replacements: List<String>?) {
+        if (replacements != null) {
+            doReplaceableCommitText(text, replacements)
+        } else {
+            doNormalCommitText(text)
+        }
+    }
+
     override fun revokeCommit() {
         val snapshot = revertion ?: return
         onRevokeCommit(snapshot)
         revertion = null
     }
 
-    protected open fun onRevokeCommit(snapshot: SelectionSnapshot) {
-        // subclasses override to restore editor state
-    }
+    protected abstract fun onRevokeCommit(snapshot: SelectionSnapshot)
 
     abstract fun doNormalCommitText(text: String)
     abstract fun doReplaceableCommitText(text: String, replacements: List<String>)

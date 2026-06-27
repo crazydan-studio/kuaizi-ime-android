@@ -15,11 +15,11 @@ enum class KeyboardType {
         return when (this) {
             Pinyin, Latin -> KeyboardState.PinyinInput.Waiting
             Number, Math -> KeyboardState.Idle
-            Symbol -> KeyboardState.SymbolChoosing
-            Emoji -> KeyboardState.EmojiChoosing
-            Candidate -> KeyboardState.CandidateSelection.Choosing
+            Symbol -> KeyboardState.SymbolChoosing()
+            Emoji -> KeyboardState.EmojiChoosing()
+            Candidate -> KeyboardState.CandidateSelection.Choosing()
             CommitOption -> KeyboardState.CommitOptionChoosing
-            Editor -> KeyboardState.EditorEditing.CursorMoving
+            Editor -> KeyboardState.EditorEditing.CursorMoving()
         }
     }
 }
@@ -32,5 +32,5 @@ enum class InputKey {
     Char, Ctrl, Candidate, MathOp, Symbol, Null;
 }
 
-enum class KeyGesture { Tap, LongPress, Swipe, Flip }
+enum class KeyGesture { Tap, Slip, Flip, Hold }
 enum class FlipDirection { Left, Right, Up, Down }

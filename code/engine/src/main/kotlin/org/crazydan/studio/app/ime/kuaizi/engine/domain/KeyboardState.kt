@@ -4,11 +4,12 @@ sealed class KeyboardState {
     data object Idle : KeyboardState()
 
     sealed class PinyinInput : KeyboardState() {
-        data object Waiting : PinyinInput()
+        data class Waiting(val pending: InputItem.Char? = null) : PinyinInput()
         data class Slipping(
             val startKey: String = "",
-            val levels: List<String> = emptyList(),
-            val nextChars: List<String> = emptyList(),
+            val level0Key: String = "",
+            val level1Key: String? = null,
+            val level2Key: String? = null,
         ) : PinyinInput()
 
         data class Flipping(
@@ -19,7 +20,9 @@ sealed class KeyboardState {
 
     sealed class CandidateSelection : KeyboardState() {
         data class Choosing(
+            val candidates: List<InputWord> = emptyList(),
             val pageIndex: Int = 0,
+            val pageSize: Int = 20,
         ) : CandidateSelection()
 
         data class Filtering(
@@ -32,7 +35,9 @@ sealed class KeyboardState {
         ) : CandidateSelection()
     }
 
-    data object CommitOptionChoosing : KeyboardState()
+    data class CommitOptionChoosing(
+        val options: List<InputWord.CommitOption> = emptyList(),
+    ) : KeyboardState()
 
     sealed class EditorEditing : KeyboardState() {
         data class CursorMoving(val position: Int = 0) : EditorEditing()

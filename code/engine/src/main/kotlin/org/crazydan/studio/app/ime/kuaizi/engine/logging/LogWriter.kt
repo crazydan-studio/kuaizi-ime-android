@@ -1,5 +1,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
+import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
+
 interface LogWriter {
     fun write(entry: LogEntry)
     fun flush()

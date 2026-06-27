@@ -3,17 +3,24 @@ package org.crazydan.studio.app.ime.kuaizi.engine.domain
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 
 interface KeyboardIntentHandler {
+    val type: KeyboardType
     fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition
 }
 
-class PinyinIntentHandler : KeyboardIntentHandler {
+class PinyinIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return when (intent) {
             is ImeIntent.PressKey -> {
-                when (currentState) {
-                    is KeyboardState.PinyinInput.Waiting -> {
+                when {
+                    currentState is KeyboardState.PinyinInput.Waiting && intent.key == InputKey.Char -> {
                         KeyboardStateTransition(
                             targetState = KeyboardState.PinyinInput.Waiting,
+                        )
+                    }
+                    currentState is KeyboardState.PinyinInput.Waiting -> {
+                        KeyboardStateTransition(
+                            targetState = KeyboardState.CandidateSelection.Choosing(),
+                            sideEffects = listOf(ImeIntent.LoadCandidates("")),
                         )
                     }
                     else -> KeyboardStateTransition(currentState)
@@ -29,43 +36,43 @@ class PinyinIntentHandler : KeyboardIntentHandler {
     }
 }
 
-class NumberKeyboardIntentHandler : KeyboardIntentHandler {
+class NumberKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition(currentState)
     }
 }
 
-class SymbolKeyboardIntentHandler : KeyboardIntentHandler {
+class SymbolKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition(currentState)
     }
 }
 
-class EmojiKeyboardIntentHandler : KeyboardIntentHandler {
+class EmojiKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition(currentState)
     }
 }
 
-class MathKeyboardIntentHandler : KeyboardIntentHandler {
+class MathKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition(currentState)
     }
 }
 
-class EditorKeyboardIntentHandler : KeyboardIntentHandler {
+class EditorKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition(currentState)
     }
 }
 
-class CandidateKeyboardIntentHandler : KeyboardIntentHandler {
+class CandidateKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition(currentState)
     }
 }
 
-class CommitOptionKeyboardIntentHandler : KeyboardIntentHandler {
+class CommitOptionKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition(currentState)
     }

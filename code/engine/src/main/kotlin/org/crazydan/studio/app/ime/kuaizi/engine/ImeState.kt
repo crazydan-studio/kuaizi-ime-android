@@ -13,7 +13,11 @@ data class ImeState(
 )
 
 data class ToolListState(
-    val settings: Boolean = true,
-    val switchIME: Boolean = true,
-    val closeKeyboard: Boolean = true,
+    val tools: List<ToolItem> = emptyList(),
+)
+
+data class ToolItem(
+    val label: String,
+    val icon: String = "",
+    val disabled: Boolean = false,
 )

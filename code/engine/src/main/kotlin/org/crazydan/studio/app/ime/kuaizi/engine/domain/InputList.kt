@@ -5,17 +5,17 @@ sealed class InputItem {
 
     data class Char(
         override val id: String,
-        val value: String,
+        val text: String,
+        val replacements: List<String>? = null,
+        val pairSymbol: PairSymbol? = null,
     ) : InputItem()
 
-    data class Gap(
-        override val id: String,
-    ) : InputItem()
+    data class Gap : InputItem() {
+        override val id: String = "gap"
+    }
 
     data class MathExpr(
         override val id: String,
-        val expression: String,
-        val result: String? = null,
     ) : InputItem()
 }
 
@@ -25,27 +25,35 @@ data class InputList(
     val pendingInput: PendingInput? = null,
     val inputCompletion: InputCompletion? = null,
 ) {
+    val isEmpty: Boolean get() = inputs.isEmpty()
+    val cursorGap: Gap? get() = inputs.getOrNull(gapIndex) as? Gap
+    val visibleInputs: List<InputItem> get() = inputs.filter { it !is Gap }
+    val text: String get() = chars.joinToString("") { it.text }
+    val chars: List<Char> get() = inputs.filterIsInstance<Char>()
+
     val hasPending: Boolean get() = pendingInput != null
-
-    val chars: List<InputItem.Char>
-        get() = inputs.filterIsInstance<InputItem.Char>()
-
     val charCount: Int get() = chars.size
 }
 
 data class PendingInput(
-    val isSingleChar: Boolean = false,
-    val pressedOnChar: Boolean = false,
-    val swipedInThisLevel: Boolean = false,
     val chars: List<String> = emptyList(),
+    val completions: List<InputCompletion> = emptyList(),
 )
 
-data class InputCompletion(
-    val text: String = "",
-    val candidates: List<String> = emptyList(),
-)
+sealed class InputCompletion {
+    data class LatinWord(
+        val text: String,
+        val frequency: Int = 0,
+    ) : InputCompletion()
+
+    data class PhraseWord(
+        val text: String,
+        val frequency: Int = 0,
+    ) : InputCompletion()
+}
 
 data class PairSymbol(
     val left: String,
     val right: String,
+    val content: String = "",
 )

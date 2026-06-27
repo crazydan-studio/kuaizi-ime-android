@@ -1,7 +1,8 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
-class InputListOperator {
+class InputListOperator(private val editor: InputListEditor) {
     fun appendChar(list: InputList, char: InputItem.Char): InputList {
+        editor.pushUndo(list)
         val mutableInputs = list.inputs.toMutableList()
         val gapIndex = list.gapIndex
         mutableInputs.add(gapIndex, char)
@@ -10,6 +11,7 @@ class InputListOperator {
     }
 
     fun deleteCharBeforeCursor(list: InputList): InputList {
+        editor.pushUndo(list)
         val gapIdx = list.gapIndex
         if (gapIdx <= 0) return list
 
@@ -17,7 +19,7 @@ class InputListOperator {
         val charIdx = gapIdx - 1
         if (charIdx >= 0 && mutableInputs[charIdx] is InputItem.Char) {
             mutableInputs.removeAt(charIdx)
-            mutableInputs.removeAt(charIdx) // also remove the gap after it
+            mutableInputs.removeAt(charIdx)
             return list.copy(
                 inputs = mutableInputs,
                 gapIndex = gapIdx - 1,
@@ -34,4 +36,15 @@ class InputListOperator {
     fun clear(list: InputList): InputList {
         return InputList()
     }
+
+    fun undo(list: InputList): InputList {
+        return editor.undo(list)
+    }
+
+    fun redo(list: InputList): InputList {
+        return editor.redo(list) ?: list
+    }
+
+    val canUndo: Boolean get() = editor.canUndo
+    val canRedo: Boolean get() = editor.canRedo
 }

@@ -11,10 +11,11 @@ data class LogEntry(
     val throwable: Throwable? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val threadName: String = Thread.currentThread().name,
-    val threadId: Long = Thread.currentThread().threadId(),
+    val threadId: Long = Thread.currentThread().id,
 ) {
     fun format(): String {
         val time = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
-        return "$time [${level.name}] [$tag] [$threadName] $message"
+        val base = "$time [${level.name}] [$tag] [$threadName] $message"
+        return if (throwable != null) "$base\n${throwable.stackTraceToString()}" else base
     }
 }

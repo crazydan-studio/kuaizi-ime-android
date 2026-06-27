@@ -27,8 +27,7 @@ sealed class ImeIntent {
 }
 
 enum class EditorEditAction {
-    SelectAll, Copy, Paste, Cut,
-    Undo, Redo,
+    SELECT_ALL, COPY, PASTE, CUT, UNDO, REDO, BACKSPACE,
 }
 
 enum class PageDirection { Next, Previous }

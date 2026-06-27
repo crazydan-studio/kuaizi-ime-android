@@ -1,5 +1,6 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
+import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
 import java.io.File
 import java.time.LocalDate
 

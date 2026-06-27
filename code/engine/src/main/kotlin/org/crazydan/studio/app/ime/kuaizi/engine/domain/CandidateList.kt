@@ -1,5 +1,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
+
 data class CandidateList(
     val candidates: List<InputWord> = emptyList(),
     val pageIndex: Int = 0,
@@ -18,11 +20,15 @@ data class CandidateList(
     val totalPages: Int
         get() = if (candidates.isEmpty()) 0 else (candidates.size + pageSize - 1) / pageSize
 
-    fun nextPage(): CandidateList =
-        copy(pageIndex = (pageIndex + 1).coerceAtMost(totalPages - 1))
+    fun nextPage(): CandidateList {
+        if (candidates.isEmpty()) return this
+        return copy(pageIndex = (pageIndex + 1) % totalPages)
+    }
 
-    fun previousPage(): CandidateList =
-        copy(pageIndex = (pageIndex - 1).coerceAtLeast(0))
+    fun previousPage(): CandidateList {
+        if (candidates.isEmpty()) return this
+        return copy(pageIndex = if (pageIndex > 0) pageIndex - 1 else totalPages - 1)
+    }
 
     fun withFilter(filter: PinyinWordFilter): CandidateList =
         copy(filter = filter)
@@ -51,20 +57,11 @@ sealed class InputWord {
         override val frequency: Int = 0,
     ) : InputWord()
 
-    data class Symbol(
+    data class Emoji(
         override val text: String,
         override val frequency: Int = 0,
+        val name: String = "",
         val group: String = "",
-    ) : InputWord()
-
-    data object Emoji : InputWord() {
-        override val text: String get() = ""
-        override val frequency: Int get() = 0
-    }
-
-    data class MathExpr(
-        override val text: String,
-        override val frequency: Int = 0,
     ) : InputWord()
 
     data class CommitOption(
