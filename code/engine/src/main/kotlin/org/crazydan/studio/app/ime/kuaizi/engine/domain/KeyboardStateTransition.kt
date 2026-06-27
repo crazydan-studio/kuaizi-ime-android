@@ -23,6 +23,12 @@ sealed class KeyboardStateTransition {
     data class OpenEmojiGroup(val groupId: String?) : KeyboardStateTransition()
     data object ReturnToIdle : KeyboardStateTransition()
     data object BackToPrevious : KeyboardStateTransition()
+    data object LoadMoreCandidates : KeyboardStateTransition()
+    data object SelectCandidate : KeyboardStateTransition()
+    data object CommitInput : KeyboardStateTransition()
+    data object DeleteInput : KeyboardStateTransition()
+    data object BackToInput : KeyboardStateTransition()
+    data object BackToChoosing : KeyboardStateTransition()
 
     data class Result(
         val newState: KeyboardState,

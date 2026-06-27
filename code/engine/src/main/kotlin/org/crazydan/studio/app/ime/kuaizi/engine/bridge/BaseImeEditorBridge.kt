@@ -6,7 +6,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.TextRange
 
 abstract class BaseImeEditorBridge : ImeEditorBridge {
 
-    private data class SelectionSnapshot(
+    protected data class SelectionSnapshot(
         val beforeStart: Int,
         val beforeEnd: Int,
         val beforeContent: String,

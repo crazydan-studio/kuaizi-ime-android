@@ -9,6 +9,8 @@ import org.crazydan.studio.app.ime.kuaizi.engine.*
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogcatWriter
+import org.crazydan.studio.app.ime.kuaizi.ui.integration.KeyboardHost
+import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 
 class IMEService : InputMethodService() {
@@ -42,7 +44,10 @@ class IMEService : InputMethodService() {
 
         return ComposeView(this).apply {
             setContent {
-                // TODO: Mount KeyboardHost with viewModel
+                val vm = viewModel ?: return@setContent
+                KeyboardTheme(config = vm.config.ui) {
+                    KeyboardHost(viewModel = vm)
+                }
             }
         }
     }
