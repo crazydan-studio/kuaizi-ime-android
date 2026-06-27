@@ -67,13 +67,18 @@ Android 系统服务类沿用平台命名惯例（如 `IMEService`），配置�
 - 模块划分与功能对应，不按技术层划分
 
 ```
-org.crazydan.studio.app.ime.kuaizi.engine.core
-org.crazydan.studio.app.ime.kuaizi.engine.domain
-org.crazydan.studio.app.ime.kuaizi.engine.dict
-org.crazydan.studio.app.ime.kuaizi.ui.theme
-org.crazydan.studio.app.ime.kuaizi.ui.keyboard
-org.crazydan.studio.app.ime.kuaizi.ui.integration
-org.crazydan.studio.app.ime.kuaizi       ← :app 模块（无子模块名）
+org.crazydan.studio.app.ime.kuaizi.engine              ← 引擎核心模型（ImeEngine、ImeIntent、ImeState 等）
+org.crazydan.studio.app.ime.kuaizi.engine.domain         ← 领域模型（Keyboard、InputList、CandidateList 等）
+org.crazydan.studio.app.ime.kuaizi.engine.bridge         ← 编辑器桥接（ImeEditorBridge、BaseImeEditorBridge）
+org.crazydan.studio.app.ime.kuaizi.engine.dict           ← 字典系统（ImeDictProvider、PinyinCharsTree、HmmModel）
+org.crazydan.studio.app.ime.kuaizi.engine.input_action   ← 输入动作程序化（InputAction、InputActionScript 等）
+org.crazydan.studio.app.ime.kuaizi.engine.logging        ← 日志系统（ImeLog、ImeLogger、LogWriter 等）
+org.crazydan.studio.app.ime.kuaizi.ui.theme              ← 主题系统（KeyboardColors、KeyboardTheme）
+org.crazydan.studio.app.ime.kuaizi.ui.keyboard           ← 按键布局（KeyTableGenerator、KeyLayoutState）
+org.crazydan.studio.app.ime.kuaizi.ui.viewmodel          ← 视图模型（KeyboardViewModel、InputGesture）
+org.crazydan.studio.app.ime.kuaizi.ui.player             ← 输入动作播放器（InputActionPlayer）
+org.crazydan.studio.app.ime.kuaizi.ui.util               ← 工具类（CoordinateNormalizer）
+org.crazydan.studio.app.ime.kuaizi                       ← :app 模块（无子模块名）
 ```
 
 ---

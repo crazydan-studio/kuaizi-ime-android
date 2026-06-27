@@ -56,7 +56,7 @@
 
 | 文档 | 简述 |
 |------|------|
-| [010-配置管理](app/010-config.md) | ConfigDataStore（DataStore）、ImeConfig 运行时 / 持久化配置管理、主题系统 |
+| [010-配置管理](app/010-config.md) | ConfigDataStore（DataStore）、ImeConfig 运行时 / 持久化配置管理、主题系统与 DataStore 集成 |
 | [020-日志系统](app/020-logging.md) | LogcatWriter、CrashInterceptor、ImeLog 初始化、LogViewerScreen/LogExportScreen、LogLevelSetting/LogStoragePathSetting |
 | [030-UI 测试方案](app/030-ui-testing.md) | UITestOverlay 工具集、Release 自动移除、截图对比测试、Compose 编译器报告 |
 | [040-用户数据导入导出](app/040-user-data.md) | UserDataService、JSON 备份格式、导入策略、权限与安全 |
