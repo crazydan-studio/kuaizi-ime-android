@@ -43,7 +43,8 @@ class InputActionPlayer(
     val row2IndicatorState: StateFlow<InputActionFingerIndicator?> = _row2IndicatorState.asStateFlow()
 
     private var job: Job? = null
-    private var script: InputActionScript? = null
+    var script: InputActionScript? = null
+        private set
     private val frameTimer = FrameTimer(scope)
 
     fun load(script: InputActionScript) {
