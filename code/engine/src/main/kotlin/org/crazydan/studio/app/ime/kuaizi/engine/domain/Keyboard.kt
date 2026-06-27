@@ -13,7 +13,7 @@ enum class KeyboardType {
 
     fun initialState(): KeyboardState {
         return when (this) {
-            Pinyin, Latin -> KeyboardState.PinyinInput.Waiting
+            Pinyin, Latin -> KeyboardState.PinyinInput.Waiting()
             Number, Math -> KeyboardState.Idle
             Symbol -> KeyboardState.SymbolChoosing()
             Emoji -> KeyboardState.EmojiChoosing()

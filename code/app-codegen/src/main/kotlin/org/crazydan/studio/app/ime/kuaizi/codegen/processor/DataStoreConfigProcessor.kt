@@ -8,9 +8,20 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.Nullability
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.BOOLEAN
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FLOAT
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LONG
+import com.squareup.kotlinpoet.MemberName
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.writeTo
-import com.squareup.kotlinpoet.memberName
 
 class DataStoreConfigProcessor(
     private val codeGenerator: CodeGenerator,
@@ -33,6 +44,7 @@ class DataStoreConfigProcessor(
         return deferred
     }
 
+    // https://square.github.io/kotlinpoet/code-control-flow/
     private fun generateDataStoreKeys(declaration: KSClassDeclaration) {
         val packageName = declaration.packageName.asString()
         val className = declaration.simpleName.asString()
@@ -54,7 +66,7 @@ class DataStoreConfigProcessor(
         val mutablePreferencesType = ClassName("androidx.datastore.preferences.core", "MutablePreferences")
 
         val fileSpec = FileSpec.builder(packageName, objectName)
-            .addComment("自动生成，请勿手动修改")
+            .addFileComment("自动生成，请勿手动修改")
             .addType(
                 TypeSpec.objectBuilder(objectName)
                     .apply {
@@ -86,11 +98,11 @@ class DataStoreConfigProcessor(
                                             else -> STRING
                                         }
                                     ),
-                                    KModifier.VAL,
+                                    KModifier.VALUE,
                                 )
                                     .initializer(
                                         "%M(%S)",
-                                        memberName("androidx.datastore.preferences.core", keyFunction),
+                                        MemberName("androidx.datastore.preferences.core", keyFunction),
                                         "${prefix}_${keyName}",
                                     )
                                     .build()

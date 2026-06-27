@@ -6,6 +6,7 @@ class CandidateListPager {
     fun page(candidateList: CandidateList, direction: PageDirection): CandidateList {
         return when (direction) {
             PageDirection.Next -> candidateList.nextPage()
+            PageDirection.Previous -> candidateList.prevPage()
         }
     }
 }

@@ -21,28 +21,32 @@ class PinyinIntentHandler(override val type: KeyboardType) : KeyboardIntentHandl
                 when (intent) {
                     is ImeIntent.PressKey -> {
                         when (intent.key) {
-                            is CharKey -> KeyboardStateTransition.InputPinyinChar((intent.key as CharKey).text.first())
+                            is CharKey -> KeyboardStateTransition.InputPinyinChar(intent.key.text.first())
                             else -> KeyboardStateTransition.LoadMoreCandidates
                         }
                     }
+
                     is ImeIntent.DeleteInput -> KeyboardStateTransition.DeleteInput
                     is ImeIntent.SelectCandidate -> KeyboardStateTransition.SelectCandidate
                     is ImeIntent.CommitInput -> KeyboardStateTransition.CommitInput
                     else -> KeyboardStateTransition.ReturnToIdle
                 }
             }
+
             is KeyboardState.PinyinInput.Slipping -> {
                 when (intent) {
                     is ImeIntent.PressKey -> KeyboardStateTransition.BeginSlip(intent.key)
                     else -> KeyboardStateTransition.ReturnToIdle
                 }
             }
+
             is KeyboardState.PinyinInput.Flipping -> {
                 when (intent) {
-                    is ImeIntent.PressKey -> KeyboardStateTransition.SelectFlipChar
+                    is ImeIntent.PressKey -> KeyboardStateTransition.SelectFlipChar((intent.key as InputKey.Char).text.first())
                     else -> KeyboardStateTransition.ReturnToIdle
                 }
             }
+
             is KeyboardState.CandidateSelection.Choosing -> {
                 when (intent) {
                     is ImeIntent.SelectCandidate -> KeyboardStateTransition.SelectCandidate
@@ -51,18 +55,21 @@ class PinyinIntentHandler(override val type: KeyboardType) : KeyboardIntentHandl
                     else -> KeyboardStateTransition.ReturnToIdle
                 }
             }
+
             is KeyboardState.CandidateSelection.Filtering -> {
                 when (intent) {
                     is ImeIntent.DeleteInput -> KeyboardStateTransition.BackToChoosing
                     else -> KeyboardStateTransition.ReturnToIdle
                 }
             }
+
             is KeyboardState.CommitOptionChoosing -> {
                 when (intent) {
                     is ImeIntent.SelectCandidate -> KeyboardStateTransition.CommitInput
                     else -> KeyboardStateTransition.ReturnToIdle
                 }
             }
+
             else -> KeyboardStateTransition.ReturnToIdle
         }
     }

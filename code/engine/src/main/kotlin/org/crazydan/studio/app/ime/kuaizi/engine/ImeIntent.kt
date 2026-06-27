@@ -1,7 +1,13 @@
 package org.crazydan.studio.app.ime.kuaizi.engine
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.user_data.ImportStrategy
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.CandidateList
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.ImportStrategy
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputFavorite
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyGesture
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
+
 
 sealed class ImeIntent {
     data class PressKey(val key: InputKey, val gesture: KeyGesture) : ImeIntent()

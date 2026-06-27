@@ -11,9 +11,7 @@ class TreeLogWriter(
     private var originalWriters: List<LogWriter>? = null
 
     fun begin() {
-        originalWriters = mutableListOf<LogWriter>().also {
-            it.addAll(java.lang.reflect.Field::class.java.declaredFields) // placeholder
-        }
+        originalWriters = mutableListOf<LogWriter>()
         entries.clear()
     }
 

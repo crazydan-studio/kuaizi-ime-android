@@ -15,6 +15,7 @@ import java.io.File
         HmmTransitionEntity::class,
     ],
     version = 1,
+    exportSchema = false,
 )
 abstract class DictDatabase : RoomDatabase() {
     abstract fun pinyinWordDao(): PinyinWordDao

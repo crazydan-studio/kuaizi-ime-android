@@ -1,8 +1,9 @@
-package org.crazydan.studio.app.ime.kuaizi.engine.input_action
+package org.crazydan.studio.app.ime.kuaizi.ui.player
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.awaitClose
+import androidx.compose.runtime.withFrameNanos
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class FrameTimer(private val scope: CoroutineScope) {
     private var job: Job? = null

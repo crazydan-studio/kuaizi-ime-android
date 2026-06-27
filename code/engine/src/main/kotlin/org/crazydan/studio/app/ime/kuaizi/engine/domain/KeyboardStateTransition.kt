@@ -16,7 +16,7 @@ sealed class KeyboardStateTransition {
         val tone: Tone?,
     ) : KeyboardStateTransition()
     data class PageCandidates(val direction: org.crazydan.studio.app.ime.kuaizi.engine.PageDirection) : KeyboardStateTransition()
-    data class LoadCommitOptions(val options: List<CommitOption>) : KeyboardStateTransition()
+    data class LoadCommitOptions(val options: List<InputWord.CommitOption>) : KeyboardStateTransition()
     data class MoveCursor(val position: Int) : KeyboardStateTransition()
     data class SelectText(val start: Int, val end: Int) : KeyboardStateTransition()
     data class OpenSymbolGroup(val groupId: String?) : KeyboardStateTransition()

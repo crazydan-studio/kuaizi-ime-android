@@ -39,7 +39,7 @@ sealed class KeyboardState {
     }
 
     data class CommitOptionChoosing(
-        val options: List<CommitOption> = emptyList(),
+        val options: List<InputWord.CommitOption> = emptyList(),
         val hasSpell: Boolean = false,
         val hasVariant: Boolean = false,
     ) : KeyboardState()

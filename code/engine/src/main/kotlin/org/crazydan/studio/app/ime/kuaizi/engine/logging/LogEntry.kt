@@ -12,7 +12,7 @@ data class LogEntry(
     val throwable: Throwable? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val threadName: String = Thread.currentThread().name,
-    val threadId: Long = Thread.currentThread().threadId(),
+    val threadId: Long = Thread.currentThread().id,
 ) {
     fun format(): String {
         val time = Instant.ofEpochMilli(timestamp)

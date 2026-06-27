@@ -3,10 +3,8 @@ package org.crazydan.studio.app.ime.kuaizi.ui.player
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
-import org.crazydan.studio.app.ime.kuaizi.engine.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyGesture
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.*
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.GestureFeedbackState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel

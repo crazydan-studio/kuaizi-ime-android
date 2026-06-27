@@ -1,11 +1,18 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
-import kotlinx.coroutines.delay
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.format.Padding
+import kotlinx.datetime.format.char
+import kotlinx.datetime.plus
+import kotlinx.datetime.toInstant
+import kotlinx.datetime.toLocalDateTime
 import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
 import java.io.File
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 
 class LogStorage(
     logDir: File,
@@ -22,7 +29,32 @@ class LogStorage(
         const val FILE_NAME_PREFIX = "kuaizi_ime_"
         const val FILE_NAME_SUFFIX = ".log"
 
-        private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+        /** yyyy-MM-dd HH:mm:ss.SSS */
+        private val dateTimeFormat = LocalDateTime.Format {
+            year()
+            char('-')
+            monthNumber(Padding.ZERO)
+            char('-')
+            day(Padding.ZERO)
+            char(' ')
+            hour(Padding.ZERO)
+            char(':')
+            minute(Padding.ZERO)
+            char(':')
+            second(Padding.ZERO)
+            char('.')
+            secondFraction(3)
+        }
+
+        /** yyyy-MM-dd */
+        private val dateFormat = LocalDate.Format {
+            // 2026-06-27
+            year()
+            char('-')
+            monthNumber(Padding.ZERO)
+            char('-')
+            day(Padding.ZERO)
+        }
     }
 
     fun updateDir(logDir: File) {
@@ -73,13 +105,13 @@ class LogStorage(
                 lines += file.readLines()
                 lines += ""
             }
-            date = date.plusDays(1)
+            date = date.plus(1, DateTimeUnit.DAY)
         }
         destination.writeText(lines.joinToString("\n"))
     }
 
     private fun todayFile(): File {
-        val today = LocalDate.now(ZoneId.systemDefault())
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
         if (cachedTodayDate != today) {
             cachedTodayDate = today
             cachedTodayFile = fileForDate(today)
@@ -99,7 +131,9 @@ class LogStorage(
     }
 
     private fun cleanupOldFiles() {
-        val cutoff = LocalDate.now(ZoneId.systemDefault()).minusDays(MAX_RETENTION_DAYS)
+        val cutoff = Clock.System.now().minus(MAX_RETENTION_DAYS.days)
+            .toLocalDateTime(TimeZone.currentSystemDefault()).date
+
         logDir.listFiles()
             ?.filter { it.name.startsWith(FILE_NAME_PREFIX) && it.name.endsWith(FILE_NAME_SUFFIX) }
             ?.filter { extractDateFromFileName(it.name)?.let { d -> d < cutoff } == true }
@@ -122,11 +156,13 @@ class LogStorage(
                 tag = match.groupValues[3],
                 message = match.groupValues[5],
                 timestamp = try {
-                    java.time.LocalDateTime.parse(
+                    LocalDateTime.parse(
                         match.groupValues[1],
-                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
-                    ).atZone(ZoneId.systemDefault()).toInstant().toEpochMilliseconds()
-                } catch (_: Exception) { System.currentTimeMillis() },
+                        dateTimeFormat
+                    ).toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                } catch (_: Exception) {
+                    System.currentTimeMillis()
+                },
                 threadName = match.groupValues[4],
             )
         }.getOrNull()
