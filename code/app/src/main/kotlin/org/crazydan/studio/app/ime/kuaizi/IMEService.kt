@@ -24,7 +24,6 @@ import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.compose.ui.platform.ComposeView
-import org.crazydan.studio.app.ime.kuaizi.config.ConfigDataStore
 import org.crazydan.studio.app.ime.kuaizi.engine.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
@@ -61,8 +60,8 @@ class IMEService : InputMethodService() {
     // 输入连接桥接，将引擎输出转发到系统 InputConnection
     private var inputConnectionBridge: ImeEditorBridge? = null
 
-    // 配置数据存储，持久化用户配置到 DataStore
-    private var configDataStore: ConfigDataStore? = null
+//    // 配置数据存储，持久化用户配置到 DataStore
+//    private var configDataStore: ConfigDataStore? = null
 
     // -------------------------------------------------------
 
@@ -74,7 +73,7 @@ class IMEService : InputMethodService() {
         initLog(this)
 
         // 创建配置存储和输入连接桥接
-        configDataStore = ConfigDataStore(this)
+//        configDataStore = ConfigDataStore(this)
         inputConnectionBridge = InputConnectionBridge { currentInputConnection }
 
         // 创建引擎实例并挂载输入连接桥接

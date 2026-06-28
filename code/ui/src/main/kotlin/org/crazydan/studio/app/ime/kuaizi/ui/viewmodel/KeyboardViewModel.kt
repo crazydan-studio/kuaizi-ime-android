@@ -127,25 +127,25 @@ class KeyboardViewModel(
     /** 订阅引擎副作用通道，处理弹出提示和感官反馈 */
     private fun launchEffectCollection() {
         viewModelScope.launch {
-            engine.effect
-                .channelFlow {
-                    // 将 SharedFlow 转为 conflated Channel
-                    // 感官反馈使用 trySend 非阻塞发送，丢弃旧事件
-                    // 弹出提示使用 send 确保不丢失
-                    engine.effect.collect { effect ->
-                        when (effect) {
-                            is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
-                                trySend(effect)
-                            }
-                            is ImeEffect.PopupTip -> {
-                                send(effect)
-                            }
-                        }
-                    }
-                }
-                .collect { effect ->
-                    processEffect(effect)
-                }
+//            engine.effect
+//                .channelFlow {
+//                    // 将 SharedFlow 转为 conflated Channel
+//                    // 感官反馈使用 trySend 非阻塞发送，丢弃旧事件
+//                    // 弹出提示使用 send 确保不丢失
+//                    engine.effect.collect { effect ->
+//                        when (effect) {
+//                            is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
+//                                trySend(effect)
+//                            }
+//                            is ImeEffect.PopupTip -> {
+//                                send(effect)
+//                            }
+//                        }
+//                    }
+//                }
+//                .collect { effect ->
+//                    processEffect(effect)
+//                }
         }
     }
 
@@ -227,7 +227,7 @@ class KeyboardViewModel(
             is InputGesture.Swipe -> ImeIntent.PressKey(gesture.endKey, KeyGesture.Swipe)
             is InputGesture.Flip -> ImeIntent.PressKey(
                 gesture.startKey,
-                KeyGesture.Flip(gesture.direction),
+                KeyGesture.Flip,
             )
             is InputGesture.CandidateTap -> {
                 val candidates = state.value.candidateList.candidates
@@ -237,7 +237,7 @@ class KeyboardViewModel(
                 } else {
                     // 索引越界时用空词兜底
                     ImeIntent.SelectCandidate(
-                        InputWord.Pinyin(text = "", spell = "")
+                        InputWord.Pinyin(text = "", frequency = 1)
                     )
                 }
             }

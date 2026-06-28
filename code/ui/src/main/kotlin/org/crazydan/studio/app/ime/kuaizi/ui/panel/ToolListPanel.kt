@@ -68,7 +68,7 @@ fun ToolListPanel(
         toolList.tools.forEach { tool ->
             if (tool.intent != null) {
                 TextButton(
-                    onClick = { onToolClick(tool.intent) },
+                    onClick = { onToolClick(tool.intent!!) },
                     enabled = !tool.disabled,
                 ) {
                     Text(text = tool.label, color = colors.functionKeyForeground)

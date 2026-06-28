@@ -174,7 +174,10 @@ private fun StackedLayout(
             CandidateListPanel(
                 candidates = candidateList.currentPage,
                 selectedIndex = 0,
-                layoutState = CandidateListLayoutState(),
+                layoutState = CandidateListLayoutState(
+                    candidatePositions = TODO(),
+                    panelSize = TODO()
+                ),
                 showIndicator = showIndicator,
             )
             PopupTipPanel(
@@ -185,24 +188,36 @@ private fun StackedLayout(
         // Row 2：输入栏与工具列表互斥切换
         if (inputList.hasPending) {
             InputListPanel(
-                items = inputList.inputs,
-                cursorIndex = inputList.gapIndex,
-                layoutState = InputListLayoutState(),
+//                items = inputList.inputs,
+//                cursorIndex = inputList.gapIndex,
+                layoutState = InputListLayoutState(
+                    itemPositions = TODO(),
+                    panelSize = TODO()
+                ),
                 showIndicator = showIndicator,
+                inputList = TODO(),
+                onLayoutStateChanged = TODO(),
+                indicatorState = TODO(),
+                modifier = TODO(),
             )
         } else {
             ToolListPanel(
-                toolListState = toolListState,
+//                toolListState = toolListState,
                 layoutState = KeyLayoutState(),
                 showIndicator = showIndicator,
+                toolList = TODO(),
+                onLayoutStateChanged = TODO(),
+                indicatorState = TODO(),
+                onToolClick = TODO(),
+                modifier = TODO(),
             )
         }
         // Row 3：按键面板 + 反馈面板 + 输入面板 三层叠加
         Box {
             KeyLayoutPanel(
                 keyTable = keyTable,
-                generator = keyTableGenerator,
-                context = keyTableContext,
+//                generator = keyTableGenerator,
+//                context = keyTableContext,
                 keyboardInputMode = config.ui.keyboardInputMode,
                 keyLayoutState = KeyLayoutState(),
                 onLayoutStateChanged = { viewModel.updateKeyLayoutState(it) },
@@ -252,8 +267,8 @@ private fun SeparatedLayout(
         Box {
             KeyLayoutPanel(
                 keyTable = keyTable,
-                generator = keyTableGenerator,
-                context = keyTableContext,
+//                generator = keyTableGenerator,
+//                context = keyTableContext,
                 keyboardInputMode = config.ui.keyboardInputMode,
                 keyLayoutState = KeyLayoutState(),
                 onLayoutStateChanged = { viewModel.updateKeyLayoutState(it) },
@@ -267,22 +282,37 @@ private fun SeparatedLayout(
         CandidateListPanel(
             candidates = candidateList.currentPage,
             selectedIndex = 0,
-            layoutState = CandidateListLayoutState(),
+            layoutState = CandidateListLayoutState(
+                candidatePositions = TODO(),
+                panelSize = TODO()
+            ),
             showIndicator = showIndicator,
         )
         // Row 2：输入栏与工具列表互斥切换
         if (inputList.hasPending) {
             InputListPanel(
-                items = inputList.inputs,
-                cursorIndex = inputList.gapIndex,
-                layoutState = InputListLayoutState(),
+//                items = inputList.inputs,
+//                cursorIndex = inputList.gapIndex,
+                layoutState = InputListLayoutState(
+                    itemPositions = TODO(),
+                    panelSize = TODO()
+                ),
                 showIndicator = showIndicator,
+                inputList = TODO(),
+                onLayoutStateChanged = TODO(),
+                indicatorState = TODO(),
+                modifier = TODO(),
             )
         } else {
             ToolListPanel(
-                toolListState = toolListState,
+//                toolListState = toolListState,
                 layoutState = KeyLayoutState(),
                 showIndicator = showIndicator,
+                toolList = TODO(),
+                onLayoutStateChanged = TODO(),
+                indicatorState = TODO(),
+                onToolClick = TODO(),
+                modifier = TODO(),
             )
         }
         // Row 3：反馈面板 + 输入面板 两层叠加
@@ -318,16 +348,16 @@ private fun generateBasicLayout(context: KeyTableContext): List<List<InputKey>> 
             ),
             // 第三行（含 Ctrl 功能键）
             listOf(
-                InputKey.Ctrl, InputKey.Char(text = "z"), InputKey.Char(text = "x"),
+                InputKey.Ctrl(type = ""), InputKey.Char(text = "z"), InputKey.Char(text = "x"),
                 InputKey.Char(text = "c"), InputKey.Char(text = "v"), InputKey.Char(text = "b"),
-                InputKey.Char(text = "n"), InputKey.Char(text = "m"), InputKey.Ctrl,
+                InputKey.Char(text = "n"), InputKey.Char(text = "m"), InputKey.Ctrl(type = ""),
             ),
         )
         KeyboardType.Number -> listOf(
             listOf(InputKey.Char(text = "1"), InputKey.Char(text = "2"), InputKey.Char(text = "3")),
             listOf(InputKey.Char(text = "4"), InputKey.Char(text = "5"), InputKey.Char(text = "6")),
             listOf(InputKey.Char(text = "7"), InputKey.Char(text = "8"), InputKey.Char(text = "9")),
-            listOf(InputKey.Ctrl, InputKey.Char(text = "0"), InputKey.Ctrl),
+            listOf(InputKey.Ctrl(type = ""), InputKey.Char(text = "0"), InputKey.Ctrl(type = "")),
         )
         else -> listOf(
             listOf(InputKey.Char(text = "a"), InputKey.Char(text = "b"), InputKey.Char(text = "c")),

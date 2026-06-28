@@ -20,7 +20,6 @@
 package org.crazydan.studio.app.ime.kuaizi.ui
 
 import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 
@@ -36,19 +35,19 @@ fun LogExportScreen(
     /** 导出回调，接收用户选择的 URI */
     onExport: (Uri) -> Unit,
 ) {
-    // 创建文件选择启动器，MIME 类型为纯文本
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("text/plain"),
-    ) { uri ->
-        uri?.let(onExport)
-    }
-
-    // 启动文件选择，默认文件名包含最近 7 天的日期范围
-    startExport(
-        launcher = createDocumentLauncher,
-        fromDate = null,
-        toDate = null,
-    )
+//    // 创建文件选择启动器，MIME 类型为纯文本
+//    val createDocumentLauncher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.CreateDocument("text/plain"),
+//    ) { uri ->
+//        uri?.let(onExport)
+//    }
+//
+//    // 启动文件选择，默认文件名包含最近 7 天的日期范围
+//    startExport(
+//        launcher = createDocumentLauncher,
+//        fromDate = null,
+//        toDate = null,
+//    )
 }
 
 /**

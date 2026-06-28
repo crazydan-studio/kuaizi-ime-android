@@ -40,9 +40,9 @@ class AndroidAudioPlayer(context: Context) : AudioPlayer {
 
     // 音效类型到 SoundPool ID 的映射，构造时预加载音频资源
     private val soundIds: Map<AudioType, Int> = mapOf(
-        AudioType.KeyPress to soundPool.load(context, R.raw.key_press, 1),
-        AudioType.Slip to soundPool.load(context, R.raw.slip, 1),
-        AudioType.CandidateSelect to soundPool.load(context, R.raw.candidate_select, 1),
+        AudioType.KeyPress to soundPool.load(context, R.raw.tick_single, 1),
+        AudioType.Slip to soundPool.load(context, R.raw.tick_single, 1),
+        AudioType.CandidateSelect to soundPool.load(context, R.raw.tick_single, 1),
         AudioType.PageFlip to soundPool.load(context, R.raw.page_flip, 1),
     )
 

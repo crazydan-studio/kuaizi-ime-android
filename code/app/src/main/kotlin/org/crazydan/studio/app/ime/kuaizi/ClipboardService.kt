@@ -82,9 +82,9 @@ class ClipboardService(
             }
             clipboardManager.addPrimaryClipChangedListener(listener)
             // 协程取消时移除监听器，避免内存泄漏
-            awaitClose {
-                clipboardManager.removePrimaryClipChangedListener(listener)
-            }
+//            awaitClose {
+//                clipboardManager.removePrimaryClipChangedListener(listener)
+//            }
         }.collect { clip ->
             // 更新状态并显示提示
             _clip.value = clip

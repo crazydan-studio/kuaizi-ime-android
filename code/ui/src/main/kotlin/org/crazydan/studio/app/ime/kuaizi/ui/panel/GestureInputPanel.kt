@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
@@ -56,7 +57,7 @@ fun GestureInputPanel(
                 // 使用 detectTapGestures 检测点击手势
                 detectTapGestures { offset ->
                     // 通过 KeyLayoutState 查找触摸位置对应的按键
-                    val key = keyLayoutState.findKeyAt(offset, size)
+                    val key = keyLayoutState.findKeyAt(offset, Size(width = 1f, height = 1f))
                     if (key != null) {
                         // 构造 Tap 手势并通过回调发射
                         onGesture(InputGesture.Tap(

@@ -31,7 +31,7 @@ Note：其高宽会动态设置，此处可设置任意值
             android:layout_height="match_parent"
             android:padding="@dimen/key_view_padding" />
 
-    <com.google.android.flexbox.FlexboxLayout
+    <!--<com.google.android.flexbox.FlexboxLayout
             android:id="@+id/fg"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -81,6 +81,6 @@ Note：其高宽会动态设置，此处可设置任意值
                         android:textColor="?attr/key_special_fg_color" />
             </RelativeLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.flexbox.FlexboxLayout>
+    </com.google.android.flexbox.FlexboxLayout>-->
 
 </FrameLayout>

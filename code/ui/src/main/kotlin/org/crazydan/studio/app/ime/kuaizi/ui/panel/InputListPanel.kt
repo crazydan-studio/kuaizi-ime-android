@@ -46,7 +46,10 @@ import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 @Composable
 fun InputListPanel(
     inputList: InputList,
-    layoutState: InputListLayoutState = InputListLayoutState(),
+    layoutState: InputListLayoutState = InputListLayoutState(
+        itemPositions = TODO(),
+        panelSize = TODO()
+    ),
     onLayoutStateChanged: (InputListLayoutState) -> Unit = {},
     showIndicator: Boolean = false,
     indicatorState: InputActionFingerIndicator? = null,

@@ -20,7 +20,6 @@
 package org.crazydan.studio.app.ime.kuaizi.ui
 
 import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.ListItem
@@ -63,17 +62,17 @@ fun LogStoragePathSetting(
 
     // 延迟创建启动器，仅在需要时初始化
     if (showPicker) {
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.OpenDocumentTree(),
-        ) { uri ->
-            uri?.let {
-                // 获取持久化 URI 权限，确保应用重启后仍可访问
-                context.contentResolver.takePersistableUriPermission(
-                    it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
-                )
-                onPathChange(it.toString())
-            }
-            showPicker = false
-        }
+//        val launcher = rememberLauncherForActivityResult(
+//            contract = ActivityResultContracts.OpenDocumentTree(),
+//        ) { uri ->
+//            uri?.let {
+//                // 获取持久化 URI 权限，确保应用重启后仍可访问
+//                context.contentResolver.takePersistableUriPermission(
+//                    it, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+//                )
+//                onPathChange(it.toString())
+//            }
+//            showPicker = false
+//        }
     }
 }

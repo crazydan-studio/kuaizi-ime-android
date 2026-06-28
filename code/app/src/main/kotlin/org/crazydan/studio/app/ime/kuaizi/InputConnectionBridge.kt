@@ -19,12 +19,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi
 
+import android.R
 import android.view.inputmethod.InputConnection
 import org.crazydan.studio.app.ime.kuaizi.engine.CursorDirection
 import org.crazydan.studio.app.ime.kuaizi.engine.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.TextRange
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.BaseImeEditorBridge
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.SelectionSnapshot
 
 /**
  * 基于 Android [InputConnection] 的编辑器桥接实现。
@@ -52,7 +52,7 @@ class InputConnectionBridge(
         recordRevertion(
             beforeStart = beforeSel.start,
             beforeEnd = beforeSel.end,
-            beforeContent = beforeText,
+            beforeContent = beforeText.toString(),
             afterStart = afterSel.start,
             afterEnd = afterSel.end,
         )
@@ -121,34 +121,35 @@ class InputConnectionBridge(
     /** 按方向扩展选区，模拟 Shift + 方向键。 */
     override fun selectRange(direction: CursorDirection) {
         val ic = targetSupplier() ?: return
-        when (direction) {
-            CursorDirection.Left -> ic.sendKeyEvent(
-                android.view.KeyEvent(
-                    android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT,
-                    android.view.KeyEvent.META_SHIFT_ON,
-                ),
-            )
-            CursorDirection.Right -> ic.sendKeyEvent(
-                android.view.KeyEvent(
-                    android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_RIGHT,
-                    android.view.KeyEvent.META_SHIFT_ON,
-                ),
-            )
-            // Up/Down 方向不支持选区扩展
-            else -> {}
-        }
+//        when (direction) {
+//            CursorDirection.Left -> ic.sendKeyEvent(
+//                android.view.KeyEvent(
+//                    android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_LEFT,
+//                    android.view.KeyEvent.META_SHIFT_ON,
+//                ),
+//            )
+//            CursorDirection.Right -> ic.sendKeyEvent(
+//                android.view.KeyEvent(
+//                    android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_DPAD_RIGHT,
+//                    android.view.KeyEvent.META_SHIFT_ON,
+//                ),
+//            )
+//            // Up/Down 方向不支持选区扩展
+//            else -> {}
+//        }
     }
 
     /** 执行编辑器编辑操作，通过系统上下文菜单动作实现。 */
     override fun performEdit(action: EditorEditAction) {
         val ic = targetSupplier() ?: return
         when (action) {
-            EditorEditAction.SELECT_ALL -> ic.performContextMenuAction(android.R.id.selectAll)
-            EditorEditAction.COPY -> ic.performContextMenuAction(android.R.id.copy)
-            EditorEditAction.PASTE -> ic.performContextMenuAction(android.R.id.paste)
-            EditorEditAction.CUT -> ic.performContextMenuAction(android.R.id.cut)
-            EditorEditAction.UNDO -> ic.performContextMenuAction(android.R.id.undo)
-            EditorEditAction.REDO -> ic.performContextMenuAction(android.R.id.redo)
+            EditorEditAction.SELECT_ALL -> ic.performContextMenuAction(R.id.selectAll)
+            EditorEditAction.COPY -> ic.performContextMenuAction(R.id.copy)
+            EditorEditAction.PASTE -> ic.performContextMenuAction(R.id.paste)
+            EditorEditAction.CUT -> ic.performContextMenuAction(R.id.cut)
+            EditorEditAction.UNDO -> ic.performContextMenuAction(R.id.undo)
+            EditorEditAction.REDO -> ic.performContextMenuAction(R.id.redo)
+            EditorEditAction.BACKSPACE -> TODO()
         }
     }
 

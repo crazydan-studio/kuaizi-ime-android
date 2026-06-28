@@ -70,7 +70,7 @@ fun KeyLayoutPanel(
                 color = colors.keyBackground,
                 topLeft = Offset(pixelRect.left, pixelRect.top),
                 size = Size(pixelRect.width, pixelRect.height),
-                cornerRadius = CornerRadius(colors.keyCornerShape),
+                cornerRadius = CornerRadius.Zero,
             )
         }
     }

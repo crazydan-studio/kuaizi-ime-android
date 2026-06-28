@@ -73,39 +73,39 @@ fun LogLevelSetting(
 
         // 等级选择对话框
         if (showDialog) {
-            AlertDialog(
-                title = { Text("选择日志等级") },
-                text = {
-                    Column {
-                        LogLevel.entries.forEach { level ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onLevelChange(level)
-                                        showDialog = false
-                                    }
-                                    .padding(vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                RadioButton(
-                                    selected = level == currentLevel,
-                                    onClick = {
-                                        onLevelChange(level)
-                                        showDialog = false
-                                    },
-                                )
-                                Text(level.displayName)
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text("取消")
-                    }
-                },
-            )
+//            AlertDialog(
+//                title = { Text("选择日志等级") },
+//                text = {
+//                    Column {
+//                        LogLevel.entries.forEach { level ->
+//                            Row(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .clickable {
+//                                        onLevelChange(level)
+//                                        showDialog = false
+//                                    }
+//                                    .padding(vertical = 8.dp),
+//                                verticalAlignment = Alignment.CenterVertically,
+//                            ) {
+//                                RadioButton(
+//                                    selected = level == currentLevel,
+//                                    onClick = {
+//                                        onLevelChange(level)
+//                                        showDialog = false
+//                                    },
+//                                )
+//                                Text(level.displayName)
+//                            }
+//                        }
+//                    }
+//                },
+//                confirmButton = {
+//                    TextButton(onClick = { showDialog = false }) {
+//                        Text("取消")
+//                    }
+//                },
+//            )
         }
     }
 }

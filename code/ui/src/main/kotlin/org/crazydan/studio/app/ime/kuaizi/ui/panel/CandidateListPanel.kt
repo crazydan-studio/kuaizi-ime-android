@@ -22,6 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.panel
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -51,7 +52,10 @@ import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 fun CandidateListPanel(
     candidates: List<InputWord>,
     selectedIndex: Int = -1,
-    layoutState: CandidateListLayoutState = CandidateListLayoutState(),
+    layoutState: CandidateListLayoutState = CandidateListLayoutState(
+        candidatePositions = TODO(),
+        panelSize = TODO()
+    ),
     onLayoutStateChanged: (CandidateListLayoutState) -> Unit = {},
     showIndicator: Boolean = false,
     indicatorState: InputActionFingerIndicator? = null,

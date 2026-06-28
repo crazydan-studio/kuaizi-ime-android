@@ -43,7 +43,7 @@ class EditTextBridge(
     /** 普通提交文本：在光标位置插入文本 */
     override fun doNormalCommitText(text: String) {
         val editText = targetSupplier() ?: return
-        val editable = editText.text as? Editable ?: return
+        val editable = editText.text ?: return
         val start = editText.selectionStart
         val end = editText.selectionEnd
 
@@ -62,7 +62,7 @@ class EditTextBridge(
     /** 可替换提交：先尝试替换已有文本，失败则普通提交 */
     override fun doReplaceableCommitText(text: String, replacements: List<String>) {
         val editText = targetSupplier() ?: return
-        val editable = editText.text as? Editable ?: return
+        val editable = editText.text ?: return
         val cursor = editText.selectionStart
 
         // 遍历替换模式列表，找到匹配的文本进行替换
@@ -80,7 +80,7 @@ class EditTextBridge(
     /** 插入配对符号：在光标位置插入左右成对符号，并将光标置于中间 */
     override fun insertPairedSymbols(left: String, right: String) {
         val editText = targetSupplier() ?: return
-        val editable = editText.text as? Editable ?: return
+        val editable = editText.text ?: return
         val start = editText.selectionStart
         editable.insert(start.coerceAtLeast(0), "$left$right")
         editText.setSelection(start + left.length)
@@ -124,7 +124,7 @@ class EditTextBridge(
             EditorEditAction.UNDO -> editText.onTextContextMenuItem(android.R.id.undo)
             EditorEditAction.REDO -> editText.onTextContextMenuItem(android.R.id.redo)
             EditorEditAction.BACKSPACE -> {
-                val editable = editText.text as? Editable ?: return
+                val editable = editText.text ?: return
                 val start = editText.selectionStart
                 if (start > 0) editable.delete(start - 1, start)
             }
@@ -143,7 +143,7 @@ class EditTextBridge(
     /** 撤销提交：恢复到操作前的内容 */
     override fun onRevokeCommit(snapshot: SelectionSnapshot) {
         val editText = targetSupplier() ?: return
-        val editable = editText.text as? Editable ?: return
+        val editable = editText.text ?: return
         editable.replace(0, editable.length, snapshot.beforeContent)
         editText.setSelection(snapshot.beforeStart)
     }

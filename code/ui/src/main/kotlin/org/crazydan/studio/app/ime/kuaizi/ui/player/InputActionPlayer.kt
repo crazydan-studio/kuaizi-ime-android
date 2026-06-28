@@ -23,8 +23,12 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.*
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.GestureFeedbackState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 
@@ -234,7 +238,7 @@ class InputActionPlayer(
                         visible = true,
                     )
                 }
-                val word = InputWord.Pinyin(text = "", spell = "")
+                val word = InputWord.Pinyin(text = "", frequency = 1)
                 viewModel.handleIntent(ImeIntent.SelectCandidate(word))
             }
 

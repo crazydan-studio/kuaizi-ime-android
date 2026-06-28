@@ -31,7 +31,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
  * 不同 [KeyboardInputMode] 和 [KeyboardType] 的组合可以注册不同的实现，
  * 由 [KeyLayoutPanel] 根据当前键盘状态选择合适的生成器。
  */
-interface KeyTableGenerator {
+fun interface KeyTableGenerator {
     /**
      * 生成按键布局矩阵
      * @param context 按键生成上下文
