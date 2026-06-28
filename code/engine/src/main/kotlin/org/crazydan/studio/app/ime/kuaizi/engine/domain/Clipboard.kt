@@ -22,6 +22,15 @@ package org.crazydan.studio.app.ime.kuaizi.engine.domain
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+/**
+ * 剪贴板状态的不可变数据模型。
+ * 管理当前剪贴板文本、提示显示状态、历史剪贴条目列表和功能开关。
+ *
+ * @param currentText 当前系统剪贴板文本，null 表示无内容
+ * @param showTip 是否在 UI 上显示剪贴板提示
+ * @param clips 最近的剪贴条目列表
+ * @param disabled 功能是否禁用，由配置门控决定
+ */
 data class Clipboard(
     val currentText: String? = null,
     val showTip: Boolean = false,
@@ -29,30 +38,59 @@ data class Clipboard(
     val disabled: Boolean = false,
 )
 
+/**
+ * 剪贴板条目的数据模型
+ * @param text 剪贴文本内容
+ * @param type 自动检测的文本类型
+ * @param code 条目唯一标识码，用于去重
+ */
 data class InputClip(
     val text: String,
     val type: InputTextType? = null,
     val code: String = "",
 ) {
     companion object {
+        /**
+         * 根据文本内容自动检测类型并创建 InputClip 实例
+         * @param text 待检测的文本
+         * @return 带类型标注的 InputClip 实例
+         */
         suspend fun from(text: String): InputClip = withContext(Dispatchers.Default) {
             InputClip(text = text, type = InputTextType.detect(text))
         }
     }
 }
 
+/**
+ * 文本语义类型枚举，定义了剪贴板文本的语义类型体系。
+ * detect() 方法通过正则表达式优先级链实现自动类型检测。
+ */
 enum class InputTextType {
+    /** 普通文本 */
     Text,
+    /** URL 链接 */
     Url,
+    /** 邮箱地址 */
     Email,
+    /** 手机号码 */
     Phone,
+    /** 验证码 */
     Captcha,
+    /** 身份证号 */
     IdCard,
+    /** 银行卡号 */
     CreditCard,
+    /** 地址信息 */
     Address,
+    /** HTML 内容 */
     Html,;
 
     companion object {
+        /**
+         * 检测文本类型，按优先级链匹配
+         * @param text 待检测文本
+         * @return 匹配的文本类型，无法匹配时返回 null
+         */
         fun detect(text: String): InputTextType? {
             return when {
                 CAPTCHA_REGEX.matches(text) -> Captcha

@@ -27,6 +27,16 @@ import androidx.compose.ui.unit.dp
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
+/**
+ * 单个按键的渲染组件。
+ *
+ * 根据 [InputKey] 的语义类型分发渲染，仅负责展示，不处理触摸事件。
+ * 按压状态通过 [isPressed] 参数控制色彩变化。
+ *
+ * @param key 按键的语义标识
+ * @param isPressed 是否处于按下状态
+ * @param modifier 修饰符
+ */
 @Composable
 fun KeyView(
     key: InputKey,
@@ -34,6 +44,7 @@ fun KeyView(
     modifier: Modifier = Modifier,
 ) {
     val colors = LocalKeyboardColors.current
+    // 根据按下状态切换背景色和前景色
     val bg = if (isPressed) colors.keyPressedBackground else colors.keyBackground
     val fg = if (isPressed) colors.keyPressedForeground else colors.keyForeground
 

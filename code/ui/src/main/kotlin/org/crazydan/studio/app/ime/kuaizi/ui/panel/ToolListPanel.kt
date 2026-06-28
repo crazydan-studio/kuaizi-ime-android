@@ -32,6 +32,21 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerI
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
+/**
+ * 工具列表面板。
+ *
+ * 展示键盘工具栏中的工具按钮列表（如全选、复制、粘贴等编辑功能键），
+ * 内建 [InputActionPlayer] 的指示器覆盖层。
+ * 与 [InputListPanel] 互斥共享 Row 2 空间，由 [isInputting] 状态控制切换。
+ *
+ * @param toolList 工具列表状态
+ * @param layoutState 布局状态
+ * @param onLayoutStateChanged 布局状态变更回调
+ * @param showIndicator 是否显示播放器指示器
+ * @param indicatorState 手指指示器状态
+ * @param onToolClick 工具按钮点击回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun ToolListPanel(
     toolList: ToolListState,
@@ -49,6 +64,7 @@ fun ToolListPanel(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
+        // 遍历工具列表，每个有 intent 的项渲染为可点击按钮
         toolList.tools.forEach { tool ->
             if (tool.intent != null) {
                 TextButton(

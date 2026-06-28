@@ -21,7 +21,17 @@ package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
 import org.crazydan.studio.app.ime.kuaizi.engine.AudioType
 
+/**
+ * 按键音效播放器，封装音效播放的回调函数。
+ * 通过构造函数注入播放器实现，解耦引擎与音频播放的具体实现。
+ *
+ * @param player 音效播放回调函数，接收 [AudioType] 参数
+ */
 class KeyAudioPlayer(private val player: (AudioType) -> Unit = {}) {
+    /**
+     * 播放指定类型的音效
+     * @param type 音效类型
+     */
     fun play(type: AudioType) {
         player(type)
     }

@@ -24,16 +24,26 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 
+/**
+ * 日志导出界面。
+ *
+ * 通过 Android Activity Result API 的 [CreateDocument] 合约，
+ * 让用户选择保存位置，默认文件名包含日期范围。
+ * 导出操作委托给调用方提供的 [onExport] 回调。
+ */
 @Composable
 fun LogExportScreen(
+    /** 导出回调，接收用户选择的 URI */
     onExport: (Uri) -> Unit,
 ) {
+    // 创建文件选择启动器，MIME 类型为纯文本
     val createDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("text/plain"),
     ) { uri ->
         uri?.let(onExport)
     }
 
+    // 启动文件选择，默认文件名包含最近 7 天的日期范围
     startExport(
         launcher = createDocumentLauncher,
         fromDate = null,
@@ -41,6 +51,12 @@ fun LogExportScreen(
     )
 }
 
+/**
+ * 启动导出文件选择器。
+ *
+ * 生成默认文件名格式：kuaizi_ime_log_{from}_{to}.txt
+ * 日期范围默认为最近 7 天。
+ */
 private fun startExport(
     launcher: androidx.activity.result.ActivityResultLauncher<String>,
     fromDate: java.time.LocalDate?,

@@ -25,11 +25,22 @@ import androidx.compose.runtime.CompositionLocalProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType
 
+/**
+ * 键盘主题提供者。
+ *
+ * 根据 [type] 选择 [KeyboardColors] 并通过 [CompositionLocalProvider]
+ * 注入到 [LocalKeyboardColors] 中，所有子组件通过 `LocalKeyboardColors.current`
+ * 读取配色方案。主题切换时所有子组件自动重组。
+ *
+ * @param type 主题类型（浅色/深色/跟随系统）
+ * @param content 子组件内容
+ */
 @Composable
 fun KeyboardTheme(
     type: KeyboardThemeType,
     content: @Composable () -> Unit,
 ) {
+    // 根据主题类型判断是否为深色模式
     val isDark = when (type) {
         KeyboardThemeType.Light -> false
         KeyboardThemeType.Night -> true
@@ -43,6 +54,12 @@ fun KeyboardTheme(
     }
 }
 
+/**
+ * 通过 [ImeConfig.UiConfig] 提供键盘主题的便捷重载。
+ *
+ * @param config UI 配置，从中读取 [keyboardThemeType]
+ * @param content 子组件内容
+ */
 @Composable
 fun KeyboardTheme(
     config: ImeConfig.UiConfig,

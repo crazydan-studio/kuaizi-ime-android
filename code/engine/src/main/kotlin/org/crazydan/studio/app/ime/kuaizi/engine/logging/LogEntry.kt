@@ -24,6 +24,20 @@ import kotlinx.datetime.toLocalDateTime
 import org.crazydan.studio.app.ime.kuaizi.engine.utils.DateTimeHelper
 import kotlin.time.Instant
 
+/**
+ * 日志条目：不可变的日志数据类，每次日志调用创建一个新实例。
+ *
+ * 所有字段在构造时确定，不存在可变状态，确保线程安全。
+ * 包含完整的上下文信息：等级、标签、消息、异常对象、时间戳和线程信息。
+ *
+ * @property level 日志等级
+ * @property tag 日志标签，通常为模块名或类名
+ * @property message 日志消息内容
+ * @property throwable 可选的异常对象
+ * @property timestamp 日志时间戳（毫秒）
+ * @property threadName 线程名
+ * @property threadId 线程 ID
+ */
 data class LogEntry(
     val level: LogLevel,
     val tag: String,
@@ -34,6 +48,11 @@ data class LogEntry(
     val threadId: Long = Thread.currentThread().id,
 ) {
 
+    /**
+     * 格式化为可读字符串。
+     * 输出格式：`yyyy-MM-dd HH:mm:ss.SSS [LEVEL] [TAG] [ThreadName] message`
+     * 异常对象的完整堆栈信息追加在消息之后。
+     */
     fun format(): String {
         val time = Instant.fromEpochMilliseconds(timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
         val timeStr = DateTimeHelper.dateTimeFormat.format(time)

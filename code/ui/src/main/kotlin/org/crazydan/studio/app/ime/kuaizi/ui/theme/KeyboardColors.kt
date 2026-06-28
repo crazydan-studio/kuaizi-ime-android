@@ -27,37 +27,72 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * 键盘配色方案，定义键盘界面各区域的颜色变量。
+ *
+ * 包含按键、候选栏、输入栏、弹出提示、工具栏等全部视觉元素的色彩配置。
+ * 通过 [CompositionLocal] 机制向下传递，切换主题时所有组件自动重组。
+ */
 data class KeyboardColors(
+    /** 键盘整体背景色 */
     val background: Color,
+    /** 普通按键背景色 */
     val keyBackground: Color,
+    /** 普通按键前景色（文本/图标） */
     val keyForeground: Color,
+    /** 按键按下态背景色 */
     val keyPressedBackground: Color,
+    /** 按键按下态前景色 */
     val keyPressedForeground: Color,
+    /** 按键按下高亮覆盖层颜色 */
     val keyPressedHighlightColor: Color,
+    /** 功能键背景色 */
     val functionKeyBackground: Color,
+    /** 功能键前景色 */
     val functionKeyForeground: Color,
+    /** 按键圆角半径 */
     val keyCornerShape: CornerSize,
+    /** 候选词文本色 */
     val candidateTextColor: Color,
+    /** 选中候选词文本色 */
     val candidateSelectedTextColor: Color,
+    /** 选中候选词背景色 */
     val candidateSelectedBackground: Color,
+    /** 候选词字号 */
     val candidateTextSize: TextUnit,
+    /** 光标颜色 */
     val cursorColor: Color,
+    /** 输入字符字号 */
     val charInputTextSize: TextUnit,
+    /** 输入栏间隔条颜色 */
     val gapColor: Color,
+    /** 手势触摸轨迹颜色 */
     val gestureTrailColor: Color,
+    /** 手指指示器颜色 */
     val fingerIndicatorColor: Color,
+    /** Message 类型弹出提示背景色 */
     val tipMessageBackground: Color,
+    /** Action 类型弹出提示背景色 */
     val tipActionBackground: Color,
+    /** 弹出提示字号 */
     val tipTextSize: TextUnit,
+    /** 弹出提示操作按钮颜色 */
     val tipActionButtonColor: Color,
+    /** 工具按钮背景色 */
     val toolBackground: Color,
+    /** 选中工具按钮背景色 */
     val toolSelectedBackground: Color,
+    /** 工具分组分隔线颜色 */
     val toolDividerColor: Color,
+    /** 工具按钮间距 */
     val toolSpacing: Dp,
+    /** 输入动作播放行指示器颜色 */
     val playerIndicatorColor: Color,
 )
 
+/** 预置主题集合，提供 Light 和 Night 两套配色方案 */
 object KeyboardThemes {
+    /** 亮色主题 */
     val Light = KeyboardColors(
         background = Color(0xFFF5F5F5),
         keyBackground = Color(0xFFFFFFFF),
@@ -88,6 +123,7 @@ object KeyboardThemes {
         playerIndicatorColor = Color(0xFFFF9800),
     )
 
+    /** 暗色主题 */
     val Night = KeyboardColors(
         background = Color(0xFF1A1A1A),
         keyBackground = Color(0xFF2D2D2D),
@@ -119,4 +155,5 @@ object KeyboardThemes {
     )
 }
 
+/** CompositionLocal 提供当前主题的 KeyboardColors，默认使用亮色主题 */
 val LocalKeyboardColors = compositionLocalOf { KeyboardThemes.Light }

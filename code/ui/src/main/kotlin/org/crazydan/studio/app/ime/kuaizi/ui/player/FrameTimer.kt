@@ -24,10 +24,28 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
+/**
+ * 帧定时器：使用 [withFrameNanos] 驱动动画帧循环。
+ *
+ * 基于 Compose Choreographer 实现帧同步，确保动画进度与屏幕刷新率精确对齐，
+ * 避免传统 [delay] 定时器的累积误差问题。
+ *
+ * 当系统负载导致帧回调延迟时，自动跳过中间状态——[onFrame] 仅以最新进度调用一次，
+ * 不累积过期帧。这确保动画始终追赶上最新进度，不会因卡顿而累积延迟。
+ *
+ * @param scope 协程作用域，用于启动帧循环协程
+ */
 class FrameTimer(private val scope: CoroutineScope) {
     private var job: Job? = null
     private var paused = false
 
+    /**
+     * 启动帧循环。
+     *
+     * @param durationMs 动画总时长（毫秒）
+     * @param onFrame 每帧回调，接收当前进度 [0f..1f]
+     * @param onComplete 动画完成回调
+     */
     fun start(
         durationMs: Long,
         onFrame: (progress: Float) -> Unit,
@@ -38,7 +56,6 @@ class FrameTimer(private val scope: CoroutineScope) {
         job = scope.launch {
             val startNanos = System.nanoTime()
             val durationNanos = durationMs * 1_000_000L
-            val frameNanos = 16_666_667L
 
             while (true) {
                 withFrameNanos { frameTimeNanos ->
@@ -55,9 +72,13 @@ class FrameTimer(private val scope: CoroutineScope) {
         }
     }
 
+    /** 暂停帧循环，进度暂停在当前位置。 */
     fun pause() { paused = true }
+
+    /** 恢复帧循环，从暂停位置继续。 */
     fun resume() { paused = false; job?.let { if (it.isCancelled) start(0, {}, {}) } }
 
+    /** 停止帧循环并重置暂停状态。 */
     fun stop() {
         job?.cancel()
         paused = false

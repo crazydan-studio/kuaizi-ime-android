@@ -19,12 +19,33 @@
 
 package org.crazydan.studio.app.ime.kuaizi.codegen.processor
 
+/**
+ * 标记一个 DataStore 配置类。
+ *
+ * 被此注解标注的类将由 [DataStoreConfigProcessor] 在处理时自动生成
+ * 对应的 DataStore Keys 对象和 read/write 方法。
+ * 生成的代码包含：
+ * - 一个 object（命名格式：`{ClassName}DataStoreKeys`）
+ * - 每个属性对应的 Preferences.Key 常量
+ * - `read{className}(prefs: Preferences): ClassName` 读取方法
+ * - `write{className}(prefs: MutablePreferences, config: ClassName)` 写入方法
+ *
+ * @param prefix Preferences Key 的前缀，默认使用类名首字母小写
+ */
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.SOURCE)
 annotation class DataStoreConfig(
     val prefix: String = "",
 )
 
+/**
+ * 标记 DataStore 配置类中的属性。
+ *
+ * 可自定义属性在 Preferences 中的 Key 名称，
+ * 默认使用属性名的蛇形命名（snake_case）作为 Key。
+ *
+ * @param name 自定义的 Preferences Key 名称，空字符串表示使用默认命名
+ */
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.SOURCE)
 annotation class DataStoreKey(

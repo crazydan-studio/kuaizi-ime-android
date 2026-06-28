@@ -23,6 +23,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardHandMode
 
+/**
+ * 单手模式切换组件。
+ *
+ * 提供左右手模式的分段选择控件，以 [FilterChip] 组的形式呈现。
+ * 用于设置页面和快捷设置弹窗中切换左右手模式。
+ *
+ * @param currentHandMode 当前选中的手模式
+ * @param onHandModeSelected 手模式选择回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun HandModeToggle(
     currentHandMode: KeyboardHandMode,

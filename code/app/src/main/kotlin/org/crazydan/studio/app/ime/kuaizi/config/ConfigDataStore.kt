@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.
- * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+ * If not, see <see href="https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text"/>.
  */
 
 package org.crazydan.studio.app.ime.kuaizi.config
@@ -29,9 +29,24 @@ import kotlinx.coroutines.flow.map
 import org.crazydan.studio.app.ime.kuaizi.engine.*
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
+/** Context 扩展属性，提供 IME 配置的 DataStore 实例。 */
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("ime_config")
 
+/**
+ * 基于 DataStore 的配置持久化实现。
+ *
+ * 将 [ImeConfig] 中的 [EngineConfig] 和 [UiConfig] 持久化到 Preferences DataStore。
+ * 支持增量更新：仅将变化的部分写入 DataStore，避免全量写入。
+ *
+ * [RuntimeConfig] 不做持久化，应用重启时根据 [StartupConfig] 重新初始化。
+ */
 class ConfigDataStore(private val context: Context) {
+    /**
+     * 配置的响应式 Flow。
+     *
+     * 从 DataStore 读取原始 Preferences，映射为 [ImeConfig] 实例。
+     * UI 层通过订阅此 Flow 实时响应配置变更。
+     */
     val config: Flow<ImeConfig> = context.dataStore.data.map { prefs ->
         ImeConfig(
             engine = readEngineConfig(prefs),
@@ -39,15 +54,24 @@ class ConfigDataStore(private val context: Context) {
         )
     }
 
+    /**
+     * 增量更新配置。
+     *
+     * 通过比较新旧配置的差异，仅将发生变化的字段写入 DataStore，
+     * 避免每次 updateConfig 都全量写入所有 key。
+     * 适用于高频配置切换场景（主题、音效开关的快速连续切换）。
+     */
     suspend fun updateConfig(transform: (ImeConfig) -> ImeConfig) {
         context.dataStore.edit { prefs ->
             val current = config.first()
             val new = transform(current)
+            // 分别写入引擎和 UI 配置中变化的部分
             writeChangedEngineConfig(prefs, current.engine, new.engine)
             writeChangedUiConfig(prefs, current.ui, new.ui)
         }
     }
 
+    /** 从 Preferences 读取引擎配置。缺失的 key 使用对应默认值。 */
     private fun readEngineConfig(prefs: Preferences): ImeConfig.EngineConfig {
         return ImeConfig.EngineConfig(
             inputPredictionEnabled = prefs[booleanPreferencesKey("engine_input_prediction_enabled")] ?: true,
@@ -61,6 +85,7 @@ class ConfigDataStore(private val context: Context) {
         )
     }
 
+    /** 从 Preferences 读取 UI 配置。枚举类型通过 name 序列化/反序列化。 */
     private fun readUiConfig(prefs: Preferences): ImeConfig.UiConfig {
         return ImeConfig.UiConfig(
             keyboardInputMode = try {
@@ -88,6 +113,7 @@ class ConfigDataStore(private val context: Context) {
         )
     }
 
+    /** 增量写入引擎配置：仅将变化的字段写入 Preferences。 */
     private fun writeChangedEngineConfig(
         prefs: MutablePreferences,
         old: ImeConfig.EngineConfig,
@@ -111,6 +137,7 @@ class ConfigDataStore(private val context: Context) {
             prefs[stringPreferencesKey("engine_log_storage_path")] = new.logStoragePath
     }
 
+    /** 增量写入 UI 配置：仅将变化的字段写入 Preferences。 */
     private fun writeChangedUiConfig(
         prefs: MutablePreferences,
         old: ImeConfig.UiConfig,

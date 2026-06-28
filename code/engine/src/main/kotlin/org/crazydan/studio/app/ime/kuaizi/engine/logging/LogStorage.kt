@@ -31,6 +31,19 @@ import java.io.File
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 
+/**
+ * 日志文件存储管理器，不依赖 Android Context。
+ *
+ * 路径解析由应用层负责，引擎库只关心文件的读写操作。
+ * 日志文件按日期组织，每天一个文件，单文件超过 5MB 时自动滚动，
+ * 保留最近 7 天的日志文件，超期自动清理。
+ *
+ * 性能优化：
+ * - [todayFile] 结果缓存，仅在跨日时重新计算
+ * - [cleanupOldFiles] 降频至每分钟执行一次，避免每次写入都扫描目录
+ *
+ * @param logDir 日志文件存储目录
+ */
 class LogStorage(private var logDir: File) {
     private var cachedTodayDate: LocalDate? = null
     private var cachedTodayFile: File? = null
@@ -44,6 +57,7 @@ class LogStorage(private var logDir: File) {
         const val FILE_NAME_SUFFIX = ".log"
     }
 
+    /** 更新日志目录（应用层切换存储路径时调用），同时清空缓存。 */
     fun changeDir(logDir: File) {
         this.logDir = logDir
 
@@ -51,6 +65,10 @@ class LogStorage(private var logDir: File) {
         cachedTodayFile = null
     }
 
+    /**
+     * 追加日志条目到当天文件。
+     * 超过大小上限自动滚动，超期文件自动清理。
+     */
     fun appendEntries(entries: List<LogEntry>) {
         val file = todayFile()
         if (file.exists() && file.length() > MAX_FILE_SIZE_BYTES) {
@@ -65,6 +83,10 @@ class LogStorage(private var logDir: File) {
         }
     }
 
+    /**
+     * 读取日志。
+     * 支持按日期、等级和关键词过滤。
+     */
     fun readLogs(
         date: LocalDate? = null,
         levelFilter: LogLevel? = null,
@@ -80,6 +102,7 @@ class LogStorage(private var logDir: File) {
             .filter { keyword == null || it.message.contains(keyword, ignoreCase = true) }
     }
 
+    /** 导出指定日期范围的日志为单个文件。 */
     fun exportLogs(
         destination: File,
         fromDate: LocalDate,
@@ -102,6 +125,7 @@ class LogStorage(private var logDir: File) {
         destination.writeText(lines.joinToString("\n"))
     }
 
+    /** 获取今日日志文件（结果缓存，按日期失效），避免每次写入都读取系统时钟。 */
     private fun todayFile(): File {
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
@@ -115,6 +139,7 @@ class LogStorage(private var logDir: File) {
     private fun fileForDate(date: LocalDate): File =
         File(logDir, "$FILE_NAME_PREFIX${DateTimeHelper.dateFormat.format(date)}$FILE_NAME_SUFFIX")
 
+    /** 日志文件滚动：超过大小上限时重命名添加时间戳后缀。 */
     private fun rotateFile(file: File) {
         val rotated = File(
             file.parent,
@@ -124,6 +149,7 @@ class LogStorage(private var logDir: File) {
         file.renameTo(rotated)
     }
 
+    /** 清理超过保留期限的旧日志文件。 */
     private fun cleanupOldFiles() {
         val cutoff =
             Clock.System.now().minus(MAX_RETENTION_DAYS.days)
@@ -135,6 +161,7 @@ class LogStorage(private var logDir: File) {
             ?.forEach { it.delete() }
     }
 
+    /** 从文件名中提取日期。 */
     private fun extractDateFromFileName(name: String): LocalDate? =
         runCatching {
             val dateStr = name.removePrefix(FILE_NAME_PREFIX).removeSuffix(FILE_NAME_SUFFIX)
@@ -142,6 +169,7 @@ class LogStorage(private var logDir: File) {
             LocalDate.parse(dateStr)
         }.getOrNull()
 
+    /** 将日志行文本解析为 [LogEntry] 对象。 */
     private fun parseLine(line: String): LogEntry? =
         runCatching {
             val regex = Regex(

@@ -31,6 +31,17 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.InputGesture
 
+/**
+ * 手势输入面板。
+ *
+ * 键盘界面中唯一的触摸事件捕获组件，以透明覆盖层形式叠加在所有其他面板之上。
+ * 负责检测用户手势、确定手势类型、通过 [KeyLayoutState] 将触摸坐标映射到按键，
+ * 并通过 [onGesture] 回调发射 [InputGesture] 事件。
+ *
+ * @param keyLayoutState 按键布局状态，用于触摸位置到按键的映射
+ * @param onGesture 手势识别后的回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun GestureInputPanel(
     keyLayoutState: KeyLayoutState,
@@ -42,9 +53,12 @@ fun GestureInputPanel(
             .fillMaxWidth()
             .height(200.dp)
             .pointerInput(keyLayoutState) {
+                // 使用 detectTapGestures 检测点击手势
                 detectTapGestures { offset ->
+                    // 通过 KeyLayoutState 查找触摸位置对应的按键
                     val key = keyLayoutState.findKeyAt(offset, size)
                     if (key != null) {
+                        // 构造 Tap 手势并通过回调发射
                         onGesture(InputGesture.Tap(
                             timestamp = System.currentTimeMillis(),
                             inputMode = KeyboardInputMode.RectGrid,

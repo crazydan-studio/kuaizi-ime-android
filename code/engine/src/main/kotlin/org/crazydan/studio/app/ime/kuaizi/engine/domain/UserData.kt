@@ -23,41 +23,60 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import kotlinx.serialization.Serializable
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
+/** 导入策略 */
 enum class ImportStrategy {
+    /** 替换现有数据 */
     Replace,
+    /** 与现有数据合并 */
     Merge,
 }
 
+/** 导出结果的密封类型 */
 sealed class ExportResult {
+    /** 导出成功 */
     data class Success(val itemCount: Int) : ExportResult()
+    /** 导出失败 */
     data class Failure(val message: String) : ExportResult()
 }
 
+/** 导入结果的密封类型 */
 sealed class ImportResult {
+    /** 导入成功 */
     data class Success(
         val importedCount: Int,
         val skippedCount: Int,
         val conflictCount: Int,
     ) : ImportResult()
 
+    /** 导入失败 */
     data class Failure(val message: String) : ImportResult()
 }
 
+/** 用户数据备份文件根结构 */
 @Serializable
 data class UserBackup(
+    /** 数据格式版本号 */
     val version: Int,
+    /** 导出时的应用版本 */
     val appVersion: String,
+    /** 导出时间戳 */
     val exportedAt: String,
+    /** 备份数据 */
     val data: BackupData,
 )
 
+/** 备份数据类型 */
 @Serializable
 data class BackupData(
+    /** 用户输入历史数据 */
     val userInput: List<UserInputBackupEntry>,
+    /** 收藏数据 */
     val favorites: List<FavoriteBackupEntry>,
+    /** 配置数据（可选） */
     val config: ConfigBackupEntry? = null,
 )
 
+/** 用户输入备份条目 */
 @Serializable
 data class UserInputBackupEntry(
     val text: String,
@@ -66,6 +85,7 @@ data class UserInputBackupEntry(
     val last_used: Long,
 )
 
+/** 收藏备份条目 */
 @Serializable
 data class FavoriteBackupEntry(
     val text: String,
@@ -74,11 +94,17 @@ data class FavoriteBackupEntry(
     val created_at: Long,
 )
 
+/** 配置备份条目 */
 @Serializable
 data class ConfigBackupEntry(
     val engine: EngineConfigBackupEntry? = null,
     val ui: UiConfigBackupEntry? = null,
 ) {
+    /**
+     * 从备份恢复配置
+     * @param current 当前配置
+     * @return 恢复后的配置
+     */
     fun restoreFromBackup(current: ImeConfig): ImeConfig {
         return current.copy(
             engine = engine?.restoreFromBackup(current.engine) ?: current.engine,
@@ -87,6 +113,7 @@ data class ConfigBackupEntry(
     }
 }
 
+/** 引擎配置备份条目 */
 @Serializable
 data class EngineConfigBackupEntry(
     val log_level: String? = null,
@@ -98,6 +125,11 @@ data class EngineConfigBackupEntry(
     val favorite_sync_to_user_dict_enabled: Boolean? = null,
     val candidate_variant_first_enabled: Boolean? = null,
 ) {
+    /**
+     * 从备份恢复引擎配置
+     * @param current 当前引擎配置
+     * @return 恢复后的引擎配置
+     */
     fun restoreFromBackup(current: ImeConfig.EngineConfig): ImeConfig.EngineConfig {
         return current.copy(
             logLevel = log_level?.let { LogLevel.valueOf(it) } ?: current.logLevel,
@@ -112,6 +144,7 @@ data class EngineConfigBackupEntry(
     }
 }
 
+/** UI 配置备份条目 */
 @Serializable
 data class UiConfigBackupEntry(
     val keyboard_hand_mode: String? = null,
@@ -129,6 +162,11 @@ data class UiConfigBackupEntry(
     val practice_show_finger_overlay: Boolean? = null,
     val practice_show_swipe_trail: Boolean? = null,
 ) {
+    /**
+     * 从备份恢复 UI 配置
+     * @param current 当前 UI 配置
+     * @return 恢复后的 UI 配置
+     */
     fun restoreFromBackup(current: ImeConfig.UiConfig): ImeConfig.UiConfig {
         return current.copy(
             keyboardHandMode = keyboard_hand_mode?.let { org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardHandMode.valueOf(it) } ?: current.keyboardHandMode,

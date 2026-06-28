@@ -39,6 +39,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
 
+/**
+ * 日志浏览界面。
+ *
+ * 支持按等级过滤、关键词搜索、实时滚动查看日志。
+ * 日志条目使用 [LazyColumn] 渲染，不同等级用不同颜色标识：
+ * - VERBOSE：灰色（最详细的追踪信息）
+ * - DEBUG：蓝色（开发期调试信息）
+ * - INFO：绿色（关键业务节点）
+ * - WARN：橙色（可恢复的异常情况）
+ * - ERROR：红色（不可恢复错误）
+ */
 @Composable
 fun LogViewerScreen(
     viewModel: LogViewerViewModel = viewModel(),
@@ -46,6 +57,7 @@ fun LogViewerScreen(
     val state by viewModel.state.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // 顶部工具栏：等级过滤、搜索、刷新
         LogViewerToolbar(
             levelFilter = state.levelFilter,
             keyword = state.keyword,
@@ -54,6 +66,7 @@ fun LogViewerScreen(
             onRefresh = viewModel::refresh,
         )
 
+        // 日志条目列表，使用时间戳作为稳定 key
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = state.listState,
@@ -65,8 +78,15 @@ fun LogViewerScreen(
     }
 }
 
+/**
+ * 单条日志条目的渲染组件。
+ *
+ * 根据日志等级设置不同的文字颜色，
+ * 使用等宽字体确保时间戳和标签列对齐。
+ */
 @Composable
 private fun LogEntryItem(entry: LogEntry) {
+    // 按等级分配颜色
     val textColor = when (entry.level) {
         LogLevel.VERBOSE -> Color.Gray
         LogLevel.DEBUG -> Color(0xFF2196F3)

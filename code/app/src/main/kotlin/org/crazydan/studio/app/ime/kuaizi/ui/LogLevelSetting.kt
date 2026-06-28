@@ -39,18 +39,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
+/**
+ * 日志等级设置组件。
+ *
+ * Debug 构建固定为 VERBOSE 等级，不允许修改。
+ * Release 构建通过 AlertDialog 中的 RadioButton 选择日志等级。
+ * 等级变更立即生效，不需要重启应用。
+ */
 @Composable
 fun LogLevelSetting(
+    /** 当前日志等级 */
     currentLevel: LogLevel,
+    /** 是否为 debug 构建 */
     isDebugBuild: Boolean,
+    /** 等级变更回调 */
     onLevelChange: (LogLevel) -> Unit,
 ) {
     if (isDebugBuild) {
+        // Debug 构建：显示固定等级提示，不允许修改
         ListItem(
             headlineContent = { Text("日志等级") },
             supportingContent = { Text("调试构建固定为 VERBOSE") },
         )
     } else {
+        // Release 构建：可点击打开等级选择对话框
         var showDialog by remember { mutableStateOf(false) }
 
         ListItem(
@@ -59,6 +71,7 @@ fun LogLevelSetting(
             modifier = Modifier.clickable { showDialog = true },
         )
 
+        // 等级选择对话框
         if (showDialog) {
             AlertDialog(
                 title = { Text("选择日志等级") },
@@ -97,6 +110,7 @@ fun LogLevelSetting(
     }
 }
 
+/** LogLevel 的中文显示名称及说明。 */
 private val LogLevel.displayName: String
     get() = when (this) {
         LogLevel.VERBOSE -> "VERBOSE（详细）- 记录所有日志"

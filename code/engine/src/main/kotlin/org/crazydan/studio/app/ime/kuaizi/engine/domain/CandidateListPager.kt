@@ -21,7 +21,17 @@ package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
 import org.crazydan.studio.app.ime.kuaizi.engine.PageDirection
 
+/**
+ * 候选列表分页器，按指定方向翻页候选词。
+ * 封装 [CandidateList] 的翻页逻辑，提供方向驱动的分页操作。
+ */
 class CandidateListPager {
+    /**
+     * 按指定方向翻页
+     * @param candidateList 当前候选列表
+     * @param direction 翻页方向（下一页/上一页）
+     * @return 翻页后的候选列表
+     */
     fun page(candidateList: CandidateList, direction: PageDirection): CandidateList {
         return when (direction) {
             PageDirection.Next -> candidateList.nextPage()

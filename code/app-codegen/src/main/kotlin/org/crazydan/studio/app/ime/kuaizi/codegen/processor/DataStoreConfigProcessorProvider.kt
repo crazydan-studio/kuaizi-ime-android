@@ -23,6 +23,15 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
+/**
+ * [DataStoreConfigProcessor] 的提供者。
+ *
+ * 实现 KSP 的 [SymbolProcessorProvider] 接口，
+ * 用于在 KSP 编译过程中注册 [DataStoreConfigProcessor]。
+ *
+ * 在 `META-INF/services/com.google.devtools.ksp.processing.SymbolProcessorProvider`
+ * 中注册此提供者，KSP 框架会自动发现并调用。
+ */
 class DataStoreConfigProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return DataStoreConfigProcessor(

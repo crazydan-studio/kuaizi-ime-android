@@ -26,6 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
+/**
+ * 输入栏中的单个字符组件。
+ *
+ * 渲染已输入的单个字符（如拼音字母），使用 [KeyboardColors.charInputTextSize] 字号。
+ *
+ * @param char 要显示的字符
+ */
 @Composable
 fun CharInputItem(char: String) {
     val colors = LocalKeyboardColors.current

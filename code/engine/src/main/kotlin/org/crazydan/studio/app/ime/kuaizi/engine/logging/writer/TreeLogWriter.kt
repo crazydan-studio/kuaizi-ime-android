@@ -24,6 +24,24 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
 
+/**
+ * 树形日志写入器：将日志条目按树形结构组织后输出。
+ *
+ * 在 [ImeLogger.tree] 块中使用，临时拦截日志输出，在块结束时将收集的日志
+ * 按树形结构格式化后统一输出。输出格式：
+ * ```
+ * ┌─ title
+ * │ entry 1
+ * │ entry 2
+ * └─ (title end)
+ * ```
+ *
+ * 树形日志在调试复杂流程时提供结构化的日志输出，帮助理解执行流程的层次关系。
+ *
+ * @param log 日志门面引用
+ * @param tag 日志标签
+ * @param title 树形块标题
+ */
 class TreeLogWriter(
     private val log: ImeLog,
     private val tag: String,
@@ -31,10 +49,12 @@ class TreeLogWriter(
 ) : LogWriter {
     private val entries = mutableListOf<LogEntry>()
 
+    /** 开始树形块：清空之前收集的日志条目。 */
     fun begin() {
         entries.clear()
     }
 
+    /** 结束树形块：将收集的日志按树形结构输出。 */
     fun end() {
         if (entries.isEmpty()) return
 
@@ -54,6 +74,7 @@ class TreeLogWriter(
         log.dispatch(footer)
     }
 
+    /** 收集日志条目，添加树形缩进前缀。 */
     override fun write(entry: LogEntry) {
         entries.add(
             entry.copy(
@@ -62,7 +83,8 @@ class TreeLogWriter(
         )
     }
 
+    /** 树形写入器无需刷新。 */
     override suspend fun flush() {
-        // no-op for tree writer
+        // no-op
     }
 }

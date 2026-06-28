@@ -37,6 +37,16 @@ import org.crazydan.studio.app.ime.kuaizi.ui.player.InputActionPlayer
 import org.crazydan.studio.app.ime.kuaizi.ui.player.InputActionPlayerState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 
+/**
+ * 输入动作播放集成组件。
+ *
+ * 在 [KeyboardHost] 基础上叠加输入动作播放引擎，支持 [UseMode.Animation] 和 [UseMode.DirectInput] 两种使用模式。
+ * Animation 模式下显示播放控制面板和指示器，DirectInput 模式下仅叠加指示器不显示控制面板。
+ *
+ * @param viewModel 键盘视图模型
+ * @param useMode 使用模式
+ * @param modifier 修饰符
+ */
 @Composable
 fun KeyboardInputActionPlayerHost(
     viewModel: KeyboardViewModel,
@@ -48,6 +58,7 @@ fun KeyboardInputActionPlayerHost(
             viewModel = viewModel,
             showIndicator = useMode != UseMode.DirectInput,
         )
+        // Animation 模式下显示播放控制面板
         if (useMode == UseMode.Animation) {
             InputActionPlayerPanel(
                 player = viewModel.actionPlayer,
@@ -56,6 +67,19 @@ fun KeyboardInputActionPlayerHost(
     }
 }
 
+/**
+ * 播放控制面板，提供播放/暂停、进度显示等控件。
+ *
+ * 根据播放器的不同状态呈现不同的操作按钮：
+ * - [InputActionPlayerState.Idle]：显示"播放"按钮
+ * - [InputActionPlayerState.Ready]：显示"开始"按钮
+ * - [InputActionPlayerState.Playing]：显示"暂停"按钮和进度信息
+ * - [InputActionPlayerState.Paused]：显示"继续"和"停止"按钮
+ * - [InputActionPlayerState.Finished]：显示"重播"按钮
+ *
+ * @param player 输入动作播放器
+ * @param modifier 修饰符
+ */
 @Composable
 fun InputActionPlayerPanel(
     player: InputActionPlayer,

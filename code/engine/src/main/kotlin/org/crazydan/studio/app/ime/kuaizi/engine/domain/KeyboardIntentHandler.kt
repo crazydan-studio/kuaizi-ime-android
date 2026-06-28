@@ -13,8 +13,7 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program.
- * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
@@ -22,17 +21,43 @@ package org.crazydan.studio.app.ime.kuaizi.engine.domain
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey.Char as CharKey
 
+/**
+ * 键盘意图处理器接口，按不同 [KeyboardType] 创建子类，
+ * 各自处理从 [ImeIntent] 到 [KeyboardStateTransition] 的映射。
+ * 各子类是无状态的策略对象——它们不持有可变状态，状态由 [KeyboardStateMachine] 集中管理。
+ */
 interface KeyboardIntentHandler {
+    /** 当前处理器所属的键盘类型 */
     val type: KeyboardType
+
+    /**
+     * 将 [ImeIntent] 映射为 [KeyboardStateTransition]
+     * @param intent 输入法意图
+     * @param currentState 当前键盘状态
+     * @return 映射得到的状态转换
+     */
     fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition
 }
 
+/**
+ * 基础键盘意图处理器，所有键盘类型的默认实现。
+ * 默认行为是返回 [KeyboardStateTransition.ReturnToIdle]。
+ *
+ * @param type 键盘类型
+ */
 open class BaseKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition.ReturnToIdle
     }
 }
 
+/**
+ * 拼音键盘意图处理器，支持三种输入模式（点击、滑行、翻动），
+ * 管理拼音字符输入、候选字查询和输入补全。
+ * 同时处理 [KeyboardType.Pinyin] 和 [KeyboardType.Latin] 的意图转换。
+ *
+ * @param type 键盘类型
+ */
 class PinyinIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return when (currentState) {
@@ -94,10 +119,17 @@ class PinyinIntentHandler(override val type: KeyboardType) : KeyboardIntentHandl
     }
 }
 
+/** 数字键盘意图处理器 */
 class NumberKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+/** 符号键盘意图处理器 */
 class SymbolKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+/** Emoji 键盘意图处理器 */
 class EmojiKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+/** 数学键盘意图处理器 */
 class MathKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+/** 编辑键盘意图处理器 */
 class EditorKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+/** 候选键盘意图处理器 */
 class CandidateKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+/** 提交选项键盘意图处理器 */
 class CommitOptionKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)

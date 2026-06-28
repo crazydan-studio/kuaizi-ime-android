@@ -27,6 +27,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
+/**
+ * 输入栏中的光标间隙组件。
+ *
+ * 渲染为一条窄竖线，代表光标在当前输入串中的位置。
+ * 使用 [KeyboardColors.cursorColor] 作为颜色。
+ * 点击间隙可移动光标位置。
+ *
+ * @param onGapClicked 间隙点击回调
+ */
 @Composable
 fun GapInputItem(onGapClicked: () -> Unit = {}) {
     val colors = LocalKeyboardColors.current

@@ -19,12 +19,28 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
+/**
+ * 收藏列表状态的不可变数据模型。
+ * 管理用户收藏的文本条目、加载状态和功能开关。
+ *
+ * @param favorites 收藏条目列表，按使用频次和时间排序
+ * @param disabled 功能是否禁用，由配置门控决定
+ * @param isLoading 是否正在从数据库加载收藏列表
+ */
 data class FavoriteList(
     val favorites: List<InputFavorite> = emptyList(),
     val disabled: Boolean = false,
     val isLoading: Boolean = false,
 )
 
+/**
+ * 收藏条目的数据模型
+ * @param text 收藏的文本内容
+ * @param type 文本类型
+ * @param usageCount 使用次数
+ * @param createdAt 创建时间戳（毫秒）
+ * @param usedAt 最后使用时间戳（毫秒）
+ */
 data class InputFavorite(
     val text: String,
     val type: InputTextType? = null,

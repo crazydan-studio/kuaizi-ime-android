@@ -23,6 +23,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 
+/**
+ * 键盘预览组件。
+ *
+ * 非交互式的缩放键盘视图，用于设置页面中实时预览主题和手模式变更效果。
+ * 渲染一个按比例缩小的完整键盘布局，但不响应任何触摸事件。
+ *
+ * @param config 当前配置（用于读取主题、手模式等设置）
+ * @param modifier 修饰符
+ */
 @Composable
 fun KeyboardPreview(
     config: ImeConfig,

@@ -32,18 +32,33 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.PopupTipState
 
+/**
+ * 弹出提示面板。
+ *
+ * 展示两种类型的弹出提示：
+ * - [PopupTipState.Message]：纯文本信息提示，超时后自动消失
+ * - [PopupTipState.Action]：带操作按钮的可交互提示，按钮点击触发 [ImeIntent]
+ *
+ * 以覆盖层形式悬浮于键盘上方，与 [CandidateListPanel] 叠加共享 Row 1 空间。
+ *
+ * @param tipState 弹出提示状态，为 null 时不显示
+ * @param onAction Action 类型提示的按钮点击回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun PopupTipPanel(
     tipState: PopupTipState?,
     onAction: (ImeIntent) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    // tipState 为 null 时不渲染任何内容
     if (tipState == null) return
 
     val colors = LocalKeyboardColors.current
 
     Box(
         modifier = modifier.fillMaxWidth().height(48.dp).background(
+            // 根据提示类型选择不同的背景色
             when (tipState) {
                 is PopupTipState.Message -> colors.tipMessageBackground
                 is PopupTipState.Action -> colors.tipActionBackground
@@ -53,9 +68,11 @@ fun PopupTipPanel(
     ) {
         when (tipState) {
             is PopupTipState.Message -> {
+                // Message 类型：仅显示文本
                 Text(text = tipState.message, color = Color.White, fontSize = colors.tipTextSize)
             }
             is PopupTipState.Action -> {
+                // Action 类型：文本 + 操作按钮
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = tipState.message, color = Color.White, modifier = Modifier.weight(1f))
                     TextButton(onClick = { onAction(tipState.action) }) {

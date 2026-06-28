@@ -23,6 +23,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType
 
+/**
+ * 主题选择器组件。
+ *
+ * 提供横向滚动的主题卡片选择界面，支持浅色、深色和跟随系统三种主题模式。
+ * 每个主题卡片包含一个缩略键盘预览和主题名称标签。
+ *
+ * @param currentTheme 当前选中的主题类型
+ * @param onThemeSelected 主题选择回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun ThemeSelector(
     currentTheme: KeyboardThemeType,

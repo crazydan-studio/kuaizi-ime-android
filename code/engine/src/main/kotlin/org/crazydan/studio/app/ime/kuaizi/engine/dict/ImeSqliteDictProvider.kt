@@ -32,6 +32,17 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.Tone
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Variant
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.VariantType
 
+/**
+ * 基于 SQLite（Room）的字典服务提供者，[ImeDictProvider] 的默认实现。
+ *
+ * 内部委托 [DictRepository] 完成数据库操作，三层委托职责清晰分离：
+ * - [DictRepository]：负责字词查询与用户输入记录
+ * - 数据库 DAO：负责 SQL 层面的数据访问
+ * - Entity → Domain 映射：负责数据库实体到领域模型的转换
+ *
+ * @param context Android Context，用于初始化 Room 数据库
+ * @param favoriteDao 可选的收藏 DAO，不提供时使用空实现
+ */
 class ImeSqliteDictProvider(
     context: Context,
     private val favoriteDao: FavoriteDao? = null,
@@ -41,6 +52,7 @@ class ImeSqliteDictProvider(
         wordDao = db.pinyinWordDao(),
         phraseDao = db.pinyinPhraseDao(),
         userInputDao = db.userInputDao(),
+        // 未提供收藏 DAO 时使用空实现，避免收藏功能必须依赖
         favoriteDao = favoriteDao ?: object : FavoriteDao {
             override fun getAllFlow() = kotlinx.coroutines.flow.emptyFlow()
             override fun getAll(): List<FavoriteEntity> = emptyList()
@@ -60,6 +72,10 @@ class ImeSqliteDictProvider(
         hmmDao = db.hmmDao(),
     )
 
+    /**
+     * 根据完整拼音查询候选词，合并单字和词组结果按频率降序排列。
+     * 在 [Dispatchers.Default] 上异步执行以避免阻塞主线程。
+     */
     override suspend fun query(pinyin: String): List<InputWord> = withContext(Dispatchers.Default) {
         val words = repository.lookupPinyinWords(pinyin).map { entity ->
             InputWord.Pinyin(
@@ -80,6 +96,7 @@ class ImeSqliteDictProvider(
         (words + phrases).sortedByDescending { it.frequency }
     }
 
+    /** 根据拼音前缀模糊查询候选词，在 IO 线程异步执行。 */
     override suspend fun queryPrefix(prefix: String): List<InputWord> = withContext(Dispatchers.Default) {
         repository.lookupByPrefix(prefix).map { entity ->
             InputWord.Pinyin(
@@ -90,6 +107,7 @@ class ImeSqliteDictProvider(
         }
     }
 
+    /** 查询拉丁词补全建议，将数据库实体映射为 [InputWord.Latin] 领域模型。 */
     override suspend fun queryLatinCompletions(prefix: String): List<InputWord> = withContext(Dispatchers.Default) {
         repository.lookupByPrefix(prefix).map { entity ->
             InputWord.Latin(
@@ -99,6 +117,11 @@ class ImeSqliteDictProvider(
         }
     }
 
+    /**
+     * 查询拼音词组补全建议。
+     * 先通过 DAO 获取匹配前缀的所有拼音拼写，再查询每个拼写对应的单字候选。
+     * 结果限制为最多 50 条以避免内存开销过大。
+     */
     override suspend fun queryPhraseCompletions(prefix: String): List<InputWord> {
         val spells = db.pinyinWordDao().lookupSpellsByPrefix(prefix)
         val all = spells.flatMap { spell ->
@@ -114,6 +137,7 @@ class ImeSqliteDictProvider(
         return all.take(50)
     }
 
+    /** 记录用户输入，委托仓库更新用户输入频率。 */
     override suspend fun recordInput(pinyin: String, word: String) {
         repository.recordUserInput(word, "pinyin")
     }

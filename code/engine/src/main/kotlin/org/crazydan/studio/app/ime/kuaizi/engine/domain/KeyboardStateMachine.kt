@@ -21,9 +21,16 @@ package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 
+/**
+ * 键盘状态历史的有界栈，用于实现同一键盘类型内的子状态回退。
+ * 采用 ArrayDeque 实现，最大容量为 10，FIFO 淘汰策略。
+ *
+ * @param maxSize 历史栈最大容量
+ */
 class KeyboardStateHistory(private val maxSize: Int = 10) {
     private val stack = ArrayDeque<KeyboardState>(maxSize)
 
+    /** 将当前状态压入历史栈，超出上限时淘汰最旧条目 */
     fun push(state: KeyboardState) {
         if (stack.size >= maxSize) {
             stack.removeFirst()
@@ -31,23 +38,39 @@ class KeyboardStateHistory(private val maxSize: Int = 10) {
         stack.addLast(state)
     }
 
+    /** 弹出最近的历史状态，栈空时返回 null */
     fun pop(): KeyboardState? = stack.removeLastOrNull()
 
+    /** 清空历史栈 */
     fun clear() {
         stack.clear()
     }
 
+    /** 当前历史栈大小 */
     val size: Int get() = stack.size
 }
 
+/**
+ * 键盘状态机，集中处理状态转换的核心组件。
+ * 接收 [KeyboardStateTransition]，根据当前状态执行转换规则，返回转换结果。
+ * 遵循纯函数式转换原则：给定相同输入，始终产生相同输出。
+ *
+ * @param inputListOp 输入列表操作器，用于执行输入列表变更
+ */
 class KeyboardStateMachine(
     private val inputListOp: InputListOperator,
 ) {
     private var _state: KeyboardState = KeyboardState.Idle
+    /** 当前键盘状态（只读） */
     val state: KeyboardState get() = _state
 
     private val stateHistory = KeyboardStateHistory()
 
+    /**
+     * 执行状态转换
+     * @param transition 要执行的状态转换
+     * @return 转换结果，包含新状态、副作用列表和编辑器动作
+     */
     fun transition(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         val (newState, sideEffects, editorAction) = when (_state) {
             is KeyboardState.Idle -> handleFromIdle(transition)
@@ -71,20 +94,24 @@ class KeyboardStateMachine(
         return KeyboardStateTransition.Result(newState, sideEffects, editorAction)
     }
 
+    /** 回退到前一状态，历史栈空时回退到 [KeyboardState.Idle] */
     fun backToPrevious() {
         _state = stateHistory.pop() ?: KeyboardState.Idle
     }
 
+    /** 重置到空闲状态，清空历史栈 */
     fun resetToIdle() {
         _state = KeyboardState.Idle
         stateHistory.clear()
     }
 
+    /** 重置到指定状态，清空历史栈 */
     fun resetTo(state: KeyboardState) {
         _state = state
         stateHistory.clear()
     }
 
+    /** 从 Idle 状态处理转换 */
     private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.InputPinyinChar ->
@@ -103,6 +130,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 PinyinInput.Waiting 状态处理转换 */
     private fun handleFromPinyinWaiting(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.InputPinyinChar ->
@@ -119,6 +147,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 PinyinInput.Slipping 状态处理转换 */
     private fun handleFromPinyinSlipping(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.SelectSlipChar ->
@@ -133,6 +162,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 PinyinInput.Flipping 状态处理转换 */
     private fun handleFromPinyinFlipping(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.SelectFlipChar ->
@@ -145,6 +175,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 CandidateSelection.Choosing 状态处理转换 */
     private fun handleFromCandidateChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.FilterCandidates ->
@@ -167,6 +198,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 CandidateSelection.Filtering 状态处理转换 */
     private fun handleFromCandidateFiltering(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.BackToPrevious ->
@@ -183,6 +215,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 CandidateSelection.AdvanceFiltering 状态处理转换 */
     private fun handleFromCandidateAdvanceFiltering(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.BackToPrevious ->
@@ -197,6 +230,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 CommitOptionChoosing 状态处理转换 */
     private fun handleFromCommitOptionChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.ReturnToIdle ->
@@ -207,6 +241,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 EditorEditing.CursorMoving 状态处理转换 */
     private fun handleFromEditorCursorMoving(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.MoveCursor ->
@@ -225,6 +260,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 EditorEditing.TextSelecting 状态处理转换 */
     private fun handleFromEditorTextSelecting(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.SelectText ->
@@ -239,6 +275,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 SymbolChoosing 状态处理转换 */
     private fun handleFromSymbolChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.OpenSymbolGroup ->
@@ -251,6 +288,7 @@ class KeyboardStateMachine(
         }
     }
 
+    /** 从 EmojiChoosing 状态处理转换 */
     private fun handleFromEmojiChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
             is KeyboardStateTransition.OpenEmojiGroup ->

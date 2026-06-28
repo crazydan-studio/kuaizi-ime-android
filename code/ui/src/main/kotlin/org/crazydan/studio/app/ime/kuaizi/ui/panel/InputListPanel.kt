@@ -30,6 +30,19 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerI
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
+/**
+ * 输入列表面板。
+ *
+ * 渲染已输入的内容项列表，支持三种项目类型：字符输入项、间隔输入项和数学表达式输入项。
+ * 内建 [InputActionPlayer] 的指示器覆盖层，通过 [showIndicator] 参数控制显示。
+ *
+ * @param inputList 当前输入列表（含 chars、gapIndex 等）
+ * @param layoutState 布局状态（用于坐标解析）
+ * @param onLayoutStateChanged 布局状态变更回调
+ * @param showIndicator 是否显示播放器指示器
+ * @param indicatorState 手指指示器状态
+ * @param modifier 修饰符
+ */
 @Composable
 fun InputListPanel(
     inputList: InputList,
@@ -45,6 +58,7 @@ fun InputListPanel(
         modifier = modifier.fillMaxWidth().height(48.dp).padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // 遍历输入字符列表逐项渲染
         inputList.chars.forEach { char ->
             Text(
                 text = char.text,

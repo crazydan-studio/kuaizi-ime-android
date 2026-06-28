@@ -23,6 +23,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 
+/**
+ * 快捷设置弹窗组件。
+ *
+ * 从键盘工具栏弹出的快捷设置面板，提供高频配置项的快速切换入口。
+ * 以 [Popup] 形式展示，点击弹窗外部区域关闭。
+ *
+ * 设置项按优先级排列：主题模式 → 手模式 → 「更多设置」按钮。
+ * 配置变更通过 [onConfigChanged] 回调立即生效。
+ *
+ * @param config 当前配置
+ * @param onConfigChanged 配置变更回调
+ * @param onDismiss 弹窗关闭回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun QuickSettingsPopup(
     config: ImeConfig,

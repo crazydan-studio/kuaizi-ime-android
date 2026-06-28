@@ -30,6 +30,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
+/**
+ * 单个候选项组件。
+ *
+ * 渲染一个可点击的候选项，支持选中态高亮。
+ * 选中项使用 [KeyboardColors.candidateSelectedBackground] 和 [candidateSelectedTextColor]，
+ * 未选中项使用 [candidateTextColor]。
+ *
+ * @param text 候选项文本
+ * @param isSelected 是否被选中
+ * @param onClick 点击回调
+ */
 @Composable
 fun CandidateItem(
     text: String,
@@ -37,6 +48,7 @@ fun CandidateItem(
     onClick: () -> Unit = {},
 ) {
     val colors = LocalKeyboardColors.current
+    // 根据选中状态切换背景色和前景色
     val bg = if (isSelected) colors.candidateSelectedBackground else Color.Transparent
     val fg = if (isSelected) colors.candidateSelectedTextColor else colors.candidateTextColor
 

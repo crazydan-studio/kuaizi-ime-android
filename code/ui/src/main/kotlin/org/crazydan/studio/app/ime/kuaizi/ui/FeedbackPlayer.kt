@@ -22,9 +22,21 @@ package org.crazydan.studio.app.ime.kuaizi.ui
 import org.crazydan.studio.app.ime.kuaizi.engine.AudioType
 import org.crazydan.studio.app.ime.kuaizi.engine.HapticType
 
+/**
+ * 感官反馈播放器接口。
+ *
+ * 定义播放音效和触觉振动的通用契约。
+ * 平台实现（如 [AndroidAudioPlayer]、[AndroidHapticPlayer]）由 `:app` 模块提供。
+ *
+ * @param T 播放类型（[AudioType] 或 [HapticType]）
+ */
 interface FeedbackPlayer<T> {
+    /** 播放指定类型的反馈 */
     fun play(type: T)
 }
 
+/** 音频播放器类型别名 */
 typealias AudioPlayer = FeedbackPlayer<AudioType>
+
+/** 触觉振动播放器类型别名 */
 typealias HapticPlayer = FeedbackPlayer<HapticType>

@@ -42,20 +42,39 @@ import org.crazydan.studio.app.ime.kuaizi.ui.integration.KeyboardHost
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 
+/**
+ * 系统输入法服务入口。
+ *
+ * 继承 Android 的 [InputMethodService]，作为系统 IME 的薄壳层：
+ * - 在 [onCreate] 中初始化引擎、配置存储和输入连接桥接
+ * - 在 [onCreateInputView] 中创建 Compose UI 层
+ * - 在 [onStartInputView] 中根据编辑器类型启动引擎
+ * - 在 [onFinishInputView] 和 [onDestroy] 中清理资源
+ *
+ * 职责仅限于生命周期管理和组件组装，不包含业务逻辑。
+ */
 class IMEService : InputMethodService() {
+    // 引擎实例，负责所有输入法核心逻辑
     private var engine: ImeEngine? = null
+    // 键盘视图模型，连接引擎状态与 Compose UI
     private var viewModel: KeyboardViewModel? = null
+    // 输入连接桥接，将引擎输出转发到系统 InputConnection
     private var inputConnectionBridge: ImeEditorBridge? = null
+    // 配置数据存储，持久化用户配置到 DataStore
     private var configDataStore: ConfigDataStore? = null
 
+    /** 服务创建时初始化引擎、配置存储和桥接。 */
     override fun onCreate() {
         super.onCreate()
 
+        // 初始化日志系统：debug 构建使用 Logcat，release 使用文件输出
         initLog(this)
 
+        // 创建配置存储和输入连接桥接
         configDataStore = ConfigDataStore(this)
         inputConnectionBridge = InputConnectionBridge { currentInputConnection }
 
+        // 创建引擎实例并挂载输入连接桥接
         engine = ImeEngine.create(
             config = ImeConfig(),
             dictProvider = InMemoryDictProvider(),
@@ -63,11 +82,14 @@ class IMEService : InputMethodService() {
         engine?.attachEditorBridge(inputConnectionBridge!!)
     }
 
+    /** 创建键盘输入视图，返回 ComposeView 作为 UI 根节点。 */
     override fun onCreateInputView(): View {
         val engine = engine ?: return super.onCreateInputView()
 
+        // 创建 ViewModel 并注入引擎
         viewModel = KeyboardViewModel(engine)
 
+        // 返回 ComposeView，包裹键盘主题和 UI 宿主
         return ComposeView(this).apply {
             setContent {
                 val vm = viewModel ?: return@setContent
@@ -78,14 +100,16 @@ class IMEService : InputMethodService() {
         }
     }
 
+    /** 编辑器输入启动时，根据编辑器输入类型配置引擎。 */
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
 
+        // 确定输入法子类型
         val subtype = when (val inputType = editorInfo?.inputType) {
-            // Determine from input type
             else -> IMESubtype.Hans
         }
 
+        // 以当前编辑器信息启动引擎
         engine?.start(
             StartupConfig(
                 imeSubtype = subtype,
@@ -95,32 +119,47 @@ class IMEService : InputMethodService() {
         )
     }
 
+    /** 编辑器输入结束时关闭引擎，但不销毁。 */
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
         engine?.close()
     }
 
+    /** 服务销毁时释放引擎资源。 */
     override fun onDestroy() {
         engine?.destroy()
         super.onDestroy()
     }
 
+    /**
+     * 从 [EditorInfo] 解析 [EditorInputType]。
+     *
+     * 根据 Android 输入类型掩码判断目标编辑器的输入类型，
+     * 用于决定键盘布局（如密码框显示拉丁键盘、数字框显示数字键盘）。
+     */
     private fun resolveEditorInputType(editorInfo: EditorInfo?): EditorInputType? {
         if (editorInfo == null) return null
         return when (editorInfo.inputType and EditorInfo.TYPE_MASK_CLASS) {
+            // 数字/电话/日期类输入
             EditorInfo.TYPE_CLASS_NUMBER, EditorInfo.TYPE_CLASS_PHONE -> EditorInputType.Number
             EditorInfo.TYPE_CLASS_DATETIME -> EditorInputType.Datetime
+            // 文本类输入，进一步按变体区分
             EditorInfo.TYPE_CLASS_TEXT -> {
                 when (editorInfo.inputType and EditorInfo.TYPE_MASK_VARIATION) {
+                    // 密码框：禁用按键提示，强制拉丁键盘
                     EditorInfo.TYPE_TEXT_VARIATION_PASSWORD,
                     EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
                     EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD -> EditorInputType.Password
 
+                    // 邮箱输入
                     EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
                     EditorInfo.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS -> EditorInputType.Email
 
+                    // URI 输入
                     EditorInfo.TYPE_TEXT_VARIATION_URI -> EditorInputType.URI
+                    // 搜索过滤输入
                     EditorInfo.TYPE_TEXT_VARIATION_FILTER -> EditorInputType.Filter
+                    // 普通文本兜底
                     else -> EditorInputType.Text
                 }
             }
@@ -129,21 +168,31 @@ class IMEService : InputMethodService() {
         }
     }
 
+    /**
+     * 初始化日志系统。
+     *
+     * - Debug 构建：等级为 DEBUG，使用 Logcat 输出
+     * - Release 构建：等级为 ERROR，写入文件，同时安装崩溃拦截器
+     */
     private fun initLog(context: Context) {
         var level = LogLevel.ERROR
         val writers = mutableListOf<LogWriter>()
 
         if (BuildConfig.DEBUG) {
+            // Debug 构建：输出到 Logcat，等级设为 DEBUG
             level = LogLevel.DEBUG
             writers.add(LogcatWriter())
         } else {
+            // Release 构建：写入应用私有目录下的 logs/ 文件
             val dir = context.filesDir.resolve("logs")
             val storage = LogStorage(dir)
             writers.add(FileLogWriter(storage))
 
+            // 安装崩溃拦截器，捕获未处理异常并写入日志
             ImeLog.CrashInterceptor(storage).install()
         }
 
+        // 初始化日志基础设施
         ImeLog.init(
             level = level,
             writers = writers,

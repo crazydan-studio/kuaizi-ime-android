@@ -22,46 +22,51 @@ package org.crazydan.studio.app.ime.kuaizi.engine.dict.db
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
+/** 拼音字数据库实体：存储单个汉字的拼音、频率、变体和声调信息。 */
 @Entity(tableName = "pinyin_word")
 data class PinyinWordEntity(
     @PrimaryKey val id: Long,
-    val spell: String,
-    val text: String,
-    val freq: Int,
-    val variant: String? = null,
-    val tone: Int? = null,
+    val spell: String,           // 拼音拼写，如 "zhong"
+    val text: String,            // 汉字文本，如 "中"
+    val freq: Int,               // 字典频率
+    val variant: String? = null, // 繁体/异体变体文本
+    val tone: Int? = null,       // 声调值：1-4 对应一声到四声，0 或 null 为轻声
 )
 
+/** 拼音词组数据库实体：存储多字词组的拼音序列和频率。 */
 @Entity(tableName = "pinyin_phrase")
 data class PinyinPhraseEntity(
     @PrimaryKey val id: Long,
-    val spells: String,
-    val text: String,
-    val freq: Int,
+    val spells: String,  // 拼音序列，逗号分隔，如 "zhong,guo"
+    val text: String,    // 词组文本，如 "中国"
+    val freq: Int,       // 字典频率
 )
 
+/** 用户输入记录数据库实体：记录用户输入历史和使用频率。 */
 @Entity(tableName = "user_input_data")
 data class UserInputEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val text: String,
-    val type: String,
-    val freq: Int = 0,
-    val lastUsed: Long = System.currentTimeMillis(),
+    val text: String,                               // 输入的文本内容
+    val type: String,                               // 输入类型：pinyin / latin / phrase
+    val freq: Int = 0,                              // 用户使用频率
+    val lastUsed: Long = System.currentTimeMillis(), // 最后使用时间戳
 )
 
+/** 用户收藏数据库实体：存储用户收藏的文本条目。 */
 @Entity(tableName = "user_input_favorite")
 data class FavoriteEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
-    val text: String,
-    val type: String? = null,
-    val usageCount: Int = 0,
-    val createdAt: Long = System.currentTimeMillis(),
+    val text: String,                               // 收藏的文本
+    val type: String? = null,                        // 文本类型，复用 InputTextType 的值
+    val usageCount: Int = 0,                         // 使用次数
+    val createdAt: Long = System.currentTimeMillis(), // 创建时间
 )
 
+/** HMM 状态转移概率数据库实体：存储拼音间的转移概率。 */
 @Entity(tableName = "hmm_transition")
 data class HmmTransitionEntity(
     @PrimaryKey val id: Long,
-    val fromState: String,
-    val toState: String,
-    val probability: Double,
+    val fromState: String, // 起始拼音
+    val toState: String,   // 目标拼音
+    val probability: Double, // 转移概率
 )

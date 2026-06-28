@@ -22,7 +22,15 @@ package org.crazydan.studio.app.ime.kuaizi
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 
+/**
+ * 基于内存的字典提供者实现。
+ *
+ * 为开发和测试提供轻量级字典，不依赖数据库或外部资源。
+ * 包含一组常用拼音到汉字的静态映射，频率随索引递减。
+ * 在正式使用中应由 [ImeSqliteDictProvider] 替代。
+ */
 class InMemoryDictProvider : ImeDictProvider {
+    // 拼音到候选汉字的静态映射表，按频率降序排列
     private val dict = mapOf(
         "shi" to listOf("是", "时", "事", "十"),
         "wo" to listOf("我", "窝", "卧"),
@@ -36,12 +44,14 @@ class InMemoryDictProvider : ImeDictProvider {
         "xiao" to listOf("小", "晓", "肖"),
     )
 
+    /** 根据拼音精确查询候选字。频率随索引递减（100, 90, 80…）。 */
     override suspend fun query(pinyin: String): List<InputWord> {
         return dict[pinyin]?.mapIndexed { i, text ->
             InputWord.Pinyin(text = text, spell = null, frequency = 100 - i * 10)
         } ?: emptyList()
     }
 
+    /** 根据拼音前缀模糊查询候选字，匹配所有以 prefix 开头的拼音。 */
     override suspend fun queryPrefix(prefix: String): List<InputWord> {
         return dict.entries.filter { (key, _) ->
             key.startsWith(prefix)
@@ -52,10 +62,13 @@ class InMemoryDictProvider : ImeDictProvider {
         }
     }
 
+    /** 拉丁补全查询：内存实现不支持，返回空列表。 */
     override suspend fun queryLatinCompletions(prefix: String): List<InputWord> = emptyList()
 
+    /** 短语补全查询：内存实现不支持，返回空列表。 */
     override suspend fun queryPhraseCompletions(prefix: String): List<InputWord> = emptyList()
 
+    /** 记录用户输入：内存实现为空操作，不持久化。 */
     override suspend fun recordInput(pinyin: String, word: String) {
         // no-op in memory implementation
     }

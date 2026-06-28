@@ -19,7 +19,18 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
+/**
+ * 屏幕布局分区。
+ *
+ * 定义 IME 在屏幕上的空间划分。
+ * Zone A 占据屏幕上半区，Zone B 占据屏幕下半区。
+ * 在 [KeyboardLayoutMode.Stacked] 模式下仅使用 Zone B；
+ * 在 [KeyboardLayoutMode.Separated] 模式下 Zone A 和 Zone B 均被使用。
+ */
 sealed class LayoutZone {
+    /** 屏幕上半区，Separated 模式下展示按键布局和手势反馈 */
     data object A : LayoutZone()
+
+    /** 屏幕下半区，所有交互的核心区域，包含三行结构 */
     data object B : LayoutZone()
 }

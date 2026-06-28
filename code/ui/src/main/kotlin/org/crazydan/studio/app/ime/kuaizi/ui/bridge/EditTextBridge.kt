@@ -27,16 +27,27 @@ import org.crazydan.studio.app.ime.kuaizi.engine.TextRange
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.BaseImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.BaseImeEditorBridge.SelectionSnapshot
 
+/**
+ * 基于 [EditText] 的编辑器桥接器。
+ *
+ * 用于非系统 IME 场景（如应用内嵌入输入法），将引擎的编辑操作
+ * 直接应用到 Android [EditText] 控件上。
+ * 支持普通提交、替换提交、配对符号插入、光标移动、选区操作、撤销等完整编辑功能。
+ *
+ * @param targetSupplier 返回目标 EditText 实例的提供者
+ */
 class EditTextBridge(
     private val targetSupplier: () -> EditText?,
 ) : BaseImeEditorBridge() {
 
+    /** 普通提交文本：在光标位置插入文本 */
     override fun doNormalCommitText(text: String) {
         val editText = targetSupplier() ?: return
         val editable = editText.text as? Editable ?: return
         val start = editText.selectionStart
         val end = editText.selectionEnd
 
+        // 记录操作前的状态，用于撤销
         recordRevertion(
             beforeStart = start,
             beforeEnd = end,
@@ -48,11 +59,13 @@ class EditTextBridge(
         editable.replace(start.coerceAtLeast(0), end.coerceAtLeast(0), text)
     }
 
+    /** 可替换提交：先尝试替换已有文本，失败则普通提交 */
     override fun doReplaceableCommitText(text: String, replacements: List<String>) {
         val editText = targetSupplier() ?: return
         val editable = editText.text as? Editable ?: return
         val cursor = editText.selectionStart
 
+        // 遍历替换模式列表，找到匹配的文本进行替换
         for (replacement in replacements) {
             val start = cursor - replacement.length
             if (start >= 0 && editable.substring(start, cursor) == replacement) {
@@ -60,9 +73,11 @@ class EditTextBridge(
                 return
             }
         }
+        // 无匹配时执行普通提交
         doNormalCommitText(text)
     }
 
+    /** 插入配对符号：在光标位置插入左右成对符号，并将光标置于中间 */
     override fun insertPairedSymbols(left: String, right: String) {
         val editText = targetSupplier() ?: return
         val editable = editText.text as? Editable ?: return
@@ -71,6 +86,7 @@ class EditTextBridge(
         editText.setSelection(start + left.length)
     }
 
+    /** 移动光标到指定方向 */
     override fun moveCursor(direction: CursorDirection) {
         val editText = targetSupplier() ?: return
         val pos = editText.selectionStart
@@ -85,6 +101,7 @@ class EditTextBridge(
         )
     }
 
+    /** 向指定方向扩展选区 */
     override fun selectRange(direction: CursorDirection) {
         val editText = targetSupplier() ?: return
         val start = editText.selectionStart
@@ -96,6 +113,7 @@ class EditTextBridge(
         }
     }
 
+    /** 执行编辑操作 */
     override fun performEdit(action: EditorEditAction) {
         val editText = targetSupplier() ?: return
         when (action) {
@@ -113,13 +131,16 @@ class EditTextBridge(
         }
     }
 
+    /** 获取编辑器当前文本 */
     override fun getText(): CharSequence = targetSupplier()?.text ?: ""
 
+    /** 获取当前选区范围 */
     override fun getSelection(): TextRange {
         val et = targetSupplier() ?: return TextRange(0, 0)
         return TextRange(et.selectionStart, et.selectionEnd)
     }
 
+    /** 撤销提交：恢复到操作前的内容 */
     override fun onRevokeCommit(snapshot: SelectionSnapshot) {
         val editText = targetSupplier() ?: return
         val editable = editText.text as? Editable ?: return

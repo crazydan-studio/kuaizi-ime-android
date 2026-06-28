@@ -25,6 +25,19 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import java.io.File
 
+/**
+ * Room 字典数据库，管理所有与输入法字典相关的数据表。
+ *
+ * 包含五张表：
+ * - [PinyinWordEntity]：拼音字表
+ * - [PinyinPhraseEntity]：拼音词组表
+ * - [UserInputEntity]：用户输入记录表
+ * - [FavoriteEntity]：用户收藏表
+ * - [HmmTransitionEntity]：HMM 转移概率表
+ *
+ * 数据库文件默认名为 "kuaizi_dict.db"，支持从预置文件创建。
+ * 使用单例模式确保全局只有一个数据库实例。
+ */
 @Database(
     entities = [
         PinyinWordEntity::class,
@@ -45,6 +58,12 @@ abstract class DictDatabase : RoomDatabase() {
     companion object {
         @Volatile private var INSTANCE: DictDatabase? = null
 
+        /**
+         * 获取数据库单例实例。
+         *
+         * @param context Android Context
+         * @param dbFile 可选的预置数据库文件，存在时从该文件创建数据库
+         */
         fun getInstance(context: Context, dbFile: File? = null): DictDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: buildDatabase(context, dbFile).also { INSTANCE = it }

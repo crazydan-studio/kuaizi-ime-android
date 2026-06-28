@@ -53,6 +53,20 @@ import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardLayoutMode
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.PopupTipState
 
+/**
+ * 键盘宿主组件，顶层集成组件。
+ *
+ * 通过 `derivedStateOf` 分别订阅 [ImeState] 的各个子字段，
+ * 任一子字段的变化仅触发依赖该字段的面板重组，避免整个键盘树因任何微小状态变更而重组。
+ * 例如键盘按键面板仅订阅 keyboard 字段，候选列表面板仅订阅 candidateList 字段。
+ *
+ * 通过 [KeyboardLayoutMode] 参数统一 [StackedLayout] 和 [SeparatedLayout] 两种布局入口，
+ * 支持运行时动态切换布局模式。
+ *
+ * @param viewModel 键盘视图模型
+ * @param showIndicator 是否显示播放器指示器
+ * @param modifier 修饰符
+ */
 @Composable
 fun KeyboardHost(
     viewModel: KeyboardViewModel,
@@ -61,16 +75,20 @@ fun KeyboardHost(
 ) {
     val state = viewModel.state
 
+    // derivedStateOf：从 ImeState 中提取各子字段的独立快照
+    // 任一子字段变化仅触发依赖该字段的 Composable 重组
     val keyboard by remember { derivedStateOf { state.value.keyboard } }
     val inputList by remember { derivedStateOf { state.value.inputList } }
     val candidateList by remember { derivedStateOf { state.value.candidateList } }
     val config by remember { derivedStateOf { state.value.config } }
 
+    // 通过 collectAsState 订阅 ViewModel 的独立 StateFlow
     val layoutMode by viewModel.layoutMode.collectAsState()
     val popupTipState by viewModel.popupTipState.collectAsState()
     val toolListState by viewModel.toolListState.collectAsState()
     val feedbackState = viewModel.feedbackState
 
+    // 构建按键生成上下文，当任一依赖变化时重新创建
     val keyTableContext = remember(keyboard, inputList, candidateList, config) {
         KeyTableContext(
             config = config,
@@ -79,14 +97,18 @@ fun KeyboardHost(
             candidateList = candidateList,
         )
     }
+    // 创建 KeyTableGenerator 实例（此处使用内联实现 generateBasicLayout）
     val generator = remember {
         KeyTableGenerator { context ->
             generateBasicLayout(context)
         }
     }
+    // 根据上下文生成按键表
     val keyTable = remember(keyTableContext) { generator.generate(keyTableContext) }
 
+    // 通过 KeyboardTheme 提供主题色彩上下文
     KeyboardTheme(config.ui) {
+        // 根据布局模式选择不同的组件部署方式
         when (layoutMode) {
             KeyboardLayoutMode.Stacked -> StackedLayout(
                 keyboard = keyboard,
@@ -122,6 +144,14 @@ fun KeyboardHost(
     }
 }
 
+/**
+ * 堆叠布局：所有组件集中在 Zone B。
+ *
+ * 布局结构（从上到下）：
+ * - Row 1：CandidateListPanel + PopupTipPanel（叠加）
+ * - Row 2：ToolListPanel ↔ InputListPanel（互斥，由 isInputting 控制）
+ * - Row 3：KeyLayoutPanel + GestureFeedbackPanel + GestureInputPanel（三层叠加）
+ */
 @Composable
 private fun StackedLayout(
     keyboard: Keyboard,
@@ -139,6 +169,7 @@ private fun StackedLayout(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
+        // Row 1：候选栏 + 弹出提示叠加
         Box {
             CandidateListPanel(
                 candidates = candidateList.currentPage,
@@ -151,6 +182,7 @@ private fun StackedLayout(
                 onAction = { viewModel.handleIntent(it) },
             )
         }
+        // Row 2：输入栏与工具列表互斥切换
         if (inputList.hasPending) {
             InputListPanel(
                 items = inputList.inputs,
@@ -165,6 +197,7 @@ private fun StackedLayout(
                 showIndicator = showIndicator,
             )
         }
+        // Row 3：按键面板 + 反馈面板 + 输入面板 三层叠加
         Box {
             KeyLayoutPanel(
                 keyTable = keyTable,
@@ -186,6 +219,18 @@ private fun StackedLayout(
     }
 }
 
+/**
+ * 分离布局：Zone A 展示按键布局，Zone B 承载输入区域。
+ *
+ * 布局结构（从上到下）：
+ * - Zone A：KeyLayoutPanel + GestureFeedbackPanel（叠加）
+ * - Row 1：CandidateListPanel
+ * - Row 2：ToolListPanel ↔ InputListPanel（互斥）
+ * - Row 3：GestureFeedbackPanel + GestureInputPanel（叠加）
+ *
+ * 分离模式下手指在 Zone B 输入时不会被自身遮挡，
+ * 按键在 Zone A 中展示，缩短视觉搜索路径。
+ */
 @Composable
 private fun SeparatedLayout(
     keyboard: Keyboard,
@@ -203,6 +248,7 @@ private fun SeparatedLayout(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
+        // Zone A：按键布局 + 手势反馈
         Box {
             KeyLayoutPanel(
                 keyTable = keyTable,
@@ -217,12 +263,14 @@ private fun SeparatedLayout(
                 keyLayoutState = KeyLayoutState(),
             )
         }
+        // Row 1：候选栏
         CandidateListPanel(
             candidates = candidateList.currentPage,
             selectedIndex = 0,
             layoutState = CandidateListLayoutState(),
             showIndicator = showIndicator,
         )
+        // Row 2：输入栏与工具列表互斥切换
         if (inputList.hasPending) {
             InputListPanel(
                 items = inputList.inputs,
@@ -237,6 +285,7 @@ private fun SeparatedLayout(
                 showIndicator = showIndicator,
             )
         }
+        // Row 3：反馈面板 + 输入面板 两层叠加
         Box {
             GestureFeedbackPanel(
                 feedbackState = feedbackState,
@@ -250,20 +299,24 @@ private fun SeparatedLayout(
     }
 }
 
+/** 生成基本的按键布局：根据键盘类型返回对应的 QWERTY/数字/默认布局 */
 private fun generateBasicLayout(context: KeyTableContext): List<List<InputKey>> {
     return when (context.keyboard.type) {
         KeyboardType.Pinyin, KeyboardType.Latin -> listOf(
+            // 第一行
             listOf(
                 InputKey.Char(text = "q"), InputKey.Char(text = "w"), InputKey.Char(text = "e"),
                 InputKey.Char(text = "r"), InputKey.Char(text = "t"), InputKey.Char(text = "y"),
                 InputKey.Char(text = "u"), InputKey.Char(text = "i"), InputKey.Char(text = "o"),
                 InputKey.Char(text = "p"),
             ),
+            // 第二行
             listOf(
                 InputKey.Char(text = "a"), InputKey.Char(text = "s"), InputKey.Char(text = "d"),
                 InputKey.Char(text = "f"), InputKey.Char(text = "g"), InputKey.Char(text = "h"),
                 InputKey.Char(text = "j"), InputKey.Char(text = "k"), InputKey.Char(text = "l"),
             ),
+            // 第三行（含 Ctrl 功能键）
             listOf(
                 InputKey.Ctrl, InputKey.Char(text = "z"), InputKey.Char(text = "x"),
                 InputKey.Char(text = "c"), InputKey.Char(text = "v"), InputKey.Char(text = "b"),

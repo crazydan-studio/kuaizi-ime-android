@@ -34,6 +34,19 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
+/**
+ * 按键布局面板。
+ *
+ * 负责按键布局的渲染和状态展示，仅负责展示，不处理任何触摸事件。
+ * 根据 [keyTable] 二维矩阵和 [keyLayoutState] 的位置信息渲染按键。
+ * 布局测量完成后通过 [onLayoutStateChanged] 回调上报布局状态。
+ *
+ * @param keyTable 按键布局矩阵
+ * @param keyLayoutState 按键布局状态（含归一化位置映射）
+ * @param keyboardInputMode 键盘输入模式（影响布局策略）
+ * @param onLayoutStateChanged 布局状态变更回调
+ * @param modifier 修饰符
+ */
 @Composable
 fun KeyLayoutPanel(
     keyTable: List<List<InputKey>> = emptyList(),
@@ -44,11 +57,13 @@ fun KeyLayoutPanel(
 ) {
     val colors = LocalKeyboardColors.current
 
+    // 布局状态变化时通过回调通知 ViewModel 缓存
     LaunchedEffect(keyLayoutState) {
         onLayoutStateChanged(keyLayoutState)
     }
 
     Canvas(modifier = modifier.fillMaxWidth().height(200.dp)) {
+        // 根据 keyPositions 渲染按键矩形
         keyLayoutState.keyPositions.forEach { (key, rectF) ->
             val pixelRect = keyLayoutState.denormalize(rectF, size)
             drawRoundRect(

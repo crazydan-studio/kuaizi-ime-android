@@ -21,12 +21,35 @@ package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 
+/**
+ * 弹出提示状态，由 KeyboardViewModel 管理。
+ *
+ * 引擎通过 [ImeEffect.PopupTip] 发出一次性效果信号，
+ * ViewModel 订阅后更新此状态，驱动 [PopupTipPanel] 显示。
+ *
+ * 两种类型：
+ * - [Message]：纯文本信息提示，超时后自动消失
+ * - [Action]：可点击提示，含操作按钮，点击后触发 [ImeIntent]
+ */
 sealed class PopupTipState {
+    /**
+     * 纯文本信息提示
+     * @param message 提示消息内容
+     * @param timeoutMs 自动消失超时时间（毫秒），默认 3000ms
+     */
     data class Message(
         val message: String,
         val timeoutMs: Long = 3000L,
     ) : PopupTipState()
 
+    /**
+     * 可点击操作提示
+     * @param message 提示消息内容
+     * @param actionLabel 操作按钮标签
+     * @param action 点击后触发的 ImeIntent
+     * @param persistent 是否持久显示（直到用户开始输入）
+     * @param timeoutMs 自动消失超时时间（毫秒），默认 5000ms
+     */
     data class Action(
         val message: String,
         val actionLabel: String,

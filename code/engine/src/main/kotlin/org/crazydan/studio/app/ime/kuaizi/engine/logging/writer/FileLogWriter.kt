@@ -30,6 +30,17 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
 
+/**
+ * 文件日志写入器：异步将日志写入文件。
+ *
+ * 采用协程 [Channel] 缓冲 + 独立协程批量写入的策略，确保日志写入不阻塞调用线程。
+ * [trySend] 在缓冲区未满时立即返回，不会阻塞调用线程。
+ * 独立协程使用「阻塞等待首条 + 非阻塞收集余量」的策略：
+ * - 低流量时，[receive] 确保日志及时写入
+ * - 高流量时，批量收集（最多 100 条）减少 I/O 次数
+ *
+ * @param storage 日志文件存储管理器
+ */
 class FileLogWriter(private val storage: LogStorage) : LogWriter {
     private val channel = Channel<LogEntry>(capacity = Channel.Factory.BUFFERED)
 
@@ -56,13 +67,14 @@ class FileLogWriter(private val storage: LogStorage) : LogWriter {
         }
     }
 
+    /** 非阻塞发送日志条目到 Channel。 */
     override fun write(entry: LogEntry) {
         channel.trySend(entry)
     }
 
+    /** 等待 Channel 清空，确保所有缓冲日志落盘。 */
     @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun flush() {
-        // 等待 Channel 中的所有条目被消费完毕
         while (!channel.isEmpty) {
             delay(50)
         }

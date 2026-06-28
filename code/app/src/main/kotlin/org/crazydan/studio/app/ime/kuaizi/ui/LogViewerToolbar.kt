@@ -39,12 +39,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
+/**
+ * 日志浏览界面的工具栏。
+ *
+ * 包含等级过滤器（DropdownMenu）、关键词搜索输入框和刷新按钮。
+ * 等级过滤器显示当前选中的等级名称，点击展开选择列表。
+ */
 @Composable
 fun LogViewerToolbar(
+    /** 当前选中的等级过滤条件 */
     levelFilter: LogLevel?,
+    /** 当前关键词搜索条件 */
     keyword: String?,
+    /** 等级过滤变更回调 */
     onLevelFilterChange: (LogLevel?) -> Unit,
+    /** 关键词变更回调 */
     onKeywordChange: (String?) -> Unit,
+    /** 刷新按钮点击回调 */
     onRefresh: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -52,6 +63,7 @@ fun LogViewerToolbar(
     Row(
         modifier = Modifier.padding(8.dp),
     ) {
+        // 等级过滤下拉菜单
         FilterChip(
             selected = levelFilter != null,
             onClick = { expanded = true },
@@ -62,6 +74,7 @@ fun LogViewerToolbar(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
+            // "全部"选项（null 表示不过滤）
             DropdownMenuItem(
                 text = { Text("All") },
                 onClick = {
@@ -69,6 +82,7 @@ fun LogViewerToolbar(
                     expanded = false
                 },
             )
+            // 各日志等级选项
             LogLevel.entries.forEach { level ->
                 DropdownMenuItem(
                     text = { Text(level.name) },
@@ -80,6 +94,7 @@ fun LogViewerToolbar(
             }
         }
 
+        // 关键词搜索输入框
         OutlinedTextField(
             value = keyword ?: "",
             onValueChange = { onKeywordChange(it.ifBlank { null }) },
@@ -88,6 +103,7 @@ fun LogViewerToolbar(
             singleLine = true,
         )
 
+        // 刷新按钮
         IconButton(onClick = onRefresh) {
             Icon(Icons.Default.Refresh, contentDescription = "刷新")
         }
