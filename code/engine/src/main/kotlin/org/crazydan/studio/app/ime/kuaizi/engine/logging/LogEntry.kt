@@ -19,10 +19,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
-import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import org.crazydan.studio.app.ime.kuaizi.engine.utils.DateTimeHelper
+import kotlin.time.Instant
 
 data class LogEntry(
     val level: LogLevel,
@@ -33,11 +33,13 @@ data class LogEntry(
     val threadName: String = Thread.currentThread().name,
     val threadId: Long = Thread.currentThread().id,
 ) {
+
     fun format(): String {
-        val time = Instant.ofEpochMilli(timestamp)
-            .atZone(ZoneId.systemDefault())
-            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"))
+        val time = Instant.fromEpochMilliseconds(timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
+        val timeStr = DateTimeHelper.dateTimeFormat.format(time)
+
         val throwableStr = throwable?.stackTraceToString()?.let { "\n$it" } ?: ""
-        return "$time [${level.name}] [$tag] [$threadName] $message$throwableStr"
+
+        return "$timeStr [${level.name}] [$tag] [$threadName] $message$throwableStr"
     }
 }

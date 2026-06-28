@@ -19,9 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi
 
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
-import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
-
 enum class UITestTool(
     val displayName: String,
     val description: String,

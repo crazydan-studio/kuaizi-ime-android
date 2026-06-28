@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.crazydan.studio.app.ime.kuaizi.engine.*
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("ime_config")
 

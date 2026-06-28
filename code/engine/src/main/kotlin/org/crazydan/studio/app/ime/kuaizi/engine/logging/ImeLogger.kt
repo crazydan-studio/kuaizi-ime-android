@@ -19,61 +19,40 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
-import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.TreeLogWriter
 
-class ImeLogger(@PublishedApi internal val tag: String, @PublishedApi internal val log: ImeLog) {
+class ImeLogger(private val tag: String, private val log: ImeLog) {
 
-    inline fun verbose(msg: () -> String) {
-        if (log.level.priority <= LogLevel.VERBOSE.priority) {
-            log.dispatch(LogEntry(LogLevel.VERBOSE, tag, msg()))
-        }
-    }
+    fun isEnabled(level: LogLevel) = log.level.priority <= level.priority
 
-    inline fun debug(msg: () -> String) {
-        if (log.level.priority <= LogLevel.DEBUG.priority) {
-            log.dispatch(LogEntry(LogLevel.DEBUG, tag, msg()))
-        }
-    }
+    fun verbose(msg: () -> String) = dispatch(LogLevel.VERBOSE, msg)
 
-    inline fun info(msg: () -> String) {
-        if (log.level.priority <= LogLevel.INFO.priority) {
-            log.dispatch(LogEntry(LogLevel.INFO, tag, msg()))
-        }
-    }
+    fun debug(msg: () -> String) = dispatch(LogLevel.DEBUG, msg)
 
-    inline fun warn(msg: () -> String) {
-        if (log.level.priority <= LogLevel.WARN.priority) {
-            log.dispatch(LogEntry(LogLevel.WARN, tag, msg()))
-        }
-    }
+    fun info(msg: () -> String) = dispatch(LogLevel.INFO, msg)
 
-    inline fun error(msg: () -> String) {
-        if (log.level.priority <= LogLevel.ERROR.priority) {
-            log.dispatch(LogEntry(LogLevel.ERROR, tag, msg()))
-        }
-    }
+    fun warn(msg: () -> String) = dispatch(LogLevel.WARN, msg)
 
-    inline fun error(throwable: Throwable, msg: () -> String) {
-        if (log.level.priority <= LogLevel.ERROR.priority) {
-            log.dispatch(LogEntry(LogLevel.ERROR, tag, msg(), throwable))
-        }
-    }
+    fun error(msg: () -> String) = dispatch(LogLevel.ERROR, msg)
 
-    inline fun tree(title: String, block: () -> Unit) {
-        val treeWriter = TreeLogWriter(log, tag, title)
-        treeWriter.begin()
+    fun error(throwable: Throwable, msg: () -> String) =
+        dispatch(LogLevel.ERROR, msg, throwable)
+
+    fun tree(title: String, block: () -> Unit) {
+        // TODO 树形日志输入待改进
+        val writer = TreeLogWriter(log, tag, title)
+
+        writer.begin()
         try {
             block()
         } finally {
-            treeWriter.end()
+            writer.end()
         }
     }
 
-    companion object {
-        fun d(tag: String, message: String) {
-            if (ImeLog.level.priority <= LogLevel.DEBUG.priority) {
-                ImeLog.dispatch(LogEntry(LogLevel.DEBUG, tag, message))
-            }
-        }
+    private inline fun dispatch(level: LogLevel, msg: () -> String, throwable: Throwable? = null) {
+        if (!isEnabled(level)) return
+
+        log.dispatch(LogEntry(level, tag, msg(), throwable))
     }
 }

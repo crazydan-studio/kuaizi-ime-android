@@ -20,8 +20,8 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
-import java.time.Clock
 import kotlinx.serialization.Serializable
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
 enum class ImportStrategy {
     Replace,
@@ -100,7 +100,7 @@ data class EngineConfigBackupEntry(
 ) {
     fun restoreFromBackup(current: ImeConfig.EngineConfig): ImeConfig.EngineConfig {
         return current.copy(
-            logLevel = log_level?.let { org.crazydan.studio.app.ime.kuaizi.engine.LogLevel.valueOf(it) } ?: current.logLevel,
+            logLevel = log_level?.let { LogLevel.valueOf(it) } ?: current.logLevel,
             logStoragePath = log_storage_path ?: current.logStoragePath,
             inputPredictionEnabled = input_prediction_enabled ?: current.inputPredictionEnabled,
             userDataPersistEnabled = user_data_persist_enabled ?: current.userDataPersistEnabled,

@@ -19,13 +19,37 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.CandidateKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.CommitOptionKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EmojiKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputList
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputListEditor
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputListOperator
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardStateMachine
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.MathKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.NumberKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.SymbolKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLogger
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import kotlin.math.log
 
 class ImeEngine internal constructor(
     private var config: ImeConfig,
@@ -34,6 +58,8 @@ class ImeEngine internal constructor(
     private val inputListOp: InputListOperator,
     internal val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
+    private val logger by lazy { ImeLog.logger(ImeEngine::class) }
+
     private val _state: MutableStateFlow<ImeState> = MutableStateFlow(ImeState())
     val state: StateFlow<ImeState> = _state.asStateFlow()
 
@@ -160,6 +186,7 @@ class ImeEngine internal constructor(
                         val candidates = dictProvider.query(intent.pinyin)
                         handleIntent(ImeIntent.SetCandidates(candidates))
                     }
+
                     else -> handleIntent(intent)
                 }
             }
@@ -222,8 +249,8 @@ class ImeEngine internal constructor(
         val oldState = _state.value
         val newState = transform(oldState)
 
-        if (ImeLog.level <= LogLevel.DEBUG) {
-            ImeLogger.d("ImeEngine", "State updated")
+        if (logger.isEnabled(LogLevel.DEBUG)) {
+            logger.debug { "State updated" }
             assertStateInvariants(newState)
         }
 

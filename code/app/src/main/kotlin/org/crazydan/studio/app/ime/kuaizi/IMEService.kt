@@ -19,15 +19,25 @@
 
 package org.crazydan.studio.app.ime.kuaizi
 
+import android.content.Context
 import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.compose.ui.platform.ComposeView
 import org.crazydan.studio.app.ime.kuaizi.config.ConfigDataStore
-import org.crazydan.studio.app.ime.kuaizi.engine.*
+import org.crazydan.studio.app.ime.kuaizi.engine.EditorInputType
+import org.crazydan.studio.app.ime.kuaizi.engine.IMESubtype
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
+import org.crazydan.studio.app.ime.kuaizi.engine.ScreenOrientation
+import org.crazydan.studio.app.ime.kuaizi.engine.StartupConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogcatWriter
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.FileLogWriter
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.LogcatWriter
 import org.crazydan.studio.app.ime.kuaizi.ui.integration.KeyboardHost
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
@@ -41,10 +51,7 @@ class IMEService : InputMethodService() {
     override fun onCreate() {
         super.onCreate()
 
-        ImeLog.init(
-            level = LogLevel.DEBUG,
-            writers = listOf(LogcatWriter()),
-        )
+        initLog(this)
 
         configDataStore = ConfigDataStore(this)
         inputConnectionBridge = InputConnectionBridge { currentInputConnection }
@@ -108,14 +115,38 @@ class IMEService : InputMethodService() {
                     EditorInfo.TYPE_TEXT_VARIATION_PASSWORD,
                     EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
                     EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD -> EditorInputType.Password
+
                     EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
                     EditorInfo.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS -> EditorInputType.Email
+
                     EditorInfo.TYPE_TEXT_VARIATION_URI -> EditorInputType.URI
                     EditorInfo.TYPE_TEXT_VARIATION_FILTER -> EditorInputType.Filter
                     else -> EditorInputType.Text
                 }
             }
+
             else -> EditorInputType.Text
         }
+    }
+
+    private fun initLog(context: Context) {
+        var level = LogLevel.ERROR
+        val writers = mutableListOf<LogWriter>()
+
+        if (BuildConfig.DEBUG) {
+            level = LogLevel.DEBUG
+            writers.add(LogcatWriter())
+        } else {
+            val dir = context.filesDir.resolve("logs")
+            val storage = LogStorage(dir)
+            writers.add(FileLogWriter(storage))
+
+            ImeLog.CrashInterceptor(storage).install()
+        }
+
+        ImeLog.init(
+            level = level,
+            writers = writers,
+        )
     }
 }

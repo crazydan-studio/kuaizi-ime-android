@@ -20,17 +20,20 @@
 package org.crazydan.studio.app.ime.kuaizi
 
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
-import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
-class DebugUITestOverlay(
-    private val log: ImeLog = ImeLog,
-) : UITestOverlay {
+class DebugUITestOverlay() : UITestOverlay {
+    private val logger by lazy { ImeLog.logger("UITest") }
+
     private val activeTools = mutableSetOf<UITestTool>()
 
     override fun enable() {
-        if (log.level > LogLevel.DEBUG) {
-            log.updateLevel(LogLevel.DEBUG)
-            log.logger("UITest").info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
+        if (!logger.isEnabled(LogLevel.DEBUG)) {
+            ImeLog.enableLevel(LogLevel.DEBUG)
+
+            logger.info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
+        } else {
+            logger.info { "UI 测试工具已激活" }
         }
     }
 
@@ -43,7 +46,8 @@ class DebugUITestOverlay(
             activeTools.remove(tool)
         } else {
             activeTools.add(tool)
-            log.logger("UITest").debug { "激活工具: ${tool.displayName}" }
+
+            logger.debug { "激活工具: ${tool.displayName}" }
         }
     }
 

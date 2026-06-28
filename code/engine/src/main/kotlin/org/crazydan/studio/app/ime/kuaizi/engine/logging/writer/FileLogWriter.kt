@@ -17,27 +17,39 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.logging
+package org.crazydan.studio.app.ime.kuaizi.engine.logging.writer
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
 
 class FileLogWriter(private val storage: LogStorage) : LogWriter {
-    private val channel = Channel<LogEntry>(capacity = Channel.BUFFERED)
+    private val channel = Channel<LogEntry>(capacity = Channel.Factory.BUFFERED)
+
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     init {
         scope.launch {
             val buffer = mutableListOf<LogEntry>()
             while (true) {
+                // 阻塞等待第一条日志
                 val entry = channel.receive()
                 buffer.add(entry)
 
+                // 非阻塞收集更多日志，最多 100 条
                 while (buffer.size < 100) {
                     val polled = channel.tryReceive().getOrNull() ?: break
                     buffer.add(polled)
                 }
 
+                // 批量写入文件
                 storage.appendEntries(buffer)
                 buffer.clear()
             }
@@ -48,7 +60,9 @@ class FileLogWriter(private val storage: LogStorage) : LogWriter {
         channel.trySend(entry)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override suspend fun flush() {
+        // 等待 Channel 中的所有条目被消费完毕
         while (!channel.isEmpty) {
             delay(50)
         }

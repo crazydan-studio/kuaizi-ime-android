@@ -22,6 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardHandMode
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
 data class ImeConfig(
     val engine: EngineConfig = EngineConfig(),

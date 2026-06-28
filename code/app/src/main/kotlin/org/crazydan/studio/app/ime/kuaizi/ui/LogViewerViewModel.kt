@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
 

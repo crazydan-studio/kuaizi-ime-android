@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine
+package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
 enum class LogLevel(val priority: Int) {
     VERBOSE(2),
@@ -27,6 +27,7 @@ enum class LogLevel(val priority: Int) {
     ERROR(6);
 
     companion object {
+
         fun fromPriority(priority: Int): LogLevel {
             return entries.firstOrNull { it.priority == priority } ?: WARN
         }

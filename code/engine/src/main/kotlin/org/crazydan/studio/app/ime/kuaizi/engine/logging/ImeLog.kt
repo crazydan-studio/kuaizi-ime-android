@@ -19,22 +19,23 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
+import kotlinx.coroutines.runBlocking
 import kotlin.reflect.KClass
-import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
 
 object ImeLog {
-    private val writers = mutableListOf<LogWriter>()
-
-    var level: LogLevel = LogLevel.WARN
+    internal var level: LogLevel = LogLevel.WARN
         private set
+
+    private val writers = mutableListOf<LogWriter>()
 
     fun init(level: LogLevel, writers: List<LogWriter>) {
         this.level = level
+
         this.writers.clear()
         this.writers.addAll(writers)
     }
 
-    fun updateLevel(newLevel: LogLevel) {
+    fun enableLevel(newLevel: LogLevel) {
         level = newLevel
     }
 
@@ -42,12 +43,48 @@ object ImeLog {
 
     fun logger(cls: KClass<*>): ImeLogger = logger(cls.simpleName ?: "Unknown")
 
-    @PublishedApi internal fun dispatch(entry: LogEntry) {
+    internal fun dispatch(entry: LogEntry) {
         if (entry.level.priority < level.priority) return
+
         writers.forEach { writer -> writer.write(entry) }
     }
 
     internal suspend fun flush() {
         writers.forEach { it.flush() }
+    }
+
+    class CrashInterceptor(private val storage: LogStorage) {
+        private var defaultHandler: Thread.UncaughtExceptionHandler? = null
+
+        fun install() {
+            defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+
+            Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+                handleCrash(thread, throwable)
+            }
+        }
+
+        private fun handleCrash(thread: Thread, throwable: Throwable) {
+            val entry = LogEntry(
+                level = LogLevel.ERROR,
+                tag = "Crash",
+                message = "未捕获异常 [${thread.name}]",
+                throwable = throwable,
+            )
+
+            // 崩溃发生时，绕过 FileLogWriter 的 Channel 缓冲机制，
+            // 直接通过 LogStorage.appendEntries() 同步写入崩溃信息。
+            // 因为在崩溃场景下，进程即将终止，FileLogWriter 的独立协程可能来不及消费
+            // Channel 中的缓冲日志 —— 直接同步写入确保崩溃信息不会丢失
+            storage.appendEntries(listOf(entry))
+
+            // 同步刷新所有 Writer
+            runBlocking {
+                flush()
+            }
+
+            // 委托系统默认处理器正常处理崩溃
+            defaultHandler?.uncaughtException(thread, throwable)
+        }
     }
 }

@@ -17,9 +17,12 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.logging
+package org.crazydan.studio.app.ime.kuaizi.engine.logging.writer
 
-import org.crazydan.studio.app.ime.kuaizi.engine.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
 
 class TreeLogWriter(
     private val log: ImeLog,
@@ -27,15 +30,14 @@ class TreeLogWriter(
     private val title: String,
 ) : LogWriter {
     private val entries = mutableListOf<LogEntry>()
-    private var originalWriters: List<LogWriter>? = null
 
     fun begin() {
-        originalWriters = mutableListOf<LogWriter>()
         entries.clear()
     }
 
     fun end() {
         if (entries.isEmpty()) return
+
         val header = LogEntry(
             level = LogLevel.DEBUG,
             tag = tag,
@@ -46,6 +48,7 @@ class TreeLogWriter(
             tag = tag,
             message = "└─ ($title end)",
         )
+
         log.dispatch(header)
         entries.forEach { log.dispatch(it) }
         log.dispatch(footer)
