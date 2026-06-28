@@ -49,7 +49,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.SymbolKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
-import kotlin.math.log
 
 /**
  * 引擎核心入口点，提供完整的输入法能力。
@@ -61,7 +60,7 @@ import kotlin.math.log
  * - 通过 [ImeEditorBridge] 输出编辑器操作（编辑器操作通道）
  *
  * 引擎不依赖任何 UI 框架，第三方应用可自由替换 UI 层。
- * 构造函数标记为 [internal]，强制通过 [Companion.create] 工厂方法创建实例，
+ * 构造函数标记为 `internal`，强制通过 [Companion.create] 工厂方法创建实例，
  * 确保所有依赖项正确初始化。
  *
  * @property config 运行时配置，包含引擎/UI/运行时三层子配置
@@ -71,22 +70,26 @@ import kotlin.math.log
 class ImeEngine internal constructor(
     private var config: ImeConfig,
     private val dictProvider: ImeDictProvider,
-    private val stateMachine: KeyboardStateMachine,
+    private val keyboardStateMachine: KeyboardStateMachine,
     private val inputListOp: InputListOperator,
     internal val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     private val logger by lazy { ImeLog.logger(ImeEngine::class) }
 
-    private val _state: MutableStateFlow<ImeState> = MutableStateFlow(ImeState())
+    private val _state: MutableStateFlow<ImeState> = MutableStateFlow(ImeState(config = config))
+
     /** 只读状态流：UI 层通过此流订阅 [ImeState] 驱动界面重组。 */
     val state: StateFlow<ImeState> = _state.asStateFlow()
 
     private val _effect: MutableSharedFlow<ImeEffect> = MutableSharedFlow(extraBufferCapacity = 64)
+
     /** 只读副作用流：UI 层在独立协程中收集并消费一次性效果。 */
     val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
 
-    private val _editorBridges: MutableList<ImeEditorBridge> = mutableListOf()
+    private val editorBridges: MutableList<ImeEditorBridge> = mutableListOf()
     private var clipboardJob: Job? = null
+
+    // -----------------------------------------------
 
     /**
      * 启动输入法，建立后续所有 Intent 处理的前置条件。
@@ -95,30 +98,33 @@ class ImeEngine internal constructor(
      * 而是直接执行引擎级初始化操作。
      *
      * 处理步骤：
-     * 1. 更新 RuntimeConfig：[StartupConfig] 中的值覆盖到当前 [RuntimeConfig]
-     * 2. 确定 KeyboardType：通过两级级联规则确定启动时的键盘类型
-     * 3. 更新 keyPopupTipsEnabled：若为 Password 类型则强制禁用按键提示
-     * 4. 重置 KeyboardStateMachine：根据确定的 KeyboardType 重置状态机
-     * 5. 检查剪贴板可粘贴内容：若启用则发射粘贴提示
-     * 6. 通过 [applyStateUpdate] 原子更新 [ImeState]
+     * 1. 更新 RuntimeConfig：[ImeConfig.Startup] 中的值覆盖到当前 [ImeConfig.Runtime]
+     * 1. 确定 KeyboardType：通过两级级联规则确定启动时的键盘类型
+     * 1. 更新 keyPopupTipsEnabled：若为 Password 类型则强制禁用按键提示
+     * 1. 重置 KeyboardStateMachine：根据确定的 KeyboardType 重置状态机
+     * 1. 检查剪贴板可粘贴内容：若启用则发射粘贴提示
+     * 1. 通过 [applyStateUpdate] 原子更新 [ImeState]
      *
      * @param startupConfig 启动配置，包含输入法子类型、屏幕方向和编辑器输入类型
      */
-    fun start(startupConfig: StartupConfig) {
+    fun start(startupConfig: ImeConfig.Startup) {
         updateRuntimeConfig(startupConfig)
 
         val keyboardType = resolveKeyboardType(startupConfig)
-        stateMachine.resetTo(keyboardType.initialState())
+        keyboardStateMachine.resetTo(keyboardType.initialState())
 
         val isPassword = startupConfig.editorInputType == EditorInputType.Password
-
         val newState = _state.value.copy(
             keyboard = _state.value.keyboard.copy(type = keyboardType),
-            inputList = if (isPassword) InputList() else _state.value.inputList,
+            inputList =
+                // 清空输入列表，以确保采用直输模式
+                if (isPassword) InputList()
+                else _state.value.inputList,
             config = _state.value.config.copy(
                 runtime = _state.value.config.runtime.copy(
-                    keyPopupTipsEnabled = if (isPassword) false
-                    else _state.value.config.runtime.keyPopupTipsEnabled,
+                    keyPopupTipsEnabled =
+                        if (isPassword) false
+                        else _state.value.config.runtime.keyPopupTipsEnabled,
                 ),
             ),
         )
@@ -159,8 +165,10 @@ class ImeEngine internal constructor(
      */
     fun destroy() {
         scope.cancel()
-        _editorBridges.clear()
+        editorBridges.clear()
     }
+
+    // -----------------------------------------------
 
     /**
      * 注册编辑器桥接。
@@ -169,7 +177,7 @@ class ImeEngine internal constructor(
      * @param bridge 要注册的编辑器桥接实例
      */
     fun attachEditorBridge(bridge: ImeEditorBridge) {
-        _editorBridges.add(bridge)
+        editorBridges.add(bridge)
     }
 
     /**
@@ -178,8 +186,10 @@ class ImeEngine internal constructor(
      * @param bridge 要注销的编辑器桥接实例
      */
     fun detachEditorBridge(bridge: ImeEditorBridge) {
-        _editorBridges.remove(bridge)
+        editorBridges.remove(bridge)
     }
+
+    // -----------------------------------------------
 
     /**
      * 处理用户意图，MVI 架构的核心入口。
@@ -213,10 +223,11 @@ class ImeEngine internal constructor(
         }
     }
 
-    // ==================== 内部方法 ====================
+    // -----------------------------------------------
 
     private fun handleSwitchKeyboard(type: KeyboardType) {
-        stateMachine.resetTo(type.initialState())
+        keyboardStateMachine.resetTo(type.initialState())
+
         applyStateUpdate { state ->
             state.copy(keyboard = state.keyboard.copy(type = type))
         }
@@ -225,7 +236,7 @@ class ImeEngine internal constructor(
     private fun handleWithStateMachine(intent: ImeIntent) {
         val handler = resolveHandler(_state.value.keyboard.type)
         val transition = handler.handleIntent(intent, _state.value.keyboard.state)
-        val result = stateMachine.transition(transition)
+        val result = keyboardStateMachine.transition(transition)
         val sideEffects = result.sideEffects
 
         val effect = when (intent) {
@@ -301,7 +312,7 @@ class ImeEngine internal constructor(
         }
     }
 
-    private fun updateRuntimeConfig(startupConfig: StartupConfig) {
+    private fun updateRuntimeConfig(startupConfig: ImeConfig.Startup) {
         applyStateUpdate { state ->
             state.copy(
                 config = state.config.copy(
@@ -318,20 +329,28 @@ class ImeEngine internal constructor(
      * 根据启动配置确定启动时的键盘类型。
      *
      * 两级级联规则：
-     * 1. 根据 [IMESubtype] 确定基础键盘（Latin → 拉丁键盘，Hans → 拼音键盘）
-     * 2. 根据 [EditorInputType] 修正（Number/Datetime/Phone → 数字键盘，Password → 拉丁键盘）
+     * 1. 根据 [InputMethodSubtype] 确定基础键盘（Latin → 拉丁键盘，Hans → 拼音键盘）
+     * 1. 根据 [EditorInputType] 修正（Number/Datetime/Phone → 数字键盘，Password → 拉丁键盘）
      *
      * @param startupConfig 启动配置
      * @return 确定的键盘类型
      */
-    private fun resolveKeyboardType(startupConfig: StartupConfig): KeyboardType {
-        val baseType = when (startupConfig.imeSubtype) {
-            IMESubtype.Latin -> KeyboardType.Latin
-            IMESubtype.Hans -> KeyboardType.Pinyin
-        }
+    private fun resolveKeyboardType(startupConfig: ImeConfig.Startup): KeyboardType {
+        val baseType =
+            when (startupConfig.inputMethodSubtype) {
+                InputMethodSubtype.Latin -> KeyboardType.Latin
+                InputMethodSubtype.Hans -> KeyboardType.Pinyin
+            }
+
         return when (startupConfig.editorInputType) {
-            EditorInputType.Number, EditorInputType.Datetime, EditorInputType.Phone -> KeyboardType.Number
-            EditorInputType.Password -> KeyboardType.Latin
+            EditorInputType.Number,
+            EditorInputType.Datetime,
+            EditorInputType.Phone ->
+                KeyboardType.Number
+
+            EditorInputType.Password ->
+                KeyboardType.Latin
+
             else -> baseType
         }
     }
@@ -345,8 +364,9 @@ class ImeEngine internal constructor(
      * @param action 要分发的编辑器操作
      */
     private fun dispatchEditorAction(action: EditorAction) {
-        if (_editorBridges.isEmpty()) return
-        _editorBridges.forEach { bridge ->
+        if (editorBridges.isEmpty()) return
+
+        editorBridges.forEach { bridge ->
             when (action) {
                 is EditorAction.CommitText -> bridge.commitText(action.text, action.replacements)
                 is EditorAction.RevokeCommit -> bridge.revokeCommit()
@@ -408,10 +428,11 @@ class ImeEngine internal constructor(
             dictProvider: ImeDictProvider,
         ): ImeEngine {
             val inputListOp = InputListOperator(InputListEditor())
+
             return ImeEngine(
                 config = config,
                 dictProvider = dictProvider,
-                stateMachine = KeyboardStateMachine(inputListOp = inputListOp),
+                keyboardStateMachine = KeyboardStateMachine(inputListOp = inputListOp),
                 inputListOp = inputListOp,
             )
         }

@@ -26,11 +26,8 @@ import android.view.inputmethod.EditorInfo
 import androidx.compose.ui.platform.ComposeView
 import org.crazydan.studio.app.ime.kuaizi.config.ConfigDataStore
 import org.crazydan.studio.app.ime.kuaizi.engine.EditorInputType
-import org.crazydan.studio.app.ime.kuaizi.engine.IMESubtype
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
-import org.crazydan.studio.app.ime.kuaizi.engine.ScreenOrientation
-import org.crazydan.studio.app.ime.kuaizi.engine.StartupConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
@@ -38,6 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.FileLogWriter
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.LogcatWriter
+import org.crazydan.studio.app.ime.kuaizi.engine.util.SystemHelper
 import org.crazydan.studio.app.ime.kuaizi.ui.integration.KeyboardHost
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
@@ -56,12 +54,17 @@ import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 class IMEService : InputMethodService() {
     // 引擎实例，负责所有输入法核心逻辑
     private var engine: ImeEngine? = null
+
     // 键盘视图模型，连接引擎状态与 Compose UI
     private var viewModel: KeyboardViewModel? = null
+
     // 输入连接桥接，将引擎输出转发到系统 InputConnection
     private var inputConnectionBridge: ImeEditorBridge? = null
+
     // 配置数据存储，持久化用户配置到 DataStore
     private var configDataStore: ConfigDataStore? = null
+
+    // -------------------------------------------------------
 
     /** 服务创建时初始化引擎、配置存储和桥接。 */
     override fun onCreate() {
@@ -79,7 +82,7 @@ class IMEService : InputMethodService() {
             config = ImeConfig(),
             dictProvider = InMemoryDictProvider(),
         )
-        engine?.attachEditorBridge(inputConnectionBridge!!)
+        engine!!.attachEditorBridge(inputConnectionBridge!!)
     }
 
     /** 创建键盘输入视图，返回 ComposeView 作为 UI 根节点。 */
@@ -100,24 +103,26 @@ class IMEService : InputMethodService() {
         }
     }
 
+    // -------------------------------------------------------
+
     /** 编辑器输入启动时，根据编辑器输入类型配置引擎。 */
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
 
-        // 确定输入法子类型
-        val subtype = when (val inputType = editorInfo?.inputType) {
-            else -> IMESubtype.Hans
-        }
+        val inputType = resolveEditorInputType(editorInfo)
 
-        // 以当前编辑器信息启动引擎
-        engine?.start(
-            StartupConfig(
-                imeSubtype = subtype,
-                screenOrientation = ScreenOrientation.Portrait,
-                editorInputType = resolveEditorInputType(editorInfo),
-            )
-        )
+        startInput(inputType)
     }
+
+    /** 切换系统输入法子类型时，重新启动引擎（注意，引擎可能还未创建）。 */
+    override fun onCurrentInputMethodSubtypeChanged(newSubtype: android.view.inputmethod.InputMethodSubtype?) {
+        super.onCurrentInputMethodSubtypeChanged(newSubtype)
+
+        // Note：编辑器输入类型始终为 null，以确保不覆盖已识别到的目标类型
+        startInput(null)
+    }
+
+    // -------------------------------------------------------
 
     /** 编辑器输入结束时关闭引擎，但不销毁。 */
     override fun onFinishInputView(finishingInput: Boolean) {
@@ -131,6 +136,21 @@ class IMEService : InputMethodService() {
         super.onDestroy()
     }
 
+    // ----------------------------------------------------
+
+    private fun startInput(inputType: EditorInputType?) {
+        val subtype = SystemHelper.getInputMethodSubtype(this)
+        val orientation = SystemHelper.getScreenOrientation(this)
+
+        engine?.start(
+            ImeConfig.Startup(
+                inputMethodSubtype = subtype,
+                screenOrientation = orientation,
+                editorInputType = inputType,
+            )
+        )
+    }
+
     /**
      * 从 [EditorInfo] 解析 [EditorInputType]。
      *
@@ -139,28 +159,44 @@ class IMEService : InputMethodService() {
      */
     private fun resolveEditorInputType(editorInfo: EditorInfo?): EditorInputType? {
         if (editorInfo == null) return null
+
         return when (editorInfo.inputType and EditorInfo.TYPE_MASK_CLASS) {
             // 数字/电话/日期类输入
-            EditorInfo.TYPE_CLASS_NUMBER, EditorInfo.TYPE_CLASS_PHONE -> EditorInputType.Number
-            EditorInfo.TYPE_CLASS_DATETIME -> EditorInputType.Datetime
+            EditorInfo.TYPE_CLASS_NUMBER, EditorInfo.TYPE_CLASS_PHONE ->
+                EditorInputType.Number
+
+            EditorInfo.TYPE_CLASS_DATETIME ->
+                EditorInputType.Datetime
+
             // 文本类输入，进一步按变体区分
             EditorInfo.TYPE_CLASS_TEXT -> {
                 when (editorInfo.inputType and EditorInfo.TYPE_MASK_VARIATION) {
                     // 密码框：禁用按键提示，强制拉丁键盘
                     EditorInfo.TYPE_TEXT_VARIATION_PASSWORD,
                     EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
-                    EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD -> EditorInputType.Password
+                    EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD ->
+                        EditorInputType.Password
 
                     // 邮箱输入
                     EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
-                    EditorInfo.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS -> EditorInputType.Email
+                    EditorInfo.TYPE_TEXT_VARIATION_WEB_EMAIL_ADDRESS ->
+                        EditorInputType.Email
 
                     // URI 输入
-                    EditorInfo.TYPE_TEXT_VARIATION_URI -> EditorInputType.URI
+                    EditorInfo.TYPE_TEXT_VARIATION_URI ->
+                        EditorInputType.URI
+
                     // 搜索过滤输入
-                    EditorInfo.TYPE_TEXT_VARIATION_FILTER -> EditorInputType.Filter
+                    EditorInfo.TYPE_TEXT_VARIATION_FILTER ->
+                        EditorInputType.Filter
+
                     // 普通文本兜底
-                    else -> EditorInputType.Text
+                    else ->
+                        if (editorInfo.inputType and EditorInfo.TYPE_TEXT_FLAG_AUTO_COMPLETE != 0) {
+                            EditorInputType.AutoComplete
+                        } else {
+                            EditorInputType.Text
+                        }
                 }
             }
 

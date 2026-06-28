@@ -72,8 +72,8 @@ class ConfigDataStore(private val context: Context) {
     }
 
     /** 从 Preferences 读取引擎配置。缺失的 key 使用对应默认值。 */
-    private fun readEngineConfig(prefs: Preferences): ImeConfig.EngineConfig {
-        return ImeConfig.EngineConfig(
+    private fun readEngineConfig(prefs: Preferences): ImeConfig.Engine {
+        return ImeConfig.Engine(
             inputPredictionEnabled = prefs[booleanPreferencesKey("engine_input_prediction_enabled")] ?: true,
             userDataPersistEnabled = prefs[booleanPreferencesKey("engine_user_data_persist_enabled")] ?: true,
             favoriteInputEnabled = prefs[booleanPreferencesKey("engine_favorite_input_enabled")] ?: true,
@@ -86,8 +86,8 @@ class ConfigDataStore(private val context: Context) {
     }
 
     /** 从 Preferences 读取 UI 配置。枚举类型通过 name 序列化/反序列化。 */
-    private fun readUiConfig(prefs: Preferences): ImeConfig.UiConfig {
-        return ImeConfig.UiConfig(
+    private fun readUiConfig(prefs: Preferences): ImeConfig.Ui {
+        return ImeConfig.Ui(
             keyboardInputMode = try {
                 KeyboardInputMode.valueOf(prefs[stringPreferencesKey("ui_keyboard_input_mode")] ?: "RectGrid")
             } catch (_: Exception) { KeyboardInputMode.RectGrid },
@@ -116,8 +116,8 @@ class ConfigDataStore(private val context: Context) {
     /** 增量写入引擎配置：仅将变化的字段写入 Preferences。 */
     private fun writeChangedEngineConfig(
         prefs: MutablePreferences,
-        old: ImeConfig.EngineConfig,
-        new: ImeConfig.EngineConfig,
+        old: ImeConfig.Engine,
+        new: ImeConfig.Engine,
     ) {
         if (old.inputPredictionEnabled != new.inputPredictionEnabled)
             prefs[booleanPreferencesKey("engine_input_prediction_enabled")] = new.inputPredictionEnabled
@@ -140,8 +140,8 @@ class ConfigDataStore(private val context: Context) {
     /** 增量写入 UI 配置：仅将变化的字段写入 Preferences。 */
     private fun writeChangedUiConfig(
         prefs: MutablePreferences,
-        old: ImeConfig.UiConfig,
-        new: ImeConfig.UiConfig,
+        old: ImeConfig.Ui,
+        new: ImeConfig.Ui,
     ) {
         if (old.keyboardInputMode != new.keyboardInputMode)
             prefs[stringPreferencesKey("ui_keyboard_input_mode")] = new.keyboardInputMode.name

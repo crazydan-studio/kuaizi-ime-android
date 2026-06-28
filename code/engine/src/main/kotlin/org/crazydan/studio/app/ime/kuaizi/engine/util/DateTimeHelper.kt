@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.utils
+package org.crazydan.studio.app.ime.kuaizi.engine.util
 
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime

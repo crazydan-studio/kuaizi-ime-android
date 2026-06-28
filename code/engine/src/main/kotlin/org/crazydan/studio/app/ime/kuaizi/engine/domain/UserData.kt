@@ -130,7 +130,7 @@ data class EngineConfigBackupEntry(
      * @param current 当前引擎配置
      * @return 恢复后的引擎配置
      */
-    fun restoreFromBackup(current: ImeConfig.EngineConfig): ImeConfig.EngineConfig {
+    fun restoreFromBackup(current: ImeConfig.Engine): ImeConfig.Engine {
         return current.copy(
             logLevel = log_level?.let { LogLevel.valueOf(it) } ?: current.logLevel,
             logStoragePath = log_storage_path ?: current.logStoragePath,
@@ -167,7 +167,7 @@ data class UiConfigBackupEntry(
      * @param current 当前 UI 配置
      * @return 恢复后的 UI 配置
      */
-    fun restoreFromBackup(current: ImeConfig.UiConfig): ImeConfig.UiConfig {
+    fun restoreFromBackup(current: ImeConfig.Ui): ImeConfig.Ui {
         return current.copy(
             keyboardHandMode = keyboard_hand_mode?.let { org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardHandMode.valueOf(it) } ?: current.keyboardHandMode,
             keyboardThemeType = keyboard_theme_type?.let { org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType.valueOf(it) } ?: current.keyboardThemeType,

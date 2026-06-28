@@ -27,8 +27,8 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 /**
  * 统一的运行时配置，包含引擎配置、UI 配置和运行时配置三层子配置。
  *
- * 引擎配置（[EngineConfig]）和 UI 配置（[UiConfig]）均为持久化配置项，
- * 运行时配置（[RuntimeConfig]）不做持久化。
+ * 引擎配置（[Engine]）和 UI 配置（[Ui]）均为持久化配置项，
+ * 运行时配置（[Runtime]）不做持久化。
  * 对配置项的修改在 UI 和引擎层面都是即时生效的。
  * 库不内置配置持久化，所有配置通过 [ImeConfig] 在创建时或运行时设置，持久化是应用层的职责。
  *
@@ -37,9 +37,9 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
  * @property runtime 运行时配置，承载不持久化的临时状态
  */
 data class ImeConfig(
-    val engine: EngineConfig = EngineConfig(),
-    val ui: UiConfig = UiConfig(),
-    val runtime: RuntimeConfig = RuntimeConfig(),
+    val engine: Engine = Engine(),
+    val ui: Ui = Ui(),
+    val runtime: Runtime = Runtime(),
 ) {
     /**
      * 引擎配置：影响引擎的核心行为，均为持久化配置项。
@@ -53,7 +53,7 @@ data class ImeConfig(
      * @property favoriteSyncToUserDictEnabled 是否启用收藏与用户字典的同步
      * @property candidateVariantFirstEnabled 是否启用繁体优先
      */
-    data class EngineConfig(
+    data class Engine(
         val logLevel: LogLevel = LogLevel.WARN,
         val logStoragePath: String? = null,
         val inputPredictionEnabled: Boolean = true,
@@ -84,7 +84,7 @@ data class ImeConfig(
      * @property practiceShowFingerOverlay 输入练习是否显示手指覆盖层
      * @property practiceShowSwipeTrail 输入练习是否显示滑行轨迹
      */
-    data class UiConfig(
+    data class Ui(
         val keyboardInputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
         val keyboardHandMode: KeyboardHandMode = KeyboardHandMode.Right,
         val keyboardThemeType: KeyboardThemeType = KeyboardThemeType.FollowSystem,
@@ -113,7 +113,7 @@ data class ImeConfig(
      * @property toolSwitchIMEEnabled 是否启用工具栏中的输入法切换按钮
      * @property toolCloseKeyboardEnabled 是否启用工具栏中的关闭键盘按钮
      */
-    data class RuntimeConfig(
+    data class Runtime(
         val screenOrientation: ScreenOrientation = ScreenOrientation.Landscape,
         val editorInputType: EditorInputType = EditorInputType.Text,
         val keyPopupTipsEnabled: Boolean? = null,
@@ -121,30 +121,69 @@ data class ImeConfig(
         val toolSwitchIMEEnabled: Boolean = true,
         val toolCloseKeyboardEnabled: Boolean = true,
     )
+
+    /**
+     * 启动配置：仅作为 [ImeEngine.start] 的参数，用于初始化 [Runtime]。
+     *
+     * @property inputMethodSubtype 系统输入法子类型，决定基础键盘类型
+     * @property screenOrientation 屏幕方向
+     * @property editorInputType 目标编辑器的输入类型，null 表示不覆盖当前值
+     */
+    data class Startup(
+        val inputMethodSubtype: InputMethodSubtype,
+        val screenOrientation: ScreenOrientation,
+        val editorInputType: EditorInputType?,
+    )
 }
 
-/**
- * 启动配置：仅作为 [ImeEngine.start] 的参数，用于初始化 [RuntimeConfig]。
- *
- * @property imeSubtype 系统输入法子类型，决定基础键盘类型
- * @property screenOrientation 屏幕方向
- * @property editorInputType 目标编辑器的输入类型，null 表示不覆盖当前值
- */
-data class StartupConfig(
-    val imeSubtype: IMESubtype,
-    val screenOrientation: ScreenOrientation,
-    val editorInputType: EditorInputType?,
-)
+/** 屏幕方向 */
+enum class ScreenOrientation {
+    /** 横屏 */
+    Landscape,
 
-/** 屏幕方向：横屏或竖屏。 */
-enum class ScreenOrientation { Landscape, Portrait }
+    /** 竖屏 */
+    Portrait
+}
 
 /**
  * 编辑器输入类型。
  *
  * 决定输入法启动时的键盘类型以及 Enter 按键的图标样式。
  */
-enum class EditorInputType { Filter, Number, Datetime, Phone, Password, Email, URI, Text }
+enum class EditorInputType {
+    /** 搜索框输入 */
+    Filter,
+
+    /** 自动填充 */
+    AutoComplete,
+
+    /** 数字输入 */
+    Number,
+
+    /** 日期输入 */
+    Datetime,
+
+    /** 电话输入 */
+    Phone,
+
+    /** 密码输入 */
+    Password,
+
+    /** 邮件输入 */
+    Email,
+
+    /** url 地址输入 */
+    URI,
+
+    /** 普通文本输入，在无法精确识别输入类型时，均采用该类型 */
+    Text
+}
 
 /** 系统输入法子类型（Input Method Subtype）。 */
-enum class IMESubtype { Latin, Hans }
+enum class InputMethodSubtype {
+    /** 英文 */
+    Latin,
+
+    /** 中文 */
+    Hans
+}

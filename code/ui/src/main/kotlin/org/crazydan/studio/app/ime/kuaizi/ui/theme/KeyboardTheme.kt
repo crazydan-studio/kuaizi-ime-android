@@ -55,14 +55,14 @@ fun KeyboardTheme(
 }
 
 /**
- * 通过 [ImeConfig.UiConfig] 提供键盘主题的便捷重载。
+ * 通过 [ImeConfig.Ui] 提供键盘主题的便捷重载。
  *
  * @param config UI 配置，从中读取 [keyboardThemeType]
  * @param content 子组件内容
  */
 @Composable
 fun KeyboardTheme(
-    config: ImeConfig.UiConfig,
+    config: ImeConfig.Ui,
     content: @Composable () -> Unit,
 ) {
     KeyboardTheme(type = config.keyboardThemeType, content = content)
