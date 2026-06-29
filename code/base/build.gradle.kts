@@ -13,10 +13,3 @@ kotlin {
         jvmTarget.set(JvmTarget.JVM_17)
     }
 }
-
-dependencies {
-    implementation(project(":base"))
-
-    implementation(libs.ksp.api)
-    implementation(libs.kotlinpoet.ksp)
-}

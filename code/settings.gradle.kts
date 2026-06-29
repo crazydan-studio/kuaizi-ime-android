@@ -20,6 +20,8 @@ dependencyResolutionManagement {
 }
 
 include(":app")
+include(":app-codegen")
+
+include(":base")
 include(":engine")
 include(":ui")
-include(":app-codegen")

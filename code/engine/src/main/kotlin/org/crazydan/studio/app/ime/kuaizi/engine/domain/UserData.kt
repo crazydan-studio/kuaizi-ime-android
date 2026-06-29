@@ -158,9 +158,6 @@ data class UiConfigBackupEntry(
     val clip_popup_tips_timeout: Int? = null,
     val adapt_desktop_swipe_up_gesture: Boolean? = null,
     val candidates_paging_audio_enabled: Boolean? = null,
-    val practice_playback_speed: Float? = null,
-    val practice_show_finger_overlay: Boolean? = null,
-    val practice_show_swipe_trail: Boolean? = null,
 ) {
     /**
      * 从备份恢复 UI 配置
@@ -180,9 +177,6 @@ data class UiConfigBackupEntry(
             clipPopupTipsTimeout = clip_popup_tips_timeout ?: current.clipPopupTipsTimeout,
             adaptDesktopSwipeUpGesture = adapt_desktop_swipe_up_gesture ?: current.adaptDesktopSwipeUpGesture,
             candidatesPagingAudioEnabled = candidates_paging_audio_enabled ?: current.candidatesPagingAudioEnabled,
-            practicePlaybackSpeed = practice_playback_speed ?: current.practicePlaybackSpeed,
-            practiceShowFingerOverlay = practice_show_finger_overlay ?: current.practiceShowFingerOverlay,
-            practiceShowSwipeTrail = practice_show_swipe_trail ?: current.practiceShowSwipeTrail,
         )
     }
 }

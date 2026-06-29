@@ -29,6 +29,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":base"))
+
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.datetime)

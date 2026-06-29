@@ -284,7 +284,7 @@ class ImeEngine internal constructor(
                 when (intent) {
                     is ImeIntent.LoadCandidates -> {
                         val candidates = dictProvider.query(intent.pinyin)
-                        handleIntent(ImeIntent.SetCandidates(candidates))
+//                        handleIntent(ImeIntent.SetCandidates(candidates))
                     }
 
                     else -> handleIntent(intent)

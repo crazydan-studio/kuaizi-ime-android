@@ -99,6 +99,15 @@ sealed class EditorAction {
     ) : EditorAction()
 }
 
+/**
+ * 编辑器编辑动作枚举。
+ *
+ * 定义引擎可对目标编辑器执行的系统级编辑操作。
+ */
+enum class EditorEditAction {
+    BACKSPACE, SELECT_ALL, COPY, CUT, PASTE, UNDO, REDO,
+}
+
 /** 光标移动方向枚举。 */
 enum class CursorDirection { Left, Right, Up, Down, Home, End }
 

@@ -21,7 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.dict
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.DictDatabase
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteDao
@@ -54,20 +54,29 @@ class ImeSqliteDictProvider(
         userInputDao = db.userInputDao(),
         // 未提供收藏 DAO 时使用空实现，避免收藏功能必须依赖
         favoriteDao = favoriteDao ?: object : FavoriteDao {
-            override fun getAllFlow() = kotlinx.coroutines.flow.emptyFlow()
-            override fun getAll(): List<FavoriteEntity> = emptyList()
-            override fun getByText(text: String) = null
-            override fun upsert(entity: FavoriteEntity) {
-                db.userInputDao().upsert(
-                    org.crazydan.studio.app.ime.kuaizi.engine.dict.db.UserInputEntity(
-                        text = entity.text,
-                        type = "favorite",
-                        freq = entity.usageCount,
-                    )
-                )
+            override fun getAllFlow(): Flow<List<FavoriteEntity>> {
+                TODO("Not yet implemented")
             }
-            override fun delete(text: String) {}
-            override fun clearAll() {}
+
+            override suspend fun getAll(): List<FavoriteEntity> {
+                TODO("Not yet implemented")
+            }
+
+            override suspend fun getByText(text: String): FavoriteEntity? {
+                TODO("Not yet implemented")
+            }
+
+            override suspend fun upsert(entity: FavoriteEntity) {
+                TODO("Not yet implemented")
+            }
+
+            override suspend fun delete(text: String) {
+                TODO("Not yet implemented")
+            }
+
+            override suspend fun clearAll() {
+                TODO("Not yet implemented")
+            }
         },
         hmmDao = db.hmmDao(),
     )

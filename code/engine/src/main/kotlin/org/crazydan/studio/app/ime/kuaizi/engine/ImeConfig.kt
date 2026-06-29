@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine
 
+import org.crazydan.studio.app.ime.kuaizi.annotation.DataStoreConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardHandMode
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType
@@ -53,14 +54,18 @@ data class ImeConfig(
      * @property favoriteSyncToUserDictEnabled 是否启用收藏与用户字典的同步
      * @property candidateVariantFirstEnabled 是否启用繁体优先
      */
+    @DataStoreConfig(prefix = "engine")
     data class Engine(
         val logLevel: LogLevel = LogLevel.WARN,
         val logStoragePath: String? = null,
+
         val inputPredictionEnabled: Boolean = true,
         val userDataPersistEnabled: Boolean = true,
+
         val favoriteInputEnabled: Boolean = true,
         val favoriteClipEnabled: Boolean = true,
         val favoriteSyncToUserDictEnabled: Boolean = false,
+
         val candidateVariantFirstEnabled: Boolean = false,
     )
 
@@ -80,27 +85,25 @@ data class ImeConfig(
      * @property clipPopupTipsTimeout 剪贴板弹出提示超时（秒）
      * @property adaptDesktopSwipeUpGesture 是否适配桌面下滑手势
      * @property candidatesPagingAudioEnabled 候选词翻页是否播放音效
-     * @property practicePlaybackSpeed 输入练习回放速度倍率
-     * @property practiceShowFingerOverlay 输入练习是否显示手指覆盖层
-     * @property practiceShowSwipeTrail 输入练习是否显示滑行轨迹
      */
+    @DataStoreConfig(prefix = "ui")
     data class Ui(
         val keyboardInputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
         val keyboardHandMode: KeyboardHandMode = KeyboardHandMode.Right,
         val keyboardThemeType: KeyboardThemeType = KeyboardThemeType.FollowSystem,
+
         val keyPopupTipsEnabled: Boolean = true,
         val audioFeedbackEnabled: Boolean = true,
         val hapticFeedbackEnabled: Boolean = true,
         val keyAnimationEnabled: Boolean = true,
         val gestureSlippingTrailEnabled: Boolean = true,
+
         val clipPopupTipsEnabled: Boolean = true,
         val clipPastePopupTipsEnabled: Boolean = true,
         val clipPopupTipsTimeout: Int = 15,
+
         val adaptDesktopSwipeUpGesture: Boolean = false,
         val candidatesPagingAudioEnabled: Boolean = true,
-        val practicePlaybackSpeed: Float = 1.0f,
-        val practiceShowFingerOverlay: Boolean = true,
-        val practiceShowSwipeTrail: Boolean = true,
     )
 
     /**
@@ -110,15 +113,17 @@ data class ImeConfig(
      * @property editorInputType 编辑器输入类型，决定启动时的键盘类型
      * @property keyPopupTipsEnabled 是否启用按键输入提示，可覆盖 UiConfig 的同名配置
      * @property toolSettingsEnabled 是否启用工具栏中的配置按钮
-     * @property toolSwitchIMEEnabled 是否启用工具栏中的输入法切换按钮
+     * @property toolSwitchInputMethodEnabled 是否启用工具栏中的输入法切换按钮
      * @property toolCloseKeyboardEnabled 是否启用工具栏中的关闭键盘按钮
      */
     data class Runtime(
         val screenOrientation: ScreenOrientation = ScreenOrientation.Landscape,
         val editorInputType: EditorInputType = EditorInputType.Text,
+
         val keyPopupTipsEnabled: Boolean? = null,
+
         val toolSettingsEnabled: Boolean = true,
-        val toolSwitchIMEEnabled: Boolean = true,
+        val toolSwitchInputMethodEnabled: Boolean = true,
         val toolCloseKeyboardEnabled: Boolean = true,
     )
 
@@ -134,56 +139,4 @@ data class ImeConfig(
         val screenOrientation: ScreenOrientation,
         val editorInputType: EditorInputType?,
     )
-}
-
-/** 屏幕方向 */
-enum class ScreenOrientation {
-    /** 横屏 */
-    Landscape,
-
-    /** 竖屏 */
-    Portrait
-}
-
-/**
- * 编辑器输入类型。
- *
- * 决定输入法启动时的键盘类型以及 Enter 按键的图标样式。
- */
-enum class EditorInputType {
-    /** 搜索框输入 */
-    Filter,
-
-    /** 自动填充 */
-    AutoComplete,
-
-    /** 数字输入 */
-    Number,
-
-    /** 日期输入 */
-    Datetime,
-
-    /** 电话输入 */
-    Phone,
-
-    /** 密码输入 */
-    Password,
-
-    /** 邮件输入 */
-    Email,
-
-    /** url 地址输入 */
-    URI,
-
-    /** 普通文本输入，在无法精确识别输入类型时，均采用该类型 */
-    Text
-}
-
-/** 系统输入法子类型（Input Method Subtype）。 */
-enum class InputMethodSubtype {
-    /** 英文 */
-    Latin,
-
-    /** 中文 */
-    Hans
 }

@@ -103,9 +103,12 @@ data class InputList(
         require(gapIndex <= inputs.lastIndex + 1)
     }
 
+    val hasPending: Boolean
+        get() = !inputs.isEmpty()
+
     /** 当前游标位置的 Gap 元素 */
     val cursorGap: InputItem.Gap
-        get() = inputs.getOrElse(gapIndex) { InputItem.Gap }
+        get() = inputs.getOrElse(gapIndex) { InputItem.Gap } as InputItem.Gap
 
     /** 可见的字符输入列表（排除 Gap） */
     val visibleInputs: List<InputItem.Char>
@@ -118,6 +121,9 @@ data class InputList(
     /** 输入列表是否为空（仅包含 Gap） */
     val isEmpty: Boolean
         get() = inputs.all { it is InputItem.Gap }
+
+    val chars: List<InputItem.Char>
+        get() = visibleInputs
 
     /**
      * 在游标位置追加字符输入

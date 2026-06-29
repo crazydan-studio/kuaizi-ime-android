@@ -33,6 +33,7 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
  * 中注册此提供者，KSP 框架会自动发现并调用。
  */
 class DataStoreConfigProcessorProvider : SymbolProcessorProvider {
+
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return DataStoreConfigProcessor(
             codeGenerator = environment.codeGenerator,

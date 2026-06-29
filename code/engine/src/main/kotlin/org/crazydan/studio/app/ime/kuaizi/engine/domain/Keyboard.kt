@@ -118,6 +118,8 @@ enum class KeyGesture {
     Flip,
     /** 长按（按住不动持续一段时间） */
     Hold,
+    Swipe,
+    LongPress,
 }
 
 /** 翻动方向 */

@@ -101,14 +101,5 @@ sealed class ImeIntent {
     data class ImportUserData(val filePath: String, val strategy: ImportStrategy) : ImeIntent()
 }
 
-/**
- * 编辑器编辑动作枚举。
- *
- * 定义引擎可对目标编辑器执行的系统级编辑操作。
- */
-enum class EditorEditAction {
-    BACKSPACE, SELECT_ALL, COPY, CUT, PASTE, UNDO, REDO,
-}
-
 /** 候选翻页方向。 */
 enum class PageDirection { Next, Previous }
