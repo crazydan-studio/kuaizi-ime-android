@@ -43,6 +43,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
 
-    testImplementation(libs.junit)
+    // https://kotlinlang.org/api/core/kotlin-test/
+    testImplementation(kotlin("test"))
+    // https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.test.ext.junit)
 }

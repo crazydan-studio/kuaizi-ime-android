@@ -127,7 +127,10 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
 
-    testImplementation(libs.junit)
+    // https://kotlinlang.org/api/core/kotlin-test/
+    testImplementation(kotlin("test"))
+    // https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
 }
