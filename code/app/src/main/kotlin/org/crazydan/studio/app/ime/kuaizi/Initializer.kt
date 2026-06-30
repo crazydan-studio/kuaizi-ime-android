@@ -48,7 +48,7 @@ fun initConfigDataStore(context: Context): ConfigDataStore {
     return configDataStore
 }
 
-/** 在 [ImeEngine] 的配置 [ImeConfig] 更新后，更新 [ConfigDataStore] */
+/** 在 [ImeEngine] 的配置 [ImeConfig] 更新后，通过 [ConfigDataStore.updateConfig] 将该配置进行持久化保存 */
 suspend inline fun updateConfigDataStoreWhenEngineConfigUpdated(configDataStore: ConfigDataStore, engine: ImeEngine) =
     engine.whenConfigUpdated { conf ->
         configDataStore.updateConfig { conf }

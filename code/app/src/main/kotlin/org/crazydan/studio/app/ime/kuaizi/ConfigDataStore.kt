@@ -85,7 +85,7 @@ class ConfigDataStore(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    /** 监听配置变更 */
+    /** 监听持久化配置的更新 */
     suspend inline fun whenConfigUpdated(collector: FlowCollector<ImeConfig>) =
         config.collect(collector)
 }
