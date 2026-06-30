@@ -239,6 +239,10 @@ class DataStoreConfigProcessor(
                 .addParameter("old", objectType)
                 .addParameter("new", objectType)
                 .apply {
+                    beginControlFlow("if (old == new)").apply {
+                        addStatement("return")
+                    }.endControlFlow()
+
                     properties.forEach { prop ->
                         val propName = prop.simpleName.asString()
                         val keyName = "${propName}Key"

@@ -27,7 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.crazydan.studio.app.ime.kuaizi.dict.InMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.EditorInputType
@@ -63,9 +62,6 @@ class IMEService : InputMethodService() {
     // 输入连接桥接，将引擎输出转发到系统 InputConnection
     private var inputConnectionBridge: ImeEditorBridge? = null
 
-    // 配置数据存储，持久化用户配置到 DataStore
-    private var configDataStore: ConfigDataStore? = null
-
     // -------------------------------------------------------
 
     /** 服务创建时初始化引擎、配置存储和桥接。 */
@@ -75,19 +71,21 @@ class IMEService : InputMethodService() {
         val context = this
 
         // ------------------
-        configDataStore = initConfigDataStore(context)
+        val configDataStore = initConfigDataStore(context)
         scope.launch {
-            initLog(configDataStore!!, context.filesDir)
+            initLog(configDataStore, context.filesDir)
         }
 
         // -------------------
         inputConnectionBridge = InputConnectionBridge { currentInputConnection }
         scope.launch {
             engine = ImeEngine.create(
-                config = configDataStore!!.config.first(),
+                config = configDataStore.getConfig(),
                 dictProvider = InMemoryDictProvider(),
             )
             engine!!.attachEditorBridge(inputConnectionBridge!!)
+
+            updateConfigDataStoreWhenEngineConfigUpdated(configDataStore, engine!!)
         }
     }
 
@@ -140,6 +138,8 @@ class IMEService : InputMethodService() {
     /** 服务销毁时释放引擎资源。 */
     override fun onDestroy() {
         scope.cancel()   // ← 必须取消，否则协程泄漏
+
+        inputConnectionBridge?.let { engine?.detachEditorBridge(it) }
         engine?.destroy()
 
         super.onDestroy()

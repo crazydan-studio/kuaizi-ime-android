@@ -23,6 +23,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
@@ -62,6 +63,9 @@ class ConfigDataStore(private val dataStore: DataStore<Preferences>) {
         )
     }
 
+    suspend inline fun getConfig(): ImeConfig =
+        config.first()
+
     /**
      * 增量更新配置。
      *
@@ -70,12 +74,18 @@ class ConfigDataStore(private val dataStore: DataStore<Preferences>) {
      * 适用于高频配置切换场景（主题、音效开关的快速连续切换）。
      */
     suspend fun updateConfig(transform: (ImeConfig) -> ImeConfig) {
-        dataStore.edit { prefs ->
-            val current = config.first()
-            val new = transform(current)
+        val old = getConfig()
+        val new = transform(old)
 
-            EngineConfigDataStore.writeConfig(prefs, current.engine, new.engine)
-            UiConfigDataStore.writeConfig(prefs, current.ui, new.ui)
+        if (old.engine == new.engine && old.ui == new.ui) return
+
+        dataStore.edit { prefs ->
+            EngineConfigDataStore.writeConfig(prefs, old.engine, new.engine)
+            UiConfigDataStore.writeConfig(prefs, old.ui, new.ui)
         }
     }
+
+    /** 监听配置变更 */
+    suspend inline fun whenConfigUpdated(collector: FlowCollector<ImeConfig>) =
+        config.collect(collector)
 }

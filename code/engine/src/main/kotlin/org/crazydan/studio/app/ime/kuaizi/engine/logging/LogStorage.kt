@@ -57,7 +57,7 @@ class LogStorage(private var logDir: File) {
         const val FILE_NAME_SUFFIX = ".log"
     }
 
-    /** 更新日志目录（应用层切换存储路径时调用），同时清空缓存。 */
+    /** 更新日志目录，同时清空缓存。Note：若目录未发生变化，则不做任何处理 */
     fun changeDir(logDir: File) {
         if (this.logDir == logDir) return
 

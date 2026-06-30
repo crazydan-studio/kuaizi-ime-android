@@ -24,12 +24,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
@@ -68,7 +71,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
  * @property effect 一次性副作用通道，用于传递音效、振动、弹出提示等信号
  */
 class ImeEngine internal constructor(
-    private var config: ImeConfig,
+    config: ImeConfig,
     private val dictProvider: ImeDictProvider,
     private val keyboardStateMachine: KeyboardStateMachine,
     private val inputListOp: InputListOperator,
@@ -222,6 +225,10 @@ class ImeEngine internal constructor(
             state.copy(config = block(state.config))
         }
     }
+
+    /** 监听配置 [ImeConfig] 的变更 */
+    suspend inline fun whenConfigUpdated(collector: FlowCollector<ImeConfig>) =
+        state.map { it.config }.distinctUntilChanged().collect(collector)
 
     // -----------------------------------------------
 

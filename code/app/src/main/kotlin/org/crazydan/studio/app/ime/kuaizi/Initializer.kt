@@ -23,7 +23,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.first
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
@@ -48,6 +48,12 @@ fun initConfigDataStore(context: Context): ConfigDataStore {
     return configDataStore
 }
 
+/** 在 [ImeEngine] 的配置 [ImeConfig] 更新后，更新 [ConfigDataStore] */
+suspend inline fun updateConfigDataStoreWhenEngineConfigUpdated(configDataStore: ConfigDataStore, engine: ImeEngine) =
+    engine.whenConfigUpdated { conf ->
+        configDataStore.updateConfig { conf }
+    }
+
 // -------------------------------------------------
 
 private var logInited: Boolean = false
@@ -62,7 +68,7 @@ suspend fun initLog(configDataStore: ConfigDataStore, filesDir: File) {
     if (logInited) return
     logInited = true // 提前赋值，默认后续均不会发生异常
 
-    val config = configDataStore.config.first().engine
+    val config = configDataStore.getConfig().engine
 
     // 缺省写入应用私有目录下的 logs/ 文件
     val dir = filesDir.resolve(config.logDir)
@@ -85,8 +91,9 @@ suspend fun initLog(configDataStore: ConfigDataStore, filesDir: File) {
         ImeLog.CrashInterceptor(storage).install()
     }
 
-    // 持续订阅配置变更
-    configDataStore.config.collect { conf ->
+    // --------------------
+    // 仅在持久化配置更新后，再更新日志系统
+    configDataStore.whenConfigUpdated { conf ->
         // Note：File#resolve 允许 logDir 为绝对路径
         val dir = filesDir.resolve(conf.engine.logDir)
         storage.changeDir(dir)
