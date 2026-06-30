@@ -55,7 +55,7 @@ object ImeLog {
     }
 
     /** 动态更新日志等级。 */
-    fun enableLevel(newLevel: LogLevel) {
+    fun changeLevel(newLevel: LogLevel) {
         level = newLevel
     }
 

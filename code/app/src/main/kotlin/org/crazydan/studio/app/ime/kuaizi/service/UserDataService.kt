@@ -17,16 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi
-
-import android.content.Context
-import android.net.Uri
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
+package org.crazydan.studio.app.ime.kuaizi.service
 
 /**
  * 用户数据导入导出服务。

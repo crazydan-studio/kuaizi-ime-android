@@ -14,25 +14,21 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.
- * If not, see <see href="https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text"/>.
+ * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.config
+package org.crazydan.studio.app.ime.kuaizi
 
-import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.datastore.EngineConfigDataStore
 import org.crazydan.studio.app.ime.kuaizi.engine.datastore.UiConfigDataStore
-
-/** Context 扩展属性，提供 IME 配置的 DataStore 实例。 */
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("ime_config")
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
 /**
  * 基于 DataStore 的配置持久化实现。
@@ -42,16 +38,26 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore("i
  *
  * [ImeConfig.Runtime] 不做持久化，应用重启时根据 [ImeConfig.Startup] 重新初始化。
  */
-class ConfigDataStore(private val context: Context) {
+class ConfigDataStore(private val dataStore: DataStore<Preferences>) {
     /**
      * 配置的响应式 Flow。
      *
      * 从 DataStore 读取原始 Preferences，映射为 [ImeConfig] 实例。
      * UI 层通过订阅此 Flow 实时响应配置变更。
+     *
+     * 注意，[updateConfig] 被调用后，将自动同步该配置数据。
      */
-    val config: Flow<ImeConfig> = context.dataStore.data.map { prefs ->
+    val config: Flow<ImeConfig> = dataStore.data.map { prefs ->
         ImeConfig(
-            engine = EngineConfigDataStore.readConfig(prefs),
+            engine = EngineConfigDataStore.readConfig(prefs).let {
+                if (it.logLevel == null)
+                    it.copy(
+                        logLevel =
+                            if (BuildConfig.DEBUG) LogLevel.DEBUG
+                            else LogLevel.ERROR
+                    )
+                else it
+            },
             ui = UiConfigDataStore.readConfig(prefs),
         )
     }
@@ -64,7 +70,7 @@ class ConfigDataStore(private val context: Context) {
      * 适用于高频配置切换场景（主题、音效开关的快速连续切换）。
      */
     suspend fun updateConfig(transform: (ImeConfig) -> ImeConfig) {
-        context.dataStore.edit { prefs ->
+        dataStore.edit { prefs ->
             val current = config.first()
             val new = transform(current)
 

@@ -19,21 +19,21 @@
 
 package org.crazydan.studio.app.ime.kuaizi
 
-import android.content.Context
 import android.inputmethodservice.InputMethodService
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.compose.ui.platform.ComposeView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import org.crazydan.studio.app.ime.kuaizi.dict.InMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.FileLogWriter
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.LogcatWriter
 import org.crazydan.studio.app.ime.kuaizi.engine.util.SystemHelper
 import org.crazydan.studio.app.ime.kuaizi.ui.integration.KeyboardHost
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
@@ -51,6 +51,9 @@ import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
  * 职责仅限于生命周期管理和组件组装，不包含业务逻辑。
  */
 class IMEService : InputMethodService() {
+    /** IMEService 级别的协程作用域，用于初始化等异步操作 */
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
     // 引擎实例，负责所有输入法核心逻辑
     private var engine: ImeEngine? = null
 
@@ -60,8 +63,8 @@ class IMEService : InputMethodService() {
     // 输入连接桥接，将引擎输出转发到系统 InputConnection
     private var inputConnectionBridge: ImeEditorBridge? = null
 
-//    // 配置数据存储，持久化用户配置到 DataStore
-//    private var configDataStore: ConfigDataStore? = null
+    // 配置数据存储，持久化用户配置到 DataStore
+    private var configDataStore: ConfigDataStore? = null
 
     // -------------------------------------------------------
 
@@ -69,19 +72,23 @@ class IMEService : InputMethodService() {
     override fun onCreate() {
         super.onCreate()
 
-        // 初始化日志系统：debug 构建使用 Logcat，release 使用文件输出
-        initLog(this)
+        val context = this
 
-        // 创建配置存储和输入连接桥接
-//        configDataStore = ConfigDataStore(this)
+        // ------------------
+        configDataStore = initConfigDataStore(context)
+        scope.launch {
+            initLog(configDataStore!!, context.filesDir)
+        }
+
+        // -------------------
         inputConnectionBridge = InputConnectionBridge { currentInputConnection }
-
-        // 创建引擎实例并挂载输入连接桥接
-        engine = ImeEngine.create(
-            config = ImeConfig(),
-            dictProvider = InMemoryDictProvider(),
-        )
-        engine!!.attachEditorBridge(inputConnectionBridge!!)
+        scope.launch {
+            engine = ImeEngine.create(
+                config = configDataStore!!.config.first(),
+                dictProvider = InMemoryDictProvider(),
+            )
+            engine!!.attachEditorBridge(inputConnectionBridge!!)
+        }
     }
 
     /** 创建键盘输入视图，返回 ComposeView 作为 UI 根节点。 */
@@ -126,12 +133,15 @@ class IMEService : InputMethodService() {
     /** 编辑器输入结束时关闭引擎，但不销毁。 */
     override fun onFinishInputView(finishingInput: Boolean) {
         super.onFinishInputView(finishingInput)
+
         engine?.close()
     }
 
     /** 服务销毁时释放引擎资源。 */
     override fun onDestroy() {
+        scope.cancel()   // ← 必须取消，否则协程泄漏
         engine?.destroy()
+
         super.onDestroy()
     }
 
@@ -201,36 +211,5 @@ class IMEService : InputMethodService() {
 
             else -> EditorInputType.Text
         }
-    }
-
-    /**
-     * 初始化日志系统。
-     *
-     * - Debug 构建：等级为 DEBUG，使用 Logcat 输出
-     * - Release 构建：等级为 ERROR，写入文件，同时安装崩溃拦截器
-     */
-    private fun initLog(context: Context) {
-        var level = LogLevel.ERROR
-        val writers = mutableListOf<LogWriter>()
-
-        if (BuildConfig.DEBUG) {
-            // Debug 构建：输出到 Logcat，等级设为 DEBUG
-            level = LogLevel.DEBUG
-            writers.add(LogcatWriter())
-        } else {
-            // Release 构建：写入应用私有目录下的 logs/ 文件
-            val dir = context.filesDir.resolve("logs")
-            val storage = LogStorage(dir)
-            writers.add(FileLogWriter(storage))
-
-            // 安装崩溃拦截器，捕获未处理异常并写入日志
-            ImeLog.CrashInterceptor(storage).install()
-        }
-
-        // 初始化日志基础设施
-        ImeLog.init(
-            level = level,
-            writers = writers,
-        )
     }
 }

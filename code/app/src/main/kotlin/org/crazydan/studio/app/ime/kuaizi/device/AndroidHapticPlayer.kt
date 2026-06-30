@@ -14,10 +14,10 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.
- * If not, see <see href="https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text"/>.
+ * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi
+package org.crazydan.studio.app.ime.kuaizi.device
 
 import android.content.Context
 import android.os.Build
@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.HapticPlayer
 /**
  * 基于 Android [Vibrator] 的触觉播放器实现。
  *
- * 在 [IMEService.onCreate] 中创建并注入 [KeyboardViewModel]。
+ * 在 [org.crazydan.studio.app.ime.kuaizi.IMEService.onCreate] 中创建并注入 [KeyboardViewModel]。
  * 使用 [VibrationEffect.createOneShot] API 创建单次振动效果，
  * 不同 [HapticType] 对应不同的振动时长和强度。
  */

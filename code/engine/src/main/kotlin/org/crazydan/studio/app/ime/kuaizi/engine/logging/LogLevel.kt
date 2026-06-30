@@ -24,7 +24,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.logging
  *
  * 用于两个层面：
  * 1. 全局过滤：[ImeLog] 只分发优先级不低于当前等级的日志条目
- * 1. 运行时配置：应用层可通过 [ImeLog.enableLevel] 动态调整过滤阈值
+ * 1. 运行时配置：应用层可通过 [ImeLog.changeLevel] 动态调整过滤阈值
  *
  * @property priority 整数优先级映射，用于与 Android Logcat 等系统集成
  */

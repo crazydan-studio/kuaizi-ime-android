@@ -59,6 +59,8 @@ class LogStorage(private var logDir: File) {
 
     /** 更新日志目录（应用层切换存储路径时调用），同时清空缓存。 */
     fun changeDir(logDir: File) {
+        if (this.logDir == logDir) return
+
         this.logDir = logDir
 
         cachedTodayDate = null

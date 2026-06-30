@@ -17,10 +17,10 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi
+package org.crazydan.studio.app.ime.kuaizi.dict
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
 
 /**
  * 基于内存的字典提供者实现。

@@ -44,7 +44,7 @@ class DebugUITestOverlay() : UITestOverlay {
     override fun enable() {
         if (!logger.isEnabled(LogLevel.DEBUG)) {
             // 降级日志等级到 DEBUG，确保测试工具产生的日志能被记录
-            ImeLog.enableLevel(LogLevel.DEBUG)
+            ImeLog.changeLevel(LogLevel.DEBUG)
 
             logger.info { "UI 测试工具已激活，日志等级已降至 DEBUG" }
         } else {

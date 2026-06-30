@@ -250,7 +250,7 @@ class DataStoreConfigProcessor(
                                     addStatement("prefs.remove(%L)", keyName)
                                 }.endControlFlow()
                                 beginControlFlow("else").apply {
-                                    addStatement("prefs[%L] = new.%L$patch!!", keyName, propName)
+                                    addStatement("prefs[%L] = new.%L!!$patch", keyName, propName)
                                 }.endControlFlow()
                             } else {
                                 addStatement("prefs[%L] = new.%L$patch", keyName, propName)

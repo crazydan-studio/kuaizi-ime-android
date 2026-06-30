@@ -133,7 +133,7 @@ data class EngineConfigBackupEntry(
     fun restoreFromBackup(current: ImeConfig.Engine): ImeConfig.Engine {
         return current.copy(
             logLevel = log_level?.let { LogLevel.valueOf(it) } ?: current.logLevel,
-            logStoragePath = log_storage_path ?: current.logStoragePath,
+            logDir = log_storage_path ?: current.logDir,
             inputPredictionEnabled = input_prediction_enabled ?: current.inputPredictionEnabled,
             userDataPersistEnabled = user_data_persist_enabled ?: current.userDataPersistEnabled,
             favoriteInputEnabled = favorite_input_enabled ?: current.favoriteInputEnabled,

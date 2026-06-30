@@ -46,7 +46,7 @@ data class ImeConfig(
      * 引擎配置：影响引擎的核心行为，均为持久化配置项。
      *
      * @property logLevel 日志等级，由应用层注入
-     * @property logStoragePath 日志文件存放目录路径，null 使用默认应用私有目录
+     * @property logDir 日志文件存放目录路径。可以为绝对路径
      * @property inputPredictionEnabled 是否启用输入预测，用于输入补全
      * @property userDataPersistEnabled 是否持久化用户数据
      * @property favoriteInputEnabled 是否启用输入收藏
@@ -56,8 +56,8 @@ data class ImeConfig(
      */
     @DataStoreConfig(prefix = "engine")
     data class Engine(
-        val logLevel: LogLevel = LogLevel.WARN,
-        val logStoragePath: String? = null,
+        val logLevel: LogLevel? = null,
+        val logDir: String = "logs",
 
         val inputPredictionEnabled: Boolean = true,
         val userDataPersistEnabled: Boolean = true,
