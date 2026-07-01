@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteEntity
  * 字典仓库，封装所有基于 Room 的数据库操作。
  *
  * 将数据库实体（Entity）映射为领域模型，提供协程化的异步接口。
- * 作为 [ImeSqliteDictProvider] 的内部实现细节——引擎对外暴露的公共接口是 [ImeDictProvider]，
+ * 作为 [SqliteDictProvider] 的内部实现细节——引擎对外暴露的公共接口是 [ImeDictProvider]，
  * 第三方应用通过实现 [ImeDictProvider] 替换整个字典层时无需了解本类的存在。
  *
  * @param wordDao 拼音单字 DAO
@@ -44,6 +44,7 @@ class DictRepository(
     private val favoriteDao: FavoriteDao,
     private val hmmDao: HmmDao,
 ) {
+
     /** 根据拼音精确查询单字候选列表。 */
     suspend fun lookupPinyinWords(spell: String): List<PinyinWordEntity> =
         wordDao.lookupBySpell(spell)

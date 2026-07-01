@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.dict
+package org.crazydan.studio.app.ime.kuaizi.engine.dict.provider
 
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
  *
  * 为开发和测试提供轻量级字典，不依赖数据库或外部资源。
  * 包含一组常用拼音到汉字的静态映射，频率随索引递减。
- * 在正式使用中应由 [ImeSqliteDictProvider] 替代。
+ * 在正式使用中应由 [SqliteDictProvider] 替代。
  */
 class InMemoryDictProvider : ImeDictProvider {
     // 拼音到候选汉字的静态映射表，按频率降序排列

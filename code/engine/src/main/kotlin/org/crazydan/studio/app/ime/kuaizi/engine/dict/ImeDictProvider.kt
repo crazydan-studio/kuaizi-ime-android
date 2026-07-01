@@ -31,9 +31,10 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
  * 查询结果按频率降序排列，高频候选排在前端。
  * 所有方法均为挂起函数，需在协程中调用。
  *
- * @see ImeSqliteDictProvider 基于 Room SQLite 的默认实现
+ * @see SqliteDictProvider 基于 Room SQLite 的默认实现
  */
 interface ImeDictProvider {
+
     /** 根据完整拼音查询候选词，返回按频率排序的 [InputWord] 列表。 */
     suspend fun query(pinyin: String): List<InputWord>
 

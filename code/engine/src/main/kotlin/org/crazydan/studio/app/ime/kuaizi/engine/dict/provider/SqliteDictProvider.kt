@@ -17,12 +17,14 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.dict
+package org.crazydan.studio.app.ime.kuaizi.engine.dict.provider
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.DictRepository
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.DictDatabase
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteDao
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteEntity
@@ -43,11 +45,11 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.VariantType
  * @param context Android Context，用于初始化 Room 数据库
  * @param favoriteDao 可选的收藏 DAO，不提供时使用空实现
  */
-class ImeSqliteDictProvider(
+class SqliteDictProvider(
     context: Context,
     private val favoriteDao: FavoriteDao? = null,
 ) : ImeDictProvider {
-    private val db = DictDatabase.getInstance(context)
+    private val db = DictDatabase.Companion.getInstance(context)
     private val repository = DictRepository(
         wordDao = db.pinyinWordDao(),
         phraseDao = db.pinyinPhraseDao(),
