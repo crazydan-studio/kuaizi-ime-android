@@ -24,6 +24,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
@@ -64,7 +65,7 @@ class ConfigDataStore(private val dataStore: DataStore<Preferences>) {
     }
 
     suspend inline fun getConfig(): ImeConfig =
-        config.first()
+        config.first() // 取值并取消 collect 处理
 
     /**
      * 增量更新配置。
@@ -87,5 +88,7 @@ class ConfigDataStore(private val dataStore: DataStore<Preferences>) {
 
     /** 监听持久化配置的更新 */
     suspend inline fun whenConfigUpdated(collector: FlowCollector<ImeConfig>) =
-        config.collect(collector)
+        config
+            .drop(1)  // 跳过订阅时的状态，仅关注后续的变化
+            .collect(collector)
 }

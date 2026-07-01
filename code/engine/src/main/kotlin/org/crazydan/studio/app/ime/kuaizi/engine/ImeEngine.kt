@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
@@ -228,7 +229,10 @@ class ImeEngine internal constructor(
 
     /** 监听配置 [ImeConfig] 的变更 */
     suspend inline fun whenConfigUpdated(collector: FlowCollector<ImeConfig>) =
-        state.map { it.config }.distinctUntilChanged().collect(collector)
+        state.map { it.config }
+            .distinctUntilChanged()
+            .drop(1)  // 跳过订阅时的状态，仅关注后续的变化
+            .collect(collector)
 
     // -----------------------------------------------
 

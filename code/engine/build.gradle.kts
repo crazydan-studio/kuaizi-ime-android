@@ -47,5 +47,4 @@ dependencies {
     testImplementation(kotlin("test"))
     // https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-test/
     testImplementation(libs.kotlinx.coroutines.test)
-    androidTestImplementation(libs.androidx.test.ext.junit)
 }
