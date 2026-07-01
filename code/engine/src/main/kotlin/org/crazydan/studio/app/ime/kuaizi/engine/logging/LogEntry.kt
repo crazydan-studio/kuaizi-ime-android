@@ -19,7 +19,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.crazydan.studio.app.ime.kuaizi.engine.util.DateTimeHelper
 import kotlin.time.Instant
@@ -35,7 +37,6 @@ import kotlin.time.Instant
  * @property message 日志消息内容
  * @property throwable 可选的异常对象
  * @property timestamp 日志时间戳（毫秒）
- * @property threadName 线程名
  * @property threadId 线程 ID
  */
 data class LogEntry(
@@ -44,13 +45,12 @@ data class LogEntry(
     val message: String,
     val throwable: Throwable? = null,
     val timestamp: Long = System.currentTimeMillis(),
-    val threadName: String = Thread.currentThread().name,
     val threadId: Long = Thread.currentThread().id,
 ) {
 
     /**
      * 格式化为可读字符串。
-     * 输出格式：`yyyy-MM-dd HH:mm:ss.SSS [LEVEL] [TAG] [ThreadName] message`
+     * 输出格式：`yyyy-MM-dd HH:mm:ss.SSS [LEVEL] [TAG] [ThreadId] message`
      * 异常对象的完整堆栈信息追加在消息之后。
      */
     fun format(): String {
@@ -59,6 +59,30 @@ data class LogEntry(
 
         val throwableStr = throwable?.stackTraceToString()?.let { "\n$it" } ?: ""
 
-        return "$timeStr [${level.name}] [$tag] [$threadName] $message$throwableStr"
+        return "$timeStr [${level.name}] [$tag] [$threadId] $message$throwableStr"
+    }
+
+    companion object {
+
+        /** 将 [format] 格式化后的结果解析为 [LogEntry] 对象 */
+        fun parse(log: String): LogEntry? =
+            runCatching {
+                val regex = Regex(
+                    """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(\w+)] \[([^]]+)] \[(\d+)] (.+)"""
+                )
+                val match = regex.matchEntire(log) ?: return null
+
+                LogEntry(
+                    level = LogLevel.valueOf(match.groupValues[2]),
+                    tag = match.groupValues[3],
+                    message = match.groupValues[5],
+                    timestamp =
+                        LocalDateTime.parse(
+                            match.groupValues[1],
+                            DateTimeHelper.dateTimeFormat
+                        ).toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
+                    threadId = match.groupValues[4].toLong(),
+                )
+            }.getOrNull()
     }
 }

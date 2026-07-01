@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -46,11 +45,11 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 @Composable
 fun LogViewerToolbar(
     /** 当前选中的等级过滤条件 */
-    levelFilter: LogLevel?,
+    level: LogLevel?,
     /** 当前关键词搜索条件 */
     keyword: String?,
     /** 等级过滤变更回调 */
-    onLevelFilterChange: (LogLevel?) -> Unit,
+    onLevelChange: (LogLevel?) -> Unit,
     /** 关键词变更回调 */
     onKeywordChange: (String?) -> Unit,
     /** 刷新按钮点击回调 */
@@ -63,9 +62,9 @@ fun LogViewerToolbar(
     ) {
         // 等级过滤下拉菜单
         FilterChip(
-            selected = levelFilter != null,
+            selected = level != null,
             onClick = { expanded = true },
-            label = { Text(levelFilter?.name ?: "All") },
+            label = { Text(level?.name ?: "All") },
         )
 
         DropdownMenu(
@@ -76,7 +75,7 @@ fun LogViewerToolbar(
             DropdownMenuItem(
                 text = { Text("All") },
                 onClick = {
-                    onLevelFilterChange(null)
+                    onLevelChange(null)
                     expanded = false
                 },
             )
@@ -85,7 +84,7 @@ fun LogViewerToolbar(
                 DropdownMenuItem(
                     text = { Text(level.name) },
                     onClick = {
-                        onLevelFilterChange(level)
+                        onLevelChange(level)
                         expanded = false
                     },
                 )

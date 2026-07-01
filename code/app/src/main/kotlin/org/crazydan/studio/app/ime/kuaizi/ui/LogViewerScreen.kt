@@ -19,6 +19,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
@@ -30,14 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 
 /**
  * 日志浏览界面。
@@ -59,9 +59,9 @@ fun LogViewerScreen(
     Column(modifier = Modifier.fillMaxSize()) {
         // 顶部工具栏：等级过滤、搜索、刷新
         LogViewerToolbar(
-            levelFilter = state.levelFilter,
+            level = state.level,
             keyword = state.keyword,
-            onLevelFilterChange = viewModel::setLevelFilter,
+            onLevelChange = viewModel::setLevel,
             onKeywordChange = viewModel::setKeyword,
             onRefresh = viewModel::refresh,
         )

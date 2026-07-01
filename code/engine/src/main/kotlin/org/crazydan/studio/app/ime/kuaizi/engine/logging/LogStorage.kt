@@ -21,10 +21,8 @@ package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
-import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.crazydan.studio.app.ime.kuaizi.engine.util.DateTimeHelper
 import java.io.File
@@ -67,6 +65,8 @@ class LogStorage(private var logDir: File) {
         cachedTodayFile = null
     }
 
+    // -------------------------------------------------
+
     /**
      * 追加日志条目到当天文件。
      * 超过大小上限自动滚动，超期文件自动清理。
@@ -85,13 +85,15 @@ class LogStorage(private var logDir: File) {
         }
     }
 
+    // -------------------------------------------------
+
     /**
      * 读取日志。
      * 支持按日期、等级和关键词过滤。
      */
     fun readLogs(
         date: LocalDate? = null,
-        levelFilter: LogLevel? = null,
+        level: LogLevel? = null,
         keyword: String? = null,
     ): List<LogEntry> {
         val file = if (date != null) fileForDate(date) else todayFile()
@@ -99,12 +101,12 @@ class LogStorage(private var logDir: File) {
         if (!file.exists()) return emptyList()
 
         return file.readLines()
-            .mapNotNull { parseLine(it) }
-            .filter { levelFilter == null || it.level.priority >= levelFilter.priority }
+            .mapNotNull { LogEntry.parse(it) }
+            .filter { level == null || it.level.priority >= level.priority }
             .filter { keyword == null || it.message.contains(keyword, ignoreCase = true) }
     }
 
-    /** 导出指定日期范围的日志为单个文件。 */
+    /** 导出指定日期范围的日志到单个文件。 */
     fun exportLogs(
         destination: File,
         fromDate: LocalDate,
@@ -112,6 +114,7 @@ class LogStorage(private var logDir: File) {
     ) {
         var date = fromDate
 
+        // TODO 导出日志文件到压缩包
         val lines = mutableListOf<String>()
         while (date <= toDate) {
             val file = fileForDate(date)
@@ -127,6 +130,8 @@ class LogStorage(private var logDir: File) {
         destination.writeText(lines.joinToString("\n"))
     }
 
+    // -------------------------------------------------
+
     /** 获取今日日志文件（结果缓存，按日期失效），避免每次写入都读取系统时钟。 */
     private fun todayFile(): File {
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -140,6 +145,16 @@ class LogStorage(private var logDir: File) {
 
     private fun fileForDate(date: LocalDate): File =
         File(logDir, "$FILE_NAME_PREFIX${DateTimeHelper.dateFormat.format(date)}$FILE_NAME_SUFFIX")
+
+    /** 从文件名中提取日期。 */
+    private fun extractDateFromFileName(name: String): LocalDate? =
+        runCatching {
+            val dateStr = name.removePrefix(FILE_NAME_PREFIX).removeSuffix(FILE_NAME_SUFFIX)
+
+            LocalDate.parse(dateStr)
+        }.getOrNull()
+
+    // -------------------------------------------------
 
     /** 日志文件滚动：超过大小上限时重命名添加时间戳后缀。 */
     private fun rotateFile(file: File) {
@@ -162,36 +177,4 @@ class LogStorage(private var logDir: File) {
             ?.filter { extractDateFromFileName(it.name)?.let { d -> d < cutoff } == true }
             ?.forEach { it.delete() }
     }
-
-    /** 从文件名中提取日期。 */
-    private fun extractDateFromFileName(name: String): LocalDate? =
-        runCatching {
-            val dateStr = name.removePrefix(FILE_NAME_PREFIX).removeSuffix(FILE_NAME_SUFFIX)
-
-            LocalDate.parse(dateStr)
-        }.getOrNull()
-
-    /** 将日志行文本解析为 [LogEntry] 对象。 */
-    private fun parseLine(line: String): LogEntry? =
-        runCatching {
-            val regex = Regex(
-                """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(\w+)] \[(\w+)] \[(\w+)] (.+)"""
-            )
-            val match = regex.matchEntire(line) ?: return null
-
-            LogEntry(
-                level = LogLevel.valueOf(match.groupValues[2]),
-                tag = match.groupValues[3],
-                message = match.groupValues[5],
-                timestamp = try {
-                    LocalDateTime.parse(
-                        match.groupValues[1],
-                        DateTimeHelper.dateTimeFormat
-                    ).toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
-                } catch (_: Exception) {
-                    System.currentTimeMillis()
-                },
-                threadName = match.groupValues[4],
-            )
-        }.getOrNull()
 }

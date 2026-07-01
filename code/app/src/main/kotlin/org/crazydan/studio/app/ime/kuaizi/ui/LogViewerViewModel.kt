@@ -28,8 +28,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
 import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
 
 /**
@@ -57,7 +57,7 @@ class LogViewerViewModel(private val storage: LogStorage) : ViewModel() {
     fun refresh() {
         viewModelScope.launch(Dispatchers.IO) {
             val entries = storage.readLogs(
-                levelFilter = _state.value.levelFilter,
+                level = _state.value.level,
                 keyword = _state.value.keyword,
             )
             _state.update { it.copy(entries = entries) }
@@ -65,8 +65,8 @@ class LogViewerViewModel(private val storage: LogStorage) : ViewModel() {
     }
 
     /** 设置日志等级过滤条件并自动刷新。null 表示不过滤。 */
-    fun setLevelFilter(level: LogLevel?) {
-        _state.update { it.copy(levelFilter = level) }
+    fun setLevel(level: LogLevel?) {
+        _state.update { it.copy(level = level) }
         refresh()
     }
 
@@ -86,7 +86,7 @@ data class LogViewerState(
     /** 当前显示的日志条目列表 */
     val entries: List<LogEntry> = emptyList(),
     /** 日志等级过滤条件，null 表示不过滤 */
-    val levelFilter: LogLevel? = null,
+    val level: LogLevel? = null,
     /** 关键词搜索条件，null 表示不搜索 */
     val keyword: String? = null,
     /** LazyColumn 的滚动状态 */
