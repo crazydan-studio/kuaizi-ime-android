@@ -19,10 +19,81 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.FileLogWriter
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+import kotlin.coroutines.CoroutineContext
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
 /**
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
  * @date 2026-06-30
  */
 class TestImeLog {
+    // 使用 TemporaryFolder 确保每次测试后，临时文件都会被自动物理删除
+    @Rule
+    @JvmField
+    val tempDir = TemporaryFolder()
+
+    fun createLogStorage(): LogStorage = LogStorage(tempDir.root)
+
+    fun getImeLogger(context: CoroutineContext, storage: LogStorage): ImeLogger {
+        ImeLog.init(
+            level = LogLevel.INFO,
+            writers = listOf(
+                FileLogWriter(
+                    storage = storage,
+                    scope = TestScope(context),
+                )
+            ),
+        )
+
+        return ImeLog.logger(TestImeLog::class)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `should only log enabled level logs`() = runTest {
+        val logStorage = createLogStorage()
+        val logger = getImeLogger(testScheduler, logStorage)
+
+        // ----------------
+        ImeLog.enableLevel(LogLevel.WARN)
+
+        logger.debug { "This is a debug log" }
+        runCurrent() // 等待 FileLogWriter 写入完毕
+
+        assertFalse(ImeLog.isEnabledLevel(LogLevel.DEBUG))
+        assertTrue(logStorage.readLogs().isEmpty())
+
+        // -----
+        logger.error { "This is a error log" }
+        runCurrent() // 等待 FileLogWriter 写入完毕
+
+        assertTrue(ImeLog.isEnabledLevel(LogLevel.ERROR))
+
+        val logs1 = logStorage.readLogs()
+        assertEquals(1, logs1.size)
+        assertTrue(logs1[0].message.contains("error log"))
+
+        // ----------------
+        ImeLog.enableLevel(LogLevel.DEBUG)
+
+        logger.debug { "This is a debug log" }
+        runCurrent() // 等待 FileLogWriter 写入完毕
+
+        assertTrue(ImeLog.isEnabledLevel(LogLevel.DEBUG))
+
+        val logs2 = logStorage.readLogs(keyword = "debug")
+        assertEquals(1, logs2.size)
+        assertTrue(logs2[0].message.contains("debug log"))
+    }
 }
