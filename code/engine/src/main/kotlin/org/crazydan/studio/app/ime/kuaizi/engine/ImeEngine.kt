@@ -402,7 +402,7 @@ class ImeEngine internal constructor(
         val oldState = _state.value
         val newState = transform(oldState)
 
-        if (logger.isEnabled(LogLevel.DEBUG)) {
+        if (ImeLog.isEnabledLevel(LogLevel.DEBUG)) {
             logger.debug { "State updated" }
             assertStateInvariants(newState)
         }

@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.logging
 
 import kotlinx.coroutines.runBlocking
+import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog.logger
 import kotlin.reflect.KClass
 
 /**
@@ -32,12 +33,10 @@ import kotlin.reflect.KClass
  * - 提供 [ImeLogger] 实例的工厂方法
  *
  * 所有日志操作通过 [logger] 获取的 [ImeLogger] 实例执行，[ImeLog] 本身不提供直接的日志记录方法。
- * [dispatch] 和 [flush] 方法标记为 internal，仅对 [ImeLogger] 和 [CrashInterceptor] 可见。
  */
 object ImeLog {
     /** 当前生效的日志等级，默认只输出 WARN 及以上级别。 */
-    internal var level: LogLevel = LogLevel.WARN
-        private set
+    private var level: LogLevel = LogLevel.WARN
 
     private val writers = mutableListOf<LogWriter>()
 
@@ -54,10 +53,18 @@ object ImeLog {
         this.writers.addAll(writers)
     }
 
-    /** 动态更新日志等级。 */
-    fun changeLevel(newLevel: LogLevel) {
+    // ----------------------------------------------------------
+
+    /** 启用新的日志等级，仅高于或等于该等级的日志才会被记录。 */
+    fun enableLevel(newLevel: LogLevel) {
         level = newLevel
     }
+
+    /** 检查指定等级是否已被启用。 */
+    fun isEnabledLevel(level: LogLevel) =
+        level.priority >= this.level.priority
+
+    // ----------------------------------------------------------
 
     /** 获取带字符串标签的 [ImeLogger] 实例。 */
     fun logger(tag: String): ImeLogger = ImeLogger(tag, this)
@@ -65,17 +72,23 @@ object ImeLog {
     /** 获取带类名标签的 [ImeLogger] 实例，标签自动取 [KClass.simpleName]。 */
     fun logger(cls: KClass<*>): ImeLogger = logger(cls.simpleName ?: "Unknown")
 
+    // ----------------------------------------------------------
+
     /** 分发日志条目到所有已注册的 Writer，低于当前等级的日志直接丢弃。 */
     internal fun dispatch(entry: LogEntry) {
-        if (entry.level.priority < level.priority) return
-
-        writers.forEach { writer -> writer.write(entry) }
+        if (isEnabledLevel(entry.level)) {
+            writers.forEach { writer ->
+                writer.write(entry)
+            }
+        }
     }
 
     /** 刷新所有 Writer 的缓冲区。 */
-    internal suspend fun flush() {
+    private suspend fun flush() {
         writers.forEach { it.flush() }
     }
+
+    // ----------------------------------------------------------
 
     /**
      * 崩溃拦截器：安装为 JVM 的 [Thread.UncaughtExceptionHandler]，

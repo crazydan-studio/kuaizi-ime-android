@@ -41,10 +41,11 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
  *
  * @param storage 日志文件存储管理器
  */
-class FileLogWriter(private val storage: LogStorage) : LogWriter {
+class FileLogWriter(
+    scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val storage: LogStorage,
+) : LogWriter {
     private val channel = Channel<LogEntry>(capacity = Channel.Factory.BUFFERED)
-
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     init {
         scope.launch {

@@ -36,9 +36,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.TreeLogWriter
  */
 class ImeLogger(private val tag: String, private val log: ImeLog) {
 
-    /** 检查指定等级在当前日志配置下是否启用。 */
-    fun isEnabled(level: LogLevel) = log.level.priority <= level.priority
-
     /** 输出 VERBOSE 级别日志。 */
     fun verbose(msg: () -> String) = dispatch(LogLevel.VERBOSE, msg)
 
@@ -57,6 +54,8 @@ class ImeLogger(private val tag: String, private val log: ImeLog) {
     /** 输出 ERROR 级别日志（包含异常信息）。 */
     fun error(throwable: Throwable, msg: () -> String) =
         dispatch(LogLevel.ERROR, msg, throwable)
+
+    // ----------------------------------------------
 
     /**
      * 开始树形日志块。
@@ -77,10 +76,12 @@ class ImeLogger(private val tag: String, private val log: ImeLog) {
         }
     }
 
+    // ----------------------------------------------
+
     /** 内部分发：等级不足时直接跳过 lambda 求值。 */
     private inline fun dispatch(level: LogLevel, msg: () -> String, throwable: Throwable? = null) {
-        if (!isEnabled(level)) return
-
-        log.dispatch(LogEntry(level, tag, msg(), throwable))
+        if (log.isEnabledLevel(level)) {
+            log.dispatch(LogEntry(level, tag, msg(), throwable))
+        }
     }
 }

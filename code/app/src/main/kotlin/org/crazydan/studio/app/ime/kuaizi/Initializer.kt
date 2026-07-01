@@ -75,7 +75,7 @@ suspend fun initLog(configDataStore: ConfigDataStore, filesDir: File) {
     val storage = LogStorage(dir)
 
     val writers = mutableListOf<LogWriter>(
-        FileLogWriter(storage)
+        FileLogWriter(storage = storage)
     )
 
     if (BuildConfig.DEBUG) {
@@ -98,6 +98,6 @@ suspend fun initLog(configDataStore: ConfigDataStore, filesDir: File) {
         val dir = filesDir.resolve(conf.engine.logDir)
         storage.changeDir(dir)
 
-        ImeLog.changeLevel(conf.engine.logLevel!!)
+        ImeLog.enableLevel(conf.engine.logLevel!!)
     }
 }
