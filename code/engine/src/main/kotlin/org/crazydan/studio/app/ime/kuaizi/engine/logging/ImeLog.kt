@@ -40,19 +40,6 @@ object ImeLog {
 
     private val writers = mutableListOf<LogWriter>()
 
-    /**
-     * 初始化日志系统。
-     *
-     * @param level 初始日志等级（由应用层根据构建类型决定）
-     * @param writers 日志输出目标列表（应用层注册平台特有 Writer）
-     */
-    fun init(level: LogLevel, writers: List<LogWriter>) {
-        this.level = level
-
-        this.writers.clear()
-        this.writers.addAll(writers)
-    }
-
     // ----------------------------------------------------------
 
     /** 启用新的日志等级，仅高于或等于该等级的日志才会被记录。 */
@@ -63,6 +50,16 @@ object ImeLog {
     /** 检查指定等级是否已被启用。 */
     fun isEnabledLevel(level: LogLevel) =
         level.priority >= this.level.priority
+
+    /** 设置日志输出目标列表 */
+    fun setWriters(writers: List<LogWriter>) {
+        this.writers.clear()
+        this.writers.addAll(writers)
+    }
+
+    /** 添加新的日志输出目标 */
+    fun addWriters(vararg writers: LogWriter) =
+        this.writers.addAll(writers)
 
     // ----------------------------------------------------------
 

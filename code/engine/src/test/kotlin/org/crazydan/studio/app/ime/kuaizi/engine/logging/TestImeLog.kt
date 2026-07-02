@@ -46,15 +46,13 @@ class TestImeLog {
     fun createLogStorage(): LogStorage = LogStorage(tempDir.root)
 
     fun getImeLogger(context: CoroutineContext, storage: LogStorage): ImeLogger {
-        ImeLog.init(
-            level = LogLevel.INFO,
-            writers = listOf(
-                FileLogWriter(
-                    storage = storage,
-                    scope = TestScope(context),
-                )
-            ),
+        ImeLog.addWriters(
+            FileLogWriter(
+                storage = storage,
+                scope = TestScope(context),
+            )
         )
+        ImeLog.enableLevel(LogLevel.INFO)
 
         return ImeLog.logger(TestImeLog::class)
     }

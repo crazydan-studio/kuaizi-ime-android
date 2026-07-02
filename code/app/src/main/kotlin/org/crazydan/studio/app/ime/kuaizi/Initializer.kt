@@ -82,10 +82,8 @@ suspend fun initLog(configDataStore: ConfigDataStore, filesDir: File) {
         writers.add(LogcatWriter())
     }
 
-    ImeLog.init(
-        level = config.logLevel!!,
-        writers = writers,
-    )
+    ImeLog.setWriters(writers)
+    ImeLog.enableLevel(config.logLevel!!)
 
     if (!BuildConfig.DEBUG) {
         ImeLog.CrashInterceptor(storage).install()

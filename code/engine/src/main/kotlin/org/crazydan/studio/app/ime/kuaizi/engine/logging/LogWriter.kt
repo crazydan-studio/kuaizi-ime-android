@@ -26,10 +26,11 @@ package org.crazydan.studio.app.ime.kuaizi.engine.logging
  * 提供 [LogcatWriter] 用于 Android Logcat 输出。
  * 第三方应用可以实现此接口，将日志输出到远程服务器、遥测系统或任何自定义目标。
  *
- * 所有 [LogWriter] 实现通过 [ImeLog.init] 注册，由 [ImeLog.dispatch] 统一分发。
+ * 所有 [LogWriter] 实现通过 [ImeLog.setWriters] 注册，由 [ImeLog.dispatch] 统一分发。
  * 实现必须保证 [write] 的线程安全——日志可能从不同协程或线程同时写入。
  */
 interface LogWriter {
+
     /** 写入一条日志条目。实现必须保证线程安全。 */
     fun write(entry: LogEntry)
 

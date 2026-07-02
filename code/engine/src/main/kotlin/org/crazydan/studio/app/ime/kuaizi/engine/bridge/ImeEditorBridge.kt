@@ -37,6 +37,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.TextRange
  * @see EditorAction 引擎向编辑器输出的操作类型
  */
 interface ImeEditorBridge {
+
     /**
      * 提交文本到当前光标位置。
      *
