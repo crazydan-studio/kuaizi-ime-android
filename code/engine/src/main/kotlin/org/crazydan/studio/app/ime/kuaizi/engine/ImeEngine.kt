@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.CandidateKeyboardIntentHandler
@@ -76,20 +77,23 @@ class ImeEngine internal constructor(
     private val dictProvider: ImeDictProvider,
     private val keyboardStateMachine: KeyboardStateMachine,
     private val inputListOp: InputListOperator,
-    internal val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) {
     private val logger by lazy { ImeLog.logger(ImeEngine::class) }
 
+    // -------------------------------
     private val _state: MutableStateFlow<ImeState> = MutableStateFlow(ImeState(config = config))
 
     /** 只读状态流：UI 层通过此流订阅 [ImeState] 驱动界面重组。 */
     val state: StateFlow<ImeState> = _state.asStateFlow()
 
+    // -------------------------------
     private val _effect: MutableSharedFlow<ImeEffect> = MutableSharedFlow(extraBufferCapacity = 64)
 
     /** 只读副作用流：UI 层在独立协程中收集并消费一次性效果。 */
     val effect: SharedFlow<ImeEffect> = _effect.asSharedFlow()
 
+    // -------------------------------
     private val editorBridges: MutableList<ImeEditorBridge> = mutableListOf()
     private var clipboardJob: Job? = null
 
@@ -178,6 +182,7 @@ class ImeEngine internal constructor(
      * 注册编辑器桥接。
      *
      * 注册后的桥接将接收引擎分发的所有 [EditorAction]。
+     *
      * @param bridge 要注册的编辑器桥接实例
      */
     fun attachEditorBridge(bridge: ImeEditorBridge) {
@@ -216,6 +221,8 @@ class ImeEngine internal constructor(
         }
     }
 
+    // -----------------------------------------------
+
     /**
      * 更新配置。
      *
@@ -233,6 +240,19 @@ class ImeEngine internal constructor(
             .distinctUntilChanged()
             .drop(1)  // 跳过订阅时的状态，仅关注后续的变化
             .collect(collector)
+
+    private fun updateRuntimeConfig(startupConfig: ImeConfig.Startup) {
+        applyStateUpdate { state ->
+            state.copy(
+                config = state.config.copy(
+                    runtime = state.config.runtime.copy(
+                        screenOrientation = startupConfig.screenOrientation,
+                        editorInputType = startupConfig.editorInputType ?: state.config.runtime.editorInputType,
+                    ),
+                ),
+            )
+        }
+    }
 
     // -----------------------------------------------
 
@@ -261,15 +281,14 @@ class ImeEngine internal constructor(
             )
         }
 
-        if (effect != null) {
-            _effect.tryEmit(effect)
+        effect?.also {
+            _effect.tryEmit(it)
         }
 
         processSideEffects(sideEffects)
 
-        val editorAction = result.editorAction
-        if (editorAction != null) {
-            dispatchEditorAction(editorAction)
+        result.editorAction?.also {
+            dispatchEditorAction(it)
         }
     }
 
@@ -305,6 +324,43 @@ class ImeEngine internal constructor(
     }
 
     /**
+     * 分发 [EditorAction] 到所有已注册的 [ImeEditorBridge]。
+     *
+     * 遍历所有已注册桥接，对每个桥接根据 [EditorAction] 类型调用对应的语义方法。
+     * 若桥接列表为空则静默跳过。
+     *
+     * @param action 要分发的编辑器操作
+     */
+    private fun dispatchEditorAction(action: EditorAction) {
+        editorBridges.forEach { bridge ->
+            when (action) {
+                is EditorAction.CommitText ->
+                    bridge.commitText(
+                        action.text, action.replacements,
+                        oneByOne = false, revertable = true
+                    )
+
+                is EditorAction.RevokeCommit ->
+                    bridge.revokeCommit()
+
+                is EditorAction.InsertPairedSymbols ->
+                    bridge.insertPairedSymbols(action.left, action.right)
+
+                is EditorAction.MoveCursor ->
+                    bridge.moveCursor(action.motion)
+
+                is EditorAction.SelectRange ->
+                    bridge.selectRange(action.motion)
+
+                is EditorAction.PerformEdit ->
+                    bridge.performEdit(action.action)
+            }
+        }
+    }
+
+    // -----------------------------------------------
+
+    /**
      * 根据键盘类型解析对应的 [KeyboardIntentHandler]。
      *
      * @param type 当前键盘类型
@@ -320,19 +376,6 @@ class ImeEngine internal constructor(
             KeyboardType.Editor -> EditorKeyboardIntentHandler(type)
             KeyboardType.Candidate -> CandidateKeyboardIntentHandler(type)
             KeyboardType.CommitOption -> CommitOptionKeyboardIntentHandler(type)
-        }
-    }
-
-    private fun updateRuntimeConfig(startupConfig: ImeConfig.Startup) {
-        applyStateUpdate { state ->
-            state.copy(
-                config = state.config.copy(
-                    runtime = state.config.runtime.copy(
-                        screenOrientation = startupConfig.screenOrientation,
-                        editorInputType = startupConfig.editorInputType ?: state.config.runtime.editorInputType,
-                    ),
-                ),
-            )
         }
     }
 
@@ -366,28 +409,7 @@ class ImeEngine internal constructor(
         }
     }
 
-    /**
-     * 分发 [EditorAction] 到所有已注册的 [ImeEditorBridge]。
-     *
-     * 遍历所有已注册桥接，对每个桥接根据 [EditorAction] 类型调用对应的语义方法。
-     * 若桥接列表为空则静默跳过。
-     *
-     * @param action 要分发的编辑器操作
-     */
-    private fun dispatchEditorAction(action: EditorAction) {
-        if (editorBridges.isEmpty()) return
-
-        editorBridges.forEach { bridge ->
-            when (action) {
-                is EditorAction.CommitText -> bridge.commitText(action.text, action.replacements)
-                is EditorAction.RevokeCommit -> bridge.revokeCommit()
-                is EditorAction.InsertPairedSymbols -> bridge.insertPairedSymbols(action.left, action.right)
-                is EditorAction.MoveCursor -> bridge.moveCursor(action.direction)
-                is EditorAction.SelectRange -> bridge.selectRange(action.direction)
-                is EditorAction.PerformEdit -> bridge.performEdit(action.action)
-            }
-        }
-    }
+    // -----------------------------------------------
 
     /**
      * 统一的状态更新出口：所有 [ImeState] 变更必须经过此方法。
@@ -419,6 +441,8 @@ class ImeEngine internal constructor(
     private fun assertStateInvariants(state: ImeState) {
         // invariants checked only in DEBUG
     }
+
+    // -----------------------------------------------
 
     companion object {
         /**

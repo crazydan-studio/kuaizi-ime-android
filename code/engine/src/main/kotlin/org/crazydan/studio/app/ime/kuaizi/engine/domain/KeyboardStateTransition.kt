@@ -19,7 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
-import org.crazydan.studio.app.ime.kuaizi.engine.EditorAction
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 
 /**

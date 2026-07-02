@@ -19,13 +19,14 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.bridge
 
+import android.view.KeyEvent
 import android.widget.EditText
-import android.text.Editable
-import org.crazydan.studio.app.ime.kuaizi.engine.CursorDirection
-import org.crazydan.studio.app.ime.kuaizi.engine.EditorEditAction
-import org.crazydan.studio.app.ime.kuaizi.engine.TextRange
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.BaseImeEditorBridge
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.BaseImeEditorBridge.SelectionSnapshot
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.CursorDirection
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorCursorMotion
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorEditAction
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorSelection
+import kotlin.math.max
 
 /**
  * 基于 [EditText] 的编辑器桥接器。
@@ -40,111 +41,166 @@ class EditTextBridge(
     private val targetSupplier: () -> EditText?,
 ) : BaseImeEditorBridge() {
 
+    /** 获取编辑器当前全文。 */
+    override fun getText(): CharSequence =
+        targetSupplier()?.text ?: ""
+
+    /** 获取编辑器当前选区。 */
+    override fun getSelection(): EditorSelection =
+        getCurrentSelection(targetSupplier())
+
+    // -------------------------------------------------------
+
+    /** 撤销提交：恢复到操作前的内容 */
+    override fun doRevokeCommit(revertion: RevertionSnapshot) {
+        val et = targetSupplier() ?: return
+
+        // Note: 撤销（undo）是由编辑器控制的，其可能会撤销间隔时间较短的多个输入，
+        // 故而，只能以 记录输入前的范围再还原 的方式实现输入的撤回
+        val (before, after) = revertion
+
+        // 将 从编辑前的开始位置 到 编辑后的终点位置 之间的内容恢复为编辑前的内容
+        replaceText(et, before.content, before.start, after.end)
+        // 还原编辑前的选区
+        et.setSelection(before.start, before.end)
+    }
+
     /** 普通提交文本：在光标位置插入文本 */
-    override fun doNormalCommitText(text: String) {
-        val editText = targetSupplier() ?: return
-        val editable = editText.text ?: return
-        val start = editText.selectionStart
-        val end = editText.selectionEnd
+    override fun doNormalCommitText(text: CharSequence, oneByOne: Boolean) {
+        val et = targetSupplier() ?: return
 
-        // 记录操作前的状态，用于撤销
-        recordRevertion(
-            beforeStart = start,
-            beforeEnd = end,
-            beforeContent = editable.toString(),
-            afterStart = start + text.length,
-            afterEnd = start + text.length,
-        )
+        val selection = getCurrentSelection(et, false)
+        val (start, end) = selection
 
-        editable.replace(start.coerceAtLeast(0), end.coerceAtLeast(0), text)
+        // ------------------
+        replaceText(et, text, start, end)
+
+        // 移动到替换后的文本内容之后
+        val offset = text.length
+        et.setSelection(start + offset)
     }
 
-    /** 可替换提交：先尝试替换已有文本，失败则普通提交 */
-    override fun doReplaceableCommitText(text: String, replacements: List<String>) {
-        val editText = targetSupplier() ?: return
-        val editable = editText.text ?: return
-        val cursor = editText.selectionStart
+    /** 可替换提交文本：检查光标前文本是否匹配替换列表，匹配则替换而非插入。 */
+    override fun doReplaceableCommitText(text: CharSequence, replacements: List<String>): Boolean {
+        val et = targetSupplier() ?: return true
+        val editable = et.text ?: return true
 
-        // 遍历替换模式列表，找到匹配的文本进行替换
-        for (replacement in replacements) {
-            val start = cursor - replacement.length
-            if (start >= 0 && editable.substring(start, cursor) == replacement) {
-                editable.replace(start, cursor, text)
-                return
-            }
+        val selection = getCurrentSelection(et, false)
+        val (start) = selection
+
+        // Note：假设替换字符的长度均相同
+        val replacementStartIndex = max(0, start - text.length)
+        val raw = editable.subSequence(replacementStartIndex, start)
+
+        if (replacements.contains(raw.toString())) {
+            replaceText(et, text, replacementStartIndex, start)
+            return true
         }
-        // 无匹配时执行普通提交
-        doNormalCommitText(text)
+
+        return false
     }
 
-    /** 插入配对符号：在光标位置插入左右成对符号，并将光标置于中间 */
-    override fun insertPairedSymbols(left: String, right: String) {
-        val editText = targetSupplier() ?: return
-        val editable = editText.text ?: return
-        val start = editText.selectionStart
-        editable.insert(start.coerceAtLeast(0), "$left$right")
-        editText.setSelection(start + left.length)
+    /** 插入配对符号（如括号、引号），并将光标置于左右符号之间。 */
+    override fun insertPairedSymbols(left: CharSequence, right: CharSequence) {
+        val et = targetSupplier() ?: return
+
+        val selection = getCurrentSelection(et, false)
+        val (start, end) = selection
+
+        // Note：先向选区尾部添加符号，以避免选区发生移动
+        replaceText(et, right, end, end)
+        replaceText(et, left, start, start)
+
+        // 重新选中初始文本
+        val offset = left.length
+        et.setSelection(start + offset, end + offset)
     }
+
+    // -------------------------------------------------------
 
     /** 移动光标到指定方向 */
-    override fun moveCursor(direction: CursorDirection) {
-        val editText = targetSupplier() ?: return
-        val pos = editText.selectionStart
-        editText.setSelection(
-            when (direction) {
-                CursorDirection.Left -> (pos - 1).coerceAtLeast(0)
-                CursorDirection.Right -> (pos + 1).coerceAtMost(editText.text?.length ?: 0)
-                CursorDirection.Home -> 0
-                CursorDirection.End -> editText.text?.length ?: 0
-                else -> pos
-            }
-        )
+    override fun moveCursor(motion: EditorCursorMotion) {
+        val et = targetSupplier() ?: return
+
+        doMoveCursor(et, motion)
     }
 
     /** 向指定方向扩展选区 */
-    override fun selectRange(direction: CursorDirection) {
-        val editText = targetSupplier() ?: return
-        val start = editText.selectionStart
-        val end = editText.selectionEnd
-        when (direction) {
-            CursorDirection.Left -> editText.setSelection(start, (end - 1).coerceAtLeast(start))
-            CursorDirection.Right -> editText.setSelection(start, (end + 1).coerceAtMost(editText.text?.length ?: 0))
-            else -> {}
+    override fun selectRange(motion: EditorCursorMotion) {
+        val et = targetSupplier() ?: return
+
+        // Note: 通过 shift + 方向键 的方式进行文本选择
+        sendKey(et, KeyEvent.KEYCODE_SHIFT_LEFT) {
+            doMoveCursor(et, motion)
         }
     }
 
     /** 执行编辑操作 */
     override fun performEdit(action: EditorEditAction) {
-        val editText = targetSupplier() ?: return
+        val et = targetSupplier() ?: return
+
         when (action) {
-            EditorEditAction.SELECT_ALL -> editText.selectAll()
-            EditorEditAction.COPY -> editText.onEditorAction(android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED)
-            EditorEditAction.PASTE -> editText.onTextContextMenuItem(android.R.id.paste)
-            EditorEditAction.CUT -> editText.onTextContextMenuItem(android.R.id.cut)
-            EditorEditAction.UNDO -> editText.onTextContextMenuItem(android.R.id.undo)
-            EditorEditAction.REDO -> editText.onTextContextMenuItem(android.R.id.redo)
-            EditorEditAction.BACKSPACE -> {
-                val editable = editText.text ?: return
-                val start = editText.selectionStart
-                if (start > 0) editable.delete(start - 1, start)
+            EditorEditAction.SELECT_ALL -> et.onTextContextMenuItem(android.R.id.selectAll)
+            //
+            EditorEditAction.COPY -> et.onTextContextMenuItem(android.R.id.copy)
+            EditorEditAction.PASTE -> et.onTextContextMenuItem(android.R.id.paste)
+            EditorEditAction.CUT -> et.onTextContextMenuItem(android.R.id.cut)
+            //
+            EditorEditAction.UNDO -> et.onTextContextMenuItem(android.R.id.undo)
+            EditorEditAction.REDO -> et.onTextContextMenuItem(android.R.id.redo)
+            //
+            EditorEditAction.BACKSPACE ->
+                // Note: 发送按键事件的兼容性更好，可由组件处理删除操作
+                sendKey(et, KeyEvent.KEYCODE_DEL)
+        }
+    }
+
+    /** 按方向移动光标，通过模拟键盘按键实现。 */
+    private fun doMoveCursor(et: EditText, motion: EditorCursorMotion) {
+        val (direction, distance) = motion
+        if (distance <= 0) return
+
+        // Note: 发送按键事件方式可支持上下移动光标，以便于快速定位到目标位置
+        for (i in 0..<distance.toInt()) {
+            when (direction) {
+                CursorDirection.Left -> sendKey(et, KeyEvent.KEYCODE_DPAD_LEFT)
+                CursorDirection.Right -> sendKey(et, KeyEvent.KEYCODE_DPAD_RIGHT)
+                CursorDirection.Up -> sendKey(et, KeyEvent.KEYCODE_DPAD_UP)
+                CursorDirection.Down -> sendKey(et, KeyEvent.KEYCODE_DPAD_DOWN)
             }
         }
     }
 
-    /** 获取编辑器当前文本 */
-    override fun getText(): CharSequence = targetSupplier()?.text ?: ""
+    // --------------------------------------------
 
-    /** 获取当前选区范围 */
-    override fun getSelection(): TextRange {
-        val et = targetSupplier() ?: return TextRange(0, 0)
-        return TextRange(et.selectionStart, et.selectionEnd)
+    /** 发起从按键按下到弹起的一次完整的按键事件 */
+    private fun sendKey(et: EditText, code: Int, block: (() -> Unit)? = null) {
+        et.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
+
+        block?.invoke()
+
+        et.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
     }
 
-    /** 撤销提交：恢复到操作前的内容 */
-    override fun onRevokeCommit(snapshot: SelectionSnapshot) {
-        val editText = targetSupplier() ?: return
-        val editable = editText.text ?: return
-        editable.replace(0, editable.length, snapshot.beforeContent)
-        editText.setSelection(snapshot.beforeStart)
-    }
+    // --------------------------------------------
+
+    /** 替换指定范围内（posStart ~ posEnd）的文本  */
+    private fun replaceText(et: EditText, text: CharSequence?, posStart: Int, posEnd: Int) =
+        et.text?.replace(posStart, posEnd, text ?: "")
+
+    // --------------------------------------------
+
+    private fun getCurrentSelection(et: EditText?, withContent: Boolean = true): EditorSelection =
+        et?.let {
+            val start = it.selectionStart
+            val end = it.selectionEnd
+
+            EditorSelection.create(
+                start = start,
+                end = end,
+                content =
+                    if (withContent) it.text?.substring(start, end) ?: ""
+                    else "",
+            )
+        } ?: EditorSelection.empty()
 }

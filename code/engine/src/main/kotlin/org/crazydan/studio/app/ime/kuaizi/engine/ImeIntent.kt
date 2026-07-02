@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine
 
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.CandidateList
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.ImportStrategy
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputFavorite

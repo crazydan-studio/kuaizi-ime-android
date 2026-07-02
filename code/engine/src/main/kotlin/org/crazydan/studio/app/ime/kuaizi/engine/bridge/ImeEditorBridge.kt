@@ -19,10 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.bridge
 
-import org.crazydan.studio.app.ime.kuaizi.engine.CursorDirection
-import org.crazydan.studio.app.ime.kuaizi.engine.EditorEditAction
-import org.crazydan.studio.app.ime.kuaizi.engine.TextRange
-
 /**
  * 编辑器桥接接口：引擎与目标编辑器之间的桥梁。
  *
@@ -38,6 +34,14 @@ import org.crazydan.studio.app.ime.kuaizi.engine.TextRange
  */
 interface ImeEditorBridge {
 
+    /** 实时获取目标编辑器当前文本内容。 */
+    fun getText(): CharSequence
+
+    /** 实时获取目标编辑器当前选区。 */
+    fun getSelection(): EditorSelection
+
+    // -------------------------------------------------
+
     /**
      * 提交文本到当前光标位置。
      *
@@ -47,8 +51,13 @@ interface ImeEditorBridge {
      *     - 匹配：替换光标前字符（替换轮换）
      *     - 不匹配：正常插入文本
      *   - 替换轮换用于直输模式下的标点符号双击轮换，如 `.` → `。` → `…`
+     * @param oneByOne 是否逐字输入。提交收藏的验证码等逐个填充的数据时，需要逐字输入
+     * @param revertable 提交内容是否可撤销
      */
-    fun commitText(text: String, replacements: List<String>? = null)
+    fun commitText(
+        text: CharSequence, replacements: List<String>? = null,
+        oneByOne: Boolean, revertable: Boolean,
+    )
 
     /** 撤销最近一次可撤回的输入，恢复编辑器文本到提交前的状态。 */
     fun revokeCommit()
@@ -58,20 +67,16 @@ interface ImeEditorBridge {
      * 若编辑器中存在选中文本，将选中文本包裹在左右符号之间；
      * 若无选中文本，插入左右符号并将光标置于两者之间。
      */
-    fun insertPairedSymbols(left: String, right: String)
+    fun insertPairedSymbols(left: CharSequence, right: CharSequence)
+
+    // -------------------------------------------------
 
     /** 按指定方向移动光标。 */
-    fun moveCursor(direction: CursorDirection)
+    fun moveCursor(motion: EditorCursorMotion)
 
     /** 按指定方向扩展选区。 */
-    fun selectRange(direction: CursorDirection)
+    fun selectRange(motion: EditorCursorMotion)
 
     /** 执行编辑器编辑操作（全选、复制、剪切、粘贴、撤销、重做等）。 */
     fun performEdit(action: EditorEditAction)
-
-    /** 实时获取目标编辑器当前文本内容。 */
-    fun getText(): CharSequence
-
-    /** 实时获取目标编辑器当前选区范围。 */
-    fun getSelection(): TextRange
 }

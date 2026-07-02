@@ -79,7 +79,7 @@ class ImeLogger(private val tag: String, private val log: ImeLog) {
     // ----------------------------------------------
 
     /** 内部分发：等级不足时直接跳过 lambda 求值。 */
-    private inline fun dispatch(level: LogLevel, msg: () -> String, throwable: Throwable? = null) {
+    private fun dispatch(level: LogLevel, msg: () -> String, throwable: Throwable? = null) {
         if (log.isEnabledLevel(level)) {
             log.dispatch(LogEntry(level, tag, msg(), throwable))
         }

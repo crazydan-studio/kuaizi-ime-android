@@ -28,11 +28,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.util.SystemHelper
 import org.crazydan.studio.app.ime.kuaizi.ui.integration.KeyboardHost
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
@@ -77,7 +77,10 @@ class IMEService : InputMethodService() {
         }
 
         // -------------------
-        inputConnectionBridge = InputConnectionBridge { currentInputConnection }
+        inputConnectionBridge = InputConnectionBridge(
+            { currentInputConnection },
+            { ch -> sendKeyChar(ch) }
+        )
         scope.launch {
             engine = ImeEngine.create(
                 config = configDataStore.getConfig(),

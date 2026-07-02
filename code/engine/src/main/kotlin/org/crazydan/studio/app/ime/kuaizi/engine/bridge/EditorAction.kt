@@ -17,12 +17,10 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine
+package org.crazydan.studio.app.ime.kuaizi.engine.bridge
 
-/**
- * [EditorAction] 的类型别名，提供更符合 IME 上下文语义的命名。
- */
-typealias ImeEditorAction = EditorAction
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * 引擎的编辑器操作 sealed class。
@@ -69,22 +67,22 @@ sealed class EditorAction {
      * 移动光标：向指定方向移动编辑器光标。
      *
      * @property timestamp 操作时间戳
-     * @property direction 光标移动方向
+     * @property motion 光标移动信息
      */
     data class MoveCursor(
         override val timestamp: Long,
-        val direction: CursorDirection,
+        val motion: EditorCursorMotion,
     ) : EditorAction()
 
     /**
      * 选择范围：从光标位置向指定方向选取文本范围。
      *
      * @property timestamp 操作时间戳
-     * @property direction 选择方向
+     * @property motion 光标移动信息
      */
     data class SelectRange(
         override val timestamp: Long,
-        val direction: CursorDirection,
+        val motion: EditorCursorMotion,
     ) : EditorAction()
 
     /**
@@ -100,7 +98,7 @@ sealed class EditorAction {
 }
 
 /**
- * 编辑器编辑动作枚举。
+ * 编辑器编辑动作。
  *
  * 定义引擎可对目标编辑器执行的系统级编辑操作。
  */
@@ -108,13 +106,41 @@ enum class EditorEditAction {
     BACKSPACE, SELECT_ALL, COPY, CUT, PASTE, UNDO, REDO,
 }
 
-/** 光标移动方向枚举。 */
-enum class CursorDirection { Left, Right, Up, Down, Home, End }
+/** 光标移动方向。 */
+enum class CursorDirection { Left, Right, Up, Down }
 
 /**
- * 文本范围：表示编辑器中的文本选区。
+ * 编辑器光标移动信息。
  *
- * @property start 起始位置（包含）
- * @property end 结束位置（不包含）
+ * @property direction 移动方向
+ * @property distance 移动距离
  */
-data class TextRange(val start: Int, val end: Int)
+data class EditorCursorMotion(val direction: CursorDirection, val distance: Float)
+
+/**
+ * 编辑器当前选区。
+ *
+ * @property start 起始位置（包含），其始终小于 [end]
+ * @property end 结束位置（不包含），其始终大于 [start]
+ * @property reversed 是否为反向选择，即，实际的起点位置大于终点位置
+ * @property content 从 [start] 至 [end] 的选区范围内的已选中内容。其可能为空，也即，未选中任何内容
+ */
+data class EditorSelection(
+    val start: Int, val end: Int,
+    val reversed: Boolean,
+    val content: CharSequence
+) {
+
+    companion object {
+
+        fun empty() = create(0, 0, "")
+
+        fun create(start: Int, end: Int, content: CharSequence) =
+            EditorSelection(
+                start = min(start, end),
+                end = max(start, end),
+                reversed = start > end,
+                content = content,
+            )
+    }
+}
