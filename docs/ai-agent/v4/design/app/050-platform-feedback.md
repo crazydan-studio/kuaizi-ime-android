@@ -106,15 +106,3 @@ class IMEService : InputMethodService() {
 }
 ```
 
-## 4. 可测试性
-
-`FeedbackPlayer<T>` 的极简设计使得测试替身极为简单：
-
-```kotlin
-class RecordingFeedbackPlayer<T> : FeedbackPlayer<T> {
-    val calls = mutableListOf<T>()
-    override fun play(type: T) {
-        calls.add(type)
-    }
-}
-```

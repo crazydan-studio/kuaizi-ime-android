@@ -167,7 +167,22 @@ init {
 
 ---
 
-## 7. 扩展模式
+## 7. 可测试性
+
+`FeedbackPlayer<T>` 的极简设计使得测试替身极为简单：
+
+```kotlin
+class RecordingFeedbackPlayer<T> : FeedbackPlayer<T> {
+    val calls = mutableListOf<T>()
+    override fun play(type: T) {
+        calls.add(type)
+    }
+}
+```
+
+---
+
+## 8. 扩展模式
 
 ### 新增音效类型
 

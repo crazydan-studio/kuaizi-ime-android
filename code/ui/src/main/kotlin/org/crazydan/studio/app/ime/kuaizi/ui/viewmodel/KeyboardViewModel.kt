@@ -152,14 +152,14 @@ class KeyboardViewModel(
     /** 处理弹出提示 */
     private fun processPopupTip(effect: ImeEffect) {
         when (effect) {
-            is ImeEffect.Message -> {
+            is ImeEffect.PopupTip.Message -> {
                 _popupTipState.value = PopupTipState.Message(
                     message = effect.message,
                     timeoutMs = effect.timeoutMs,
                 )
                 dismissPopupTipAfter(effect.timeoutMs)
             }
-            is ImeEffect.Action -> {
+            is ImeEffect.PopupTip.Action -> {
                 _popupTipState.value = PopupTipState.Action(
                     message = effect.message,
                     actionLabel = effect.actionLabel,

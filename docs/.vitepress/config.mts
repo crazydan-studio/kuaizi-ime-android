@@ -267,12 +267,6 @@ function sidebarAiAgent() {
         { text: '020-日志系统', link: '/ai-agent/v4/design/app/020-logging' },
         { text: '030-UI 测试方案', link: '/ai-agent/v4/design/app/030-ui-testing' },
         { text: '040-用户数据导入导出', link: '/ai-agent/v4/design/app/040-user-data' },
-      ],
-    },
-    {
-      text: ':app 平台反馈',
-      collapsed: false,
-      items: [
         { text: '050-平台反馈实现', link: '/ai-agent/v4/design/app/050-platform-feedback' },
       ],
     },

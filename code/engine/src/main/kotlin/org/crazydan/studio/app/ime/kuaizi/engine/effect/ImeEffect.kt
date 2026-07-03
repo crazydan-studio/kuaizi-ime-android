@@ -24,38 +24,40 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 /**
  * 引擎副作用通道信号。
  *
- * 承载领域事件型的 PopupTip 消息，由 engine 在意图处理过程中根据业务逻辑发射。
+ * 承载领域事件型的弹出提示消息，由 engine 在意图处理过程中根据业务逻辑发射。
  * UI 层通过订阅 [ImeEngine.effect] 接收并展示。
  *
- * @see Message 纯文本消息，自动消失
- * @see Action 带操作按钮的消息，可点击触发 ImeIntent
+ * @see PopupTip.Message 纯文本消息，自动消失
+ * @see PopupTip.Action 带操作按钮的消息，可点击触发 ImeIntent
  */
 sealed class ImeEffect {
-    /**
-     * 纯文本弹出提示。
-     *
-     * @param message 提示文本
-     * @param timeoutMs 自动消失超时（毫秒），默认 3 秒
-     */
-    data class Message(
-        val message: String,
-        val timeoutMs: Long = 3000L,
-    ) : ImeEffect()
+    sealed class PopupTip : ImeEffect() {
+        /**
+         * 纯文本弹出提示。
+         *
+         * @param message 提示文本
+         * @param timeoutMs 自动消失超时（毫秒），默认 3 秒
+         */
+        data class Message(
+            val message: String,
+            val timeoutMs: Long = 3000L,
+        ) : PopupTip()
 
-    /**
-     * 带操作的弹出提示。
-     *
-     * @param message 提示文本
-     * @param actionLabel 操作按钮标签
-     * @param action 点击操作按钮时触发的 ImeIntent
-     * @param persistent 是否在输入时保持显示
-     * @param timeoutMs 自动消失超时（毫秒），默认 5 秒
-     */
-    data class Action(
-        val message: String,
-        val actionLabel: String,
-        val action: ImeIntent,
-        val persistent: Boolean = false,
-        val timeoutMs: Long = 5000L,
-    ) : ImeEffect()
+        /**
+         * 带操作的弹出提示。
+         *
+         * @param message 提示文本
+         * @param actionLabel 操作按钮标签
+         * @param action 点击操作按钮时触发的 ImeIntent
+         * @param persistent 是否在输入时保持显示
+         * @param timeoutMs 自动消失超时（毫秒），默认 5 秒
+         */
+        data class Action(
+            val message: String,
+            val actionLabel: String,
+            val action: ImeIntent,
+            val persistent: Boolean = false,
+            val timeoutMs: Long = 5000L,
+        ) : PopupTip()
+    }
 }

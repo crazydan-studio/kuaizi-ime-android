@@ -138,7 +138,7 @@ class ImeEngine internal constructor(
             && _state.value.clipboard.currentText != null
         ) {
             _effect.tryEmit(
-                ImeEffect.Action(
+                ImeEffect.PopupTip.Action(
                     message = "可粘贴内容",
                     actionLabel = "粘贴",
                     action = ImeIntent.PasteClip(_state.value.clipboard.currentText!!),
