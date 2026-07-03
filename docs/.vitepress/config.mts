@@ -238,7 +238,7 @@ function sidebarAiAgent() {
         { text: '040-输入列表', link: '/ai-agent/v4/design/engine/040-input-list' },
         { text: '050-候选与字典', link: '/ai-agent/v4/design/engine/050-candidate-and-dict' },
         { text: '060-意图、编辑器操作与桥接', link: '/ai-agent/v4/design/engine/060-intent-editor-action-bridge' },
-        { text: '065-音效与触觉反馈', link: '/ai-agent/v4/design/engine/065-audio-haptic-feedback' },
+        { text: '065-ImeEffect 副作用信号', link: '/ai-agent/v4/design/engine/065-ime-effect' },
         { text: '070-剪贴板与收藏', link: '/ai-agent/v4/design/engine/070-clipboard-and-favorites' },
         { text: '080-输入动作程序化', link: '/ai-agent/v4/design/engine/080-input-action' },
         { text: '090-日志系统', link: '/ai-agent/v4/design/engine/090-logging' },
@@ -255,6 +255,7 @@ function sidebarAiAgent() {
         { text: '040-Compose 组件', link: '/ai-agent/v4/design/ui/040-compose-components' },
         { text: '050-输入动作播放', link: '/ai-agent/v4/design/ui/050-input-action-player' },
         { text: '060-配置界面', link: '/ai-agent/v4/design/ui/060-config-ui' },
+        { text: '070-交互反馈设计', link: '/ai-agent/v4/design/ui/070-interaction-feedback' },
       ],
     },
     {
@@ -266,6 +267,13 @@ function sidebarAiAgent() {
         { text: '020-日志系统', link: '/ai-agent/v4/design/app/020-logging' },
         { text: '030-UI 测试方案', link: '/ai-agent/v4/design/app/030-ui-testing' },
         { text: '040-用户数据导入导出', link: '/ai-agent/v4/design/app/040-user-data' },
+      ],
+    },
+    {
+      text: ':app 平台反馈',
+      collapsed: false,
+      items: [
+        { text: '050-平台反馈实现', link: '/ai-agent/v4/design/app/050-platform-feedback' },
       ],
     },
     {

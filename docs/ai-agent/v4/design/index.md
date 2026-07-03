@@ -28,7 +28,7 @@
 | [040-输入列表](engine/040-input-list.md) | InputList 不可变数据模型、InputItem 层次结构、PendingInput 待确认输入、InputCompletion 补全、PairSymbol 配对符号、InputListEditor 撤销/重做、InputListOperator 操作器、间距规则 |
 | [050-候选与字典](engine/050-candidate-and-dict.md) | CandidateList 候选列表模型、InputWord 层次体系、PinyinWordFilter 过滤器、ImeDictProvider 字典接口、DictRepository 字典仓库、PinyinCharsTree 前缀树、HmmModel 隐马尔可夫模型、查询流程 |
 | [060-意图、编辑器操作与桥接](engine/060-intent-editor-action-bridge.md) | ImeIntent 用户意图体系、EditorAction 编辑器操作体系、ImeEditorBridge 编辑器桥接接口、BaseImeEditorBridge 抽象类、InputConnectionBridge、EditTextBridge、数据流转全景 |
-| [065-音效与触觉反馈](engine/065-audio-haptic-feedback.md) | 感官反馈信号、FeedbackPlayer 泛型接口、AndroidAudioPlayer/AndroidHapticPlayer 平台实现、配置控制、扩展模式 |
+| [065-ImeEffect 副作用信号](engine/065-ime-effect.md) | ImeEffect 密封类定义（PopupTip.Message/Action）、引擎领域事件发射时机、与 UI 交互反馈的职责边界 |
 | [070-剪贴板与收藏](engine/070-clipboard-and-favorites.md) | InputClip 剪贴内容、InputTextType 文本类型检测、ClipboardService 剪贴板服务、InputFavorite 收藏项、FavoriteService 收藏服务、与 ImeEffect 的协作 |
 | [080-输入动作程序化](engine/080-input-action.md) | InputAction 动作体系、InputActionScript 动作脚本、InputActionScriptCompiler 脚本编译器、InputActionFingerIndicator 指示器、InputActionPathInterpolator 路径插值、InputActionPositionResolver 位置解析接口、归一化坐标类型 |
 | [090-日志系统](engine/090-logging.md) | 日志架构、LogLevel 日志等级、LogEntry 日志条目、LogWriter 写入接口、ImeLog 门面、ImeLogger 带标签记录器、LogStorage 文件存储、FileLogWriter 异步写入、LogcatWriter、CrashInterceptor 崩溃拦截 |

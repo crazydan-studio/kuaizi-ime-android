@@ -317,7 +317,7 @@ sealed class ImeEffect {
 }
 ```
 
-`ImeEffect` 现仅承载 `PopupTip` 领域事件。音效和触觉反馈已完全交由 UI 层在 `gestureToIntent()` 中直接处理，不再经由 `ImeEffect` 通道。`AudioType` / `HapticType` 枚举和播放器接口均定义在 `:ui` 模块中。详见 [065-交互反馈设计](065-audio-haptic-feedback.md)。
+`ImeEffect` 现仅承载 `PopupTip` 领域事件。音效和触觉反馈已完全交由 UI 层在 `gestureToIntent()` 中直接处理，不再经由 `ImeEffect` 通道。`AudioType` / `HapticType` 枚举和播放器接口均定义在 `:ui` 模块中。详见 [:ui 交互反馈设计](../ui/070-interaction-feedback.md)。
 
 ### 7.2 Message 提示
 

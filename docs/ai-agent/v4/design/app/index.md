@@ -10,3 +10,4 @@
 | [020-日志系统](020-logging.md) | 引擎日志基础设施初始化集成（LogcatWriter/CrashInterceptor 注册）、LogViewerScreen/LogExportScreen（日志查看与导出 UI）、LogLevelSetting/LogStoragePathSetting（日志配置 UI） |
 | [030-UI 测试方案](030-ui-testing.md) | 构建配置（release 自动移除）、UITestOverlay、5 种测试工具、UITestToolbar、Compose 编译器报告、截图对比测试 |
 | [040-用户数据导入导出](040-user-data.md) | UserDataService、UserBackup/BackupData 模型、ExportResult/ImportResult、ImportStrategy、UI 设计、权限与安全 |
+| [050-平台反馈实现](050-platform-feedback.md) | AndroidAudioPlayer 基于 SoundPool 实现、AndroidHapticPlayer 基于 Vibrator 实现、IMEService 装配、可测试性设计 |

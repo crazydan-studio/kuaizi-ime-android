@@ -64,7 +64,7 @@ IS -[#E1F5FE]-> UI : collectAsState()\ndrives panel recomposition
 IS -[#E1F5FE]-> KVM : state reference
 
 ' ===== Effect Flow =====
-IEF -[#FCE4EC]-> KVM : collect\nPopupTip / PlayAudio
+IEF -[#FCE4EC]-> KVM : collect\nPopupTip only
 
 ' ===== Output Flow =====
 IE -[#F3E5F5]-> IO : EditorAction
@@ -84,6 +84,7 @@ end note
 
 note right of KVM
   gestureToIntent() conversion
+  Audio/Haptic/KeyPopupTip in gestureToIntent()
   handleGesture() / handleIntent()
   Manages KeyboardLayoutMode
   Manages GestureFeedbackState

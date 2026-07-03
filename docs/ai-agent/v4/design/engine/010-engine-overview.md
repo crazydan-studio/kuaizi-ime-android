@@ -171,7 +171,7 @@ sealed class ImeEffect {
 }
 ```
 
-`ImeEffect` 现仅承载 PopupTip 领域事件（如键盘切换提示、收藏确认、剪贴板检测），不再包含音效和触觉反馈信号。音效与触觉已完全交由 UI 层在 `gestureToIntent()` 中直接处理。`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，配置 `extraBufferCapacity = 64` 以应对快速连续打字时的高频 `PopupTip`。UI 层在独立的协程中收集效果并消费，不触发 `ImeState` 的重组。详见 [065-交互反馈设计](065-audio-haptic-feedback.md)。
+`ImeEffect` 现仅承载 PopupTip 领域事件（如键盘切换提示、收藏确认、剪贴板检测），不再包含音效和触觉反馈信号。音效与触觉已完全交由 UI 层在 `gestureToIntent()` 中直接处理。`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，配置 `extraBufferCapacity = 64` 以应对快速连续打字时的高频 `PopupTip`。UI 层在独立的协程中收集效果并消费，不触发 `ImeState` 的重组。详见 [:ui 交互反馈设计](../ui/070-interaction-feedback.md)。
 
 > **为什么 ImeEffect 与 ImeState 分离？**  
 > ImeEffect 与 ImeState 分离避免了一次性效果触发 ImeState.copy() 和 StateFlow 发射导致的全局 UI 重组。每个 effect 通过独立的 SharedFlow 通道传递，UI 层在独立的协程中消费，不触发 ImeState 的变化。
@@ -248,7 +248,7 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 交互反馈（音效、触觉、按键弹出提示）完全由 UI 层在 `gestureToIntent()` 中直接处理，引擎不再参与。`AudioType` / `HapticType` 枚举和播放器接口（`AudioPlayer` / `HapticPlayer`）均定义在 `:ui` 中，平台实现由 `:app` 提供。引擎仅通过 `ImeEffect` 发射 `PopupTip` 领域事件。
 
-详见 [065-交互反馈设计](065-audio-haptic-feedback.md)。
+详见 [:ui 交互反馈设计](../ui/070-interaction-feedback.md)。
 
 ### 4.7 剪贴板与收藏
 

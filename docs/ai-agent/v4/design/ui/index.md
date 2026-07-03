@@ -14,3 +14,4 @@
 | 040 | [Compose 组件](040-compose-components.md) | KeyboardHost 集成组件、KeyLayoutPanel 按键布局面板、KeyView 按键视图、GestureInputPanel 手势输入面板、GestureFeedbackPanel 手势反馈面板、CandidateListPanel 候选列表面板、InputListPanel 输入列表面板、PopupTipPanel 弹出提示面板、ToolListPanel 工具列表面板、主题系统 |
 | 050 | [输入动作播放](050-input-action-player.md) | UseMode 使用模式、InputActionPlayerState 播放状态、InputActionPlayer 播放器、ComposeInputActionPositionResolver 位置解析器、InputActionScriptLoader 脚本加载器、指示器内建机制、归一化坐标流 |
 | 060 | [配置界面](060-config-ui.md) | KeyboardPreview 键盘预览、ThemeSelector 主题选择器、HandModeToggle 单手模式切换、QuickSettingsPopup 快捷设置弹窗 |
+| 070 | [交互反馈设计](070-interaction-feedback.md) | AudioType/HapticType 定义、FeedbackPlayer 接口、gestureToIntent() 反馈处理、按键弹出提示逻辑、ImeEffect PopupTip 订阅、扩展模式 |
