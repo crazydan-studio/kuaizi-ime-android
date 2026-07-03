@@ -52,7 +52,7 @@ package org.crazydan.studio.ime.ui.viewmodel
  * - 派生 isInputting 状态，控制 ToolListPanel/InputListPanel 互斥切换
  * - 提供输入动作播放器（InputActionPlayer）
  * - 缓存面板布局状态供播放器坐标解析
- * - 管理感官反馈播放（AudioPlayer / HapticPlayer）
+ * - 在 gestureToIntent() 中直接处理音效、触觉和按键弹出提示
  *
  * ViewModel 仅依赖引擎核心模型和播放器接口。
  * 平台级职责（ImeEngine 创建、InputConnectionBridge 管理、配置持久化）
@@ -185,8 +185,12 @@ class KeyboardViewModel(
     /**
      * 处理输入手势。
      *
-     * 将 InputGesture（UI 面板的输出）转换为 ImeIntent（引擎的输入），
-     * 然后委托引擎执行 reduce。
+     * 1. 同步处理交互反馈（按键弹出提示、音效、触觉）
+     * 2. 将 InputGesture（UI 面板的输出）转换为 ImeIntent（引擎的输入）
+     * 3. 委托引擎执行 reduce
+     *
+     * 交互反馈在 gestureToIntent() 中同步处理，不经过 engine → SharedFlow → collect
+     * 的异步路径，确保反馈与手势同步、低延迟。
      */
     fun handleGesture(gesture: InputGesture) {
         val intent = gestureToIntent(gesture)
@@ -222,29 +226,31 @@ class KeyboardViewModel(
     // ─── 生命周期 ────────────────────────────────────────────────
 
     init {
-        // 订阅引擎副作用通道
+        // 订阅引擎副作用通道（仅处理 PopupTip 领域事件）
         viewModelScope.launch {
-            engine.effect
-                .channelFlow {
-                    // 将 SharedFlow 转为 conflated Channel
-                    // 相同类型的连续效果会被合并，只保留最后一个
-                    engine.effect.collect { effect ->
-                        when (effect) {
-                            is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
-                                // 感官反馈：使用 trySend 非阻塞发送，
-                                // Channel 满时静默丢弃旧的未消费事件
-                                trySend(effect)
-                            }
-                            is ImeEffect.PopupTip -> {
-                                // 弹出提示：确保不丢失，使用 send（会等待）  
-                                send(effect)
-                            }
+            engine.effect.collect { effect ->
+                when (effect) {
+                    is ImeEffect.PopupTip.Message -> {
+                        _popupTipState.value = PopupTipState.Message(
+                            message = effect.message,
+                            timeoutMs = effect.timeoutMs,
+                        )
+                        dismissPopupTipAfter(effect.timeoutMs)
+                    }
+                    is ImeEffect.PopupTip.Action -> {
+                        _popupTipState.value = PopupTipState.Action(
+                            message = effect.message,
+                            actionLabel = effect.actionLabel,
+                            action = effect.action,
+                            persistent = effect.persistent,
+                            timeoutMs = effect.timeoutMs,
+                        )
+                        if (!effect.persistent) {
+                            dismissPopupTipAfter(effect.timeoutMs)
                         }
                     }
                 }
-                .collect { effect ->
-                    processEffect(effect)
-                }
+            }
         }
 
         // 订阅引擎状态变更，动态更新工具列表
@@ -281,41 +287,41 @@ class KeyboardViewModel(
         }
     }
 
-    private fun processEffect(effect: ImeEffect) {
-        when (effect) {
-            is ImeEffect.PopupTip.Message -> {
-                _popupTipState.value = PopupTipState.Message(
-                    message = effect.message,
-                    timeoutMs = effect.timeoutMs,
-                )
-                dismissPopupTipAfter(effect.timeoutMs)
+    /**
+     * 将手势转换为引擎意图，同步处理交互反馈。
+     *
+     * 在转换意图的同时，直接同步处理音效、触觉和按键弹出提示。
+     * 这些反馈完全由手势类型决定，无需等待引擎的 reduce 结果。
+     * 引擎的 ImeEffect 通道仅承载 PopupTip 领域事件。
+     */
+    private fun gestureToIntent(gesture: InputGesture): ImeIntent {
+        // 1. 处理按键弹出提示
+        handleKeyPopupTip(gesture)
+
+        // 2. 处理音效和触觉反馈
+        when (gesture) {
+            is InputGesture.Tap -> {
+                playAudio(AudioType.KeyPress)
+                playHaptic(HapticType.LightTap)
             }
-            is ImeEffect.PopupTip.Action -> {
-                _popupTipState.value = PopupTipState.Action(
-                    message = effect.message,
-                    actionLabel = effect.actionLabel,
-                    action = effect.action,
-                    persistent = effect.persistent,
-                    timeoutMs = effect.timeoutMs,
-                )
-                if (!effect.persistent) {
-                    dismissPopupTipAfter(effect.timeoutMs)
-                }
+            is InputGesture.LongPress -> {
+                playHaptic(HapticType.HeavyTap)
             }
-            is ImeEffect.PlayAudio -> {
-                if (state.value.config.ui.audioFeedbackEnabled && audioPlayer != null) {
-                    audioPlayer.play(effect.type)
-                }
+            is InputGesture.Swipe -> {
+                playAudio(AudioType.Slip)
+                playHaptic(HapticType.MediumTap)
             }
-            is ImeEffect.PlayHaptic -> {
-                if (state.value.config.ui.hapticFeedbackEnabled && hapticPlayer != null) {
-                    hapticPlayer.play(effect.type)
-                }
+            is InputGesture.Flip -> {
+                playAudio(AudioType.PageFlip)
+                playHaptic(HapticType.MediumTap)
+            }
+            is InputGesture.CandidateTap -> {
+                playAudio(AudioType.CandidateSelect)
+                playHaptic(HapticType.LightTap)
             }
         }
-    }
 
-    private fun gestureToIntent(gesture: InputGesture): ImeIntent {
+        // 3. 转换为引擎意图
         return when (gesture) {
             is InputGesture.Tap -> ImeIntent.PressKey(gesture.key, KeyGesture.Tap)
             is InputGesture.LongPress -> ImeIntent.PressKey(gesture.key, KeyGesture.LongPress)
@@ -327,6 +333,37 @@ class KeyboardViewModel(
             is InputGesture.CandidateTap -> ImeIntent.SelectCandidate(
                 /* 根据 gesture.candidateIndex 从当前候选列表中获取 */
             )
+        }
+    }
+
+    // ─── 交互反馈 ────────────────────────────────────────────────
+
+    /**
+     * 处理按键弹出提示。
+     *
+     * 仅 Tap 和 LongPress 手势触发按键弹出提示，受 UiConfig.keyPopupTipsEnabled
+     * 和 RuntimeConfig.keyPopupTipsEnabled 双重控制。
+     */
+    private fun handleKeyPopupTip(gesture: InputGesture) {
+        if (gesture !is InputGesture.Tap && gesture !is InputGesture.LongPress) return
+        if (!config.ui.keyPopupTipsEnabled) return
+        if (config.runtime.keyPopupTipsEnabled == false) return
+
+        _keyPopupTipState.value = KeyPopupTipState(
+            key = gesture.key,
+            show = true,
+        )
+    }
+
+    private fun playAudio(type: AudioType) {
+        if (config.ui.audioFeedbackEnabled) {
+            audioPlayer?.play(type)
+        }
+    }
+
+    private fun playHaptic(type: HapticType) {
+        if (config.ui.hapticFeedbackEnabled) {
+            hapticPlayer?.play(type)
         }
     }
 
@@ -478,38 +515,29 @@ data class ToolItem(
 
 ## 5 `ImeEffect` 订阅与处理
 
-ImeEffect 通过 `Channel<ImeEffect>(capacity = Channel.CONFLATED)` 消费，确保高频效果（连续按键音）不会积压。ViewModel 内部维护一个将 SharedFlow 转为 conflated Channel 的适配层：
+ViewModel 直接通过 `engine.effect.collect` 订阅 SharedFlow，仅处理 `PopupTip` 领域事件。音效和触觉反馈已完全移至 `gestureToIntent()` 中同步处理，不再经由 `ImeEffect` 通道。
 
 ```kotlin
 // 在 KeyboardViewModel init 中
 viewModelScope.launch {
-    engine.effect
-        .channelFlow {
-            // 将 SharedFlow 转为 conflated Channel
-            // 相同类型的连续效果会被合并，只保留最后一个
-            engine.effect.collect { effect ->
-                when (effect) {
-                    is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
-                        // 感官反馈：使用 trySend 非阻塞发送，
-                        // Channel 满时静默丢弃旧的未消费事件
-                        trySend(effect)
-                    }
-                    is ImeEffect.PopupTip -> {
-                        // 弹出提示：确保不丢失，使用 send（会等待）  
-                        send(effect)
-                    }
+    engine.effect.collect { effect ->
+        when (effect) {
+            is ImeEffect.PopupTip.Message -> {
+                _popupTipState.value = PopupTipState.Message(...)
+                dismissPopupTipAfter(effect.timeoutMs)
+            }
+            is ImeEffect.PopupTip.Action -> {
+                _popupTipState.value = PopupTipState.Action(...)
+                if (!effect.persistent) {
+                    dismissPopupTipAfter(effect.timeoutMs)
                 }
             }
         }
-        .collect { effect ->
-            processEffect(effect)
-        }
+    }
 }
 ```
 
-这种分层策略确保不同类型的 effect 有不同的背压行为：感官反馈（PlayAudio/PlayHaptic）容忍丢弃，弹出提示（PopupTip）必须可靠送达。Channel.CONFLATED 确保 Channel 中最多只有一个待处理效果，新的效果覆盖旧的效果。
-
-ViewModel 在独立的 collectEffect() 协程中消费 ImeEffect，不参与 ImeState 的 StateFlow 订阅链。因此 effect 的到达不会触发任何 Compose 重组——只有 effect 处理逻辑修改了 PopupTipState（MutableStateFlow）后，弹出提示面板才会局部重组。
+由于不再需要处理高频的 `PlayAudio`/`PlayHaptic` 信号，`channelFlow` conflate 模式已去除，订阅逻辑简化为直接的 `collect` 调用。ViewModel 在独立的协程中消费 `ImeEffect`，不参与 `ImeState` 的 `StateFlow` 订阅链——只有 `PopupTipState`（`MutableStateFlow`）被更新后，弹出提示面板才会局部重组。
 
 ### 5.1 `PopupTip.Message` 处理
 
@@ -523,19 +551,7 @@ ViewModel 在独立的 collectEffect() 协程中消费 ImeEffect，不参与 Ime
 
 `PopupTipPanel` 在渲染 `Action` 类型提示时，显示消息文本和操作按钮。操作按钮的点击回调调用 `viewModel.handleIntent(action)`，将关联的 `ImeIntent` 发送到引擎。例如，引擎检测到剪贴板有新内容时，发出 `ImeEffect.PopupTip.Action(message="检测到剪贴板内容", actionLabel="粘贴", action=ImeIntent.PasteClipboard, persistent=true)`，`PopupTipPanel` 显示提示和"粘贴"按钮，用户点击按钮后触发 `ImeIntent.PasteClipboard`，引擎在 reduce 中执行粘贴操作并输出结果到编辑器。
 
-### 5.3 `PlayAudio` 处理
-
-`ImeEffect.PlayAudio` 携带 `AudioType` 枚举值，ViewModel 收到后检查 `ImeConfig.UiConfig.audioFeedbackEnabled` 配置和 `audioPlayer` 播放器的可用性。配置启用且播放器可用时，调用 `audioPlayer.play(effect.type)` 播放音效；配置禁用或播放器不可用时，静默跳过。这种「配置检查 + 播放器注入」的模式确保引擎不感知 UI 配置——引擎始终发射 `PlayAudio` 信号，UI 层根据配置和运行时环境决定是否播放。
-
-`AudioType` 包括 `KeyPress`（按键音）、`Slip`（滑行输入音）、`CandidateSelect`（候选选择音）、`PageFlip`（翻页音）四种类型。`candidatesPagingAudioEnabled` 是翻页音效的独立开关，ViewModel 在处理 `AudioType.PageFlip` 时额外检查此配置。音频播放器接口（`AudioPlayer`）定义在 `:ui` 中，平台实现（`AndroidAudioPlayer`）由 `:app` 提供。
-
-### 5.4 `PlayHaptic` 处理
-
-`ImeEffect.PlayHaptic` 携带 `HapticType` 枚举值，ViewModel 收到后检查 `ImeConfig.UiConfig.hapticFeedbackEnabled` 配置和 `hapticPlayer` 播放器的可用性。配置启用且播放器可用时，调用 `hapticPlayer.play(effect.type)` 触发振动；配置禁用或播放器不可用时，静默跳过。处理模式与 `PlayAudio` 完全一致——配置检查在 ViewModel 层执行，不在引擎层执行。
-
-`HapticType` 包括 `LightTap`（轻触反馈，20ms / 50% 强度）、`MediumTap`（中等反馈，50ms / 70% 强度）、`HeavyTap`（重触反馈，100ms / 100% 强度）三种类型。轻触反馈用于按键点击和候选选择，中等反馈用于滑行识别和翻页，重触反馈用于长按触发。触觉播放器接口（`HapticPlayer`）定义在 `:ui` 中，平台实现（`AndroidHapticPlayer`）由 `:app` 提供。
-
-### 5.5 收藏确认处理
+### 5.3 收藏确认处理
 
 收藏确认通过 `PopupTip.Action` 实现，而非独立的 `ImeEffect` 类型。当 `ImeIntent.CommitInput` 处理完成后，引擎检查已提交文本是否已在收藏列表中。若未收藏，引擎发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(InputFavorite(text=committedText)), persistent=false)`，ViewModel 收到后显示带「收藏」按钮的提示条，用户点击即可保存。已收藏的内容不触发任何提示。这种设计将收藏确认统一到 `PopupTip.Action` 体系中，无需额外的 `ImeEffect` 子类型。
 

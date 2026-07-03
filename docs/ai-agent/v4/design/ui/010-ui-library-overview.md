@@ -67,7 +67,7 @@ UI 库的「缺省实现」定位意味着它必须提供功能完备的组件�
 
 | 组件 | 包路径 | 说明 |
 |------|--------|------|
-| `KeyboardViewModel` | `viewmodel` | UI 协调中心，持有 `ImeEngine`，暴露 `StateFlow<ImeState>`，将 `InputGesture` 转换为 `ImeIntent`，管理 `GestureFeedbackState`、`PopupTipState`、`ToolListState`、`layoutMode` 及 `InputActionPlayer` |
+| `KeyboardViewModel` | `viewmodel` | UI 协调中心，持有 `ImeEngine`，暴露 `StateFlow<ImeState>`，将 `InputGesture` 转换为 `ImeIntent`，管理 `GestureFeedbackState`、`PopupTipState`、`ToolListState`、`layoutMode` 及 `InputActionPlayer`，在 `gestureToIntent()` 中直接处理音效/触觉/按键弹出提示 |
 
 `KeyboardViewModel` 是 UI 层的协调中心，桥接 Compose UI 组件与 `:engine` 引擎。它不属于 `:app` 模块，而是归属于 `:ui` 模块，确保任何引入 `:engine` + `:ui` 的第三方应用都能获得即插即用的 ViewModel。ViewModel 的核心职责包括：手势/意图分发（`handleGesture()`、`handleIntent()`）、状态暴露（`state`、`config`、`layoutMode`、`feedbackState`）、弹出提示管理（订阅引擎 `ImeEffect` 通道，驱动 `PopupTipPanel`）、工具列表管理（根据 `keyboard.type` 动态配置）、布局模式管理（`KeyboardLayoutMode` 运行时切换）、输入动作播放器集成（`InputActionPlayer`）以及布局状态缓存（供播放器坐标解析）。ViewModel 仅依赖引擎公开 API，不持有 `InputConnectionBridge`，不执行配置持久化，不创建或销毁引擎（详见 [030-键盘视图模型](030-keyboard-view-model.md)）。
 
@@ -146,15 +146,17 @@ UI 库的所有组件仅依赖 `:engine` 的公开 API：
 | 依赖的引擎 API | UI 库中的使用场景 |
 |---------------|-----------------|
 | `ImeEngine.state: StateFlow<ImeState>` | 所有 Compose 组件通过 `collectAsState()` 订阅状态驱动重组 |
-| `ImeEngine.effect: SharedFlow<ImeEffect>` | `KeyboardViewModel` 订阅副作用通道，驱动 `PopupTipState`、音效播放、触觉振动；收藏确认通过 `PopupTip.Action` 实现 |
+| `ImeEngine.effect: SharedFlow<ImeEffect>` | `KeyboardViewModel` 订阅副作用通道，驱动 `PopupTipState`；收藏确认通过 `PopupTip.Action` 实现 |
 | `ImeIntent` | `KeyboardViewModel` 将 `InputGesture` 转换为 `ImeIntent` 后发送给引擎，`ToolItem` 点击直接发送 `ImeIntent`，`PopupTipState.Action` 点击触发 `ImeIntent` |
 | `EditorAction` | 不直接使用（通过 `ImeEditorBridge` 分发） |
 | `ImeEditorBridge` / `BaseImeEditorBridge` | `EditTextBridge` 实现用于非系统 IME 场景 |
-| `ImeEffect` | `KeyboardViewModel` 订阅引擎副作用通道，处理 `PopupTip.Message`、`PopupTip.Action`、`PlayAudio`、`PlayHaptic`；收藏确认通过 `PopupTip.Action` 实现 |
+| `ImeEffect` | `KeyboardViewModel` 订阅引擎副作用通道，仅处理 `PopupTip.Message` 和 `PopupTip.Action`；音效与触觉在 `gestureToIntent()` 中直接处理 |
 | `ImeConfig` / `ImeConfig.UiConfig` | 主题系统、配置 UI 组件读取配置驱动界面呈现 |
 | `KeyboardInputMode` 枚举 | `KeyLayoutPanel` 布局策略选择、`GestureInputPanel` 手势识别逻辑。`KeyboardInputMode` 与 `KeyboardType` 是 `:engine` 中两个不同的概念：`KeyboardType` 是引擎的键盘分类（`Pinyin`/`Latin`/`Symbol`/`Emoji`/`Number`/`Math`），决定按键集合的语义内容；`KeyboardInputMode` 是输入交互范式分类（`HexGrid`/`RectGrid`），决定按键的几何排列和手势交互方式。二者正交组合 |
 | `InputActionPlayerState` | `InputActionPlayer` 播放状态管理 |
 | `InputActionFingerIndicator` | 手指指示器渲染，绘制代表手指的图形并跟随滑行轨迹移动，以及手指的点击动画（供 `CandidateListPanel`/`InputListPanel`/`ToolListPanel` 内建绘制及 `GestureFeedbackPanel` 绘制） |
+| `AudioType` / `HapticType` | `feedback` | 音效类型枚举和触觉类型枚举，定义在 `:ui` 模块的 `feedback` 包中，供 `KeyboardViewModel` 在 `gestureToIntent()` 中直接使用 |
+| `AudioPlayer` / `HapticPlayer` | `feedback` | 音效播放接口与触觉播放接口，即 `FeedbackPlayer<AudioType>` 和 `FeedbackPlayer<HapticType>` 的类型别名，定义在 `:ui` 模块的 `feedback` 包中，由 `:app` 模块提供平台实现 |
 | `InputActionPathInterpolator` | `InputActionPlayer` 轨迹插值计算 |
 | `InputActionPositionResolver` | `ComposeInputActionPositionResolver` 实现的接口，将语义标识解析为归一化坐标 |
 | `OffsetF` / `RectF` | 归一化坐标类型，`CoordinateNormalizer` 与 `GestureFeedbackPanel` 使用 |

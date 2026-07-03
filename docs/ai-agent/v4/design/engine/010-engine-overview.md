@@ -168,24 +168,13 @@ sealed class ImeEffect {
             val timeoutMs: Long = 5000L,
         ) : PopupTip()
     }
-
-    data class PlayAudio(val type: AudioType) : ImeEffect()
-    data class PlayHaptic(val type: HapticType) : ImeEffect()
-}
-
-enum class AudioType {
-    KeyPress, CandidateSelect, Slip, PageFlip,
-}
-
-enum class HapticType {
-    LightTap, MediumTap, HeavyTap,
 }
 ```
 
-`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，配置 `extraBufferCapacity = 64` 以应对快速连续打字时的高频效果。UI 层在独立的 `collectEffect()` 协程中收集效果并消费，不触发 `ImeState` 的重组。将弹出提示、音效播放、触觉振动等一次性效果编码为 sealed class，确保编译期类型安全。感官反馈（`PlayAudio` / `PlayHaptic`）的播放器接口定义在 `:ui` 中，平台实现由 `:app` 提供——引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
+`ImeEffect` 现仅承载 PopupTip 领域事件（如键盘切换提示、收藏确认、剪贴板检测），不再包含音效和触觉反馈信号。音效与触觉已完全交由 UI 层在 `gestureToIntent()` 中直接处理。`ImeEffect` 通过 `SharedFlow<ImeEffect>` 发射，配置 `extraBufferCapacity = 64` 以应对快速连续打字时的高频 `PopupTip`。UI 层在独立的协程中收集效果并消费，不触发 `ImeState` 的重组。详见 [065-交互反馈设计](065-audio-haptic-feedback.md)。
 
 > **为什么 ImeEffect 与 ImeState 分离？**  
-> ImeEffect 与 ImeState 分离避免了一次性效果触发 ImeState.copy() 和 StateFlow 发射导致的全局 UI 重组。每个 effect 通过独立的 SharedFlow 通道传递，UI 层在独立的 collectEffect() 协程中消费，不触发 ImeState 的变化。这种分离确保高频效果（如连续按键音）不会污染核心状态树。
+> ImeEffect 与 ImeState 分离避免了一次性效果触发 ImeState.copy() 和 StateFlow 发射导致的全局 UI 重组。每个 effect 通过独立的 SharedFlow 通道传递，UI 层在独立的协程中消费，不触发 ImeState 的变化。
 
 ---
 
@@ -199,7 +188,7 @@ MVI 数据流由四条通道构成，每条通道有明确的语义和方向：
 
 - **输入通道**：`ImeIntent` → `ImeEngine.handleIntent()` → `reduce(state, intent)` → 新 `ImeState`。用户操作统一编码为 `ImeIntent`，由 `ImeEngine` 的 `handleIntent()` 方法接收。`reduce` 函数是纯函数，接收当前 `ImeState` 和 `ImeIntent`，返回新的 `ImeState`，不产生副作用。
 - **状态通道**：`ImeState` 通过 `StateFlow<ImeState>` 暴露。UI 层订阅 `StateFlow`，状态变更自动驱动重组。`StateFlow` 保证值的原子性和一致性——订阅者始终读取到最新的完整状态快照，不存在部分更新的问题。
-- **副作用通道**：一次性效果（弹出提示、音效、触觉振动）通过 `SharedFlow<ImeEffect>` 发射。`reduce` 函数在产生副作用时通过 `_effect.emit()` 发射到 SharedFlow，UI 层在独立的 `collectEffect()` 协程中消费。副作用通道与状态通道分离，确保高频效果不会触发全局 UI 重组。
+- **副作用通道**：一次性效果（PopupTip 领域事件）通过 `SharedFlow<ImeEffect>` 发射。`reduce` 函数在产生副作用时通过 `_effect.emit()` 发射到 SharedFlow，UI 层在独立的协程中消费。副作用通道与状态通道分离，确保高频效果不会触发全局 UI 重组。
 - **编辑器操作通道**：`EditorAction` 由 `ImeEngine` 的 `dispatchEditorAction()` 统一分发到 `ImeEditorBridge`。桥梁实现者只需实现语义方法，无需理解 `EditorAction` 类型体系。编辑器操作通道承担所有对目标编辑器的操作（提交文本、移动光标、插入配对符号等）。
 
 ### 3.2 数据流图
@@ -255,11 +244,11 @@ MVI 数据流遵循以下不变式，确保数据流的可追踪性和可预测�
 
 详见 [060-编辑器桥接](060-intent-editor-action-bridge.md)。
 
-### 4.6 音效与触觉反馈
+### 4.6 交互反馈
 
-`ImeEffect.PlayAudio` 和 `ImeEffect.PlayHaptic` 是感官反馈信号，遵循 fire-and-forget 语义。感官反馈的播放器接口（`AudioPlayer` / `HapticPlayer`）定义在 `:ui` 中，平台实现（`AndroidAudioPlayer` / `AndroidHapticPlayer`）由 `:app` 提供。引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。
+交互反馈（音效、触觉、按键弹出提示）完全由 UI 层在 `gestureToIntent()` 中直接处理，引擎不再参与。`AudioType` / `HapticType` 枚举和播放器接口（`AudioPlayer` / `HapticPlayer`）均定义在 `:ui` 中，平台实现由 `:app` 提供。引擎仅通过 `ImeEffect` 发射 `PopupTip` 领域事件。
 
-详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
+详见 [065-交互反馈设计](065-audio-haptic-feedback.md)。
 
 ### 4.7 剪贴板与收藏
 
@@ -715,6 +704,7 @@ private fun processSideEffects(sideEffects: List<ImeIntent>) {
 
 典型的 `ImeEffect` 场景：
 - 键盘类型切换时发射 `ImeEffect.PopupTip.Message("已切换到拉丁键盘")`
-- 按键处理时发射 `ImeEffect.PlayAudio(AudioType.KeyPress)` 和 `ImeEffect.PlayHaptic(HapticType.LightTap)`
-- 候选词选择时发射 `ImeEffect.PlayAudio(AudioType.CandidateSelect)`
 - 输入提交后若内容未收藏且 `EngineConfig.favoriteInputEnabled` 为 `true`，发射 `ImeEffect.PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...), persistent=false)`
+- 引擎启动时若检测到可粘贴内容，发射 `ImeEffect.PopupTip.Action(message="可粘贴内容", actionLabel="粘贴", action=ImeIntent.PasteClip(text), persistent=true)`
+
+音效和触觉反馈已完全交由 UI 层在 `gestureToIntent()` 中直接处理，不再经由 `ImeEffect` 通道。

@@ -16,7 +16,7 @@ data class ImeState(
 )
 ```
 
-`ImeState` 的七个字段覆盖了输入法的全部逻辑状态：`keyboard` 描述当前键盘的类型、输入模式和状态机位置；`inputList` 管理用户输入的字符序列与游标；`candidateList` 承载候选词的分页和过滤数据；`clipboard` 和 `favoriteList` 分别维护剪贴板检测与收藏管理的状态；`toolListState` 管理工具栏按钮的配置与启用状态；`config` 提供运行时配置的快照。一次性副作用信号（弹出提示、音效、触觉振动）通过独立的 `SharedFlow<ImeEffect>` 通道发射，与 `ImeState` 完全分离。这种扁平组合的设计使得每个子状态都有清晰的职责边界，任何子状态的变更仅影响对应字段的 `copy()` 操作，不会意外波及其他子状态。
+`ImeState` 的七个字段覆盖了输入法的全部逻辑状态：`keyboard` 描述当前键盘的类型、输入模式和状态机位置；`inputList` 管理用户输入的字符序列与游标；`candidateList` 承载候选词的分页和过滤数据；`clipboard` 和 `favoriteList` 分别维护剪贴板检测与收藏管理的状态；`toolListState` 管理工具栏按钮的配置与启用状态；`config` 提供运行时配置的快照。一次性副作用信号（弹出提示等领域事件）通过独立的 `SharedFlow<ImeEffect>` 通道发射，与 `ImeState` 完全分离。这种扁平组合的设计使得每个子状态都有清晰的职责边界，任何子状态的变更仅影响对应字段的 `copy()` 操作，不会意外波及其他子状态。
 
 需要特别指出的是，`ImeState` 中**不包含**以下两类数据：`isInputting`（由 `KeyboardViewModel` 从 `inputList.pending` 直接派生）、帧级手势反馈状态（如触摸轨迹、按键高亮，由 `:ui` 的 `KeyboardViewModel` 维护本地 `StateFlow`）。这种分离确保了高频帧级状态不会污染引擎的核心状态树，避免了不必要的 Compose 重组开销。
 
@@ -290,7 +290,7 @@ data class ToolItem(
 `ImeEffect` 是引擎的副作用信号，通过独立的 `SharedFlow<ImeEffect>` 通道发射，与 `ImeState` 完全分离。`ImeEngine` 内部持有 `MutableSharedFlow<ImeEffect>(extraBufferCapacity = 64)`，对外暴露只读 `SharedFlow<ImeEffect>`。与持续性状态不同，`ImeEffect` 表达的是「发生了某件事」的事件语义——引擎发射信号后 UI 层在独立协程中消费，不触发 `ImeState` 的变化。
 
 > **为什么 ImeEffect 与 ImeState 分离？**  
-> 避免了一次性效果触发 ImeState.copy() 和 StateFlow 发射导致的全局 UI 重组。每个 effect 通过独立的 SharedFlow 通道传递，UI 层在独立的 collectEffect() 协程中消费，不触发 ImeState 的变化。64 的缓冲容量确保快速连击时高频效果（按键音、触觉反馈）不会因背压而静默丢弃。
+> 避免了一次性效果触发 ImeState.copy() 和 StateFlow 发射导致的全局 UI 重组。每个 effect 通过独立的 SharedFlow 通道传递，UI 层在独立的协程中消费，不触发 ImeState 的变化。64 的缓冲容量确保快速连击时高频 `PopupTip` 不会因背压而静默丢弃。
 
 ### 7.1 PopupTip 体系
 
@@ -314,22 +314,10 @@ sealed class ImeEffect {
             val timeoutMs: Long = 5000L,
         ) : PopupTip()
     }
-    /** 音效反馈信号：指示 UI 层播放指定类型的音效 */
-    data class PlayAudio(val type: AudioType) : ImeEffect()
-    /** 触觉反馈信号：指示 UI 层触发指定类型的振动 */
-    data class PlayHaptic(val type: HapticType) : ImeEffect()
-}
-
-enum class AudioType {
-    KeyPress, CandidateSelect, Slip, PageFlip,
-}
-
-enum class HapticType {
-    LightTap, MediumTap, HeavyTap,
 }
 ```
 
-`PlayAudio` 和 `PlayHaptic` 是感官反馈信号，遵循 fire-and-forget 语义——引擎发出信号后 UI 层消费即丢弃。感官反馈的播放器接口定义在 `:ui` 中，平台实现由 `:app` 提供，配置检查由 `KeyboardViewModel` 执行。这种分层确保引擎仅负责决定「何时」触发反馈，UI 层负责「是否和如何」播放反馈。详见 [065-音效与触觉反馈](065-audio-haptic-feedback.md)。
+`ImeEffect` 现仅承载 `PopupTip` 领域事件。音效和触觉反馈已完全交由 UI 层在 `gestureToIntent()` 中直接处理，不再经由 `ImeEffect` 通道。`AudioType` / `HapticType` 枚举和播放器接口均定义在 `:ui` 模块中。详见 [065-交互反馈设计](065-audio-haptic-feedback.md)。
 
 ### 7.2 Message 提示
 
@@ -352,7 +340,7 @@ enum class HapticType {
 
 ### 7.4 通道集成
 
-`ImeEngine` 在 `handleIntent()` 处理过程中，将 `ImeEffect` 通过 `_effect.emit()` 发射到 `SharedFlow<ImeEffect>`。UI 层在独立的 `collectEffect()` 协程中收集并消费：`PopupTip.Message` 显示浮动提示条并启动自动 dismiss 定时器；`PopupTip.Action` 显示带按钮的提示条，按钮点击触发对应的 `ImeIntent`；`PlayAudio` 检查 `audioFeedbackEnabled` 配置后调用 `AudioPlayer.play()`；`PlayHaptic` 检查 `hapticFeedbackEnabled` 配置后调用 `HapticPlayer.play()`。收藏确认通过 `PopupTip.Action` 实现——输入提交后若内容未收藏，引擎发射 `PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示，用户点击「收藏」按钮即可保存。
+`ImeEngine` 在 `handleIntent()` 处理过程中，将 `ImeEffect` 通过 `_effect.emit()` 发射到 `SharedFlow<ImeEffect>`。UI 层在独立的协程中收集并消费：`PopupTip.Message` 显示浮动提示条并启动自动 dismiss 定时器；`PopupTip.Action` 显示带按钮的提示条，按钮点击触发对应的 `ImeIntent`。收藏确认通过 `PopupTip.Action` 实现——输入提交后若内容未收藏，引擎发射 `PopupTip.Action(message="可收藏内容", actionLabel="收藏", action=ImeIntent.SaveFavorite(...))` 提示，用户点击「收藏」按钮即可保存。
 
 `PopupTip.Action` 的 dismiss 策略在 UI 层实现：`persistent = false` 时启动 `delay(timeoutMs)` 协程，超时后自动 dismiss；`persistent = true` 时不启动超时定时器，改为监听 `keyboard.state` 变更——当用户开始输入（状态从 `Idle` 转换到 `PinyinInput.Waiting`）时自动 dismiss。
 
