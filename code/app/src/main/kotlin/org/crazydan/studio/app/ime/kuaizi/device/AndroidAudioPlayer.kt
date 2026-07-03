@@ -22,7 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.device
 import android.content.Context
 import android.media.SoundPool
 import org.crazydan.studio.app.ime.kuaizi.R
-import org.crazydan.studio.app.ime.kuaizi.engine.effect.AudioType
+import org.crazydan.studio.app.ime.kuaizi.ui.effect.AudioType
 import org.crazydan.studio.app.ime.kuaizi.ui.AudioPlayer
 
 /**

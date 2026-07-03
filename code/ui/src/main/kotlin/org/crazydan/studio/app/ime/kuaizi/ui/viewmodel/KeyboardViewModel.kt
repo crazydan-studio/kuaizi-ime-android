@@ -31,6 +31,8 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.ui.AudioPlayer
 import org.crazydan.studio.app.ime.kuaizi.ui.HapticPlayer
+import org.crazydan.studio.app.ime.kuaizi.ui.effect.AudioType
+import org.crazydan.studio.app.ime.kuaizi.ui.effect.HapticType
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
@@ -126,28 +128,12 @@ class KeyboardViewModel(
         launchToolListCollection()
     }
 
-    /** 订阅引擎副作用通道，处理弹出提示和感官反馈 */
+    /** 订阅引擎副作用通道，处理弹出提示 */
     private fun launchEffectCollection() {
         viewModelScope.launch {
-//            engine.effect
-//                .channelFlow {
-//                    // 将 SharedFlow 转为 conflated Channel
-//                    // 感官反馈使用 trySend 非阻塞发送，丢弃旧事件
-//                    // 弹出提示使用 send 确保不丢失
-//                    engine.effect.collect { effect ->
-//                        when (effect) {
-//                            is ImeEffect.PlayAudio, is ImeEffect.PlayHaptic -> {
-//                                trySend(effect)
-//                            }
-//                            is ImeEffect.PopupTip -> {
-//                                send(effect)
-//                            }
-//                        }
-//                    }
-//                }
-//                .collect { effect ->
-//                    processEffect(effect)
-//                }
+            engine.effect.collect { effect ->
+                processPopupTip(effect)
+            }
         }
     }
 
@@ -163,37 +149,26 @@ class KeyboardViewModel(
         }
     }
 
-    /** 处理引擎副作用 */
-    private fun processEffect(effect: ImeEffect) {
+    /** 处理弹出提示 */
+    private fun processPopupTip(effect: ImeEffect) {
         when (effect) {
-            is ImeEffect.PopupTip.Message -> {
+            is ImeEffect.Message -> {
                 _popupTipState.value = PopupTipState.Message(
                     message = effect.message,
-                    timeoutMs = effect.timeout,
+                    timeoutMs = effect.timeoutMs,
                 )
-                dismissPopupTipAfter(effect.timeout)
+                dismissPopupTipAfter(effect.timeoutMs)
             }
-            is ImeEffect.PopupTip.Action -> {
+            is ImeEffect.Action -> {
                 _popupTipState.value = PopupTipState.Action(
                     message = effect.message,
                     actionLabel = effect.actionLabel,
                     action = effect.action,
                     persistent = effect.persistent,
-                    timeoutMs = effect.timeout,
+                    timeoutMs = effect.timeoutMs,
                 )
                 if (!effect.persistent) {
-                    dismissPopupTipAfter(effect.timeout)
-                }
-            }
-            is ImeEffect.PlayAudio -> {
-                // 配置启用且播放器可用时才播放音效
-                if (state.value.config.ui.audioFeedbackEnabled && audioPlayer != null) {
-                    audioPlayer.play(effect.type)
-                }
-            }
-            is ImeEffect.PlayHaptic -> {
-                if (state.value.config.ui.hapticFeedbackEnabled && hapticPlayer != null) {
-                    hapticPlayer.play(effect.type)
+                    dismissPopupTipAfter(effect.timeoutMs)
                 }
             }
         }
@@ -210,10 +185,30 @@ class KeyboardViewModel(
 
     // ==================== 手势与意图处理 ====================
 
-    /** 处理输入手势：转换为 [ImeIntent] 后委托引擎处理 */
+    /** 处理输入手势：播放反馈、转换为 [ImeIntent] 后委托引擎处理 */
     fun handleGesture(gesture: InputGesture) {
+        playFeedback(gesture)
         val intent = gestureToIntent(gesture)
         engine.handleIntent(intent)
+    }
+
+    private fun playFeedback(gesture: InputGesture) {
+        when (gesture) {
+            is InputGesture.Tap, is InputGesture.LongPress -> {
+                if (config.ui.audioFeedbackEnabled) audioPlayer?.play(AudioType.KeyPress)
+                if (config.ui.hapticFeedbackEnabled) hapticPlayer?.play(HapticType.LightTap)
+            }
+            is InputGesture.Swipe -> {
+                if (config.ui.audioFeedbackEnabled) audioPlayer?.play(AudioType.Slip)
+                if (config.ui.hapticFeedbackEnabled) hapticPlayer?.play(HapticType.LightTap)
+            }
+            is InputGesture.CandidateTap -> {
+                if (config.ui.audioFeedbackEnabled) audioPlayer?.play(AudioType.CandidateSelect)
+            }
+            is InputGesture.Flip -> {
+                if (config.ui.audioFeedbackEnabled) audioPlayer?.play(AudioType.PageFlip)
+            }
+        }
     }
 
     /** 直接发送 [ImeIntent] 到引擎 */

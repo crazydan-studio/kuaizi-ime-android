@@ -24,7 +24,7 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import org.crazydan.studio.app.ime.kuaizi.engine.effect.HapticType
+import org.crazydan.studio.app.ime.kuaizi.ui.effect.HapticType
 import org.crazydan.studio.app.ime.kuaizi.ui.HapticPlayer
 
 /**

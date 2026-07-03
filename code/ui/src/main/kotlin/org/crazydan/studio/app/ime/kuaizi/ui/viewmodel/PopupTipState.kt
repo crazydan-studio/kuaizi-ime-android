@@ -24,7 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 /**
  * 弹出提示状态，由 KeyboardViewModel 管理。
  *
- * 引擎通过 [ImeEffect.PopupTip] 发出一次性效果信号，
+ * 引擎通过 [ImeEffect] 发出一次性效果信号（[ImeEffect.Message] / [ImeEffect.Action]），
  * ViewModel 订阅后更新此状态，驱动 [PopupTipPanel] 显示。
  *
  * 两种类型：
