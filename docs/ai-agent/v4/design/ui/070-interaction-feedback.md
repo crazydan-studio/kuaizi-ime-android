@@ -146,14 +146,14 @@ init {
     viewModelScope.launch {
         engine.effect.collect { effect ->
             when (effect) {
-                is ImeEffect.Message -> {
+                is ImeEffect.PopupTip.Message -> {
                     _popupTipState.value = PopupTipState.Message(
                         message = effect.message,
                         timeoutMs = effect.timeoutMs,
                     )
                     dismissPopupTipAfter(effect.timeoutMs)
                 }
-                is ImeEffect.Action -> {
+                is ImeEffect.PopupTip.Action -> {
                     _popupTipState.value = PopupTipState.Action(...)
                     if (!effect.persistent) {
                         dismissPopupTipAfter(effect.timeoutMs)
