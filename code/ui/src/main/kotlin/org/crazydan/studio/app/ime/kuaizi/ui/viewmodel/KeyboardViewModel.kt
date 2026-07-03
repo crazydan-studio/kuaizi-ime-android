@@ -25,7 +25,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.crazydan.studio.app.ime.kuaizi.engine.*
-import org.crazydan.studio.app.ime.kuaizi.engine.effect.ImeEffect
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeEffect
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType

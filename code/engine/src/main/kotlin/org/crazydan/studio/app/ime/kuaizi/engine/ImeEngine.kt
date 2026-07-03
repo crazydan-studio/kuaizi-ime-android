@@ -40,7 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
-import org.crazydan.studio.app.ime.kuaizi.engine.effect.ImeEffect
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeEffect
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator

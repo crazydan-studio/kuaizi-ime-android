@@ -17,9 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.effect
-
-import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
+package org.crazydan.studio.app.ime.kuaizi.engine
 
 /**
  * 引擎副作用通道信号。
@@ -31,7 +29,9 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
  * @see PopupTip.Action 带操作按钮的消息，可点击触发 ImeIntent
  */
 sealed class ImeEffect {
+
     sealed class PopupTip : ImeEffect() {
+
         /**
          * 纯文本弹出提示。
          *
