@@ -35,6 +35,12 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
  */
 sealed class ImeEffect {
 
+    /** 音效反馈信号：指示 UI 层播放指定类型的音效。 */
+    data class PlayAudio(val type: AudioType) : ImeEffect()
+
+    /** 触觉反馈信号：指示 UI 层触发指定类型的振动。 */
+    data class PlayHaptic(val type: HapticType) : ImeEffect()
+
     /**
      * 弹出提示信号：展示短暂的提示信息或可交互的操作提示。
      *
@@ -42,6 +48,7 @@ sealed class ImeEffect {
      * @see Action 可交互的操作提示，附带可点击按钮
      */
     sealed class PopupTip : ImeEffect() {
+
         /**
          * 消息提醒：短暂停留的提示信息。
          *
@@ -49,11 +56,11 @@ sealed class ImeEffect {
          * 典型场景：键盘类型切换提示、编辑器操作反馈。
          *
          * @property message 提示文本内容
-         * @property timeoutMs 超时时间（毫秒），默认 3000ms
+         * @property timeout 超时时间（毫秒），默认 3000ms
          */
         data class Message(
             val message: String,
-            val timeoutMs: Long = 3000L,
+            val timeout: Long = 3000L,
         ) : PopupTip()
 
         /**
@@ -66,26 +73,14 @@ sealed class ImeEffect {
          * @property actionLabel 按钮标签文本
          * @property action 点击按钮后发送的 [ImeIntent]
          * @property persistent 是否持续显示直到用户输入
-         * @property timeoutMs 超时时间（毫秒），默认 5000ms
+         * @property timeout 超时时间（毫秒），默认 5000ms
          */
         data class Action(
             val message: String,
             val actionLabel: String,
             val action: ImeIntent,
             val persistent: Boolean = false,
-            val timeoutMs: Long = 5000L,
+            val timeout: Long = 5000L,
         ) : PopupTip()
     }
-
-    /** 音效反馈信号：指示 UI 层播放指定类型的音效。 */
-    data class PlayAudio(val type: AudioType) : ImeEffect()
-
-    /** 触觉反馈信号：指示 UI 层触发指定类型的振动。 */
-    data class PlayHaptic(val type: HapticType) : ImeEffect()
 }
-
-/** 音效类型枚举。 */
-enum class AudioType { KeyPress, CandidateSelect, Slip, PageFlip, }
-
-/** 触觉反馈类型枚举。 */
-enum class HapticType { LightTap, MediumTap, HeavyTap, }

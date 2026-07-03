@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.bridge
 
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorSelection
+
 /**
  * 编辑器桥接的抽象基类，提供单快照撤销机制。
  *

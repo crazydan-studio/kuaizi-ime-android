@@ -17,8 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine
-
+package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
 /** 屏幕方向 */
 enum class ScreenOrientation {
@@ -27,40 +26,6 @@ enum class ScreenOrientation {
 
     /** 竖屏 */
     Portrait
-}
-
-/**
- * 编辑器输入类型。
- *
- * 决定输入法启动时的键盘类型以及 Enter 按键的图标样式。
- */
-enum class EditorInputType {
-    /** 搜索框输入 */
-    Filter,
-
-    /** 自动填充 */
-    AutoComplete,
-
-    /** 数字输入 */
-    Number,
-
-    /** 日期输入 */
-    Datetime,
-
-    /** 电话输入 */
-    Phone,
-
-    /** 密码输入 */
-    Password,
-
-    /** 邮件输入 */
-    Email,
-
-    /** url 地址输入 */
-    URI,
-
-    /** 普通文本输入，在无法精确识别输入类型时，均采用该类型 */
-    Text
 }
 
 /** 系统输入法子类型（Input Method Subtype）。 */

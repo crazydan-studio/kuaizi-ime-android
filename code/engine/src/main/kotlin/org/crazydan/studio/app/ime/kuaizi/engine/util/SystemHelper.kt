@@ -22,8 +22,8 @@ package org.crazydan.studio.app.ime.kuaizi.engine.util
 import android.content.Context
 import android.content.res.Configuration
 import android.view.inputmethod.InputMethodManager
-import org.crazydan.studio.app.ime.kuaizi.engine.InputMethodSubtype
-import org.crazydan.studio.app.ime.kuaizi.engine.ScreenOrientation
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.ScreenOrientation
 
 /**
  *

@@ -169,9 +169,9 @@ class KeyboardViewModel(
             is ImeEffect.PopupTip.Message -> {
                 _popupTipState.value = PopupTipState.Message(
                     message = effect.message,
-                    timeoutMs = effect.timeoutMs,
+                    timeoutMs = effect.timeout,
                 )
-                dismissPopupTipAfter(effect.timeoutMs)
+                dismissPopupTipAfter(effect.timeout)
             }
             is ImeEffect.PopupTip.Action -> {
                 _popupTipState.value = PopupTipState.Action(
@@ -179,10 +179,10 @@ class KeyboardViewModel(
                     actionLabel = effect.actionLabel,
                     action = effect.action,
                     persistent = effect.persistent,
-                    timeoutMs = effect.timeoutMs,
+                    timeoutMs = effect.timeout,
                 )
                 if (!effect.persistent) {
-                    dismissPopupTipAfter(effect.timeoutMs)
+                    dismissPopupTipAfter(effect.timeout)
                 }
             }
             is ImeEffect.PlayAudio -> {

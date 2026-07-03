@@ -24,10 +24,10 @@ import android.view.inputmethod.ExtractedText
 import android.view.inputmethod.ExtractedTextRequest
 import android.view.inputmethod.InputConnection
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.BaseImeEditorBridge
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.CursorDirection
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorCursorMotion
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorEditAction
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorSelection
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorCursorMotion
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorSelection
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 
 /**
  * 基于 Android [InputConnection] 的编辑器桥接实现。
@@ -176,11 +176,11 @@ class InputConnectionBridge(
             // 光标移动不能超出当前的编辑区域
             // Note: 通过方向键做文本选择不会超出编辑区域，故而，仅需检查光标移动，确保其不超过文本的首尾位置
             val needToStop = when (direction) {
-                CursorDirection.Up, CursorDirection.Left ->
+                Motion.Direction.Up, Motion.Direction.Left ->
                     extracted.selectionStart == head
                             && extracted.selectionEnd == head
 
-                CursorDirection.Down, CursorDirection.Right ->
+                Motion.Direction.Down, Motion.Direction.Right ->
                     extracted.selectionStart == tail
                             && extracted.selectionEnd == tail
             }
@@ -189,10 +189,10 @@ class InputConnectionBridge(
             }
 
             when (direction) {
-                CursorDirection.Left -> sendKey(ic, KeyEvent.KEYCODE_DPAD_LEFT)
-                CursorDirection.Right -> sendKey(ic, KeyEvent.KEYCODE_DPAD_RIGHT)
-                CursorDirection.Up -> sendKey(ic, KeyEvent.KEYCODE_DPAD_UP)
-                CursorDirection.Down -> sendKey(ic, KeyEvent.KEYCODE_DPAD_DOWN)
+                Motion.Direction.Left -> sendKey(ic, KeyEvent.KEYCODE_DPAD_LEFT)
+                Motion.Direction.Right -> sendKey(ic, KeyEvent.KEYCODE_DPAD_RIGHT)
+                Motion.Direction.Up -> sendKey(ic, KeyEvent.KEYCODE_DPAD_UP)
+                Motion.Direction.Down -> sendKey(ic, KeyEvent.KEYCODE_DPAD_DOWN)
             }
         }
     }

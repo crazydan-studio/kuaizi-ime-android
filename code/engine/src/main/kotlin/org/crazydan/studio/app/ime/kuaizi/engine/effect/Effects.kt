@@ -19,18 +19,29 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.effect
 
-/**
- * 按键音效播放器，封装音效播放的回调函数。
- * 通过构造函数注入播放器实现，解耦引擎与音频播放的具体实现。
- *
- * @param player 音效播放回调函数，接收 [AudioType] 参数
- */
-class KeyAudioPlayer(private val player: (AudioType) -> Unit = {}) {
-    /**
-     * 播放指定类型的音效
-     * @param type 音效类型
-     */
-    fun play(type: AudioType) {
-        player(type)
-    }
+/** 音效类型。 */
+enum class AudioType {
+    /** 按键音：用户点击按键时播放 */
+    KeyPress,
+
+    /** 候选选择音：用户从候选列表选择候选词时播放 */
+    CandidateSelect,
+
+    /** 滑行输入音：用户滑行输入识别完成时播放 */
+    Slip,
+
+    /** 翻页音：候选列表翻页时播放 */
+    PageFlip,
+}
+
+/** 触觉反馈类型。 */
+enum class HapticType {
+    /** 轻触反馈：按键点击、候选选择等轻量操作 */
+    LightTap,
+
+    /** 中等反馈：滑行识别完成、翻页等中等力度操作 */
+    MediumTap,
+
+    /** 重触反馈：长按触发上下文菜单等强调操作 */
+    HeavyTap,
 }

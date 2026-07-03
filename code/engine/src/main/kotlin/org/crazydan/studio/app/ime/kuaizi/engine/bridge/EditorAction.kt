@@ -19,8 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.bridge
 
-import kotlin.math.max
-import kotlin.math.min
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorCursorMotion
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
 
 /**
  * 引擎的编辑器操作 sealed class。
@@ -95,52 +95,4 @@ sealed class EditorAction {
         override val timestamp: Long,
         val action: EditorEditAction,
     ) : EditorAction()
-}
-
-/**
- * 编辑器编辑动作。
- *
- * 定义引擎可对目标编辑器执行的系统级编辑操作。
- */
-enum class EditorEditAction {
-    BACKSPACE, SELECT_ALL, COPY, CUT, PASTE, UNDO, REDO,
-}
-
-/** 光标移动方向。 */
-enum class CursorDirection { Left, Right, Up, Down }
-
-/**
- * 编辑器光标移动信息。
- *
- * @property direction 移动方向
- * @property distance 移动距离
- */
-data class EditorCursorMotion(val direction: CursorDirection, val distance: Float)
-
-/**
- * 编辑器当前选区。
- *
- * @property start 起始位置（包含），其始终小于 [end]
- * @property end 结束位置（不包含），其始终大于 [start]
- * @property reversed 是否为反向选择，即，实际的起点位置大于终点位置
- * @property content 从 [start] 至 [end] 的选区范围内的已选中内容。其可能为空，也即，未选中任何内容
- */
-data class EditorSelection(
-    val start: Int, val end: Int,
-    val reversed: Boolean,
-    val content: CharSequence
-) {
-
-    companion object {
-
-        fun empty() = create(0, 0, "")
-
-        fun create(start: Int, end: Int, content: CharSequence) =
-            EditorSelection(
-                start = min(start, end),
-                end = max(start, end),
-                reversed = start > end,
-                content = content,
-            )
-    }
 }

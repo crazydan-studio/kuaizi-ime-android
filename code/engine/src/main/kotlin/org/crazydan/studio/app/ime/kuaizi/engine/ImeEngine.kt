@@ -38,13 +38,17 @@ import kotlinx.coroutines.launch
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
+import org.crazydan.studio.app.ime.kuaizi.engine.effect.AudioType
+import org.crazydan.studio.app.ime.kuaizi.engine.effect.ImeEffect
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CandidateKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CommitOptionKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EditorKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EmojiKeyboardIntentHandler
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardStateMachine
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
@@ -52,8 +56,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.MathKeyboardIntentHand
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.NumberKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.PinyinIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.SymbolKeyboardIntentHandler
-import org.crazydan.studio.app.ime.kuaizi.engine.effect.AudioType
-import org.crazydan.studio.app.ime.kuaizi.engine.effect.ImeEffect
 import org.crazydan.studio.app.ime.kuaizi.engine.log.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
@@ -269,28 +271,35 @@ class ImeEngine internal constructor(
     private fun handleWithStateMachine(intent: ImeIntent) {
         val handler = resolveHandler(_state.value.keyboard.type)
         val transition = handler.handleIntent(intent, _state.value.keyboard.state)
-        val result = keyboardStateMachine.transition(transition)
-        val sideEffects = result.sideEffects
 
+        // --------------------
+        val (newState, sideEffects, editorAction) = keyboardStateMachine.transition(transition)
+
+        applyStateUpdate { state ->
+            state.copy(
+                keyboard = state.keyboard.copy(state = newState),
+            )
+        }
+
+        // --------------------
+        emitEffects(intent)
+
+        processSideEffects(sideEffects)
+
+        editorAction?.also {
+            dispatchEditorAction(it)
+        }
+    }
+
+    /** 根据 [ImeIntent] 发射 [ImeEffect] */
+    private fun emitEffects(intent: ImeIntent) {
         val effect = when (intent) {
             is ImeIntent.PressKey -> ImeEffect.PlayAudio(AudioType.KeyPress)
             else -> null
         }
 
-        applyStateUpdate { state ->
-            state.copy(
-                keyboard = state.keyboard.copy(state = result.newState),
-            )
-        }
-
         effect?.also {
             _effect.tryEmit(it)
-        }
-
-        processSideEffects(sideEffects)
-
-        result.editorAction?.also {
-            dispatchEditorAction(it)
         }
     }
 

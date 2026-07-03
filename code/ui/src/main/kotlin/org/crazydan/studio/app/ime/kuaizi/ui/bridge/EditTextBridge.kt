@@ -22,10 +22,10 @@ package org.crazydan.studio.app.ime.kuaizi.ui.bridge
 import android.view.KeyEvent
 import android.widget.EditText
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.BaseImeEditorBridge
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.CursorDirection
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorCursorMotion
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorEditAction
-import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorSelection
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorCursorMotion
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorSelection
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 import kotlin.math.max
 
 /**
@@ -163,10 +163,10 @@ class EditTextBridge(
         // Note: 发送按键事件方式可支持上下移动光标，以便于快速定位到目标位置
         for (i in 0..<distance.toInt()) {
             when (direction) {
-                CursorDirection.Left -> sendKey(et, KeyEvent.KEYCODE_DPAD_LEFT)
-                CursorDirection.Right -> sendKey(et, KeyEvent.KEYCODE_DPAD_RIGHT)
-                CursorDirection.Up -> sendKey(et, KeyEvent.KEYCODE_DPAD_UP)
-                CursorDirection.Down -> sendKey(et, KeyEvent.KEYCODE_DPAD_DOWN)
+                Motion.Direction.Left -> sendKey(et, KeyEvent.KEYCODE_DPAD_LEFT)
+                Motion.Direction.Right -> sendKey(et, KeyEvent.KEYCODE_DPAD_RIGHT)
+                Motion.Direction.Up -> sendKey(et, KeyEvent.KEYCODE_DPAD_UP)
+                Motion.Direction.Down -> sendKey(et, KeyEvent.KEYCODE_DPAD_DOWN)
             }
         }
     }

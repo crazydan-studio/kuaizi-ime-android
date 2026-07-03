@@ -19,6 +19,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.bridge
 
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorCursorMotion
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorSelection
+
 /**
  * 编辑器桥接接口：引擎与目标编辑器之间的桥梁。
  *
