@@ -28,9 +28,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogEntry
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogStorage
 
 /**
  * 日志浏览界面的 ViewModel。

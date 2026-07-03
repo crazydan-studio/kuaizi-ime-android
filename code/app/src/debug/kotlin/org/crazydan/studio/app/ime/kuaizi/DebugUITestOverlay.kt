@@ -19,8 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi
 
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.log.ImeLog
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
 /**
  * UI 测试覆盖层的 Debug 实现。

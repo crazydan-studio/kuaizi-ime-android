@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.map
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.datastore.EngineConfigDataStore
 import org.crazydan.studio.app.ime.kuaizi.engine.datastore.UiConfigDataStore
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
 /**
  * 基于 DataStore 的配置持久化实现。

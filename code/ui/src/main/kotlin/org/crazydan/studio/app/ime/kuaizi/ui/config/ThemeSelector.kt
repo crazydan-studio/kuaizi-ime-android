@@ -21,7 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.config
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardThemeType
 
 /**
  * 主题选择器组件。

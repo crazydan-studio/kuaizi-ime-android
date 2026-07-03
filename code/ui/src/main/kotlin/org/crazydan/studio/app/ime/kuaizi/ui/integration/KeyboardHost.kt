@@ -30,11 +30,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.ToolListState
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.CandidateList
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputList
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.Keyboard
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
+import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.Keyboard
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState

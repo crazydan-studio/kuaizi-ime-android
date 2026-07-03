@@ -25,7 +25,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputList
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerIndicator
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors

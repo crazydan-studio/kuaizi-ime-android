@@ -22,9 +22,9 @@ package org.crazydan.studio.app.ime.kuaizi.ui.player
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyGesture
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.*
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState

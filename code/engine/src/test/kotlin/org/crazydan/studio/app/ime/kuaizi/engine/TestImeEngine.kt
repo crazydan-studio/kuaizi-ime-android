@@ -24,8 +24,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardThemeType
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

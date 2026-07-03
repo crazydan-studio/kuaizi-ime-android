@@ -26,8 +26,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteDao
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteEntity
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputFavorite
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputTextType
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputTextType
 
 /**
  * 收藏服务。

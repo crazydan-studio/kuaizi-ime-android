@@ -21,7 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.config
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardHandMode
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
 
 /**
  * 单手模式切换组件。

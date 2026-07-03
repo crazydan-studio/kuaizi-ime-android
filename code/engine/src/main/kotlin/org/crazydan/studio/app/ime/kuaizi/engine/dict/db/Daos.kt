@@ -23,6 +23,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 /**
  * 拼音字 DAO：提供单字拼音的精确查询、前缀匹配、拼写列表和变体查询。
@@ -94,4 +95,26 @@ interface HmmDao {
     /** 根据当前拼音预测最可能的下一个拼音状态，最多返回 20 条。 */
     @Query("SELECT toState FROM hmm_transition WHERE fromState = :spell ORDER BY probability DESC LIMIT 20")
     suspend fun predictNextStates(spell: String): List<String>
+}
+
+/** 收藏数据访问接口，定义与 Room 数据库交互的契约 */
+interface FavoriteDao {
+
+    /** 获取所有收藏的响应式流 */
+    fun getAllFlow(): Flow<List<FavoriteEntity>>
+
+    /** 获取所有收藏列表（一次性查询） */
+    suspend fun getAll(): List<FavoriteEntity>
+
+    /** 根据文本查询收藏 */
+    suspend fun getByText(text: String): FavoriteEntity?
+
+    /** 插入或更新收藏（幂等操作） */
+    suspend fun upsert(entity: FavoriteEntity)
+
+    /** 删除指定文本的收藏 */
+    suspend fun delete(text: String)
+
+    /** 清空所有收藏 */
+    suspend fun clearAll()
 }

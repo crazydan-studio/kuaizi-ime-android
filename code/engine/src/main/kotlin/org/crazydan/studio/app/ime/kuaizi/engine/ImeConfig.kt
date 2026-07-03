@@ -20,10 +20,10 @@
 package org.crazydan.studio.app.ime.kuaizi.engine
 
 import org.crazydan.studio.app.ime.kuaizi.annotation.DataStoreConfig
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardHandMode
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardThemeType
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
 /**
  * 统一的运行时配置，包含引擎配置、UI 配置和运行时配置三层子配置。

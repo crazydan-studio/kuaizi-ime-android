@@ -20,13 +20,13 @@
 package org.crazydan.studio.app.ime.kuaizi.engine
 
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorEditAction
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.CandidateList
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.ImportStrategy
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputFavorite
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyGesture
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
+import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
+import org.crazydan.studio.app.ime.kuaizi.engine.backup.ImportStrategy
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 
 /**
  * 用户意图 sealed class，MVI 架构中的输入通道。

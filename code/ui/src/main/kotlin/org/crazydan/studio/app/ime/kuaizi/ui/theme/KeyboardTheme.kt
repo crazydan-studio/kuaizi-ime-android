@@ -23,7 +23,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardThemeType
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardThemeType
 
 /**
  * 键盘主题提供者。

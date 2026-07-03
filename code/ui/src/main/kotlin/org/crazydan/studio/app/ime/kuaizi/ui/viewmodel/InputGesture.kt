@@ -19,7 +19,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.FlipDirection
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
 
 /**
  * 输入手势，坐标无关。

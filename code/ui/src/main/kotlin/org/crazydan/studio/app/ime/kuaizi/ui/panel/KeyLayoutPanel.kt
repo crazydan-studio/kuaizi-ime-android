@@ -29,8 +29,8 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.dp
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 

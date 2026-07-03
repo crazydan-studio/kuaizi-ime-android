@@ -19,8 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input_action
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardType
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 
 /**
  * 输入动作的基类型，表达六种坐标无关的逻辑动作。

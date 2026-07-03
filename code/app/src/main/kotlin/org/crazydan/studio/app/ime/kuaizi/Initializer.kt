@@ -24,11 +24,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.ImeLog
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogStorage
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogWriter
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.FileLogWriter
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.writer.LogcatWriter
+import org.crazydan.studio.app.ime.kuaizi.engine.log.ImeLog
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogStorage
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogWriter
+import org.crazydan.studio.app.ime.kuaizi.engine.log.writer.FileLogWriter
+import org.crazydan.studio.app.ime.kuaizi.engine.log.writer.LogcatWriter
 import java.io.File
 
 // -------------------------------------------------

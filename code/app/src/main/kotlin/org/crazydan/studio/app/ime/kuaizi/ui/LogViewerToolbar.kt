@@ -34,7 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
 /**
  * 日志浏览界面的工具栏。

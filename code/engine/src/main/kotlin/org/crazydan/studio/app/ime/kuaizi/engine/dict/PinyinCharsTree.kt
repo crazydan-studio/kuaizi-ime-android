@@ -19,7 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.dict
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 
 /**
  * 拼音前缀树（Trie），用于快速前缀匹配和拼音自动补全。

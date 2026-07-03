@@ -28,7 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerIndicator
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors

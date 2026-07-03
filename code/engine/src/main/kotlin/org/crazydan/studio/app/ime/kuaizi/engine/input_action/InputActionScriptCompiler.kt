@@ -19,7 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input_action
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 
 /**
  * 输入动作脚本编译器：将待输入文本编译为 [InputActionScript]。

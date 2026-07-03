@@ -19,7 +19,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
+import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
+import org.crazydan.studio.app.ime.kuaizi.engine.input.Clipboard
+import org.crazydan.studio.app.ime.kuaizi.engine.input.FavoriteList
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.Keyboard
 
 /**
  * MVI 架构中的单一状态树根节点，作为 [ImeEngine] 对外暴露的唯一状态源。

@@ -27,8 +27,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputClip
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputTextType
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputClip
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputTextType
 
 /**
  * 剪贴板服务。

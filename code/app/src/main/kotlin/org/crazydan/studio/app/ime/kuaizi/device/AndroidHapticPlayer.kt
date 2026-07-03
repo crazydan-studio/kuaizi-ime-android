@@ -24,13 +24,13 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import org.crazydan.studio.app.ime.kuaizi.engine.HapticType
+import org.crazydan.studio.app.ime.kuaizi.engine.effect.HapticType
 import org.crazydan.studio.app.ime.kuaizi.ui.HapticPlayer
 
 /**
  * 基于 Android [Vibrator] 的触觉播放器实现。
  *
- * 在 [org.crazydan.studio.app.ime.kuaizi.IMEService.onCreate] 中创建并注入 [KeyboardViewModel]。
+ * 在 [IMEService.onCreate] 中创建并注入 [KeyboardViewModel]。
  * 使用 [VibrationEffect.createOneShot] API 创建单次振动效果，
  * 不同 [HapticType] 对应不同的振动时长和强度。
  */

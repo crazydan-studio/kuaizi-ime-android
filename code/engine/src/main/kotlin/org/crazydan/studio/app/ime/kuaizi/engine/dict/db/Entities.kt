@@ -21,6 +21,8 @@ package org.crazydan.studio.app.ime.kuaizi.engine.dict.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputTextType
 
 /** 拼音字数据库实体：存储单个汉字的拼音、频率、变体和声调信息。 */
 @Entity(tableName = "pinyin_word")
@@ -52,7 +54,14 @@ data class UserInputEntity(
     val lastUsed: Long = System.currentTimeMillis(), // 最后使用时间戳
 )
 
-/** 用户收藏数据库实体：存储用户收藏的文本条目。 */
+/**
+ * 用户收藏数据库实体：存储用户收藏的文本条目。
+ * @param id 主键
+ * @param text 收藏文本
+ * @param type 文本类型
+ * @param usageCount 使用次数
+ * @param createdAt 创建时间戳
+ */
 @Entity(tableName = "user_input_favorite")
 data class FavoriteEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -60,7 +69,15 @@ data class FavoriteEntity(
     val type: String? = null,                        // 文本类型，复用 InputTextType 的值
     val usageCount: Int = 0,                         // 使用次数
     val createdAt: Long = System.currentTimeMillis(), // 创建时间
-)
+) {
+    /** 转换为领域模型 [InputFavorite] */
+    fun toDomain(): InputFavorite = InputFavorite(
+        text = text,
+        type = type?.let { InputTextType.valueOf(it) },
+        usageCount = usageCount,
+        createdAt = createdAt,
+    )
+}
 
 /** HMM 状态转移概率数据库实体：存储拼音间的转移概率。 */
 @Entity(tableName = "hmm_transition")

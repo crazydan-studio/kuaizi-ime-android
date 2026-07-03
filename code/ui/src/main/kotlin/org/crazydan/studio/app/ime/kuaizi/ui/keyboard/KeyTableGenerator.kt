@@ -20,7 +20,10 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.keyboard
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.*
+import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.Keyboard
 
 /**
  * 按键布局生成器接口。

@@ -19,7 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.dict
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 
 /**
  * 字典服务提供者接口：引擎字典查询的公共契约。

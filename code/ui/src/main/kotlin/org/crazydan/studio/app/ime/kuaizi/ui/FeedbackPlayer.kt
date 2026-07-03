@@ -19,8 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui
 
-import org.crazydan.studio.app.ime.kuaizi.engine.AudioType
-import org.crazydan.studio.app.ime.kuaizi.engine.HapticType
+import org.crazydan.studio.app.ime.kuaizi.engine.effect.AudioType
+import org.crazydan.studio.app.ime.kuaizi.engine.effect.HapticType
 
 /**
  * 感官反馈播放器接口。

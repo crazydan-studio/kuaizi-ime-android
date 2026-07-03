@@ -28,7 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardInputMode
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.InputGesture
 

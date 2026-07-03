@@ -20,7 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
 import kotlinx.coroutines.flow.*
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerIndicator
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.OffsetF
 

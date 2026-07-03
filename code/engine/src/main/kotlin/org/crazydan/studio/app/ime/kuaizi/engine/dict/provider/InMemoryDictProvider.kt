@@ -20,7 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.dict.provider
 
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 
 /**
  * 基于内存的字典提供者实现。

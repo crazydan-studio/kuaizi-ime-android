@@ -19,7 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input_action
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputKey
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 
 /**
  * 位置解析接口：将逻辑标识解析为归一化坐标 [OffsetF]。

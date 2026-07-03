@@ -28,11 +28,11 @@ import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.DictDatabase
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteDao
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteEntity
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputWord
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.Spell
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.Tone
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.Variant
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.VariantType
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.input.Spell
+import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
+import org.crazydan.studio.app.ime.kuaizi.engine.input.Variant
+import org.crazydan.studio.app.ime.kuaizi.engine.input.VariantType
 
 /**
  * 基于 SQLite（Room）的字典服务提供者，[ImeDictProvider] 的默认实现。

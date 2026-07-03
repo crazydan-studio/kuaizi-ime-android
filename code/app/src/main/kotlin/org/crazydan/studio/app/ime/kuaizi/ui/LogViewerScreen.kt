@@ -36,8 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogEntry
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogEntry
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
 /**
  * 日志浏览界面。

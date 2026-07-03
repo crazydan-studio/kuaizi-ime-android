@@ -28,8 +28,8 @@ import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toOkioPath
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.KeyboardHandMode
-import org.crazydan.studio.app.ime.kuaizi.engine.logging.LogLevel
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
+import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import kotlin.coroutines.CoroutineContext
