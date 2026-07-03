@@ -48,7 +48,11 @@ fun initConfigDataStore(context: Context): ConfigDataStore {
     return configDataStore
 }
 
-/** 在 [ImeEngine] 的配置 [ImeConfig] 更新后，通过 [ConfigDataStore.updateConfig] 将该配置进行持久化保存 */
+/**
+ * 监听 [ImeEngine] 的配置 [ImeConfig] 更新，并在其变更后，通过 [ConfigDataStore.updateConfig] 将该配置进行持久化保存。
+ *
+ * 注意，该函数将挂起当前协程，后续代码不会被执行。
+ */
 suspend inline fun updateConfigDataStoreWhenEngineConfigUpdated(configDataStore: ConfigDataStore, engine: ImeEngine) =
     engine.whenConfigUpdated { conf ->
         configDataStore.updateConfig { conf }
@@ -63,6 +67,8 @@ private var logInited: Boolean = false
  *
  * - Debug 构建：等级缺省为 DEBUG，使用 Logcat 输出，同时输出到文件
  * - Release 构建：等级缺省为 ERROR，输出到文件，并安装崩溃拦截器
+ *
+ * 注意，该函数将挂起当前协程，后续代码不会被执行，以持续监听配置变更。
  */
 suspend fun initLog(configDataStore: ConfigDataStore, filesDir: File) {
     if (logInited) return

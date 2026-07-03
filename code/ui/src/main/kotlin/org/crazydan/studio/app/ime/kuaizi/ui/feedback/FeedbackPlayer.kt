@@ -17,10 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui
-
-import org.crazydan.studio.app.ime.kuaizi.ui.effect.AudioType
-import org.crazydan.studio.app.ime.kuaizi.ui.effect.HapticType
+package org.crazydan.studio.app.ime.kuaizi.ui.feedback
 
 /**
  * 感官反馈播放器接口。
@@ -40,3 +37,16 @@ typealias AudioPlayer = FeedbackPlayer<AudioType>
 
 /** 触觉振动播放器类型别名 */
 typealias HapticPlayer = FeedbackPlayer<HapticType>
+
+enum class AudioType {
+    KeyPress,
+    CandidateSelect,
+    Slip,
+    PageFlip,
+}
+
+enum class HapticType {
+    LightTap,
+    MediumTap,
+    HeavyTap,
+}

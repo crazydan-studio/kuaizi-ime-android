@@ -32,14 +32,15 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
  * - [Action]：可点击提示，含操作按钮，点击后触发 [ImeIntent]
  */
 sealed class PopupTipState {
+
     /**
      * 纯文本信息提示
      * @param message 提示消息内容
-     * @param timeoutMs 自动消失超时时间（毫秒），默认 3000ms
+     * @param timeout 自动消失超时时间（毫秒），默认 3000ms
      */
     data class Message(
         val message: String,
-        val timeoutMs: Long = 3000L,
+        val timeout: Long = 3000L,
     ) : PopupTipState()
 
     /**
@@ -48,13 +49,13 @@ sealed class PopupTipState {
      * @param actionLabel 操作按钮标签
      * @param action 点击后触发的 ImeIntent
      * @param persistent 是否持久显示（直到用户开始输入）
-     * @param timeoutMs 自动消失超时时间（毫秒），默认 5000ms
+     * @param timeout 自动消失超时时间（毫秒），默认 5000ms
      */
     data class Action(
         val message: String,
         val actionLabel: String,
         val action: ImeIntent,
         val persistent: Boolean = false,
-        val timeoutMs: Long = 5000L,
+        val timeout: Long = 5000L,
     ) : PopupTipState()
 }

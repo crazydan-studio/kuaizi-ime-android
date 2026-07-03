@@ -24,8 +24,8 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import org.crazydan.studio.app.ime.kuaizi.ui.effect.HapticType
-import org.crazydan.studio.app.ime.kuaizi.ui.HapticPlayer
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticType
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticPlayer
 
 /**
  * 基于 Android [Vibrator] 的触觉播放器实现。

@@ -86,7 +86,7 @@ class ConfigDataStore(private val dataStore: DataStore<Preferences>) {
         }
     }
 
-    /** 监听持久化配置的更新 */
+    /** 监听持久化配置的更新。注意，该函数将阻塞当前线程。 */
     suspend inline fun whenConfigUpdated(collector: FlowCollector<ImeConfig>) =
         config
             .drop(1)  // 跳过订阅时的状态，仅关注后续的变化

@@ -38,6 +38,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
  * @see ImeEngine.handleIntent
  */
 sealed class ImeIntent {
+
     /** 按键意图：用户按下指定按键并执行了指定手势。 */
     data class PressKey(val key: InputKey, val gesture: KeyGesture) : ImeIntent()
 
@@ -52,6 +53,9 @@ sealed class ImeIntent {
 
     /** 键盘切换意图：切换到指定类型的键盘。 */
     data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
+
+    /** 切换输入法意图：告知应用层切换输入法。 */
+    data object SwitchIme : ImeIntent()
 
     /** 提交输入意图：确认输入并提交到编辑器。 */
     data object CommitInput : ImeIntent()

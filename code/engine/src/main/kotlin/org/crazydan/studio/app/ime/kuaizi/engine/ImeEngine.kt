@@ -40,7 +40,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
-import org.crazydan.studio.app.ime.kuaizi.engine.ImeEffect
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
@@ -71,9 +70,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
  * 构造函数标记为 `internal`，强制通过 [Companion.create] 工厂方法创建实例，
  * 确保所有依赖项正确初始化。
  *
- * @property config 运行时配置，包含引擎/UI/运行时三层子配置
- * @property state 只读状态流，UI 层通过 collectAsState 订阅
- * @property effect 一次性副作用通道，用于传递弹出提示等信号
+ * @param config 引擎初始配置，包含引擎/UI/运行时三层子配置
  */
 class ImeEngine internal constructor(
     config: ImeConfig,
@@ -210,8 +207,14 @@ class ImeEngine internal constructor(
      */
     fun handleIntent(intent: ImeIntent) {
         when (intent) {
-            is ImeIntent.SwitchKeyboard -> handleSwitchKeyboard(intent.type)
-            else -> handleWithStateMachine(intent)
+            is ImeIntent.SwitchKeyboard ->
+                handleSwitchKeyboard(intent.type)
+
+            is ImeIntent.SwitchIme ->
+                _effect.tryEmit(ImeEffect.SwitchIme)
+
+            else ->
+                handleWithStateMachine(intent)
         }
     }
 
@@ -228,7 +231,7 @@ class ImeEngine internal constructor(
         }
     }
 
-    /** 监听配置 [ImeConfig] 的变更 */
+    /** 监听配置 [ImeConfig] 的变更。注意，该函数将挂起当前协程，后续代码不会被执行。 */
     suspend inline fun whenConfigUpdated(collector: FlowCollector<ImeConfig>) =
         state.map { it.config }
             .distinctUntilChanged()
@@ -297,16 +300,26 @@ class ImeEngine internal constructor(
                 if (++depth > maxDepth) {
                     throw IllegalStateException("Side effect recursion exceeds max depth $maxDepth")
                 }
-                val intent = queue.removeFirst()
-                when (intent) {
-                    is ImeIntent.LoadCandidates -> {
-                        val candidates = dictProvider.query(intent.pinyin)
-//                        handleIntent(ImeIntent.SetCandidates(candidates))
-                    }
 
-                    else -> handleIntent(intent)
-                }
+                val intent = queue.removeFirst()
+                processSideEffect(intent)
             }
+        }
+    }
+
+    /** 处理单个副作用 */
+    private suspend fun processSideEffect(sideEffect: ImeIntent) {
+        when (sideEffect) {
+            is ImeIntent.LoadCandidates -> {
+                val candidates = dictProvider.query(sideEffect.pinyin)
+//                        handleIntent(ImeIntent.SetCandidates(candidates))
+            }
+
+            is ImeIntent.SaveFavorite -> {
+                //
+            }
+
+            else -> handleIntent(sideEffect)
         }
     }
 

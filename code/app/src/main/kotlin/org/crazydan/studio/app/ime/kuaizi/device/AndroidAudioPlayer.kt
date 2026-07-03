@@ -22,8 +22,8 @@ package org.crazydan.studio.app.ime.kuaizi.device
 import android.content.Context
 import android.media.SoundPool
 import org.crazydan.studio.app.ime.kuaizi.R
-import org.crazydan.studio.app.ime.kuaizi.ui.effect.AudioType
-import org.crazydan.studio.app.ime.kuaizi.ui.AudioPlayer
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioType
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioPlayer
 
 /**
  * 基于 Android [SoundPool] 的音效播放器实现。

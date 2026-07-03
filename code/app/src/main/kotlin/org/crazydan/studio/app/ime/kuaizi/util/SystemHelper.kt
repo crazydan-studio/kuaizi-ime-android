@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.util
+package org.crazydan.studio.app.ime.kuaizi.util
 
 import android.content.Context
 import android.content.res.Configuration
@@ -25,11 +25,6 @@ import android.view.inputmethod.InputMethodManager
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.ScreenOrientation
 
-/**
- *
- * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2026-06-28
- */
 object SystemHelper {
 
     /** 得到系统输入法子类型 */
@@ -50,5 +45,13 @@ object SystemHelper {
             Configuration.ORIENTATION_LANDSCAPE -> ScreenOrientation.Landscape
             else -> ScreenOrientation.Portrait
         }
+    }
+
+    /** 切换输入法  */
+    fun switchIme(context: Context) {
+        // https://stackoverflow.com/questions/16684482/android-switch-to-a-different-ime-programmatically#answer-16684491
+        val manager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+
+        manager?.showInputMethodPicker()
     }
 }

@@ -28,12 +28,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeEffect
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
-import org.crazydan.studio.app.ime.kuaizi.engine.util.SystemHelper
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
+import org.crazydan.studio.app.ime.kuaizi.util.SystemHelper
 import org.crazydan.studio.app.ime.kuaizi.ui.integration.KeyboardHost
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
@@ -82,13 +83,7 @@ class IMEService : InputMethodService() {
             { ch -> sendKeyChar(ch) }
         )
         scope.launch {
-            engine = ImeEngine.create(
-                config = configDataStore.getConfig(),
-                dictProvider = InMemoryDictProvider(),
-            )
-            engine!!.attachEditorBridge(inputConnectionBridge!!)
-
-            updateConfigDataStoreWhenEngineConfigUpdated(configDataStore, engine!!)
+            initEngine(configDataStore, inputConnectionBridge!!)
         }
     }
 
@@ -150,6 +145,27 @@ class IMEService : InputMethodService() {
 
     // ----------------------------------------------------
 
+    private suspend fun initEngine(
+        configDataStore: ConfigDataStore,
+        editorBridge: ImeEditorBridge
+    ) {
+        engine = ImeEngine.create(
+            config = configDataStore.getConfig(),
+            dictProvider = InMemoryDictProvider(),
+        )
+        engine!!.attachEditorBridge(editorBridge)
+
+        // -----------------------------------
+        scope.launch {
+            updateConfigDataStoreWhenEngineConfigUpdated(configDataStore, engine!!)
+        }
+        scope.launch {
+            engine!!.effect.collect { effect ->
+                processEffect(effect)
+            }
+        }
+    }
+
     private fun startInput(inputType: EditorInputType?) {
         val subtype = SystemHelper.getInputMethodSubtype(this)
         val orientation = SystemHelper.getScreenOrientation(this)
@@ -162,6 +178,18 @@ class IMEService : InputMethodService() {
             )
         )
     }
+
+    /** 处理 [ImeEffect] */
+    private fun processEffect(effect: ImeEffect) {
+        when (effect) {
+            is ImeEffect.SwitchIme ->
+                SystemHelper.switchIme(this)
+
+            else -> {}
+        }
+    }
+
+    // ----------------------------------------------------
 
     /**
      * 从 [EditorInfo] 解析 [EditorInputType]。

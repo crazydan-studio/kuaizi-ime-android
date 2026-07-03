@@ -75,12 +75,10 @@ enum class EditorEditAction {
  *
  * @property start 起始位置（包含），其始终小于 [end]
  * @property end 结束位置（不包含），其始终大于 [start]
- * @property reversed 是否为反向选择，即，实际的起点位置大于终点位置
  * @property content 从 [start] 至 [end] 的选区范围内的已选中内容。其可能为空，也即，未选中任何内容
  */
 data class EditorSelection(
     val start: Int, val end: Int,
-    val reversed: Boolean,
     val content: CharSequence
 ) {
 
@@ -92,7 +90,6 @@ data class EditorSelection(
             EditorSelection(
                 start = min(start, end),
                 end = max(start, end),
-                reversed = start > end,
                 content = content,
             )
     }

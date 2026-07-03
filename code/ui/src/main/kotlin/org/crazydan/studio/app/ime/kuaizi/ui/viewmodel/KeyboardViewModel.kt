@@ -22,17 +22,28 @@ package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import org.crazydan.studio.app.ime.kuaizi.engine.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEffect
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeState
+import org.crazydan.studio.app.ime.kuaizi.engine.ToolItem
+import org.crazydan.studio.app.ime.kuaizi.engine.ToolListState
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
-import org.crazydan.studio.app.ime.kuaizi.ui.AudioPlayer
-import org.crazydan.studio.app.ime.kuaizi.ui.HapticPlayer
-import org.crazydan.studio.app.ime.kuaizi.ui.effect.AudioType
-import org.crazydan.studio.app.ime.kuaizi.ui.effect.HapticType
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioPlayer
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticPlayer
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioType
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticType
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
@@ -88,6 +99,7 @@ class KeyboardViewModel(
 
     // ==================== 弹出提示 ====================
 
+    // TODO 需支持 Message 与 Action 共存的情况
     private val _popupTipState = MutableStateFlow<PopupTipState?>(null)
     val popupTipState: StateFlow<PopupTipState?> = _popupTipState.asStateFlow()
 
@@ -132,7 +144,7 @@ class KeyboardViewModel(
     private fun launchEffectCollection() {
         viewModelScope.launch {
             engine.effect.collect { effect ->
-                processPopupTip(effect)
+                processEffect(effect)
             }
         }
     }
@@ -149,36 +161,40 @@ class KeyboardViewModel(
         }
     }
 
-    /** 处理弹出提示 */
-    private fun processPopupTip(effect: ImeEffect) {
+    /** 处理 [ImeEffect] */
+    private fun processEffect(effect: ImeEffect) {
         when (effect) {
             is ImeEffect.PopupTip.Message -> {
                 _popupTipState.value = PopupTipState.Message(
                     message = effect.message,
-                    timeoutMs = effect.timeoutMs,
+                    timeout = effect.timeout,
                 )
-                dismissPopupTipAfter(effect.timeoutMs)
+                dismissPopupTipAfter(effect.timeout)
             }
+
             is ImeEffect.PopupTip.Action -> {
                 _popupTipState.value = PopupTipState.Action(
                     message = effect.message,
                     actionLabel = effect.actionLabel,
                     action = effect.action,
                     persistent = effect.persistent,
-                    timeoutMs = effect.timeoutMs,
+                    timeout = effect.timeout,
                 )
                 if (!effect.persistent) {
-                    dismissPopupTipAfter(effect.timeoutMs)
+                    dismissPopupTipAfter(effect.timeout)
                 }
             }
+
+            else -> {}
         }
     }
 
     /** 启动自动消失定时器，新的定时器会取消前一个 */
-    private fun dismissPopupTipAfter(timeoutMs: Long) {
+    private fun dismissPopupTipAfter(timeout: Long) {
         popupTipDismissJob?.cancel()
+
         popupTipDismissJob = viewModelScope.launch {
-            delay(timeoutMs)
+            delay(timeout)
             _popupTipState.value = null
         }
     }
@@ -188,25 +204,38 @@ class KeyboardViewModel(
     /** 处理输入手势：播放反馈、转换为 [ImeIntent] 后委托引擎处理 */
     fun handleGesture(gesture: InputGesture) {
         playFeedback(gesture)
+
         val intent = gestureToIntent(gesture)
         engine.handleIntent(intent)
     }
 
     private fun playFeedback(gesture: InputGesture) {
         when (gesture) {
-            is InputGesture.Tap, is InputGesture.LongPress -> {
-                if (config.ui.audioFeedbackEnabled) audioPlayer?.play(AudioType.KeyPress)
-                if (config.ui.hapticFeedbackEnabled) hapticPlayer?.play(HapticType.LightTap)
+            is InputGesture.Tap,
+            is InputGesture.LongPress -> {
+                if (config.ui.audioFeedbackEnabled)
+                    audioPlayer?.play(AudioType.KeyPress)
+
+                if (config.ui.hapticFeedbackEnabled)
+                    hapticPlayer?.play(HapticType.LightTap)
             }
+
             is InputGesture.Swipe -> {
-                if (config.ui.audioFeedbackEnabled) audioPlayer?.play(AudioType.Slip)
-                if (config.ui.hapticFeedbackEnabled) hapticPlayer?.play(HapticType.LightTap)
+                if (config.ui.audioFeedbackEnabled)
+                    audioPlayer?.play(AudioType.Slip)
+
+                if (config.ui.hapticFeedbackEnabled)
+                    hapticPlayer?.play(HapticType.LightTap)
             }
+
             is InputGesture.CandidateTap -> {
-                if (config.ui.audioFeedbackEnabled) audioPlayer?.play(AudioType.CandidateSelect)
+                if (config.ui.audioFeedbackEnabled)
+                    audioPlayer?.play(AudioType.CandidateSelect)
             }
+
             is InputGesture.Flip -> {
-                if (config.ui.audioFeedbackEnabled) audioPlayer?.play(AudioType.PageFlip)
+                if (config.ui.audioFeedbackEnabled)
+                    audioPlayer?.play(AudioType.PageFlip)
             }
         }
     }
@@ -219,15 +248,24 @@ class KeyboardViewModel(
     /** 将 [InputGesture] 转换为 [ImeIntent] */
     private fun gestureToIntent(gesture: InputGesture): ImeIntent {
         return when (gesture) {
-            is InputGesture.Tap -> ImeIntent.PressKey(gesture.key, KeyGesture.Tap)
-            is InputGesture.LongPress -> ImeIntent.PressKey(gesture.key, KeyGesture.LongPress)
-            is InputGesture.Swipe -> ImeIntent.PressKey(gesture.endKey, KeyGesture.Swipe)
-            is InputGesture.Flip -> ImeIntent.PressKey(
-                gesture.startKey,
-                KeyGesture.Flip,
-            )
+            is InputGesture.Tap ->
+                ImeIntent.PressKey(gesture.key, KeyGesture.Tap)
+
+            is InputGesture.LongPress ->
+                ImeIntent.PressKey(gesture.key, KeyGesture.LongPress)
+
+            is InputGesture.Swipe ->
+                ImeIntent.PressKey(gesture.endKey, KeyGesture.Swipe)
+
+            is InputGesture.Flip ->
+                ImeIntent.PressKey(
+                    gesture.startKey,
+                    KeyGesture.Flip,
+                )
+
             is InputGesture.CandidateTap -> {
                 val candidates = state.value.candidateList.candidates
+
                 val idx = gesture.candidateIndex
                 if (idx in candidates.indices) {
                     ImeIntent.SelectCandidate(candidates[idx])
@@ -283,6 +321,7 @@ class KeyboardViewModel(
                 tools.add(ToolItem(label = "切换输入法"))
                 tools.add(ToolItem(label = "关闭键盘"))
             }
+
             else -> {}
         }
         return ToolListState(tools = tools)
