@@ -23,17 +23,15 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.SoundPool
 import org.crazydan.studio.app.ime.kuaizi.R
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioPlayer
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioType
+import org.crazydan.studio.app.ime.kuaizi.ui.domain.AudioType
 
 /**
  * 基于 Android [SoundPool] 的音效播放器实现。
  *
- * 在 [IMEService.onCreate] 中创建并注入 [KeyboardViewModel]。
  * 所有音效资源在构造时预加载到 SoundPool 中，确保播放时零延迟。
  * 使用 SoundPool 而非 MediaPlayer，因为按键音需要低延迟、短时长、高并发。
  */
-class DefaultAudioPlayer(context: Context) : AudioPlayer {
+class AudioPlayer(context: Context) {
     private val soundPool =
         SoundPool.Builder()
             .setMaxStreams(10)
@@ -57,13 +55,13 @@ class DefaultAudioPlayer(context: Context) : AudioPlayer {
     // ------------------------------------------------------
 
     /** 播放指定类型的音效。若音效未加载则静默跳过。 */
-    override fun play(type: AudioType) {
+    fun play(type: AudioType) {
         val soundId = soundIds[type] ?: return
 
         soundPool.play(soundId, 1.0f, 1.0f, 0, 0, 1.0f)
     }
 
-    /** 释放 SoundPool 资源，在 [IMEService.onDestroy] 中调用。 */
+    /** 释放 SoundPool 资源。 */
     fun release() {
         soundPool.release()
     }

@@ -49,8 +49,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.panel.PopupTipPanel
 import org.crazydan.studio.app.ime.kuaizi.ui.panel.ToolListPanel
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.GestureFeedbackState
-import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardLayoutMode
-import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyboardLayoutMode
+import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardViewModel
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.PopupTipState
 
 /**

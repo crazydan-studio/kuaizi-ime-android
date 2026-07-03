@@ -28,16 +28,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import org.crazydan.studio.app.ime.kuaizi.device.AudioPlayer
+import org.crazydan.studio.app.ime.kuaizi.device.HapticPlayer
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
-import org.crazydan.studio.app.ime.kuaizi.engine.ImeEffect
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
-import org.crazydan.studio.app.ime.kuaizi.util.SystemHelper
 import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardHost
+import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardViewModel
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
-import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
+import org.crazydan.studio.app.ime.kuaizi.util.SystemHelper
 
 /**
  * 系统输入法服务入口。
@@ -63,6 +64,9 @@ class IMEService : InputMethodService() {
     // 输入连接桥接，将引擎输出转发到系统 InputConnection
     private var inputConnectionBridge: ImeEditorBridge? = null
 
+    private var audioPlayer: AudioPlayer? = null
+    private var hapticPlayer: HapticPlayer? = null
+
     // -------------------------------------------------------
 
     /** 服务创建时初始化引擎、配置存储和桥接。 */
@@ -70,6 +74,9 @@ class IMEService : InputMethodService() {
         super.onCreate()
 
         val context = this
+
+        audioPlayer = AudioPlayer(context)
+        hapticPlayer = HapticPlayer(context)
 
         // ------------------
         val configDataStore = initConfigDataStore(context)
@@ -87,12 +94,15 @@ class IMEService : InputMethodService() {
         }
     }
 
-    /** 创建键盘输入视图，返回 ComposeView 作为 UI 根节点。 */
+    /**
+     * 创建键盘输入视图，返回 ComposeView 作为 UI 根节点。
+     *
+     * 注意，输入视图只创建一次。
+     */
     override fun onCreateInputView(): View {
         val engine = engine ?: return super.onCreateInputView()
 
-        // 创建 ViewModel 并注入引擎
-        viewModel = KeyboardViewModel(engine)
+        viewModel = createViewModel(engine)
 
         // 返回 ComposeView，包裹键盘主题和 UI 宿主
         return ComposeView(this).apply {
@@ -107,7 +117,11 @@ class IMEService : InputMethodService() {
 
     // -------------------------------------------------------
 
-    /** 编辑器输入启动时，根据编辑器输入类型配置引擎。 */
+    /**
+     * 编辑器输入启动时，根据编辑器输入类型配置引擎。
+     *
+     * 注意，每次弹出键盘时均会被调用。
+     */
     override fun onStartInputView(editorInfo: EditorInfo?, restarting: Boolean) {
         super.onStartInputView(editorInfo, restarting)
 
@@ -126,16 +140,30 @@ class IMEService : InputMethodService() {
 
     // -------------------------------------------------------
 
-    /** 编辑器输入结束时关闭引擎，但不销毁。 */
+    /** 关闭输入：暂时退出编辑，但会恢复编辑。 */
     override fun onFinishInputView(finishingInput: Boolean) {
-        super.onFinishInputView(finishingInput)
-
         engine?.close()
+
+        super.onFinishInputView(finishingInput)
+    }
+
+    /**
+     * 输入结束：彻底退出编辑。
+     *
+     * 注意，在 [onCreateInputView] 之前，且熄屏/亮屏也会调用该接口。
+     */
+    override fun onFinishInput() {
+        engine?.exit()
+
+        super.onFinishInput()
     }
 
     /** 服务销毁时释放引擎资源。 */
     override fun onDestroy() {
         scope.cancel()   // ← 必须取消，否则协程泄漏
+
+        audioPlayer?.release()
+        hapticPlayer?.release()
 
         inputConnectionBridge?.let { engine?.detachEditorBridge(it) }
         engine?.destroy()
@@ -155,16 +183,16 @@ class IMEService : InputMethodService() {
         )
         engine!!.attachEditorBridge(editorBridge)
 
-        // -----------------------------------
-        scope.launch {
-            updateConfigDataStoreWhenEngineConfigUpdated(configDataStore, engine!!)
-        }
-        scope.launch {
-            engine!!.effect.collect { effect ->
-                processEffect(effect)
-            }
-        }
+        updateConfigDataStoreWhenEngineConfigUpdated(configDataStore, engine!!)
     }
+
+    private fun createViewModel(engine: ImeEngine): KeyboardViewModel =
+        KeyboardViewModel(
+            engine = engine,
+            playAudio = { type -> audioPlayer?.play(type) },
+            playHaptic = { type -> hapticPlayer?.play(type) },
+            switchIme = { SystemHelper.switchIme(this) }
+        )
 
     private fun startInput(inputType: EditorInputType?) {
         val subtype = SystemHelper.getInputMethodSubtype(this)
@@ -177,16 +205,6 @@ class IMEService : InputMethodService() {
                 editorInputType = inputType,
             )
         )
-    }
-
-    /** 处理 [ImeEffect] */
-    private fun processEffect(effect: ImeEffect) {
-        when (effect) {
-            is ImeEffect.SwitchIme ->
-                SystemHelper.switchIme(this)
-
-            else -> {}
-        }
     }
 
     // ----------------------------------------------------

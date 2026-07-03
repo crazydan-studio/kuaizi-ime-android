@@ -17,27 +17,13 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.feedback
+package org.crazydan.studio.app.ime.kuaizi.ui.domain
 
 /**
- * 感官反馈播放器接口。
  *
- * 定义播放音效和触觉振动的通用契约。
- * 平台实现由 `:app` 模块提供。
- *
- * @param T 播放类型（[AudioType] 或 [HapticType]）
+ * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
+ * @date 2026-07-03
  */
-interface FeedbackPlayer<T> {
-    /** 播放指定类型的反馈 */
-    fun play(type: T)
-}
-
-/** 音频播放器类型别名 */
-typealias AudioPlayer = FeedbackPlayer<AudioType>
-
-/** 触觉振动播放器类型别名 */
-typealias HapticPlayer = FeedbackPlayer<HapticType>
-
 enum class AudioType {
     /** 按键音：用户点击按键时播放 */
     KeyPress,

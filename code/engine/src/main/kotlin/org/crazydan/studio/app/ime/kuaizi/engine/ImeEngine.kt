@@ -184,8 +184,13 @@ class ImeEngine internal constructor(
      * 调用 [start] 后可恢复到关闭前的完整工作状态。
      */
     fun close() {
-        clipboardJob?.cancel()
-        clipboardJob = null
+        // TODO 待定
+//        clipboardJob?.cancel()
+//        clipboardJob = null
+    }
+
+    fun exit() {
+        // TODO 待定
     }
 
     /**

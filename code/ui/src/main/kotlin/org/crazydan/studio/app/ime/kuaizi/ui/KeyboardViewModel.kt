@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
+package org.crazydan.studio.app.ime.kuaizi.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -40,27 +40,17 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ToolListState
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioPlayer
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioType
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticPlayer
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticType
+import org.crazydan.studio.app.ime.kuaizi.ui.domain.AudioType
+import org.crazydan.studio.app.ime.kuaizi.ui.domain.HapticType
 import org.crazydan.studio.app.ime.kuaizi.ui.input_action.ComposeInputActionPositionResolver
 import org.crazydan.studio.app.ime.kuaizi.ui.input_action.InputActionPlayer
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
-
-/** 键盘布局模式，定义 Zone A 与 Zone B 的使用方式 */
-sealed class KeyboardLayoutMode {
-    /** 堆叠模式：所有组件集中在 Zone B，三层面板叠加共享同一空间 */
-    data object Stacked : KeyboardLayoutMode()
-
-    /**
-     * 分离模式：输入区域占据 Zone B，按键展示区域占据 Zone A
-     * @param zoneARatio Zone A 占屏幕高度的比例，默认 0.4
-     */
-    data class Separated(val zoneARatio: Float = 0.4f) : KeyboardLayoutMode()
-}
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyboardLayoutMode
+import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.GestureFeedbackState
+import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.InputGesture
+import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.PopupTipState
 
 /**
  * 键盘视图模型，UI 层的协调中心。
@@ -73,12 +63,13 @@ sealed class KeyboardLayoutMode {
  * - 维护本地工具列表状态和弹出提示状态
  * - 提供输入动作播放器（[InputActionPlayer]）
  * - 缓存面板布局状态供播放器坐标解析
- * - 管理感官反馈播放（[AudioPlayer] / [HapticPlayer]）
+ * - 管理感官反馈播放
  */
 class KeyboardViewModel(
     private val engine: ImeEngine,
-    private val audioPlayer: AudioPlayer? = null,
-    private val hapticPlayer: HapticPlayer? = null,
+    private val playAudio: ((type: AudioType) -> Unit)? = null,
+    private val playHaptic: ((type: HapticType) -> Unit)? = null,
+    private val switchIme: (() -> Unit)? = null,
 ) : ViewModel() {
 
     /** 引擎状态，供 Compose 订阅 */
@@ -118,7 +109,7 @@ class KeyboardViewModel(
 
     // ==================== 输入动作播放器 ====================
 
-    /** 输入动作播放器，通过 [viewModel.handleIntent] 驱动引擎状态转换 */
+    /** 输入动作播放器，通过 [handleIntent] 驱动引擎状态转换 */
     val actionPlayer = InputActionPlayer(
         viewModel = this,
         feedbackState = feedbackState,
@@ -150,21 +141,27 @@ class KeyboardViewModel(
     // -----------------------------------------------------------------------
 
     /**
-     * ViewModel 工厂，用于注入预创建的 [ImeEngine] 和播放器。
-     *
-     * 引擎和播放器由 `:app` 模块在 `IMEService.onCreate()` 中创建，
-     * 通过此工厂注入 ViewModel。
+     * ViewModel 工厂：
+     * ```kotlin
+     * private val viewModel: KeyboardViewModel by viewModels {
+     *     KeyboardViewModel.Factory(engine)
+     * }
+     * ```
      */
     class Factory(
         private val engine: ImeEngine,
-        private val audioPlayer: AudioPlayer? = null,
-        private val hapticPlayer: HapticPlayer? = null,
+        private val playAudio: ((type: AudioType) -> Unit)? = null,
+        private val playHaptic: ((type: HapticType) -> Unit)? = null,
+        private val switchIme: (() -> Unit)? = null,
     ) : ViewModelProvider.Factory {
 
         @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return KeyboardViewModel(engine, audioPlayer, hapticPlayer) as T
-        }
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            KeyboardViewModel(
+                engine = engine,
+                playAudio = playAudio, playHaptic = playHaptic,
+                switchIme = switchIme,
+            ) as T
     }
 
     // -----------------------------------------------------------------------
@@ -265,7 +262,9 @@ class KeyboardViewModel(
                 }
             }
 
-            else -> {}
+            is ImeEffect.SwitchIme -> {
+                switchIme?.invoke()
+            }
         }
     }
 
@@ -388,13 +387,13 @@ class KeyboardViewModel(
 
     private fun playAudio(type: AudioType) {
         if (config.ui.audioFeedbackEnabled) {
-            audioPlayer?.play(type)
+            playAudio?.invoke(type)
         }
     }
 
     private fun playHaptic(type: HapticType) {
         if (config.ui.hapticFeedbackEnabled) {
-            hapticPlayer?.play(type)
+            playHaptic?.invoke(type)
         }
     }
 }

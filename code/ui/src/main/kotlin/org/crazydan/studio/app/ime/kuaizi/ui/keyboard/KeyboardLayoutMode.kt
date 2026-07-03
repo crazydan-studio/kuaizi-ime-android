@@ -17,20 +17,17 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
+package org.crazydan.studio.app.ime.kuaizi.ui.keyboard
 
-/**
- * 屏幕布局分区。
- *
- * 定义 IME 在屏幕上的空间划分。
- * Zone A 占据屏幕上半区，Zone B 占据屏幕下半区。
- * 在 [KeyboardLayoutMode.Stacked] 模式下仅使用 Zone B；
- * 在 [KeyboardLayoutMode.Separated] 模式下 Zone A 和 Zone B 均被使用。
- */
-sealed class LayoutZone {
-    /** 屏幕上半区，Separated 模式下展示按键布局和手势反馈 */
-    data object A : LayoutZone()
+/** 键盘布局模式，定义 Zone A 与 Zone B 的使用方式 */
+sealed class KeyboardLayoutMode {
 
-    /** 屏幕下半区，所有交互的核心区域，包含三行结构 */
-    data object B : LayoutZone()
+    /** 堆叠模式：所有组件集中在 Zone B，三层面板叠加共享同一空间 */
+    data object Stacked : KeyboardLayoutMode()
+
+    /**
+     * 分离模式：输入区域占据 Zone B，按键展示区域占据 Zone A
+     * @param zoneARatio Zone A 占屏幕高度的比例，默认 0.4
+     */
+    data class Separated(val zoneARatio: Float = 0.4f) : KeyboardLayoutMode()
 }

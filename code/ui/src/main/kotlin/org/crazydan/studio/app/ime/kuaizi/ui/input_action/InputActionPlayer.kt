@@ -30,7 +30,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.GestureFeedbackState
-import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
+import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardViewModel
 
 /**
  * 输入动作播放器的状态模型，使用密封类定义五种互斥状态。

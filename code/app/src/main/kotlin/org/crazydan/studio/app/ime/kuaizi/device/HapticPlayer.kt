@@ -24,17 +24,15 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticPlayer
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticType
+import org.crazydan.studio.app.ime.kuaizi.ui.domain.HapticType
 
 /**
  * 基于 Android [Vibrator] 的触觉播放器实现。
  *
- * 在 [IMEService.onCreate] 中创建并注入 [KeyboardViewModel]。
  * 使用 [VibrationEffect.createOneShot] API 创建单次振动效果，
  * 不同 [HapticType] 对应不同的振动时长和强度。
  */
-class DefaultHapticPlayer(context: Context) : HapticPlayer {
+class HapticPlayer(context: Context) {
     // Vibrator 实例，根据 API 等级选择兼容的获取方式
     private val vibrator: Vibrator =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -56,9 +54,13 @@ class DefaultHapticPlayer(context: Context) : HapticPlayer {
     // -------------------------------------------------------------
 
     /** 播放指定类型的触觉反馈。若振动效果未定义则静默跳过。 */
-    override fun play(type: HapticType) {
+    fun play(type: HapticType) {
         val effect = effects[type] ?: return
 
         vibrator.vibrate(effect)
+    }
+
+    fun release() {
+        // keep is empty
     }
 }
