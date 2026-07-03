@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.util.SystemHelper
-import org.crazydan.studio.app.ime.kuaizi.ui.integration.KeyboardHost
+import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardHost
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 

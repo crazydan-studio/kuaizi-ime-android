@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.player
+package org.crazydan.studio.app.ime.kuaizi.ui.input_action
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*

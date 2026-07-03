@@ -20,10 +20,11 @@
 package org.crazydan.studio.app.ime.kuaizi.device
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.media.SoundPool
 import org.crazydan.studio.app.ime.kuaizi.R
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioType
 import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioPlayer
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioType
 
 /**
  * 基于 Android [SoundPool] 的音效播放器实现。
@@ -32,24 +33,33 @@ import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioPlayer
  * 所有音效资源在构造时预加载到 SoundPool 中，确保播放时零延迟。
  * 使用 SoundPool 而非 MediaPlayer，因为按键音需要低延迟、短时长、高并发。
  */
-class AndroidAudioPlayer(context: Context) : AudioPlayer {
-
-    // SoundPool 实例，最多同时播放 4 路音效
-    private val soundPool = SoundPool.Builder()
-        .setMaxStreams(4)
-        .build()
+class DefaultAudioPlayer(context: Context) : AudioPlayer {
+    private val soundPool =
+        SoundPool.Builder()
+            .setMaxStreams(10)
+            .apply {
+                val attrs = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+                setAudioAttributes(attrs)
+            }
+            .build()
 
     // 音效类型到 SoundPool ID 的映射，构造时预加载音频资源
-    private val soundIds: Map<AudioType, Int> = mapOf(
-        AudioType.KeyPress to soundPool.load(context, R.raw.tick_single, 1),
-        AudioType.Slip to soundPool.load(context, R.raw.tick_single, 1),
-        AudioType.CandidateSelect to soundPool.load(context, R.raw.tick_single, 1),
-        AudioType.PageFlip to soundPool.load(context, R.raw.page_flip, 1),
-    )
+    private val soundIds: Map<AudioType, Int> =
+        mapOf(
+            AudioType.KeyPress to soundPool.load(context, R.raw.tick_single, 1),
+            AudioType.Slip to soundPool.load(context, R.raw.tick_single, 1),
+            AudioType.CandidateSelect to soundPool.load(context, R.raw.tick_single, 1),
+            AudioType.PageFlip to soundPool.load(context, R.raw.page_flip, 1),
+        )
+
+    // ------------------------------------------------------
 
     /** 播放指定类型的音效。若音效未加载则静默跳过。 */
     override fun play(type: AudioType) {
         val soundId = soundIds[type] ?: return
+
         soundPool.play(soundId, 1.0f, 1.0f, 0, 0, 1.0f)
     }
 

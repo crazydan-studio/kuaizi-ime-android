@@ -47,8 +47,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticType
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
-import org.crazydan.studio.app.ime.kuaizi.ui.player.ComposeInputActionPositionResolver
-import org.crazydan.studio.app.ime.kuaizi.ui.player.InputActionPlayer
+import org.crazydan.studio.app.ime.kuaizi.ui.input_action.ComposeInputActionPositionResolver
+import org.crazydan.studio.app.ime.kuaizi.ui.input_action.InputActionPlayer
 
 /** 键盘布局模式，定义 Zone A 与 Zone B 的使用方式 */
 sealed class KeyboardLayoutMode {

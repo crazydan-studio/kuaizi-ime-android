@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.integration
+package org.crazydan.studio.app.ime.kuaizi.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,8 +31,8 @@ import androidx.compose.ui.Modifier
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.ToolListState
 import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.Keyboard
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
@@ -56,7 +56,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.PopupTipState
 /**
  * 键盘宿主组件，顶层集成组件。
  *
- * 通过 `derivedStateOf` 分别订阅 [ImeState] 的各个子字段，
+ * 通过 [derivedStateOf] 分别订阅 [ImeState] 的各个子字段，
  * 任一子字段的变化仅触发依赖该字段的面板重组，避免整个键盘树因任何微小状态变更而重组。
  * 例如键盘按键面板仅订阅 keyboard 字段，候选列表面板仅订阅 candidateList 字段。
  *
@@ -125,6 +125,7 @@ fun KeyboardHost(
                 keyTableContext = keyTableContext,
                 modifier = modifier,
             )
+
             is KeyboardLayoutMode.Separated -> SeparatedLayout(
                 keyboard = keyboard,
                 inputList = inputList,
@@ -353,12 +354,14 @@ private fun generateBasicLayout(context: KeyTableContext): List<List<InputKey>> 
                 InputKey.Char(text = "n"), InputKey.Char(text = "m"), InputKey.Ctrl(type = ""),
             ),
         )
+
         KeyboardType.Number -> listOf(
             listOf(InputKey.Char(text = "1"), InputKey.Char(text = "2"), InputKey.Char(text = "3")),
             listOf(InputKey.Char(text = "4"), InputKey.Char(text = "5"), InputKey.Char(text = "6")),
             listOf(InputKey.Char(text = "7"), InputKey.Char(text = "8"), InputKey.Char(text = "9")),
             listOf(InputKey.Ctrl(type = ""), InputKey.Char(text = "0"), InputKey.Ctrl(type = "")),
         )
+
         else -> listOf(
             listOf(InputKey.Char(text = "a"), InputKey.Char(text = "b"), InputKey.Char(text = "c")),
         )

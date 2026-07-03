@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.ui.integration
+package org.crazydan.studio.app.ime.kuaizi.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,8 +33,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.UseMode
-import org.crazydan.studio.app.ime.kuaizi.ui.player.InputActionPlayer
-import org.crazydan.studio.app.ime.kuaizi.ui.player.InputActionPlayerState
+import org.crazydan.studio.app.ime.kuaizi.ui.input_action.InputActionPlayer
+import org.crazydan.studio.app.ime.kuaizi.ui.input_action.InputActionPlayerState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
 
 /**
@@ -48,7 +48,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.KeyboardViewModel
  * @param modifier 修饰符
  */
 @Composable
-fun KeyboardInputActionPlayerHost(
+fun InputActionPlayerHost(
     viewModel: KeyboardViewModel,
     useMode: UseMode,
     modifier: Modifier = Modifier,
@@ -58,6 +58,7 @@ fun KeyboardInputActionPlayerHost(
             viewModel = viewModel,
             showIndicator = useMode != UseMode.DirectInput,
         )
+
         // Animation 模式下显示播放控制面板
         if (useMode == UseMode.Animation) {
             InputActionPlayerPanel(
@@ -88,7 +89,9 @@ fun InputActionPlayerPanel(
     val playbackState by player.playbackState.collectAsState()
 
     Row(
-        modifier = modifier.fillMaxWidth().padding(8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -96,18 +99,22 @@ fun InputActionPlayerPanel(
             is InputActionPlayerState.Idle -> {
                 Button(onClick = { player.play() }) { Text("播放") }
             }
+
             is InputActionPlayerState.Ready -> {
                 Button(onClick = { player.play() }) { Text("开始") }
             }
+
             is InputActionPlayerState.Playing -> {
                 Button(onClick = { player.pause() }) { Text("暂停") }
                 val state = playbackState as InputActionPlayerState.Playing
                 Text("${state.currentIndex}/${state.totalActions}")
             }
+
             is InputActionPlayerState.Paused -> {
                 Button(onClick = { player.resume() }) { Text("继续") }
                 Button(onClick = { player.stop() }) { Text("停止") }
             }
+
             is InputActionPlayerState.Finished -> {
                 Button(onClick = { player.load(player.script ?: return@Button); player.play() }) { Text("重播") }
             }
