@@ -23,7 +23,7 @@ package org.crazydan.studio.app.ime.kuaizi.ui.feedback
  * 感官反馈播放器接口。
  *
  * 定义播放音效和触觉振动的通用契约。
- * 平台实现（如 [AndroidAudioPlayer]、[AndroidHapticPlayer]）由 `:app` 模块提供。
+ * 平台实现由 `:app` 模块提供。
  *
  * @param T 播放类型（[AudioType] 或 [HapticType]）
  */
@@ -39,14 +39,26 @@ typealias AudioPlayer = FeedbackPlayer<AudioType>
 typealias HapticPlayer = FeedbackPlayer<HapticType>
 
 enum class AudioType {
+    /** 按键音：用户点击按键时播放 */
     KeyPress,
+
+    /** 候选选择音：用户从候选列表选择候选词时播放 */
     CandidateSelect,
+
+    /** 滑行输入音：用户滑行输入识别完成时播放 */
     Slip,
+
+    /** 翻页音：候选列表翻页时播放 */
     PageFlip,
 }
 
 enum class HapticType {
+    /** 轻触反馈：按键点击、候选选择等 */
     LightTap,
+
+    /** 中等反馈：滑行识别完成、翻页等 */
     MediumTap,
+
+    /** 重触反馈：长按触发上下文菜单等 */
     HeavyTap,
 }

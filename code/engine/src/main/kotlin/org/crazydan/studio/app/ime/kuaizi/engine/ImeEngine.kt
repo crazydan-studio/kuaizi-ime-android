@@ -99,6 +99,37 @@ class ImeEngine internal constructor(
 
     // -----------------------------------------------
 
+    companion object {
+        /**
+         * 工厂方法：创建 [ImeEngine] 实例。
+         *
+         * 内部完成以下初始化工作：
+         * - 创建 [KeyboardStateMachine]
+         * - 创建 [InputListOperator]
+         *
+         * 工厂方法确保所有依赖项正确初始化，避免外部构造时遗漏关键组件。
+         *
+         * @param config 运行时配置，可选，默认使用全默认值的 [ImeConfig]
+         * @param dictProvider 字典查询接口，由外部注入
+         * @return 初始化完成的 [ImeEngine] 实例
+         */
+        fun create(
+            config: ImeConfig = ImeConfig(),
+            dictProvider: ImeDictProvider,
+        ): ImeEngine {
+            val inputListOp = InputListOperator(InputListEditor())
+
+            return ImeEngine(
+                config = config,
+                dictProvider = dictProvider,
+                keyboardStateMachine = KeyboardStateMachine(inputListOp = inputListOp),
+                inputListOp = inputListOp,
+            )
+        }
+    }
+
+    // -----------------------------------------------
+
     /**
      * 启动输入法，建立后续所有 Intent 处理的前置条件。
      *
@@ -440,36 +471,5 @@ class ImeEngine internal constructor(
      */
     private fun assertStateInvariants(state: ImeState) {
         // invariants checked only in DEBUG
-    }
-
-    // -----------------------------------------------
-
-    companion object {
-        /**
-         * 工厂方法：创建 [ImeEngine] 实例。
-         *
-         * 内部完成以下初始化工作：
-         * - 创建 [KeyboardStateMachine]
-         * - 创建 [InputListOperator]
-         *
-         * 工厂方法确保所有依赖项正确初始化，避免外部构造时遗漏关键组件。
-         *
-         * @param config 运行时配置，可选，默认使用全默认值的 [ImeConfig]
-         * @param dictProvider 字典查询接口，由外部注入
-         * @return 初始化完成的 [ImeEngine] 实例
-         */
-        fun create(
-            config: ImeConfig = ImeConfig(),
-            dictProvider: ImeDictProvider,
-        ): ImeEngine {
-            val inputListOp = InputListOperator(InputListEditor())
-
-            return ImeEngine(
-                config = config,
-                dictProvider = dictProvider,
-                keyboardStateMachine = KeyboardStateMachine(inputListOp = inputListOp),
-                inputListOp = inputListOp,
-            )
-        }
     }
 }

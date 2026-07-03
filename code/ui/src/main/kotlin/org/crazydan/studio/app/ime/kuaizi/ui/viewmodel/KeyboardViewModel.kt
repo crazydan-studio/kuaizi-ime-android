@@ -41,14 +41,14 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioPlayer
-import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticPlayer
 import org.crazydan.studio.app.ime.kuaizi.ui.feedback.AudioType
+import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticPlayer
 import org.crazydan.studio.app.ime.kuaizi.ui.feedback.HapticType
+import org.crazydan.studio.app.ime.kuaizi.ui.input_action.ComposeInputActionPositionResolver
+import org.crazydan.studio.app.ime.kuaizi.ui.input_action.InputActionPlayer
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
-import org.crazydan.studio.app.ime.kuaizi.ui.input_action.ComposeInputActionPositionResolver
-import org.crazydan.studio.app.ime.kuaizi.ui.input_action.InputActionPlayer
 
 /** 键盘布局模式，定义 Zone A 与 Zone B 的使用方式 */
 sealed class KeyboardLayoutMode {
@@ -80,8 +80,6 @@ class KeyboardViewModel(
     private val audioPlayer: AudioPlayer? = null,
     private val hapticPlayer: HapticPlayer? = null,
 ) : ViewModel() {
-
-    // ==================== 状态暴露 ====================
 
     /** 引擎状态，供 Compose 订阅 */
     val state: StateFlow<ImeState> = engine.state
@@ -135,12 +133,90 @@ class KeyboardViewModel(
     /** 是否正在输入，由 inputList.hasPending 直接派生 */
     val isInputting: Boolean get() = state.value.inputList.hasPending
 
+    // -----------------------------------------------------------------------
+
     init {
         launchEffectCollection()
         launchToolListCollection()
     }
 
-    /** 订阅引擎副作用通道，处理弹出提示 */
+    override fun onCleared() {
+        super.onCleared()
+
+        actionPlayer.stop()
+        feedbackState.clear()
+    }
+
+    // -----------------------------------------------------------------------
+
+    /**
+     * ViewModel 工厂，用于注入预创建的 [ImeEngine] 和播放器。
+     *
+     * 引擎和播放器由 `:app` 模块在 `IMEService.onCreate()` 中创建，
+     * 通过此工厂注入 ViewModel。
+     */
+    class Factory(
+        private val engine: ImeEngine,
+        private val audioPlayer: AudioPlayer? = null,
+        private val hapticPlayer: HapticPlayer? = null,
+    ) : ViewModelProvider.Factory {
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            return KeyboardViewModel(engine, audioPlayer, hapticPlayer) as T
+        }
+    }
+
+    // -----------------------------------------------------------------------
+
+    /** 处理输入手势：播放反馈、转换为 [ImeIntent] 后委托引擎处理 */
+    fun handleGesture(gesture: InputGesture) {
+        // 处理按键弹出提示
+        processKeyPopupTip(gesture)
+
+        // 处理音效和触觉反馈
+        processFeedback(gesture)
+
+        // 转换手势为意图并发送给引擎
+        val intent = gestureToIntent(gesture)
+        engine.handleIntent(intent)
+    }
+
+    /** 处理 [ImeIntent] */
+    fun handleIntent(intent: ImeIntent) {
+        engine.handleIntent(intent)
+    }
+
+    // -----------------------------------------------------------------------
+
+    /** 更新运行时配置，委托引擎执行 */
+    fun updateConfig(transform: (ImeConfig) -> ImeConfig) {
+        engine.updateConfig(transform)
+    }
+
+    /** 设置键盘布局模式 */
+    fun setKeyboardLayoutMode(mode: KeyboardLayoutMode) {
+        _layoutMode.value = mode
+    }
+
+    /** 更新按键布局状态缓存 */
+    fun updateKeyLayoutState(state: KeyLayoutState) {
+        _currentKeyLayoutState = state
+    }
+
+    /** 更新候选栏布局状态缓存 */
+    fun updateCandidateLayoutState(state: CandidateListLayoutState) {
+        _currentCandidateLayoutState = state
+    }
+
+    /** 更新输入栏布局状态缓存 */
+    fun updateInputListLayoutState(state: InputListLayoutState) {
+        _currentInputListLayoutState = state
+    }
+
+    // -----------------------------------------------------------------------
+
+    /** 订阅引擎副作用通道 */
     private fun launchEffectCollection() {
         viewModelScope.launch {
             engine.effect.collect { effect ->
@@ -161,6 +237,8 @@ class KeyboardViewModel(
         }
     }
 
+    // ----------------------------------------------------------------
+
     /** 处理 [ImeEffect] */
     private fun processEffect(effect: ImeEffect) {
         when (effect) {
@@ -168,8 +246,9 @@ class KeyboardViewModel(
                 _popupTipState.value = PopupTipState.Message(
                     message = effect.message,
                     timeout = effect.timeout,
-                )
-                dismissPopupTipAfter(effect.timeout)
+                ).apply {
+                    dismissPopupTipAfter(timeout)
+                }
             }
 
             is ImeEffect.PopupTip.Action -> {
@@ -179,9 +258,58 @@ class KeyboardViewModel(
                     action = effect.action,
                     persistent = effect.persistent,
                     timeout = effect.timeout,
-                )
-                if (!effect.persistent) {
-                    dismissPopupTipAfter(effect.timeout)
+                ).apply {
+                    if (!persistent) {
+                        dismissPopupTipAfter(timeout)
+                    }
+                }
+            }
+
+            else -> {}
+        }
+    }
+
+    private fun processFeedback(gesture: InputGesture) {
+        when (gesture) {
+            is InputGesture.Tap,
+            is InputGesture.LongPress -> {
+                playAudio(AudioType.KeyPress)
+                playHaptic(HapticType.LightTap)
+            }
+
+            is InputGesture.Swipe -> {
+                playAudio(AudioType.Slip)
+                playHaptic(HapticType.LightTap)
+            }
+
+            is InputGesture.CandidateTap -> {
+                playAudio(AudioType.CandidateSelect)
+            }
+
+            is InputGesture.Flip -> {
+                playAudio(AudioType.PageFlip)
+            }
+        }
+    }
+
+    private fun processKeyPopupTip(gesture: InputGesture) {
+        if (!config.ui.keyPopupTipsEnabled) return
+
+        when (gesture) {
+            is InputGesture.Tap -> {
+                _popupTipState.value = PopupTipState.Key(
+                    value = gesture.key.toString(),
+                ).apply {
+                    dismissPopupTipAfter(timeout)
+                }
+            }
+
+            is InputGesture.LongPress -> {
+                // TODO 长按按键，一直显示按键字符，直到释放
+                _popupTipState.value = PopupTipState.Key(
+                    value = gesture.key.toString(),
+                ).apply {
+                    dismissPopupTipAfter(timeout)
                 }
             }
 
@@ -199,51 +327,7 @@ class KeyboardViewModel(
         }
     }
 
-    // ==================== 手势与意图处理 ====================
-
-    /** 处理输入手势：播放反馈、转换为 [ImeIntent] 后委托引擎处理 */
-    fun handleGesture(gesture: InputGesture) {
-        playFeedback(gesture)
-
-        val intent = gestureToIntent(gesture)
-        engine.handleIntent(intent)
-    }
-
-    private fun playFeedback(gesture: InputGesture) {
-        when (gesture) {
-            is InputGesture.Tap,
-            is InputGesture.LongPress -> {
-                if (config.ui.audioFeedbackEnabled)
-                    audioPlayer?.play(AudioType.KeyPress)
-
-                if (config.ui.hapticFeedbackEnabled)
-                    hapticPlayer?.play(HapticType.LightTap)
-            }
-
-            is InputGesture.Swipe -> {
-                if (config.ui.audioFeedbackEnabled)
-                    audioPlayer?.play(AudioType.Slip)
-
-                if (config.ui.hapticFeedbackEnabled)
-                    hapticPlayer?.play(HapticType.LightTap)
-            }
-
-            is InputGesture.CandidateTap -> {
-                if (config.ui.audioFeedbackEnabled)
-                    audioPlayer?.play(AudioType.CandidateSelect)
-            }
-
-            is InputGesture.Flip -> {
-                if (config.ui.audioFeedbackEnabled)
-                    audioPlayer?.play(AudioType.PageFlip)
-            }
-        }
-    }
-
-    /** 直接发送 [ImeIntent] 到引擎 */
-    fun handleIntent(intent: ImeIntent) {
-        engine.handleIntent(intent)
-    }
+    // ---------------------------------------------------------------------------
 
     /** 将 [InputGesture] 转换为 [ImeIntent] */
     private fun gestureToIntent(gesture: InputGesture): ImeIntent {
@@ -279,33 +363,6 @@ class KeyboardViewModel(
         }
     }
 
-    // ==================== 配置与布局 ====================
-
-    /** 更新运行时配置，委托引擎执行 */
-    fun updateConfig(transform: (ImeConfig) -> ImeConfig) {
-        engine.updateConfig(transform)
-    }
-
-    /** 设置键盘布局模式 */
-    fun setKeyboardLayoutMode(mode: KeyboardLayoutMode) {
-        _layoutMode.value = mode
-    }
-
-    /** 更新按键布局状态缓存 */
-    fun updateKeyLayoutState(state: KeyLayoutState) {
-        _currentKeyLayoutState = state
-    }
-
-    /** 更新候选栏布局状态缓存 */
-    fun updateCandidateLayoutState(state: CandidateListLayoutState) {
-        _currentCandidateLayoutState = state
-    }
-
-    /** 更新输入栏布局状态缓存 */
-    fun updateInputListLayoutState(state: InputListLayoutState) {
-        _currentInputListLayoutState = state
-    }
-
     /** 根据键盘类型动态计算工具列表 */
     private fun computeToolList(keyboardType: KeyboardType): ToolListState {
         val tools = mutableListOf<ToolItem>()
@@ -327,28 +384,17 @@ class KeyboardViewModel(
         return ToolListState(tools = tools)
     }
 
-    // ==================== 生命周期 ====================
+    // ----------------------------------------------------------------
 
-    override fun onCleared() {
-        super.onCleared()
-        actionPlayer.stop()
-        feedbackState.clear()
+    private fun playAudio(type: AudioType) {
+        if (config.ui.audioFeedbackEnabled) {
+            audioPlayer?.play(type)
+        }
     }
 
-    /**
-     * ViewModel 工厂，用于注入预创建的 [ImeEngine] 和播放器。
-     *
-     * 引擎和播放器由 `:app` 模块在 `IMEService.onCreate()` 中创建，
-     * 通过此工厂注入 ViewModel。
-     */
-    class Factory(
-        private val engine: ImeEngine,
-        private val audioPlayer: AudioPlayer? = null,
-        private val hapticPlayer: HapticPlayer? = null,
-    ) : ViewModelProvider.Factory {
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return KeyboardViewModel(engine, audioPlayer, hapticPlayer) as T
+    private fun playHaptic(type: HapticType) {
+        if (config.ui.hapticFeedbackEnabled) {
+            hapticPlayer?.play(type)
         }
     }
 }

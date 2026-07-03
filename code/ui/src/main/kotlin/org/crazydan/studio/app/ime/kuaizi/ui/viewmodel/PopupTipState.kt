@@ -33,6 +33,11 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
  */
 sealed class PopupTipState {
 
+    data class Key(
+        val value: String,
+        val timeout: Long = 3000L,
+    ) : PopupTipState()
+
     /**
      * 纯文本信息提示
      * @param message 提示消息内容
