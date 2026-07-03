@@ -40,7 +40,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
-import org.crazydan.studio.app.ime.kuaizi.engine.effect.AudioType
 import org.crazydan.studio.app.ime.kuaizi.engine.effect.ImeEffect
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
@@ -74,7 +73,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
  *
  * @property config 运行时配置，包含引擎/UI/运行时三层子配置
  * @property state 只读状态流，UI 层通过 collectAsState 订阅
- * @property effect 一次性副作用通道，用于传递音效、振动、弹出提示等信号
+ * @property effect 一次性副作用通道，用于传递弹出提示等信号
  */
 class ImeEngine internal constructor(
     config: ImeConfig,
@@ -112,7 +111,6 @@ class ImeEngine internal constructor(
      * 处理步骤：
      * 1. 更新 RuntimeConfig：[ImeConfig.Startup] 中的值覆盖到当前 [ImeConfig.Runtime]
      * 1. 确定 KeyboardType：通过两级级联规则确定启动时的键盘类型
-     * 1. 更新 keyPopupTipsEnabled：若为 Password 类型则强制禁用按键提示
      * 1. 重置 KeyboardStateMachine：根据确定的 KeyboardType 重置状态机
      * 1. 检查剪贴板可粘贴内容：若启用则发射粘贴提示
      * 1. 通过 [applyStateUpdate] 原子更新 [ImeState]
@@ -132,13 +130,6 @@ class ImeEngine internal constructor(
                 // 清空输入列表，以确保采用直输模式
                 if (isPassword) InputList()
                 else _state.value.inputList,
-            config = _state.value.config.copy(
-                runtime = _state.value.config.runtime.copy(
-                    keyPopupTipsEnabled =
-                        if (isPassword) false
-                        else _state.value.config.runtime.keyPopupTipsEnabled,
-                ),
-            ),
         )
         applyStateUpdate { newState }
 
@@ -147,7 +138,7 @@ class ImeEngine internal constructor(
             && _state.value.clipboard.currentText != null
         ) {
             _effect.tryEmit(
-                ImeEffect.PopupTip.Action(
+                ImeEffect.Action(
                     message = "可粘贴内容",
                     actionLabel = "粘贴",
                     action = ImeIntent.PasteClip(_state.value.clipboard.currentText!!),
@@ -214,7 +205,6 @@ class ImeEngine internal constructor(
      * 3. 处理 sideEffects 副作用意图
      * 4. 通过 [applyStateUpdate] 更新 [ImeState]
      * 5. 分发 [EditorAction] 到 [ImeEditorBridge]
-     * 6. 发射 [ImeEffect] 副作用信号
      *
      * @param intent 用户意图
      */
@@ -282,24 +272,10 @@ class ImeEngine internal constructor(
         }
 
         // --------------------
-        emitEffects(intent)
-
         processSideEffects(sideEffects)
 
         editorAction?.also {
             dispatchEditorAction(it)
-        }
-    }
-
-    /** 根据 [ImeIntent] 发射 [ImeEffect] */
-    private fun emitEffects(intent: ImeIntent) {
-        val effect = when (intent) {
-            is ImeIntent.PressKey -> ImeEffect.PlayAudio(AudioType.KeyPress)
-            else -> null
-        }
-
-        effect?.also {
-            _effect.tryEmit(it)
         }
     }
 

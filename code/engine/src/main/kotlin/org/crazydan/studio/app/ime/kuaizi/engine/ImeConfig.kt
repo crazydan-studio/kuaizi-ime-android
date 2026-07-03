@@ -114,7 +114,6 @@ data class ImeConfig(
      *
      * @property screenOrientation 屏幕方向，仅影响 UI 层键盘布局形式
      * @property editorInputType 编辑器输入类型，决定启动时的键盘类型
-     * @property keyPopupTipsEnabled 是否启用按键输入提示，可覆盖 UiConfig 的同名配置
      * @property toolSettingsEnabled 是否启用工具栏中的配置按钮
      * @property toolSwitchInputMethodEnabled 是否启用工具栏中的输入法切换按钮
      * @property toolCloseKeyboardEnabled 是否启用工具栏中的关闭键盘按钮
@@ -122,8 +121,6 @@ data class ImeConfig(
     data class Runtime(
         val screenOrientation: ScreenOrientation = ScreenOrientation.Landscape,
         val editorInputType: EditorInputType = EditorInputType.Text,
-
-        val keyPopupTipsEnabled: Boolean? = null,
 
         val toolSettingsEnabled: Boolean = true,
         val toolSwitchInputMethodEnabled: Boolean = true,
