@@ -62,7 +62,9 @@ fun KeyLayoutPanel(
         onLayoutStateChanged(keyLayoutState)
     }
 
-    Canvas(modifier = modifier.fillMaxWidth().height(200.dp)) {
+    Canvas(modifier = modifier
+        .fillMaxWidth()
+        .height(200.dp)) {
         // 根据 keyPositions 渲染按键矩形
         keyLayoutState.keyPositions.forEach { (key, rectF) ->
             val pixelRect = keyLayoutState.denormalize(rectF, size)

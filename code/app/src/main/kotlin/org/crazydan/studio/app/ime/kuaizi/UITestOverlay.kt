@@ -19,6 +19,9 @@
 
 package org.crazydan.studio.app.ime.kuaizi
 
+import org.crazydan.studio.app.ime.kuaizi.UITestOverlay.Companion.createImpl
+
+
 /**
  * UI 测试工具枚举。
  *
@@ -49,10 +52,13 @@ enum class UITestTool(
 interface UITestOverlay {
     /** 启用 UI 测试模式（自动降级日志等级）。 */
     fun enable()
+
     /** 禁用 UI 测试模式并清除所有活跃工具状态。 */
     fun disable()
+
     /** 切换指定工具的激活状态。 */
     fun toggle(tool: UITestTool)
+
     /** 检查是否有任何工具处于活跃状态。 */
     fun isActive(): Boolean
 

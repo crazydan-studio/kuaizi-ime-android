@@ -19,8 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.backup
 
-import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import kotlinx.serialization.Serializable
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardThemeType
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
@@ -29,6 +29,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 enum class ImportStrategy {
     /** 替换现有数据 */
     Replace,
+
     /** 与现有数据合并 */
     Merge,
 }
@@ -37,6 +38,7 @@ enum class ImportStrategy {
 sealed class ExportResult {
     /** 导出成功 */
     data class Success(val itemCount: Int) : ExportResult()
+
     /** 导出失败 */
     data class Failure(val message: String) : ExportResult()
 }

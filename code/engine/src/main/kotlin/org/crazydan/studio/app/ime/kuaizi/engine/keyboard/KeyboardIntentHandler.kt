@@ -122,15 +122,21 @@ class PinyinIntentHandler(override val type: KeyboardType) : KeyboardIntentHandl
 
 /** 数字键盘意图处理器 */
 class NumberKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+
 /** 符号键盘意图处理器 */
 class SymbolKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+
 /** Emoji 键盘意图处理器 */
 class EmojiKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+
 /** 数学键盘意图处理器 */
 class MathKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+
 /** 编辑键盘意图处理器 */
 class EditorKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+
 /** 候选键盘意图处理器 */
 class CandidateKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+
 /** 提交选项键盘意图处理器 */
 class CommitOptionKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)

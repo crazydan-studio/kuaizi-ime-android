@@ -19,18 +19,26 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.input_action
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputAction
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerIndicator
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionPathInterpolator
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionPositionResolver
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionScript
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.OffsetF
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
-import org.crazydan.studio.app.ime.kuaizi.engine.input_action.*
+import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardViewModel
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.GestureFeedbackState
-import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardViewModel
 
 /**
  * 输入动作播放器的状态模型，使用密封类定义五种互斥状态。
@@ -242,7 +250,8 @@ class InputActionPlayer(
                 viewModel.handleIntent(ImeIntent.SelectCandidate(word))
             }
 
-            is InputAction.Wait -> { /* 等待动作，无操作 */ }
+            is InputAction.Wait -> { /* 等待动作，无操作 */
+            }
 
             is InputAction.SwitchKeyboard -> {
                 viewModel.handleIntent(ImeIntent.SwitchKeyboard(action.targetType))

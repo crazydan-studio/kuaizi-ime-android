@@ -231,10 +231,13 @@ data class PairSymbol(
 enum class PinyinToggleType {
     /** 全拼模式 */
     FullPinyin,
+
     /** 双拼模式 */
     DoublePinyin,
+
     /** 注音模式 */
     Bopomofo,
+
     /** 显示声调 */
     ShowTone,
 }

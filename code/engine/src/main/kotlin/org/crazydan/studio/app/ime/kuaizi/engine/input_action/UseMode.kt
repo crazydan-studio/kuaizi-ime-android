@@ -19,6 +19,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input_action
 
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.UseMode.Animation
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.UseMode.DirectInput
+
+
 /**
  * 使用模式：定义脚本回放时的执行方式。
  *

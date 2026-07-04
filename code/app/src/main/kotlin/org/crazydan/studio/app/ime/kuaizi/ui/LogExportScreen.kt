@@ -20,7 +20,6 @@
 package org.crazydan.studio.app.ime.kuaizi.ui
 
 import android.net.Uri
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 
 /**

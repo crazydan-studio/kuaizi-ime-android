@@ -40,8 +40,10 @@ data class InputActionFingerIndicator(
     enum class ClickAnimation {
         /** 无动画。 */
         None,
+
         /** 按下动画：放大 + 透明度降低。 */
         Pressing,
+
         /** 抬起动画：缩小 + 透明度恢复。 */
         Releasing,
     }

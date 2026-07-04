@@ -40,6 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyTableContext
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyTableGenerator
+import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyboardLayoutMode
 import org.crazydan.studio.app.ime.kuaizi.ui.panel.CandidateListPanel
 import org.crazydan.studio.app.ime.kuaizi.ui.panel.GestureFeedbackPanel
 import org.crazydan.studio.app.ime.kuaizi.ui.panel.GestureInputPanel
@@ -49,8 +50,6 @@ import org.crazydan.studio.app.ime.kuaizi.ui.panel.PopupTipPanel
 import org.crazydan.studio.app.ime.kuaizi.ui.panel.ToolListPanel
 import org.crazydan.studio.app.ime.kuaizi.ui.theme.KeyboardTheme
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.GestureFeedbackState
-import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.KeyboardLayoutMode
-import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardViewModel
 import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.PopupTipState
 
 /**

@@ -97,6 +97,7 @@ data class CandidateList(
 sealed class InputWord {
     /** 候选词文本 */
     abstract val text: String
+
     /** 候选词使用频率 */
     abstract val frequency: Int
 
@@ -196,12 +197,16 @@ data class Radical(val text: String, val strokeCount: Int)
 enum class Tone {
     /** 第一声（阴平） */
     Tone1,
+
     /** 第二声（阳平） */
     Tone2,
+
     /** 第三声（上声） */
     Tone3,
+
     /** 第四声（去声） */
     Tone4,
+
     /** 轻声 */
     Neutral,
 }
@@ -210,8 +215,10 @@ enum class Tone {
 enum class SpellUsedMode {
     /** 全拼模式 */
     FullPinyin,
+
     /** 双拼模式 */
     DoublePinyin,
+
     /** 注音模式 */
     Bopomofo,
 }
@@ -220,6 +227,7 @@ enum class SpellUsedMode {
 enum class VariantType {
     /** 繁体字 */
     Traditional,
+
     /** 异体字 */
     Variant,
 }

@@ -84,8 +84,8 @@ class ViterbiDecoder(private val model: HmmModel) {
                     var bestPrev: HmmState? = null
                     for (prevState in viterbi[t - 1].keys) {
                         val p = viterbi[t - 1][prevState]!! *
-                            model.transitionProb(prevState, currState) *
-                            model.emissionProb(currState, observations[t])
+                                model.transitionProb(prevState, currState) *
+                                model.emissionProb(currState, observations[t])
                         if (p > maxProb) {
                             maxProb = p
                             bestPrev = prevState

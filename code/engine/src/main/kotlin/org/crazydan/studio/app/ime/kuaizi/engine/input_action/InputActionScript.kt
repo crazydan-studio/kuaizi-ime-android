@@ -19,6 +19,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input_action
 
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionMode.Swipe
+import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionMode.Tap
+
+
 /**
  * 输入动作脚本，将有序的 [InputAction] 序列组合为可命名、可描述、可回放的脚本。
  *

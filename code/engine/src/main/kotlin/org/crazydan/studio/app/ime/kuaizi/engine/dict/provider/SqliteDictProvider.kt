@@ -26,8 +26,8 @@ import kotlinx.coroutines.withContext
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.DictRepository
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.DictDatabase
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteDao
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteEntity
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.FavoriteDao
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.FavoriteEntity
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.input.Spell
 import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone

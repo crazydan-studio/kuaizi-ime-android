@@ -246,22 +246,31 @@ class InputActionScriptCompiler {
     companion object {
         // 按键按下持续时长（毫秒）
         private const val KEY_DOWN_DURATION = 50L
+
         // 按键抬起持续时长（毫秒）
         private const val KEY_UP_DURATION = 30L
+
         // 同音节内按键间隔（毫秒）
         private const val TAP_KEY_INTERVAL = 80L
+
         // 音节间间隔（毫秒）
         private const val TAP_SYLLABLE_INTERVAL = 200L
+
         // 滑行模式音节间间隔（毫秒）
         private const val SWIPE_SYLLABLE_INTERVAL = 300L
+
         // 候选词选择持续时长（毫秒）
         private const val CANDIDATE_SELECT_DURATION = 100L
+
         // 滑行基础时长（毫秒）
         private const val SWIPE_BASE_DURATION = 100L
+
         // 滑行距离系数（毫秒/单位距离）
         private const val SWIPE_DISTANCE_FACTOR = 50f
+
         // 滑行最小时长（毫秒）
         private const val SWIPE_MIN_DURATION = 60L
+
         // 滑行最大时长（毫秒）
         private const val SWIPE_MAX_DURATION = 300L
     }

@@ -32,6 +32,7 @@ class InputListEditor {
 
     /** 是否可以撤销 */
     val canUndo: Boolean get() = undoStack.isNotEmpty()
+
     /** 是否可以重做 */
     val canRedo: Boolean get() = redoStack.isNotEmpty()
 

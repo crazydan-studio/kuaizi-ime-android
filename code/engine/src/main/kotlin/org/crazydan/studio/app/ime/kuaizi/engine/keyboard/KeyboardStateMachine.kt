@@ -61,6 +61,7 @@ class KeyboardStateMachine(
     private val inputListOp: InputListOperator,
 ) {
     private var _state: KeyboardState = KeyboardState.Idle
+
     /** 当前键盘状态（只读） */
     val state: KeyboardState get() = _state
 
@@ -116,16 +117,22 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.InputPinyinChar ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             is KeyboardStateTransition.OpenSymbolGroup ->
                 KeyboardStateTransition.Result(KeyboardState.SymbolChoosing(transition.groupId))
+
             is KeyboardStateTransition.OpenEmojiGroup ->
                 KeyboardStateTransition.Result(KeyboardState.EmojiChoosing(transition.groupId))
+
             is KeyboardStateTransition.MoveCursor ->
                 KeyboardStateTransition.Result(KeyboardState.EditorEditing.CursorMoving(transition.position))
+
             is KeyboardStateTransition.LoadCandidates ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
+
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -135,14 +142,24 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.InputPinyinChar ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             is KeyboardStateTransition.BeginSlip ->
-                KeyboardStateTransition.Result(KeyboardState.PinyinInput.Slipping(transition.startKey, transition.startKey))
+                KeyboardStateTransition.Result(
+                    KeyboardState.PinyinInput.Slipping(
+                        transition.startKey,
+                        transition.startKey
+                    )
+                )
+
             is KeyboardStateTransition.BeginFlip ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Flipping(transition.startChar.toString()))
+
             is KeyboardStateTransition.LoadCandidates ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.Idle)
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -152,12 +169,16 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.SelectSlipChar ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             is KeyboardStateTransition.BeginFlip ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Flipping(transition.startChar.toString()))
+
             is KeyboardStateTransition.LoadCandidates ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -167,10 +188,13 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.SelectFlipChar ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             is KeyboardStateTransition.LoadCandidates ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -182,18 +206,24 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     KeyboardState.CandidateSelection.Filtering(transition.filter),
                 )
+
             is KeyboardStateTransition.AdvanceFilterCandidates ->
                 KeyboardStateTransition.Result(
                     KeyboardState.CandidateSelection.AdvanceFiltering(transition.radical, transition.tone),
                 )
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
+
             is KeyboardStateTransition.PageCandidates ->
                 KeyboardStateTransition.Result(_state)
+
             is KeyboardStateTransition.LoadCandidates ->
                 KeyboardStateTransition.Result(_state)
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -203,14 +233,18 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing())
+
             is KeyboardStateTransition.FilterCandidates ->
                 KeyboardStateTransition.Result(
                     KeyboardState.CandidateSelection.Filtering(transition.filter),
                 )
+
             is KeyboardStateTransition.PageCandidates ->
                 KeyboardStateTransition.Result(_state)
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -220,12 +254,15 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing())
+
             is KeyboardStateTransition.AdvanceFilterCandidates ->
                 KeyboardStateTransition.Result(
                     KeyboardState.CandidateSelection.AdvanceFiltering(transition.radical, transition.tone),
                 )
+
             is KeyboardStateTransition.PageCandidates ->
                 KeyboardStateTransition.Result(_state)
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -235,8 +272,10 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
+
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -248,14 +287,18 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     KeyboardState.EditorEditing.CursorMoving(transition.position),
                 )
+
             is KeyboardStateTransition.SelectText ->
                 KeyboardStateTransition.Result(
                     KeyboardState.EditorEditing.TextSelecting(transition.start, transition.end),
                 )
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
+
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -267,10 +310,13 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     KeyboardState.EditorEditing.TextSelecting(transition.start, transition.end),
                 )
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
+
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -280,10 +326,13 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.OpenSymbolGroup ->
                 KeyboardStateTransition.Result(KeyboardState.SymbolChoosing(transition.groupId))
+
             is KeyboardStateTransition.PageCandidates ->
                 KeyboardStateTransition.Result(_state)
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.Idle)
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }
@@ -293,10 +342,13 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.OpenEmojiGroup ->
                 KeyboardStateTransition.Result(KeyboardState.EmojiChoosing(transition.groupId))
+
             is KeyboardStateTransition.PageCandidates ->
                 KeyboardStateTransition.Result(_state)
+
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.Idle)
+
             else -> KeyboardStateTransition.Result(_state)
         }
     }

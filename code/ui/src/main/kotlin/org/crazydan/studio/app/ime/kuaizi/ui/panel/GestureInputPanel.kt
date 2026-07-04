@@ -60,11 +60,13 @@ fun GestureInputPanel(
                     val key = keyLayoutState.findKeyAt(offset, Size(width = 1f, height = 1f))
                     if (key != null) {
                         // 构造 Tap 手势并通过回调发射
-                        onGesture(InputGesture.Tap(
-                            timestamp = System.currentTimeMillis(),
-                            inputMode = KeyboardInputMode.RectGrid,
-                            key = key,
-                        ))
+                        onGesture(
+                            InputGesture.Tap(
+                                timestamp = System.currentTimeMillis(),
+                                inputMode = KeyboardInputMode.RectGrid,
+                                key = key,
+                            )
+                        )
                     }
                 }
             }

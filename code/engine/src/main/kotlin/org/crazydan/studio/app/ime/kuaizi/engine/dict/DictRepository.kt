@@ -20,9 +20,15 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.dict
 
 import kotlinx.coroutines.flow.Flow
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.*
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteDao
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteEntity
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.FavoriteDao
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.FavoriteEntity
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.HmmDao
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.PinyinPhraseDao
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.PinyinPhraseEntity
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.PinyinWordDao
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.PinyinWordEntity
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.UserInputDao
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.UserInputEntity
 
 /**
  * 字典仓库，封装所有基于 Room 的数据库操作。

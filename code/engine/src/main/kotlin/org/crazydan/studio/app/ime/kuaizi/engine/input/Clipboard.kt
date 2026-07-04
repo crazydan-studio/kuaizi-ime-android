@@ -68,22 +68,30 @@ data class InputClip(
 enum class InputTextType {
     /** 普通文本 */
     Text,
+
     /** URL 链接 */
     Url,
+
     /** 邮箱地址 */
     Email,
+
     /** 手机号码 */
     Phone,
+
     /** 验证码 */
     Captcha,
+
     /** 身份证号 */
     IdCard,
+
     /** 银行卡号 */
     CreditCard,
+
     /** 地址信息 */
     Address,
+
     /** HTML 内容 */
-    Html,;
+    Html, ;
 
     companion object {
         /**

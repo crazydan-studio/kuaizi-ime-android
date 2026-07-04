@@ -33,20 +33,28 @@ data class Keyboard(
 enum class KeyboardType {
     /** 拼音键盘（主键盘） */
     Pinyin,
+
     /** 拉丁字母键盘（主键盘） */
     Latin,
+
     /** 数字键盘（主键盘） */
     Number,
+
     /** 数学表达式键盘（临时键盘） */
     Math,
+
     /** 符号选择键盘（临时键盘） */
     Symbol,
+
     /** Emoji 选择键盘（临时键盘） */
     Emoji,
+
     /** 编辑功能键盘（临时键盘） */
     Editor,
+
     /** 候选词选择键盘（超临时键盘） */
     Candidate,
+
     /** 提交选项键盘（超临时键盘） */
     CommitOption;
 
@@ -68,6 +76,7 @@ enum class KeyboardType {
 enum class KeyboardInputMode {
     /** 六边形网格排列 */
     HexGrid,
+
     /** 矩形网格排列（传统 QWERTY） */
     RectGrid,
 }
@@ -76,6 +85,7 @@ enum class KeyboardInputMode {
 enum class KeyboardHandMode {
     /** 左手模式 */
     Left,
+
     /** 右手模式 */
     Right,
 }
@@ -84,8 +94,10 @@ enum class KeyboardHandMode {
 enum class KeyboardThemeType {
     /** 浅色主题 */
     Light,
+
     /** 深色主题 */
     Night,
+
     /** 跟随系统设置 */
     FollowSystem,
 }
@@ -94,14 +106,19 @@ enum class KeyboardThemeType {
 sealed class InputKey {
     /** 字符按键 */
     data class Char(val text: String) : InputKey()
+
     /** 控制按键，如 Shift、Backspace 等 */
     data class Ctrl(val type: String) : InputKey()
+
     /** 候选词选择按键 */
     data object Candidate : InputKey()
+
     /** 数学运算按键 */
     data object MathOp : InputKey()
+
     /** 符号按键 */
     data object Symbol : InputKey()
+
     /** 空按键，表示无操作 */
     data object Null : InputKey()
 }
@@ -110,10 +127,13 @@ sealed class InputKey {
 enum class KeyGesture {
     /** 单击（点击后立即抬起） */
     Tap,
+
     /** 滑行（手指在按键上滑动） */
     Slip,
+
     /** 翻动（快速滑出触发翻动） */
     Flip,
+
     /** 长按（按住不动持续一段时间） */
     Hold,
     Swipe,
@@ -124,10 +144,13 @@ enum class KeyGesture {
 enum class FlipDirection {
     /** 向左翻动 */
     Left,
+
     /** 向右翻动 */
     Right,
+
     /** 向上翻动 */
     Up,
+
     /** 向下翻动 */
     Down,
 }

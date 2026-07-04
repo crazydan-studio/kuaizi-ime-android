@@ -19,8 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui
 
-import android.content.Intent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text

@@ -22,9 +22,9 @@ package org.crazydan.studio.app.ime.kuaizi.ui.keyboard
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.OffsetF
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.RectF
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 
 /**
  * 按键布局状态，含空间格网索引。

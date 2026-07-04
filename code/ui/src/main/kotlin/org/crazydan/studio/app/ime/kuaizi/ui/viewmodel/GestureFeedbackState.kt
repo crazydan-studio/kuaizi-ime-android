@@ -19,10 +19,13 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
-import kotlinx.coroutines.flow.*
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionFingerIndicator
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.OffsetF
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 
 /**
  * 手势反馈状态，使用归一化坐标，纯视觉反馈。

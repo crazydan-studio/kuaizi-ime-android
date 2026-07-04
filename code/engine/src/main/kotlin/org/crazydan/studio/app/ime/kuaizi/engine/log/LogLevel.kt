@@ -31,12 +31,16 @@ package org.crazydan.studio.app.ime.kuaizi.engine.log
 enum class LogLevel(val priority: Int) {
     /** 细粒度流程追踪：状态机转换、输入列表变更等。 */
     VERBOSE(2),
+
     /** 开发期调试信息：候选词查询结果、按键事件参数等。 */
     DEBUG(3),
+
     /** 关键业务节点：输入提交、键盘切换、字典加载完成等。 */
     INFO(4),
+
     /** 可恢复的异常情况：字典查询超时降级、配置项缺失使用默认值等。 */
     WARN(5),
+
     /** 不可恢复错误：数据库损坏、InputConnection 丢失、崩溃异常等。 */
     ERROR(6);
 

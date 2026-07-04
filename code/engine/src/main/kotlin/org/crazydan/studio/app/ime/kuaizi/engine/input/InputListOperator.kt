@@ -31,6 +31,7 @@ class InputListOperator(
 ) {
     /** 是否可以撤销 */
     val canUndo: Boolean get() = editor.canUndo
+
     /** 是否可以重做 */
     val canRedo: Boolean get() = editor.canRedo
 

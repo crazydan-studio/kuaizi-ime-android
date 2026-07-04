@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 
 /**
  * 布局边界覆盖层。

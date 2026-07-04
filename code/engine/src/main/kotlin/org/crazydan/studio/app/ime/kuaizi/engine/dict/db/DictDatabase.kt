@@ -56,7 +56,8 @@ abstract class DictDatabase : RoomDatabase() {
     abstract fun hmmDao(): HmmDao
 
     companion object {
-        @Volatile private var INSTANCE: DictDatabase? = null
+        @Volatile
+        private var INSTANCE: DictDatabase? = null
 
         /**
          * 获取数据库单例实例。

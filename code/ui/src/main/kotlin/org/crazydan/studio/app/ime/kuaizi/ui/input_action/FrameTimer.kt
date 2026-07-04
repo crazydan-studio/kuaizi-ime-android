@@ -73,10 +73,14 @@ class FrameTimer(private val scope: CoroutineScope) {
     }
 
     /** 暂停帧循环，进度暂停在当前位置。 */
-    fun pause() { paused = true }
+    fun pause() {
+        paused = true
+    }
 
     /** 恢复帧循环，从暂停位置继续。 */
-    fun resume() { paused = false; job?.let { if (it.isCancelled) start(0, {}, {}) } }
+    fun resume() {
+        paused = false; job?.let { if (it.isCancelled) start(0, {}, {}) }
+    }
 
     /** 停止帧循环并重置暂停状态。 */
     fun stop() {
