@@ -19,12 +19,16 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.log
 
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
-import org.crazydan.studio.app.ime.kuaizi.engine.util.DateTimeHelper
-import kotlin.time.Instant
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+
+private val format = Json {
+    encodeDefaults = true      // 支持 encode 时序列化缺省值
+    prettyPrint = false        // 单行
+    ignoreUnknownKeys = true   // 在 decode 时忽略未知属性
+    explicitNulls = false      // 忽略 null 值
+}
 
 /**
  * 日志条目：不可变的日志数据类，每次日志调用创建一个新实例。
@@ -34,55 +38,53 @@ import kotlin.time.Instant
  *
  * @property level 日志等级
  * @property tag 日志标签，通常为模块名或类名
- * @property message 日志消息内容
- * @property throwable 可选的异常对象
  * @property timestamp 日志时间戳（毫秒）
  * @property threadId 线程 ID
+ * @property message 日志消息内容
+ * @property stackTrace 异常堆栈信息
  */
+@Serializable
 data class LogEntry(
+    // Note：映射的 json 属性采用单字符，以尽可能减少日志文件大小
+    @SerialName("t")
+    val timestamp: Long,
+    @SerialName("l")
     val level: LogLevel,
+    @SerialName("g")
     val tag: String,
+    @SerialName("r")
+    val threadId: Long,
+    @SerialName("m")
     val message: String,
-    val throwable: Throwable? = null,
-    val timestamp: Long = System.currentTimeMillis(),
-    val threadId: Long = Thread.currentThread().id,
+    @SerialName("e")
+    val stackTrace: String?,
 ) {
+    constructor(
+        timestamp: Long = System.currentTimeMillis(),
+        level: LogLevel,
+        tag: String,
+        threadId: Long = Thread.currentThread().id,
+        message: String,
+        exception: Throwable? = null
+    ) : this(
+        timestamp = timestamp,
+        level = level,
+        tag = tag,
+        threadId = threadId,
+        message = message,
+        stackTrace = exception?.stackTraceToString()
+    )
 
-    /**
-     * 格式化为可读字符串。
-     * 输出格式：`yyyy-MM-dd HH:mm:ss.SSS [LEVEL] [TAG] [ThreadId] message`
-     * 异常对象的完整堆栈信息追加在消息之后。
-     */
-    fun format(): String {
-        val time = Instant.fromEpochMilliseconds(timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
-        val timeStr = DateTimeHelper.dateTimeFormat.format(time)
-
-        val throwableStr = throwable?.stackTraceToString()?.let { "\n$it" } ?: ""
-
-        return "$timeStr [${level.name}] [$tag] [$threadId] $message$throwableStr"
-    }
+    /** 格式化为 JSON 字符串。 */
+    fun format(): String =
+        format.encodeToString(this)
 
     companion object {
 
         /** 将 [format] 格式化后的结果解析为 [LogEntry] 对象 */
         fun parse(log: String): LogEntry? =
             runCatching {
-                val regex = Regex(
-                    """(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \[(\w+)] \[([^]]+)] \[(\d+)] (.+)"""
-                )
-                val match = regex.matchEntire(log) ?: return null
-
-                LogEntry(
-                    level = LogLevel.valueOf(match.groupValues[2]),
-                    tag = match.groupValues[3],
-                    message = match.groupValues[5],
-                    timestamp =
-                        LocalDateTime.parse(
-                            match.groupValues[1],
-                            DateTimeHelper.dateTimeFormat
-                        ).toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
-                    threadId = match.groupValues[4].toLong(),
-                )
+                format.decodeFromString<LogEntry>(log)
             }.getOrNull()
     }
 }

@@ -113,7 +113,7 @@ object ImeLog {
                 level = LogLevel.ERROR,
                 tag = "Crash",
                 message = "未捕获异常 [${thread.name}]",
-                throwable = throwable,
+                exception = throwable,
             )
 
             // 绕过 FileLogWriter 的 Channel 缓冲，直接同步写入文件

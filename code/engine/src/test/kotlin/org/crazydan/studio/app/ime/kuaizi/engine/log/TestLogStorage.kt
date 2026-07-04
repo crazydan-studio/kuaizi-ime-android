@@ -49,6 +49,7 @@ class TestLogStorage {
             level = LogLevel.INFO,
             tag = "JUnit",
             message = "This is a test log",
+            exception = RuntimeException("Some error happens"),
         )
         logStorage.appendEntries(listOf(log))
 
@@ -62,7 +63,9 @@ class TestLogStorage {
         assertTrue(file.isFile)
         assertTrue(file.name.startsWith(LogStorage.FILE_NAME_PREFIX))
         assertTrue(file.name.endsWith(LogStorage.FILE_NAME_SUFFIX))
-        assertTrue(file.readText().contains(log.format()))
+
+        val content = file.readText()
+        assertTrue(content.contains(log.format()))
     }
 
     @Test
@@ -79,7 +82,13 @@ class TestLogStorage {
             tag = "JUnit",
             message = "This is a test log 2",
         )
-        val logs = listOf(log1, log2)
+        val log3 = LogEntry(
+            level = LogLevel.DEBUG,
+            tag = "JUnit",
+            message = "This is a test log 3",
+            exception = RuntimeException("Some error happens"),
+        )
+        val logs = listOf(log1, log2, log3)
         logStorage.appendEntries(logs)
 
         // -------------------------------------
@@ -87,6 +96,7 @@ class TestLogStorage {
         assertEquals(logs.size, logs1.size)
         assertEquals(logs[0], logs1[0])
         assertEquals(logs[1], logs1[1])
+        assertEquals(logs[2], logs1[2])
 
         // -------------------------------------
         val logs2 = logStorage.readLogs(level = LogLevel.INFO)
@@ -98,6 +108,7 @@ class TestLogStorage {
         assertEquals(logs.size, logs3.size)
         assertEquals(logs[0], logs1[0])
         assertEquals(logs[1], logs1[1])
+        assertEquals(logs[2], logs1[2])
 
         // -------------------------------------
         val logs4 = logStorage.readLogs(keyword = "log 2")

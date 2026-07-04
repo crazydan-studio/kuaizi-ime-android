@@ -52,8 +52,8 @@ class ImeLogger(private val tag: String, private val log: ImeLog) {
     fun error(msg: () -> String) = dispatch(LogLevel.ERROR, msg)
 
     /** 输出 ERROR 级别日志（包含异常信息）。 */
-    fun error(throwable: Throwable, msg: () -> String) =
-        dispatch(LogLevel.ERROR, msg, throwable)
+    fun error(error: Throwable, msg: () -> String) =
+        dispatch(LogLevel.ERROR, msg, error)
 
     // ----------------------------------------------
 
@@ -79,9 +79,14 @@ class ImeLogger(private val tag: String, private val log: ImeLog) {
     // ----------------------------------------------
 
     /** 内部分发：等级不足时直接跳过 lambda 求值。 */
-    private fun dispatch(level: LogLevel, msg: () -> String, throwable: Throwable? = null) {
+    private fun dispatch(level: LogLevel, msg: () -> String, error: Throwable? = null) {
         if (log.isEnabledLevel(level)) {
-            log.dispatch(LogEntry(level, tag, msg(), throwable))
+            log.dispatch(
+                LogEntry(
+                    level = level, tag = tag,
+                    message = msg(), exception = error
+                )
+            )
         }
     }
 }
