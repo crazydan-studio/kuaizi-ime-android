@@ -30,9 +30,6 @@ package org.crazydan.studio.app.ime.kuaizi.engine
  */
 sealed class ImeEffect {
 
-    /** 切换系统输入法的信号 */
-    data object SwitchIme : ImeEffect()
-
     /** 弹出提示 */
     sealed class PopupTip : ImeEffect() {
 

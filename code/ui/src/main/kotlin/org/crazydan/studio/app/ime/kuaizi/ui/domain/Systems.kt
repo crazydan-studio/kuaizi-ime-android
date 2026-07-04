@@ -19,11 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.domain
 
-/**
- *
- * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2026-07-03
- */
 enum class AudioType {
     /** 按键音：用户点击按键时播放 */
     KeyPress,

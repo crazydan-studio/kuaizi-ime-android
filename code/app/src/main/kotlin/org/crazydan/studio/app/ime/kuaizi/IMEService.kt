@@ -163,10 +163,15 @@ class IMEService : InputMethodService() {
         scope.cancel()   // ← 必须取消，否则协程泄漏
 
         audioPlayer?.release()
+        audioPlayer = null
         hapticPlayer?.release()
+        hapticPlayer = null
 
         inputConnectionBridge?.let { engine?.detachEditorBridge(it) }
+        inputConnectionBridge = null
+
         engine?.destroy()
+        engine = null
 
         super.onDestroy()
     }
@@ -187,24 +192,26 @@ class IMEService : InputMethodService() {
     }
 
     private fun createViewModel(engine: ImeEngine): KeyboardViewModel =
-        KeyboardViewModel(
+        KeyboardViewModel.Option(
             engine = engine,
             playAudio = { type -> audioPlayer?.play(type) },
             playHaptic = { type -> hapticPlayer?.play(type) },
-            switchIme = { SystemHelper.switchIme(this) }
-        )
+            switchIme = { SystemHelper.switchIme(this) },
+        ).let {
+            KeyboardViewModel(it)
+        }
 
     private fun startInput(inputType: EditorInputType?) {
         val subtype = SystemHelper.getInputMethodSubtype(this)
         val orientation = SystemHelper.getScreenOrientation(this)
 
-        engine?.start(
-            ImeConfig.Startup(
-                inputMethodSubtype = subtype,
-                screenOrientation = orientation,
-                editorInputType = inputType,
-            )
-        )
+        ImeConfig.Startup(
+            inputMethodSubtype = subtype,
+            screenOrientation = orientation,
+            editorInputType = inputType,
+        ).let {
+            engine?.start(it)
+        }
     }
 
     // ----------------------------------------------------

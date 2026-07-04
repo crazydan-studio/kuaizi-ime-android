@@ -246,9 +246,6 @@ class ImeEngine internal constructor(
             is ImeIntent.SwitchKeyboard ->
                 handleSwitchKeyboard(intent.type)
 
-            is ImeIntent.SwitchIme ->
-                _effect.tryEmit(ImeEffect.SwitchIme)
-
             else ->
                 handleWithStateMachine(intent)
         }

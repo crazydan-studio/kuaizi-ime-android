@@ -65,12 +65,8 @@ import org.crazydan.studio.app.ime.kuaizi.ui.viewmodel.PopupTipState
  * - 缓存面板布局状态供播放器坐标解析
  * - 管理感官反馈播放
  */
-class KeyboardViewModel(
-    private val engine: ImeEngine,
-    private val playAudio: ((type: AudioType) -> Unit)? = null,
-    private val playHaptic: ((type: HapticType) -> Unit)? = null,
-    private val switchIme: (() -> Unit)? = null,
-) : ViewModel() {
+class KeyboardViewModel(private val option: Option) : ViewModel() {
+    private val engine = option.engine
 
     /** 引擎状态，供 Compose 订阅 */
     val state: StateFlow<ImeState> = engine.state
@@ -140,32 +136,6 @@ class KeyboardViewModel(
 
     // -----------------------------------------------------------------------
 
-    /**
-     * ViewModel 工厂：
-     * ```kotlin
-     * private val viewModel: KeyboardViewModel by viewModels {
-     *     KeyboardViewModel.Factory(engine)
-     * }
-     * ```
-     */
-    class Factory(
-        private val engine: ImeEngine,
-        private val playAudio: ((type: AudioType) -> Unit)? = null,
-        private val playHaptic: ((type: HapticType) -> Unit)? = null,
-        private val switchIme: (() -> Unit)? = null,
-    ) : ViewModelProvider.Factory {
-
-        @Suppress("UNCHECKED_CAST")
-        override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            KeyboardViewModel(
-                engine = engine,
-                playAudio = playAudio, playHaptic = playHaptic,
-                switchIme = switchIme,
-            ) as T
-    }
-
-    // -----------------------------------------------------------------------
-
     /** 处理输入手势：播放反馈、转换为 [ImeIntent] 后委托引擎处理 */
     fun handleGesture(gesture: InputGesture) {
         // 处理按键弹出提示
@@ -180,9 +150,15 @@ class KeyboardViewModel(
     }
 
     /** 处理 [ImeIntent] */
-    fun handleIntent(intent: ImeIntent) {
-        engine.handleIntent(intent)
-    }
+    fun handleIntent(intent: ImeIntent) =
+        when (intent) {
+            // 直接由工具栏按钮触发，不需要在 engine 中中转
+            is ImeIntent.SwitchIme ->
+                option.switchIme?.invoke()
+
+            else ->
+                engine.handleIntent(intent)
+        }
 
     // -----------------------------------------------------------------------
 
@@ -261,14 +237,10 @@ class KeyboardViewModel(
                     }
                 }
             }
-
-            is ImeEffect.SwitchIme -> {
-                switchIme?.invoke()
-            }
         }
     }
 
-    private fun processFeedback(gesture: InputGesture) {
+    private fun processFeedback(gesture: InputGesture) =
         when (gesture) {
             is InputGesture.Tap,
             is InputGesture.LongPress -> {
@@ -289,7 +261,6 @@ class KeyboardViewModel(
                 playAudio(AudioType.PageFlip)
             }
         }
-    }
 
     private fun processKeyPopupTip(gesture: InputGesture) {
         if (!config.ui.keyPopupTipsEnabled) return
@@ -329,8 +300,8 @@ class KeyboardViewModel(
     // ---------------------------------------------------------------------------
 
     /** 将 [InputGesture] 转换为 [ImeIntent] */
-    private fun gestureToIntent(gesture: InputGesture): ImeIntent {
-        return when (gesture) {
+    private fun gestureToIntent(gesture: InputGesture): ImeIntent =
+        when (gesture) {
             is InputGesture.Tap ->
                 ImeIntent.PressKey(gesture.key, KeyGesture.Tap)
 
@@ -360,7 +331,6 @@ class KeyboardViewModel(
                 }
             }
         }
-    }
 
     /** 根据键盘类型动态计算工具列表 */
     private fun computeToolList(keyboardType: KeyboardType): ToolListState {
@@ -370,6 +340,7 @@ class KeyboardViewModel(
         tools.add(ToolItem(label = "复制", disabled = false))
         tools.add(ToolItem(label = "粘贴", disabled = false))
         tools.add(ToolItem(label = "剪切", disabled = false))
+
         // 拼音/拉丁键盘额外提供设置、切换和关闭功能
         when (keyboardType) {
             KeyboardType.Pinyin, KeyboardType.Latin -> {
@@ -380,6 +351,7 @@ class KeyboardViewModel(
 
             else -> {}
         }
+
         return ToolListState(tools = tools)
     }
 
@@ -387,13 +359,39 @@ class KeyboardViewModel(
 
     private fun playAudio(type: AudioType) {
         if (config.ui.audioFeedbackEnabled) {
-            playAudio?.invoke(type)
+            option.playAudio?.invoke(type)
         }
     }
 
     private fun playHaptic(type: HapticType) {
         if (config.ui.hapticFeedbackEnabled) {
-            playHaptic?.invoke(type)
+            option.playHaptic?.invoke(type)
         }
     }
+
+    // -----------------------------------------------------------------------
+
+    /**
+     * ViewModel 工厂：
+     * ```kotlin
+     * private val viewModel: KeyboardViewModel by viewModels {
+     *     KeyboardViewModel.Factory(
+     *         KeyboardViewModel.Option(engine)
+     *     )
+     * }
+     * ```
+     */
+    class Factory(private val option: Option) : ViewModelProvider.Factory {
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel> create(modelClass: Class<T>): T =
+            KeyboardViewModel(option) as T
+    }
+
+    data class Option(
+        val engine: ImeEngine,
+        val playAudio: ((type: AudioType) -> Unit)? = null,
+        val playHaptic: ((type: HapticType) -> Unit)? = null,
+        val switchIme: (() -> Unit)? = null,
+    )
 }

@@ -19,12 +19,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine
 
+import org.crazydan.studio.app.ime.kuaizi.engine.backup.ImportStrategy
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
-import org.crazydan.studio.app.ime.kuaizi.engine.backup.ImportStrategy
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 
@@ -53,9 +53,6 @@ sealed class ImeIntent {
 
     /** 键盘切换意图：切换到指定类型的键盘。 */
     data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
-
-    /** 切换输入法意图：告知应用层切换输入法。 */
-    data object SwitchIme : ImeIntent()
 
     /** 提交输入意图：确认输入并提交到编辑器。 */
     data object CommitInput : ImeIntent()
@@ -95,6 +92,13 @@ sealed class ImeIntent {
 
     /** 设置候选词意图：将字典查询结果设置到状态中。 */
     data class SetCandidates(val candidates: CandidateList) : ImeIntent()
+
+    // -----------------------------------------------------------------------
+
+    /** 切换输入法意图：告知应用层切换输入法。 */
+    data object SwitchIme : ImeIntent()
+
+    // -----------------------------------------------------------------------
 
     /** 更新配置意图：使用新配置替换当前配置。 */
     data class UpdateConfig(val config: ImeConfig) : ImeIntent()
