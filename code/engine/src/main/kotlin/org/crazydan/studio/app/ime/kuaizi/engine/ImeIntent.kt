@@ -98,6 +98,9 @@ sealed class ImeIntent {
     /** 切换输入法意图：告知应用层切换输入法。 */
     data object SwitchIme : ImeIntent()
 
+    /** 关闭键盘意图。 */
+    data object CloseKeyboard : ImeIntent()
+
     // -----------------------------------------------------------------------
 
     /** 更新配置意图：使用新配置替换当前配置。 */

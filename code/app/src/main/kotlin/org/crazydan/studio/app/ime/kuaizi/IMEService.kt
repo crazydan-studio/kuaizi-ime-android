@@ -194,9 +194,18 @@ class IMEService : InputMethodService() {
     private fun createViewModel(engine: ImeEngine): KeyboardViewModel =
         KeyboardViewModel.Option(
             engine = engine,
+            //
             playAudio = { type -> audioPlayer?.play(type) },
             playHaptic = { type -> hapticPlayer?.play(type) },
+            //
             switchIme = { SystemHelper.switchIme(this) },
+            closeKeyboard = {
+                // Note：
+                // - 在高版本 Android 中，hideWindow 可能无法隐藏窗口，原因未知
+                // - 若发送退出按键（KeyEvent.KEYCODE_BACK）消息，其行为由编辑器决定，可能会导致已输入内容丢失
+                // - hideWindow 将自动调用当前 class 重载的 onFinishInputView 接口，并进而 close engine
+                hideWindow()
+            },
         ).let {
             KeyboardViewModel(it)
         }

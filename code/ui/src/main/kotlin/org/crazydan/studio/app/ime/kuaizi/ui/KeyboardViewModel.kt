@@ -152,9 +152,14 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
     /** 处理 [ImeIntent] */
     fun handleIntent(intent: ImeIntent) =
         when (intent) {
+            // <<<<<<<<<<<<<<<<<<<<<<
             // 直接由工具栏按钮触发，不需要在 engine 中中转
             is ImeIntent.SwitchIme ->
                 option.switchIme?.invoke()
+
+            is ImeIntent.CloseKeyboard ->
+                option.closeKeyboard?.invoke()
+            // >>>>>>>>>>>>>>>>>>>
 
             else ->
                 engine.handleIntent(intent)
@@ -390,8 +395,11 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
 
     data class Option(
         val engine: ImeEngine,
+        //
         val playAudio: ((type: AudioType) -> Unit)? = null,
         val playHaptic: ((type: HapticType) -> Unit)? = null,
+        //
         val switchIme: (() -> Unit)? = null,
+        val closeKeyboard: (() -> Unit)? = null,
     )
 }
