@@ -19,7 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.FlipDirection
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
 
@@ -37,53 +37,89 @@ sealed class InputGesture {
     /** 产生此手势的输入模式 */
     abstract val inputMode: KeyboardInputMode
 
+    // ----------------------------------------------
+
     /**
-     * 点击按键
+     * 按压
      * @param key 目标按键
-     * @param tick 连续点击同一按键的次数（0=首次，1=双击...）
+     * @param stopped 是否已结束
+     */
+    data class Press(
+        override val timestamp: Long,
+        override val inputMode: KeyboardInputMode,
+
+        val key: InputKey? = null,
+
+        val stopped: Boolean = false,
+    ) : InputGesture()
+
+    /**
+     * 长按
+     * @param key 目标按键
+     * @param tick 滴答次数（0=首次）
+     * @param stopped 是否已结束
+     */
+    data class LongPress(
+        override val timestamp: Long,
+        override val inputMode: KeyboardInputMode,
+
+        val key: InputKey? = null,
+        val tick: Int = 0,
+
+        val stopped: Boolean = false,
+    ) : InputGesture()
+
+    /**
+     * 点击
+     * @param key 目标按键
+     * @param tick 连击次数（0=首次，1=双击...）
      */
     data class Tap(
         override val timestamp: Long,
         override val inputMode: KeyboardInputMode,
-        val key: InputKey,
+
+        val key: InputKey? = null,
         val tick: Int = 0,
     ) : InputGesture()
 
-    /** 长按按键 */
-    data class LongPress(
-        override val timestamp: Long,
-        override val inputMode: KeyboardInputMode,
-        val key: InputKey,
-    ) : InputGesture()
+    // ----------------------------------------------
 
     /**
-     * 滑行输入
-     * @param startKey 起始按键
-     * @param endKey 结束按键
-     * @param visitedKeys 途经按键序列
-     * @param duration 滑行持续时间
+     * 滑行
+     * @param key 目标按键
+     * @param motion 运动数据
+     * @param stopped 是否已结束
      */
     data class Swipe(
         override val timestamp: Long,
         override val inputMode: KeyboardInputMode,
-        val startKey: InputKey,
-        val endKey: InputKey,
-        val visitedKeys: List<InputKey>,
-        val duration: Long,
+
+        val key: InputKey? = null,
+        val motion: Motion? = null,
+
+        val stopped: Boolean = false,
     ) : InputGesture()
 
-    /** 翻转手势（快速滑行后松手） */
+    /**
+     * 翻动（快速滑行后松手）
+     * @param key 目标按键
+     * @param motion 运动数据
+     */
     data class Flip(
         override val timestamp: Long,
         override val inputMode: KeyboardInputMode,
-        val startKey: InputKey,
-        val direction: FlipDirection,
+
+        val key: InputKey? = null,
+        val motion: Motion? = null,
     ) : InputGesture()
+
+    // ----------------------------------------------
 
     /** 候选项选择 */
     data class CandidateTap(
         override val timestamp: Long,
         override val inputMode: KeyboardInputMode,
+
         val candidateIndex: Int,
     ) : InputGesture()
 }

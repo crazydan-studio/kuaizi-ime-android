@@ -20,7 +20,6 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey.Char as CharKey
 
 /**
  * 键盘意图处理器接口，按不同 [KeyboardType] 创建子类，
@@ -47,76 +46,9 @@ interface KeyboardIntentHandler {
  * @param type 键盘类型
  */
 open class BaseKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
+
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition.ReturnToIdle
-    }
-}
-
-/**
- * 拼音键盘意图处理器，支持三种输入模式（点击、滑行、翻动），
- * 管理拼音字符输入、候选字查询和输入补全。
- * 同时处理 [KeyboardType.Pinyin] 和 [KeyboardType.Latin] 的意图转换。
- *
- * @param type 键盘类型
- */
-class PinyinIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
-    override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return when (currentState) {
-            is KeyboardState.PinyinInput.Waiting -> {
-                when (intent) {
-                    is ImeIntent.PressKey -> {
-                        when (intent.key) {
-                            is InputKey.Char -> KeyboardStateTransition.InputPinyinChar(intent.key.text.first())
-                            else -> KeyboardStateTransition.LoadMoreCandidates
-                        }
-                    }
-
-                    is ImeIntent.DeleteInput -> KeyboardStateTransition.DeleteInput
-                    is ImeIntent.SelectCandidate -> KeyboardStateTransition.SelectCandidate
-                    is ImeIntent.CommitInput -> KeyboardStateTransition.CommitInput
-                    else -> KeyboardStateTransition.ReturnToIdle
-                }
-            }
-
-            is KeyboardState.PinyinInput.Slipping -> {
-                when (intent) {
-                    is ImeIntent.PressKey -> KeyboardStateTransition.BeginSlip(intent.key)
-                    else -> KeyboardStateTransition.ReturnToIdle
-                }
-            }
-
-            is KeyboardState.PinyinInput.Flipping -> {
-                when (intent) {
-                    is ImeIntent.PressKey -> KeyboardStateTransition.SelectFlipChar((intent.key as CharKey).text.first())
-                    else -> KeyboardStateTransition.ReturnToIdle
-                }
-            }
-
-            is KeyboardState.CandidateSelection.Choosing -> {
-                when (intent) {
-                    is ImeIntent.SelectCandidate -> KeyboardStateTransition.SelectCandidate
-                    is ImeIntent.PageCandidate -> KeyboardStateTransition.PageCandidates(intent.direction)
-                    is ImeIntent.DeleteInput -> KeyboardStateTransition.BackToInput
-                    else -> KeyboardStateTransition.ReturnToIdle
-                }
-            }
-
-            is KeyboardState.CandidateSelection.Filtering -> {
-                when (intent) {
-                    is ImeIntent.DeleteInput -> KeyboardStateTransition.BackToChoosing
-                    else -> KeyboardStateTransition.ReturnToIdle
-                }
-            }
-
-            is KeyboardState.CommitOptionChoosing -> {
-                when (intent) {
-                    is ImeIntent.SelectCandidate -> KeyboardStateTransition.CommitInput
-                    else -> KeyboardStateTransition.ReturnToIdle
-                }
-            }
-
-            else -> KeyboardStateTransition.ReturnToIdle
-        }
     }
 }
 

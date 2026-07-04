@@ -38,7 +38,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeState
 import org.crazydan.studio.app.ime.kuaizi.engine.ToolItem
 import org.crazydan.studio.app.ime.kuaizi.engine.ToolListState
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.ui.domain.AudioType
 import org.crazydan.studio.app.ime.kuaizi.ui.domain.HapticType
@@ -247,24 +246,16 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
 
     private fun processFeedback(gesture: InputGesture) =
         when (gesture) {
-            is InputGesture.Tap,
-            is InputGesture.LongPress -> {
-                playAudio(AudioType.KeyPress)
+            is InputGesture.Tap -> {
+                playAudio(AudioType.SingleTick)
                 playHaptic(HapticType.LightTap)
-            }
-
-            is InputGesture.Swipe -> {
-                playAudio(AudioType.Slip)
-                playHaptic(HapticType.LightTap)
-            }
-
-            is InputGesture.CandidateTap -> {
-                playAudio(AudioType.CandidateSelect)
             }
 
             is InputGesture.Flip -> {
                 playAudio(AudioType.PageFlip)
             }
+
+            else -> {}
         }
 
     private fun processKeyPopupTip(gesture: InputGesture) {
@@ -307,20 +298,39 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
     /** 将 [InputGesture] 转换为 [ImeIntent] */
     private fun gestureToIntent(gesture: InputGesture): ImeIntent =
         when (gesture) {
-            is InputGesture.Tap ->
-                ImeIntent.PressKey(gesture.key, KeyGesture.Tap)
+            is InputGesture.Press ->
+                ImeIntent.PressOnKey(
+                    key = gesture.key,
+                    state =
+                        if (gesture.stopped) ImeIntent.PressOnKey.State.Stop
+                        else ImeIntent.PressOnKey.State.Start,
+                )
 
             is InputGesture.LongPress ->
-                ImeIntent.PressKey(gesture.key, KeyGesture.LongPress)
+                ImeIntent.LongPressOnKey(
+                    key = gesture.key,
+                    tick = gesture.tick,
+                    state =
+                        if (gesture.stopped) ImeIntent.LongPressOnKey.State.Stop
+                        else if (gesture.tick > 0) ImeIntent.LongPressOnKey.State.Doing
+                        else ImeIntent.LongPressOnKey.State.Start,
+                )
+
+            is InputGesture.Tap ->
+                ImeIntent.TaOnpKey(key = gesture.key, tick = gesture.tick)
 
             is InputGesture.Swipe ->
-                ImeIntent.PressKey(gesture.endKey, KeyGesture.Swipe)
+                ImeIntent.SwipeOnKey(
+                    key = gesture.key,
+                    motion = gesture.motion,
+                    state =
+                        if (gesture.stopped) ImeIntent.SwipeOnKey.State.Stop
+                        else if (gesture.motion != null) ImeIntent.SwipeOnKey.State.Doing
+                        else ImeIntent.SwipeOnKey.State.Start,
+                )
 
             is InputGesture.Flip ->
-                ImeIntent.PressKey(
-                    gesture.startKey,
-                    KeyGesture.Flip,
-                )
+                ImeIntent.FlipOnKey(key = gesture.key, motion = gesture.motion)
 
             is InputGesture.CandidateTap -> {
                 val candidates = state.value.candidateList.candidates

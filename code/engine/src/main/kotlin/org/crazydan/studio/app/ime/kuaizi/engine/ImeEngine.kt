@@ -52,8 +52,8 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardStateMachine
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.MathKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.NumberKeyboardIntentHandler
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.PinyinIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.SymbolKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.handler.PinyinKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.log.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
@@ -151,6 +151,7 @@ class ImeEngine internal constructor(
         val keyboardType = resolveKeyboardType(startupConfig)
         keyboardStateMachine.resetTo(keyboardType.initialState())
 
+        // -----------------------------
         val isPassword = startupConfig.editorInputType == EditorInputType.Password
         val newState = _state.value.copy(
             keyboard = _state.value.keyboard.copy(type = keyboardType),
@@ -159,7 +160,11 @@ class ImeEngine internal constructor(
                 if (isPassword) InputList()
                 else _state.value.inputList,
         )
+
         applyStateUpdate { newState }
+
+        // -----------------------------
+        // Note：_state.value 可能已变更
 
         // 检查剪贴板是否有可粘贴内容，若有则弹出粘贴确认提示
         if (_state.value.config.ui.clipPastePopupTipsEnabled
@@ -247,7 +252,7 @@ class ImeEngine internal constructor(
                 handleSwitchKeyboard(intent.type)
 
             else ->
-                handleWithStateMachine(intent)
+                handleIntentWithStateMachine(intent)
         }
     }
 
@@ -294,9 +299,10 @@ class ImeEngine internal constructor(
         }
     }
 
-    private fun handleWithStateMachine(intent: ImeIntent) {
-        val handler = resolveHandler(_state.value.keyboard.type)
-        val transition = handler.handleIntent(intent, _state.value.keyboard.state)
+    private fun handleIntentWithStateMachine(intent: ImeIntent) {
+        val keyboard = _state.value.keyboard
+        val handler = resolveIntentHandler(keyboard.type)
+        val transition = handler.handleIntent(intent, keyboard.state)
 
         // --------------------
         val result = keyboardStateMachine.transition(transition)
@@ -324,6 +330,8 @@ class ImeEngine internal constructor(
      * @param sideEffects 需要异步处理的副作用意图列表
      */
     private fun processSideEffects(sideEffects: List<ImeIntent>) {
+        if (sideEffects.isEmpty()) return
+
         scope.launch(Dispatchers.Default) {
             val queue = ArrayDeque(sideEffects)
             var depth = 0
@@ -399,9 +407,9 @@ class ImeEngine internal constructor(
      * @param type 当前键盘类型
      * @return 对应的意图处理器
      */
-    private fun resolveHandler(type: KeyboardType): KeyboardIntentHandler {
+    private fun resolveIntentHandler(type: KeyboardType): KeyboardIntentHandler {
         return when (type) {
-            KeyboardType.Pinyin, KeyboardType.Latin -> PinyinIntentHandler(type)
+            KeyboardType.Pinyin, KeyboardType.Latin -> PinyinKeyboardIntentHandler(type)
             KeyboardType.Number -> NumberKeyboardIntentHandler(type)
             KeyboardType.Symbol -> SymbolKeyboardIntentHandler(type)
             KeyboardType.Emoji -> EmojiKeyboardIntentHandler(type)
@@ -454,15 +462,17 @@ class ImeEngine internal constructor(
      * @param transform 状态转换函数，接收当前状态返回新状态
      */
     private fun applyStateUpdate(transform: (ImeState) -> ImeState) {
-        val oldState = _state.value
-        val newState = transform(oldState)
+        val old = _state.value
+        val new = transform(old)
+
+        if (old == new) return
 
         if (ImeLog.isEnabledLevel(LogLevel.DEBUG)) {
             logger.debug { "State updated" }
-            assertStateInvariants(newState)
+            assertStateInvariants(new)
         }
 
-        _state.value = newState
+        _state.value = new
     }
 
     /**

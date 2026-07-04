@@ -43,22 +43,24 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.Keyboard
  * 一次性副作用信号（弹出提示、音效、触觉振动）通过独立的 [SharedFlow]<[ImeEffect]> 通道发射，
  * 与 [ImeState] 完全分离。
  *
+ * @property config 配置的运行时快照
  * @property keyboard 当前键盘的类型、左右手模式临时状态和交互状态
  * @property inputList 用户输入的字符序列与游标位置
  * @property candidateList 候选词列表及分页控制
  * @property clipboard 剪贴板状态
  * @property favoriteList 收藏列表状态
  * @property toolListState 工具栏按钮状态
- * @property config 运行时配置快照
  */
 data class ImeState(
+    val config: ImeConfig = ImeConfig(),
     val keyboard: Keyboard = Keyboard(),
+    //
     val inputList: InputList = InputList(),
     val candidateList: CandidateList = CandidateList(),
+    //
     val clipboard: Clipboard = Clipboard(),
     val favoriteList: FavoriteList = FavoriteList(),
     val toolListState: ToolListState = ToolListState(),
-    val config: ImeConfig = ImeConfig(),
 )
 
 /**

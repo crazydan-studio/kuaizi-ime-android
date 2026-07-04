@@ -33,6 +33,19 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
  * 在处理 [ImeIntent] 时构造并提交给 [KeyboardStateMachine]。
  */
 sealed class KeyboardStateTransition {
+
+    /**
+     * 状态转换结果，表达转换执行后的输出
+     * @param newState 转换后的新状态
+     * @param sideEffects 需要异步处理的副作用意图列表
+     * @param editorAction 编辑器操作，如插入配对符号等
+     */
+    data class Result(
+        val newState: KeyboardState,
+        val sideEffects: List<ImeIntent> = emptyList(),
+        val editorAction: EditorAction? = null,
+    )
+
     /** 输入拼音字符 */
     data class InputPinyinChar(val char: Char) : KeyboardStateTransition()
 
@@ -101,16 +114,4 @@ sealed class KeyboardStateTransition {
 
     /** 回到候选选择状态 */
     data object BackToChoosing : KeyboardStateTransition()
-
-    /**
-     * 状态转换结果，表达转换执行后的输出
-     * @param newState 转换后的新状态
-     * @param sideEffects 需要异步处理的副作用意图列表
-     * @param editorAction 编辑器操作，如插入配对符号等
-     */
-    data class Result(
-        val newState: KeyboardState,
-        val sideEffects: List<ImeIntent> = emptyList(),
-        val editorAction: EditorAction? = null,
-    )
 }

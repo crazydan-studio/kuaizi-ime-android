@@ -23,10 +23,11 @@ package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 data class Keyboard(
     /** 键盘类型，决定按键集合的语义内容 */
     val type: KeyboardType = KeyboardType.Pinyin,
-    /** 左右手模式的临时切换状态，null 表示未切换，使用 [UiConfig.keyboardHandMode] 的值 */
-    val handMode: KeyboardHandMode? = null,
     /** 键盘状态机的当前状态 */
     val state: KeyboardState = KeyboardState.Idle,
+
+    /** 左右手模式的临时切换状态，null 表示未切换，使用 [ImeConfig.Ui.keyboardHandMode] 的值 */
+    val handMode: KeyboardHandMode? = null,
 )
 
 /** 键盘类型，定义了键盘的内容类型和语义 */
@@ -123,34 +124,38 @@ sealed class InputKey {
     data object Null : InputKey()
 }
 
-/** 按键手势类型 */
-enum class KeyGesture {
-    /** 单击（点击后立即抬起） */
-    Tap,
+/** 手势类型 */
+enum class GestureType {
+    /** 开始按压  */
+    PressStart,
 
-    /** 滑行（手指在按键上滑动） */
-    Slip,
+    /** 结束按压  */
+    PressEnd,
 
-    /** 翻动（快速滑出触发翻动） */
-    Flip,
+    /** 开始长按  */
+    LongPressStart,
 
-    /** 长按（按住不动持续一段时间） */
-    Hold,
-    Swipe,
-    LongPress,
-}
+    /** 长按 tick  */
+    LongPressTick,
 
-/** 翻动方向 */
-enum class FlipDirection {
-    /** 向左翻动 */
-    Left,
+    /** 结束长按  */
+    LongPressEnd,
 
-    /** 向右翻动 */
-    Right,
+    /** 单击  */
+    SingleTap,
 
-    /** 向上翻动 */
-    Up,
+    /** 双击  */
+    DoubleTap,
 
-    /** 向下翻动 */
-    Down,
+    /** 开始移动  */
+    MovingStart,
+
+    /** 移动: 手指在屏幕上移动  */
+    Moving,
+
+    /** 结束移动  */
+    MovingEnd,
+
+    /** 翻动: 在一段时间内完成手指按下、移动到抬起的过程，期间没有其他动作  */
+    Flipping,
 }

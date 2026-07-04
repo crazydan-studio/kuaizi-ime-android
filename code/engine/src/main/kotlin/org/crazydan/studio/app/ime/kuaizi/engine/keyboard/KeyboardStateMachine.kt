@@ -22,35 +22,6 @@ package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
 
 /**
- * 键盘状态历史的有界栈，用于实现同一键盘类型内的子状态回退。
- * 采用 ArrayDeque 实现，最大容量为 10，FIFO 淘汰策略。
- *
- * @param maxSize 历史栈最大容量
- */
-class KeyboardStateHistory(private val maxSize: Int = 10) {
-    private val stack = ArrayDeque<KeyboardState>(maxSize)
-
-    /** 将当前状态压入历史栈，超出上限时淘汰最旧条目 */
-    fun push(state: KeyboardState) {
-        if (stack.size >= maxSize) {
-            stack.removeFirst()
-        }
-        stack.addLast(state)
-    }
-
-    /** 弹出最近的历史状态，栈空时返回 null */
-    fun pop(): KeyboardState? = stack.removeLastOrNull()
-
-    /** 清空历史栈 */
-    fun clear() {
-        stack.clear()
-    }
-
-    /** 当前历史栈大小 */
-    val size: Int get() = stack.size
-}
-
-/**
  * 键盘状态机，集中处理状态转换的核心组件。
  * 接收 [KeyboardStateTransition]，根据当前状态执行转换规则，返回转换结果。
  * 遵循纯函数式转换原则：给定相同输入，始终产生相同输出。
@@ -67,6 +38,8 @@ class KeyboardStateMachine(
 
     private val stateHistory = KeyboardStateHistory()
 
+    // -----------------------------------------------------------------
+
     /**
      * 执行状态转换
      * @param transition 要执行的状态转换
@@ -75,15 +48,19 @@ class KeyboardStateMachine(
     fun transition(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         val (newState, sideEffects, editorAction) = when (_state) {
             is KeyboardState.Idle -> handleFromIdle(transition)
+            //
             is KeyboardState.PinyinInput.Waiting -> handleFromPinyinWaiting(transition)
             is KeyboardState.PinyinInput.Slipping -> handleFromPinyinSlipping(transition)
             is KeyboardState.PinyinInput.Flipping -> handleFromPinyinFlipping(transition)
+            //
             is KeyboardState.CandidateSelection.Choosing -> handleFromCandidateChoosing(transition)
             is KeyboardState.CandidateSelection.Filtering -> handleFromCandidateFiltering(transition)
             is KeyboardState.CandidateSelection.AdvanceFiltering -> handleFromCandidateAdvanceFiltering(transition)
+            //
             is KeyboardState.CommitOptionChoosing -> handleFromCommitOptionChoosing(transition)
             is KeyboardState.EditorEditing.CursorMoving -> handleFromEditorCursorMoving(transition)
             is KeyboardState.EditorEditing.TextSelecting -> handleFromEditorTextSelecting(transition)
+            //
             is KeyboardState.SymbolChoosing -> handleFromSymbolChoosing(transition)
             is KeyboardState.EmojiChoosing -> handleFromEmojiChoosing(transition)
         }
@@ -94,6 +71,8 @@ class KeyboardStateMachine(
         }
         return KeyboardStateTransition.Result(newState, sideEffects, editorAction)
     }
+
+    // -----------------------------------------------------------------
 
     /** 回退到前一状态，历史栈空时回退到 [KeyboardState.Idle] */
     fun backToPrevious() {
@@ -111,6 +90,8 @@ class KeyboardStateMachine(
         _state = state
         stateHistory.clear()
     }
+
+    // -----------------------------------------------------------------
 
     /** 从 Idle 状态处理转换 */
     private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
@@ -351,5 +332,34 @@ class KeyboardStateMachine(
 
             else -> KeyboardStateTransition.Result(_state)
         }
+    }
+}
+
+/**
+ * 键盘状态历史的有界栈，用于实现同一键盘类型内的子状态回退。
+ * 采用 ArrayDeque 实现，最大容量为 10，FIFO 淘汰策略。
+ *
+ * @param maxSize 历史栈最大容量
+ */
+class KeyboardStateHistory(private val maxSize: Int = 10) {
+    private val stack = ArrayDeque<KeyboardState>(maxSize)
+
+    /** 当前历史栈大小 */
+    val size: Int get() = stack.size
+
+    /** 将当前状态压入历史栈，超出上限时淘汰最旧条目 */
+    fun push(state: KeyboardState) {
+        if (stack.size >= maxSize) {
+            stack.removeFirst()
+        }
+        stack.addLast(state)
+    }
+
+    /** 弹出最近的历史状态，栈空时返回 null */
+    fun pop(): KeyboardState? = stack.removeLastOrNull()
+
+    /** 清空历史栈 */
+    fun clear() {
+        stack.clear()
     }
 }

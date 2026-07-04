@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionPositio
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.InputActionScript
 import org.crazydan.studio.app.ime.kuaizi.engine.input_action.OffsetF
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyGesture
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.GestureType
 import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardViewModel
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.CandidateListLayoutState
 import org.crazydan.studio.app.ime.kuaizi.ui.keyboard.InputListLayoutState
@@ -196,7 +196,7 @@ class InputActionPlayer(
                         )
                     )
                 }
-                viewModel.handleIntent(ImeIntent.PressKey(action.key, KeyGesture.Tap))
+                viewModel.handleIntent(ImeIntent.PressOnKey(action.key, GestureType.Tap))
             }
 
             is InputAction.SwipeTo -> {
@@ -214,7 +214,7 @@ class InputActionPlayer(
                         )
                     )
                 }
-                viewModel.handleIntent(ImeIntent.PressKey(action.toKey, KeyGesture.Swipe))
+                viewModel.handleIntent(ImeIntent.PressOnKey(action.toKey, GestureType.Swipe))
             }
 
             is InputAction.KeyUp -> {

@@ -46,9 +46,10 @@ class AudioPlayer(context: Context) {
     // 音效类型到 SoundPool ID 的映射，构造时预加载音频资源
     private val soundIds: Map<AudioType, Int> =
         mapOf(
-            AudioType.KeyPress to soundPool.load(context, R.raw.tick_single, 1),
-            AudioType.Slip to soundPool.load(context, R.raw.tick_single, 1),
-            AudioType.CandidateSelect to soundPool.load(context, R.raw.tick_single, 1),
+            AudioType.SingleTick to soundPool.load(context, R.raw.tick_single, 1),
+            AudioType.DoubleTick to soundPool.load(context, R.raw.tick_double, 1),
+            AudioType.ClockTick to soundPool.load(context, R.raw.tick_clock, 1),
+            AudioType.KnockTick to soundPool.load(context, R.raw.tick_knock, 1),
             AudioType.PageFlip to soundPool.load(context, R.raw.page_flip, 1),
         )
 

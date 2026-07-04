@@ -20,16 +20,19 @@
 package org.crazydan.studio.app.ime.kuaizi.ui.domain
 
 enum class AudioType {
-    /** 按键音：用户点击按键时播放 */
-    KeyPress,
+    /** 单击音 */
+    SingleTick,
 
-    /** 候选选择音：用户从候选列表选择候选词时播放 */
-    CandidateSelect,
+    /** 双击音 */
+    DoubleTick,
 
-    /** 滑行输入音：用户滑行输入识别完成时播放 */
-    Slip,
+    /** 时钟走时音 */
+    ClockTick,
 
-    /** 翻页音：候选列表翻页时播放 */
+    /** 敲击音 */
+    KnockTick,
+
+    /** 翻页音 */
     PageFlip,
 }
 
