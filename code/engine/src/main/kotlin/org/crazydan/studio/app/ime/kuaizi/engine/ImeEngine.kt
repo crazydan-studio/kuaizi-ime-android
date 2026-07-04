@@ -299,18 +299,18 @@ class ImeEngine internal constructor(
         val transition = handler.handleIntent(intent, _state.value.keyboard.state)
 
         // --------------------
-        val (newState, sideEffects, editorAction) = keyboardStateMachine.transition(transition)
+        val result = keyboardStateMachine.transition(transition)
 
         applyStateUpdate { state ->
             state.copy(
-                keyboard = state.keyboard.copy(state = newState),
+                keyboard = state.keyboard.copy(state = result.newState),
             )
         }
 
         // --------------------
-        processSideEffects(sideEffects)
+        processSideEffects(result.sideEffects)
 
-        editorAction?.also {
+        result.editorAction?.also {
             dispatchEditorAction(it)
         }
     }

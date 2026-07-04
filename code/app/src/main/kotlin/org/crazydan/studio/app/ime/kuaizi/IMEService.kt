@@ -209,7 +209,7 @@ class IMEService : InputMethodService() {
             inputMethodSubtype = subtype,
             screenOrientation = orientation,
             editorInputType = inputType,
-        ).let {
+        ).also {
             engine?.start(it)
         }
     }

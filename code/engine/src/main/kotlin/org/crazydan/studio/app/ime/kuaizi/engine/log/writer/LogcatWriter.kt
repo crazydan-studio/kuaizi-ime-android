@@ -44,16 +44,16 @@ import org.crazydan.studio.app.ime.kuaizi.engine.log.LogWriter
 class LogcatWriter(
     bufferSize: Int = 0, // 0 = 同步写入（默认）
 ) : LogWriter {
-    private val channel: Channel<LogEntry>? =
-        if (bufferSize > 0) Channel(bufferSize) else null
-
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val channel: Channel<LogEntry>? =
+        if (bufferSize > 0) Channel(bufferSize)
+        else null
 
     init {
         channel?.let { ch ->
             scope.launch {
                 for (entry in ch) {
-                    Log.println(entry.level.priority, entry.tag, entry.message)
+                    log(entry)
                 }
             }
         }
@@ -63,7 +63,7 @@ class LogcatWriter(
         if (channel != null) {
             channel.trySend(entry) // 非阻塞，满则丢弃
         } else {
-            Log.println(entry.level.priority, entry.tag, entry.message)
+            log(entry)
         }
     }
 
@@ -73,6 +73,16 @@ class LogcatWriter(
             while (!it.isEmpty) {
                 Thread.sleep(10)
             }
+        }
+    }
+
+    // -------------------------------------------------------
+
+    private fun log(entry: LogEntry) {
+        entry.apply {
+            val msg = stackTrace?.let { "$message\n$it" } ?: message
+
+            Log.println(level.priority, tag, msg)
         }
     }
 }
