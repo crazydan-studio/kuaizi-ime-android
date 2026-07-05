@@ -42,7 +42,7 @@ sealed class InputGesture {
     /**
      * 按压
      * @param key 目标按键
-     * @param stopped 是否已结束
+     * @param released 是否已释放
      */
     data class Press(
         override val timestamp: Long,
@@ -50,14 +50,14 @@ sealed class InputGesture {
 
         val key: InputKey? = null,
 
-        val stopped: Boolean = false,
+        val released: Boolean = false,
     ) : InputGesture()
 
     /**
      * 长按
      * @param key 目标按键
      * @param tick 滴答次数（0=首次）
-     * @param stopped 是否已结束
+     * @param released 是否已释放
      */
     data class LongPress(
         override val timestamp: Long,
@@ -66,7 +66,7 @@ sealed class InputGesture {
         val key: InputKey? = null,
         val tick: Int = 0,
 
-        val stopped: Boolean = false,
+        val released: Boolean = false,
     ) : InputGesture()
 
     /**
@@ -88,7 +88,7 @@ sealed class InputGesture {
      * 滑行
      * @param key 目标按键
      * @param motion 运动数据
-     * @param stopped 是否已结束
+     * @param released 是否已释放
      */
     data class Swipe(
         override val timestamp: Long,
@@ -97,7 +97,7 @@ sealed class InputGesture {
         val key: InputKey? = null,
         val motion: Motion? = null,
 
-        val stopped: Boolean = false,
+        val released: Boolean = false,
     ) : InputGesture()
 
     /**

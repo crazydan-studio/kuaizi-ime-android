@@ -162,7 +162,7 @@ class InputActionScriptCompiler {
 
     /** 将字符映射为按键，若无法映射则抛出异常。 */
     private fun requireKeyForChar(char: String): InputKey {
-        return InputKey.Char(text = char)
+        return InputKey.Char.Alphabet(value = char)
     }
 
     /**

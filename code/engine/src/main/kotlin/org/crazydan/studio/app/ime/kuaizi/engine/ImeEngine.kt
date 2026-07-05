@@ -408,12 +408,14 @@ class ImeEngine internal constructor(
      * @return 对应的意图处理器
      */
     private fun resolveIntentHandler(type: KeyboardType): KeyboardIntentHandler {
+        // TODO 根据输入模式切换到不同的 handler：拼音和拉丁输入提供滑行和点击两种输入模式
         return when (type) {
             KeyboardType.Pinyin, KeyboardType.Latin -> PinyinKeyboardIntentHandler(type)
             KeyboardType.Number -> NumberKeyboardIntentHandler(type)
             KeyboardType.Symbol -> SymbolKeyboardIntentHandler(type)
             KeyboardType.Emoji -> EmojiKeyboardIntentHandler(type)
             KeyboardType.Math -> MathKeyboardIntentHandler(type)
+            // TODO 考虑将复制、粘贴等常用功能集成到键盘面板中
             KeyboardType.Editor -> EditorKeyboardIntentHandler(type)
             KeyboardType.Candidate -> CandidateKeyboardIntentHandler(type)
             KeyboardType.CommitOption -> CommitOptionKeyboardIntentHandler(type)

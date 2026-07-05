@@ -35,7 +35,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
  */
 data class PinyinCharsTree(
     val children: Map<Char, PinyinCharsTree> = emptyMap(),
-    val keys: List<InputKey.Char> = emptyList(),
+    val keys: List<InputKey.Char.Alphabet> = emptyList(),
 ) {
     /**
      * 查找指定前缀的子树。
@@ -52,8 +52,8 @@ data class PinyinCharsTree(
     fun allReachableChars(): Set<Char> = children.keys
 
     /** 递归收集当前子树下所有可达按键。 */
-    fun allReachableKeys(): List<InputKey.Char> {
-        val result = mutableListOf<InputKey.Char>()
+    fun allReachableKeys(): List<InputKey.Char.Alphabet> {
+        val result = mutableListOf<InputKey.Char.Alphabet>()
         result.addAll(keys)
         for (child in children.values) {
             result.addAll(child.allReachableKeys())
@@ -70,7 +70,7 @@ data class PinyinCharsTree(
         private val nodes = mutableMapOf<String, MutableMap<Char, PinyinCharsTree>>()
 
         /** 逐字符添加 Trie 路径。 */
-        fun addPath(path: String, key: InputKey.Char): Builder {
+        fun addPath(path: String, key: InputKey.Char.Alphabet): Builder {
             var current = nodes.getOrPut("") { mutableMapOf() }
             for (c in path) {
                 val child = current.getOrPut(c) { PinyinCharsTree() }

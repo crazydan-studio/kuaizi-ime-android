@@ -302,8 +302,8 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
                 ImeIntent.PressOnKey(
                     key = gesture.key,
                     state =
-                        if (gesture.stopped) ImeIntent.PressOnKey.State.Stop
-                        else ImeIntent.PressOnKey.State.Start,
+                        if (gesture.released) ImeIntent.PressOnKey.State.End
+                        else ImeIntent.PressOnKey.State.Begin,
                 )
 
             is InputGesture.LongPress ->
@@ -311,9 +311,9 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
                     key = gesture.key,
                     tick = gesture.tick,
                     state =
-                        if (gesture.stopped) ImeIntent.LongPressOnKey.State.Stop
+                        if (gesture.released) ImeIntent.LongPressOnKey.State.End
                         else if (gesture.tick > 0) ImeIntent.LongPressOnKey.State.Doing
-                        else ImeIntent.LongPressOnKey.State.Start,
+                        else ImeIntent.LongPressOnKey.State.Begin,
                 )
 
             is InputGesture.Tap ->
@@ -324,9 +324,9 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
                     key = gesture.key,
                     motion = gesture.motion,
                     state =
-                        if (gesture.stopped) ImeIntent.SwipeOnKey.State.Stop
+                        if (gesture.released) ImeIntent.SwipeOnKey.State.End
                         else if (gesture.motion != null) ImeIntent.SwipeOnKey.State.Doing
-                        else ImeIntent.SwipeOnKey.State.Start,
+                        else ImeIntent.SwipeOnKey.State.Begin,
                 )
 
             is InputGesture.Flip ->

@@ -45,7 +45,7 @@ sealed class ImeIntent {
      * 注意，[key] 为 `null` 时，表示在非按键上按压。
      */
     data class PressOnKey(val key: InputKey? = null, val state: State) : ImeIntent() {
-        enum class State { Start, Stop, }
+        enum class State { Begin, End, }
     }
 
     /**
@@ -58,7 +58,7 @@ sealed class ImeIntent {
         val state: State,
         val tick: Int = 0,
     ) : ImeIntent() {
-        enum class State { Start, Stop, Doing, }
+        enum class State { Begin, End, Doing, }
     }
 
     /**
@@ -78,11 +78,11 @@ sealed class ImeIntent {
         val state: State,
         val motion: Motion? = null,
     ) : ImeIntent() {
-        enum class State { Start, Stop, Doing, }
+        enum class State { Begin, End, Doing, }
     }
 
     /**
-     * 在按键上翻动。
+     * 在按键上翻动。其发生在 [SwipeOnKey.State.Begin] 与 [SwipeOnKey.State.End] 之间。
      *
      * 注意，[key] 为 `null` 时，表示在非按键上翻动。
      */

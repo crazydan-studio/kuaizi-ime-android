@@ -46,20 +46,39 @@ sealed class KeyboardStateTransition {
         val editorAction: EditorAction? = null,
     )
 
-    /** 输入拼音字符 */
-    data class InputPinyinChar(val char: Char) : KeyboardStateTransition()
+    // ------------------------------------------------------------------------
+
+    /** 回到空闲/初始状态 */
+    data object ReturnToIdle : KeyboardStateTransition()
+
+    /** 回退到前一状态 */
+    data object BackToPrevious : KeyboardStateTransition()
+
+    /** 无事可做 */
+    data object NothingToDo : KeyboardStateTransition()
+
+    // ------------------------------------------------------------------------
+
+    /** 输入单个字符 */
+    data class InputChar(val key: InputKey.Char, val tick: Int = 0) : KeyboardStateTransition()
+
+    // ------------------------------------------------------------------------
 
     /** 开始滑行输入 */
-    data class BeginSlip(val startKey: InputKey) : KeyboardStateTransition()
-
-    /** 开始翻动输入 */
-    data class BeginFlip(val startChar: Char) : KeyboardStateTransition()
+    data class StartSwipe(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
 
     /** 选择滑行输入的目标字符 */
-    data class SelectSlipChar(val char: Char) : KeyboardStateTransition()
+    data class SelectSwipingChar(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
+
+    // ------------------------------------------------------------------------
+
+    /** 开始翻动输入 */
+    data class StartFlip(val char: Char) : KeyboardStateTransition()
 
     /** 选择翻动输入的目标字符 */
-    data class SelectFlipChar(val char: Char) : KeyboardStateTransition()
+    data class SelectFlippingChar(val char: Char) : KeyboardStateTransition()
+
+    // ------------------------------------------------------------------------
 
     /** 加载候选词 */
     data class LoadCandidates(val candidates: List<InputWord>) : KeyboardStateTransition()
@@ -90,12 +109,6 @@ sealed class KeyboardStateTransition {
 
     /** 打开 Emoji 分组 */
     data class OpenEmojiGroup(val groupId: String?) : KeyboardStateTransition()
-
-    /** 回到空闲/初始状态 */
-    data object ReturnToIdle : KeyboardStateTransition()
-
-    /** 回退到前一状态 */
-    data object BackToPrevious : KeyboardStateTransition()
 
     /** 加载更多候选词 */
     data object LoadMoreCandidates : KeyboardStateTransition()

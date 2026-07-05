@@ -37,28 +37,18 @@ class PinyinKeyboardIntentHandler(override val type: KeyboardType) : KeyboardInt
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition =
         when (currentState) {
             is KeyboardState.PinyinInput.Waiting -> {
-                when (intent) {
-                    is ImeIntent.PressOnKey -> {
-                        when (intent.key) {
-                            is InputKey.Char -> KeyboardStateTransition.InputPinyinChar(intent.key.text.first())
-                            else -> KeyboardStateTransition.LoadMoreCandidates
-                        }
-                    }
-
-                    is ImeIntent.DeleteInput -> KeyboardStateTransition.DeleteInput
-                    is ImeIntent.SelectCandidate -> KeyboardStateTransition.SelectCandidate
-                    is ImeIntent.CommitInput -> KeyboardStateTransition.CommitInput
-                    else -> KeyboardStateTransition.ReturnToIdle
-                }
+                handleIntentWhenWaiting(intent, currentState)
             }
 
-            is KeyboardState.PinyinInput.Slipping -> {
-                handleIntentWhenSlipping(intent, currentState)
+            is KeyboardState.PinyinInput.Swiping -> {
+                handleIntentWhenSwiping(intent, currentState)
             }
 
             is KeyboardState.PinyinInput.Flipping -> {
                 when (intent) {
-                    is ImeIntent.PressOnKey -> KeyboardStateTransition.SelectFlipChar((intent.key as InputKey.Char).text.first())
+                    is ImeIntent.PressOnKey ->
+                        KeyboardStateTransition.SelectFlippingChar((intent.key as InputKey.Char.Alphabet).text.first())
+
                     else -> KeyboardStateTransition.ReturnToIdle
                 }
             }
@@ -91,13 +81,47 @@ class PinyinKeyboardIntentHandler(override val type: KeyboardType) : KeyboardInt
 
     // ----------------------------------------------------------------------
 
-    /** 处理滑屏输入状态下的 [ImeIntent] */
-    private fun handleIntentWhenSlipping(
+    /** 处理 [KeyboardState.PinyinInput.Waiting] 状态下的 [ImeIntent] */
+    private fun handleIntentWhenWaiting(
         intent: ImeIntent,
-        state: KeyboardState.PinyinInput.Slipping,
+        state: KeyboardState.PinyinInput.Waiting,
     ): KeyboardStateTransition =
         when (intent) {
-            is ImeIntent.PressOnKey -> KeyboardStateTransition.BeginSlip(intent.key)
+            is ImeIntent.SwipeOnKey -> {
+                // 开始滑行输入：仅针对字母按键
+                if (intent.state == ImeIntent.SwipeOnKey.State.Begin
+                    && intent.key is InputKey.Char.Alphabet
+                ) {
+                    KeyboardStateTransition.StartSwipe(key = intent.key)
+                } else {
+                    KeyboardStateTransition.NothingToDo
+                }
+            }
+
+            is ImeIntent.TaOnpKey -> {
+                if (intent.key is InputKey.Char) {
+                    KeyboardStateTransition.InputChar(key = intent.key, tick = intent.tick)
+                } else {
+                    KeyboardStateTransition.NothingToDo
+                }
+            }
+
+            is ImeIntent.DeleteInput -> KeyboardStateTransition.DeleteInput
+            is ImeIntent.SelectCandidate -> KeyboardStateTransition.SelectCandidate
+            is ImeIntent.CommitInput -> KeyboardStateTransition.CommitInput
             else -> KeyboardStateTransition.ReturnToIdle
+        }
+
+    /** 处理 [KeyboardState.PinyinInput.Swiping] 状态下的 [ImeIntent] */
+    private fun handleIntentWhenSwiping(
+        intent: ImeIntent,
+        state: KeyboardState.PinyinInput.Swiping,
+    ): KeyboardStateTransition =
+        when (intent) {
+            is ImeIntent.SwipeOnKey -> {
+                KeyboardStateTransition.StartSwipe(key = intent.key)
+            }
+
+            else -> KeyboardStateTransition.NothingToDo
         }
 }

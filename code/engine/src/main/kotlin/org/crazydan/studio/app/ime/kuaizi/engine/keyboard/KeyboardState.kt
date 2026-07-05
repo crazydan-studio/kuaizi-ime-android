@@ -30,14 +30,18 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
  * 每种状态对应一种键盘交互模式，状态数据作为子类字段内嵌。
  */
 sealed class KeyboardState {
+
     /** 空闲状态，无任何交互正在进行 */
     data object Idle : KeyboardState()
+
+    // ------------------------------------------------------------------
 
     /**
      * 拼音输入状态分支，包含等待、滑行和翻动三种子状态，
      * 覆盖了拼音键盘的核心交互方式
      */
     sealed class PinyinInput : KeyboardState() {
+
         /**
          * 等待输入状态
          * @param pending 未确认的拼音字符，null 表示无待确认输入
@@ -52,7 +56,7 @@ sealed class KeyboardState {
          * @param level2Key 滑行第三级按键
          * @param nextCharsByLength 按字符长度分组的可输入字符
          */
-        data class Slipping(
+        data class Swiping(
             val startKey: InputKey,
             val level0Key: InputKey,
             val level1Key: InputKey? = null,
@@ -71,10 +75,13 @@ sealed class KeyboardState {
         ) : PinyinInput()
     }
 
+    // ------------------------------------------------------------------
+
     /**
      * 候选选择状态分支，包含选择、过滤和高级过滤三个递进子状态
      */
     sealed class CandidateSelection : KeyboardState() {
+
         /**
          * 基础候选选择状态
          * @param candidates 候选词列表
@@ -110,22 +117,13 @@ sealed class KeyboardState {
         ) : CandidateSelection()
     }
 
-    /**
-     * 提交选项选择状态
-     * @param options 可用的提交选项列表
-     * @param hasSpell 是否包含拼音拼写切换选项
-     * @param hasVariant 是否包含变体切换选项
-     */
-    data class CommitOptionChoosing(
-        val options: List<InputWord.CommitOption> = emptyList(),
-        val hasSpell: Boolean = false,
-        val hasVariant: Boolean = false,
-    ) : KeyboardState()
+    // ------------------------------------------------------------------
 
     /**
      * 编辑器编辑状态分支，包含光标移动和文本范围选择两种子状态
      */
     sealed class EditorEditing : KeyboardState() {
+
         /**
          * 光标移动状态
          * @param position 光标在输入列表中的索引
@@ -140,6 +138,8 @@ sealed class KeyboardState {
         data class TextSelecting(val start: Int = 0, val end: Int = 0) : EditorEditing()
     }
 
+    // ------------------------------------------------------------------
+
     /**
      * 符号选择状态
      * @param groupId 当前选中的符号分组，null 表示默认分组
@@ -151,4 +151,18 @@ sealed class KeyboardState {
      * @param groupId 当前选中的 Emoji 分组，null 表示默认分组
      */
     data class EmojiChoosing(val groupId: String? = null) : KeyboardState()
+
+    // ------------------------------------------------------------------
+
+    /**
+     * 提交选项选择状态
+     * @param options 可用的提交选项列表
+     * @param hasSpell 是否包含拼音拼写切换选项
+     * @param hasVariant 是否包含变体切换选项
+     */
+    data class CommitOptionChoosing(
+        val options: List<InputWord.CommitOption> = emptyList(),
+        val hasSpell: Boolean = false,
+        val hasVariant: Boolean = false,
+    ) : KeyboardState()
 }

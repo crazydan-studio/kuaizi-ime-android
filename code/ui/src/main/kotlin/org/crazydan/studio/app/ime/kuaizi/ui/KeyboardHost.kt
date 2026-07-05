@@ -335,34 +335,56 @@ private fun generateBasicLayout(context: KeyTableContext): List<List<InputKey>> 
         KeyboardType.Pinyin, KeyboardType.Latin -> listOf(
             // 第一行
             listOf(
-                InputKey.Char(text = "q"), InputKey.Char(text = "w"), InputKey.Char(text = "e"),
-                InputKey.Char(text = "r"), InputKey.Char(text = "t"), InputKey.Char(text = "y"),
-                InputKey.Char(text = "u"), InputKey.Char(text = "i"), InputKey.Char(text = "o"),
-                InputKey.Char(text = "p"),
+                InputKey.Char.Alphabet(value = "q"),
+                InputKey.Char.Alphabet(value = "w"),
+                InputKey.Char.Alphabet(value = "e"),
+                InputKey.Char.Alphabet(value = "r"),
+                InputKey.Char.Alphabet(value = "t"),
+                InputKey.Char.Alphabet(value = "y"),
+                InputKey.Char.Alphabet(value = "u"),
+                InputKey.Char.Alphabet(value = "i"),
+                InputKey.Char.Alphabet(value = "o"),
+                InputKey.Char.Alphabet(value = "p"),
             ),
             // 第二行
             listOf(
-                InputKey.Char(text = "a"), InputKey.Char(text = "s"), InputKey.Char(text = "d"),
-                InputKey.Char(text = "f"), InputKey.Char(text = "g"), InputKey.Char(text = "h"),
-                InputKey.Char(text = "j"), InputKey.Char(text = "k"), InputKey.Char(text = "l"),
+                InputKey.Char.Alphabet(value = "a"),
+                InputKey.Char.Alphabet(value = "s"),
+                InputKey.Char.Alphabet(value = "d"),
+                InputKey.Char.Alphabet(value = "f"),
+                InputKey.Char.Alphabet(value = "g"),
+                InputKey.Char.Alphabet(value = "h"),
+                InputKey.Char.Alphabet(value = "j"),
+                InputKey.Char.Alphabet(value = "k"),
+                InputKey.Char.Alphabet(value = "l"),
             ),
             // 第三行（含 Ctrl 功能键）
             listOf(
-                InputKey.Ctrl(type = ""), InputKey.Char(text = "z"), InputKey.Char(text = "x"),
-                InputKey.Char(text = "c"), InputKey.Char(text = "v"), InputKey.Char(text = "b"),
-                InputKey.Char(text = "n"), InputKey.Char(text = "m"), InputKey.Ctrl(type = ""),
+                InputKey.Ctrl(type = ""),
+                InputKey.Char.Alphabet(value = "z"),
+                InputKey.Char.Alphabet(value = "x"),
+                InputKey.Char.Alphabet(value = "c"),
+                InputKey.Char.Alphabet(value = "v"),
+                InputKey.Char.Alphabet(value = "b"),
+                InputKey.Char.Alphabet(value = "n"),
+                InputKey.Char.Alphabet(value = "m"),
+                InputKey.Ctrl(type = ""),
             ),
         )
 
         KeyboardType.Number -> listOf(
-            listOf(InputKey.Char(text = "1"), InputKey.Char(text = "2"), InputKey.Char(text = "3")),
-            listOf(InputKey.Char(text = "4"), InputKey.Char(text = "5"), InputKey.Char(text = "6")),
-            listOf(InputKey.Char(text = "7"), InputKey.Char(text = "8"), InputKey.Char(text = "9")),
-            listOf(InputKey.Ctrl(type = ""), InputKey.Char(text = "0"), InputKey.Ctrl(type = "")),
+            listOf(InputKey.Char.Number(value = 1), InputKey.Char.Number(value = 2), InputKey.Char.Number(value = 3)),
+            listOf(InputKey.Char.Number(value = 4), InputKey.Char.Number(value = 5), InputKey.Char.Number(value = 6)),
+            listOf(InputKey.Char.Number(value = 7), InputKey.Char.Number(value = 8), InputKey.Char.Number(value = 9)),
+            listOf(InputKey.Ctrl(type = ""), InputKey.Char.Number(value = 0), InputKey.Ctrl(type = "")),
         )
 
         else -> listOf(
-            listOf(InputKey.Char(text = "a"), InputKey.Char(text = "b"), InputKey.Char(text = "c")),
+            listOf(
+                InputKey.Char.Alphabet(value = "a"),
+                InputKey.Char.Alphabet(value = "b"),
+                InputKey.Char.Alphabet(value = "c")
+            ),
         )
     }
 }

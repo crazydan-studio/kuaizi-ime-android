@@ -65,8 +65,8 @@ sealed class InputItem {
          * @param key 字符按键
          * @return 是否可以替换
          */
-        fun canReplace(key: InputKey.Char): Boolean =
-            replacements.size > 1 && key.text in replacements
+        fun canReplace(key: InputKey.Char.Alphabet): Boolean =
+            replacements.size > 1 && key.value in replacements
     }
 
     /** 游标间隔标记，所有实例共享同一身份 */
