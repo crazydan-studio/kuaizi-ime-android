@@ -299,38 +299,38 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
     private fun gestureToIntent(gesture: InputGesture): ImeIntent =
         when (gesture) {
             is InputGesture.Press ->
-                ImeIntent.PressOnKey(
+                ImeIntent.OnKey.Press(
                     key = gesture.key,
                     state =
-                        if (gesture.released) ImeIntent.PressOnKey.State.End
-                        else ImeIntent.PressOnKey.State.Begin,
+                        if (gesture.released) ImeIntent.OnKey.Press.State.End
+                        else ImeIntent.OnKey.Press.State.Begin,
                 )
 
             is InputGesture.LongPress ->
-                ImeIntent.LongPressOnKey(
+                ImeIntent.OnKey.LongPress(
                     key = gesture.key,
                     tick = gesture.tick,
                     state =
-                        if (gesture.released) ImeIntent.LongPressOnKey.State.End
-                        else if (gesture.tick > 0) ImeIntent.LongPressOnKey.State.Doing
-                        else ImeIntent.LongPressOnKey.State.Begin,
+                        if (gesture.released) ImeIntent.OnKey.LongPress.State.End
+                        else if (gesture.tick > 0) ImeIntent.OnKey.LongPress.State.Doing
+                        else ImeIntent.OnKey.LongPress.State.Begin,
                 )
 
             is InputGesture.Tap ->
-                ImeIntent.TaOnpKey(key = gesture.key, tick = gesture.tick)
+                ImeIntent.OnKey.Tap(key = gesture.key, tick = gesture.tick)
 
             is InputGesture.Swipe ->
-                ImeIntent.SwipeOnKey(
+                ImeIntent.OnKey.Swipe(
                     key = gesture.key,
                     motion = gesture.motion,
                     state =
-                        if (gesture.released) ImeIntent.SwipeOnKey.State.End
-                        else if (gesture.motion != null) ImeIntent.SwipeOnKey.State.Doing
-                        else ImeIntent.SwipeOnKey.State.Begin,
+                        if (gesture.released) ImeIntent.OnKey.Swipe.State.End
+                        else if (gesture.motion != null) ImeIntent.OnKey.Swipe.State.Doing
+                        else ImeIntent.OnKey.Swipe.State.Begin,
                 )
 
             is InputGesture.Flip ->
-                ImeIntent.FlipOnKey(key = gesture.key, motion = gesture.motion)
+                ImeIntent.OnKey.Flip(key = gesture.key, motion = gesture.motion)
 
             is InputGesture.CandidateTap -> {
                 val candidates = state.value.candidateList.candidates

@@ -39,54 +39,68 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
  */
 sealed class ImeIntent {
 
-    /**
-     * 按压按键。通过 [state] 判断是按压开始还是结束。
-     *
-     * 注意，[key] 为 `null` 时，表示在非按键上按压。
-     */
-    data class PressOnKey(val key: InputKey? = null, val state: State) : ImeIntent() {
-        enum class State { Begin, End, }
+    /** 针对 [InputKey] 的意图 */
+    sealed class OnKey : ImeIntent() {
+        abstract val key: InputKey?
+
+        /**
+         * 按压按键。通过 [state] 判断是按压开始还是结束。
+         *
+         * 注意，[key] 为 `null` 时，表示在非按键上按压。
+         */
+        data class Press(
+            override val key: InputKey? = null,
+            val state: State,
+        ) : OnKey() {
+            enum class State { Begin, End, }
+        }
+
+        /**
+         * 长按按键。通过 [state] 判断是长按开始、结束还是进行中。
+         *
+         * 注意，[key] 为 `null` 时，表示在非按键上长按。
+         */
+        data class LongPress(
+            override val key: InputKey? = null,
+            val state: State,
+            val tick: Int = 0,
+        ) : OnKey() {
+            enum class State { Begin, End, Doing, }
+        }
+
+        /**
+         * 点击按键。通过 [tick] 判断是单击（`tick==0`）还是双击（`tick==1`）
+         *
+         * 注意，[key] 为 `null` 时，表示在非按键上点击。
+         * */
+        data class Tap(
+            override val key: InputKey? = null,
+            val tick: Int = 0,
+        ) : OnKey()
+
+        /**
+         * 在按键上滑行。通过 [state] 判断是滑行开始、结束还是进行中。
+         *
+         * 注意，[key] 为 `null` 时，表示在非按键上滑行。
+         */
+        data class Swipe(
+            override val key: InputKey? = null,
+            val state: State,
+            val motion: Motion? = null,
+        ) : OnKey() {
+            enum class State { Begin, End, Doing, }
+        }
+
+        /**
+         * 在按键上翻动。其发生在 [Swipe.State.Begin] 与 [Swipe.State.End] 之间。
+         *
+         * 注意，[key] 为 `null` 时，表示在非按键上翻动。
+         */
+        data class Flip(
+            override val key: InputKey? = null,
+            val motion: Motion? = null,
+        ) : OnKey()
     }
-
-    /**
-     * 长按按键。通过 [state] 判断是长按开始、结束还是进行中。
-     *
-     * 注意，[key] 为 `null` 时，表示在非按键上长按。
-     */
-    data class LongPressOnKey(
-        val key: InputKey? = null,
-        val state: State,
-        val tick: Int = 0,
-    ) : ImeIntent() {
-        enum class State { Begin, End, Doing, }
-    }
-
-    /**
-     * 点击按键。通过 [tick] 判断是单击（`tick==0`）还是双击（`tick==1`）
-     *
-     * 注意，[key] 为 `null` 时，表示在非按键上点击。
-     * */
-    data class TaOnpKey(val key: InputKey? = null, val tick: Int = 0) : ImeIntent()
-
-    /**
-     * 在按键上滑行。通过 [state] 判断是滑行开始、结束还是进行中。
-     *
-     * 注意，[key] 为 `null` 时，表示在非按键上滑行。
-     */
-    data class SwipeOnKey(
-        val key: InputKey? = null,
-        val state: State,
-        val motion: Motion? = null,
-    ) : ImeIntent() {
-        enum class State { Begin, End, Doing, }
-    }
-
-    /**
-     * 在按键上翻动。其发生在 [SwipeOnKey.State.Begin] 与 [SwipeOnKey.State.End] 之间。
-     *
-     * 注意，[key] 为 `null` 时，表示在非按键上翻动。
-     */
-    data class FlipOnKey(val key: InputKey? = null, val motion: Motion? = null) : ImeIntent()
 
     // ---------------------------------------------------------------------
 

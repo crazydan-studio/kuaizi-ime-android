@@ -21,39 +21,59 @@ package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
 /** 输入按键的密封类型，表示键盘上的一个可交互按键 */
 sealed class InputKey {
+    abstract val disabled: Boolean
 
     /** 字符按键 */
     sealed class Char : InputKey() {
 
         /** 字母按键 */
         data class Alphabet(
+            override val disabled: Boolean = false,
             val value: String,
             val replacements: List<String> = emptyList(),
         ) : Char()
 
         /** 数字按键 */
-        data class Number(val value: Int) : Char()
+        data class Number(
+            override val disabled: Boolean = false,
+            val value: Int,
+        ) : Char()
 
         /** 符号按键 */
-        data class Symbol(val value: String) : Char()
+        data class Symbol(
+            override val disabled: Boolean = false,
+            val value: String,
+        ) : Char()
 
         /** 表情按键 */
-        data class Emoji(val value: String) : Char()
+        data class Emoji(
+            override val disabled: Boolean = false,
+            val value: String,
+        ) : Char()
     }
 
     // -----------------------------------------------------
 
     /** 控制按键，如 Shift、Backspace 等 */
-    data class Ctrl(val type: String) : InputKey()
+    data class Ctrl(
+        override val disabled: Boolean = false,
+        val type: String,
+    ) : InputKey()
 
     /** 数学运算按键 */
-    data object MathOp : InputKey()
+    data class MathOp(
+        override val disabled: Boolean = false,
+    ) : InputKey()
 
     /** 候选词选择按键 */
-    data object Candidate : InputKey()
+    data class Candidate(
+        override val disabled: Boolean = false,
+    ) : InputKey()
 
     // -----------------------------------------------------
 
     /** 空按键，表示无操作 */
-    data object Null : InputKey()
+    data object Null : InputKey() {
+        override val disabled: Boolean = false
+    }
 }
