@@ -43,7 +43,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
  *
  * @param keyTable 按键布局矩阵
  * @param keyLayoutState 按键布局状态（含归一化位置映射）
- * @param keyboardInputMode 键盘输入模式（影响布局策略）
+ * @param keyboardInputMode 键盘输入模式
  * @param onLayoutStateChanged 布局状态变更回调
  * @param modifier 修饰符
  */
@@ -51,7 +51,7 @@ import org.crazydan.studio.app.ime.kuaizi.ui.theme.LocalKeyboardColors
 fun KeyLayoutPanel(
     keyTable: List<List<InputKey>> = emptyList(),
     keyLayoutState: KeyLayoutState = KeyLayoutState(),
-    keyboardInputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+    keyboardInputMode: KeyboardInputMode = KeyboardInputMode.Tap,
     onLayoutStateChanged: (KeyLayoutState) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {

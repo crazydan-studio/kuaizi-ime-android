@@ -19,11 +19,11 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
-/** 键盘的完整状态描述，包含键盘类型、左右手模式和状态机位置 */
+/** 键盘的完整状态描述，包含键盘类型、左右手模式和当前状态 */
 data class Keyboard(
     /** 键盘类型，决定按键集合的语义内容 */
     val type: KeyboardType = KeyboardType.Pinyin,
-    /** 键盘状态机的当前状态 */
+    /** 键盘当前状态 */
     val state: KeyboardState = KeyboardState.Idle,
 
     /** 左右手模式的临时切换状态，null 表示未切换，使用 [ImeConfig.Ui.keyboardHandMode] 的值 */
@@ -75,12 +75,20 @@ enum class KeyboardType {
 
 /** 键盘输入模式，定义按键的交互范式 */
 enum class KeyboardInputMode {
-    // TODO 输入模式：滑行 + 点击？
-    /** 六边形网格排列 */
-    HexGrid,
+    /** 滑行输入 */
+    Swip,
 
-    /** 矩形网格排列（传统 QWERTY） */
-    RectGrid,
+    /** 点击输入：不支持全屏键盘模式 */
+    Tap,
+}
+
+/** 键盘按键布局模式，定义按键的排列方式，并在一定程度上限制了所支持的 [KeyboardInputMode] */
+enum class KeyboardKeyLayoutMode {
+    /** 网格布局，支持滑行和点击输入 */
+    Grid,
+
+    /** X 型布局，仅支持滑行输入 */
+    XPad,
 }
 
 /** 左右手操作模式 */

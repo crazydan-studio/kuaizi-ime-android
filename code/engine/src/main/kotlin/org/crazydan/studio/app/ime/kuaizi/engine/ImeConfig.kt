@@ -25,6 +25,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.ScreenOrientation
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardKeyLayoutMode
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardThemeType
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
@@ -75,9 +76,10 @@ data class ImeConfig(
     /**
      * UI 配置：影响界面呈现和交互反馈，均为持久化配置项。
      *
-     * @property keyboardInputMode 键盘输入模式，影响按键布局和交互逻辑
-     * @property keyboardHandMode 键盘左右手模式，影响按键布局调整
+     * @property keyboardInputMode 键盘输入模式，影响按键交互逻辑
+     * @property keyboardHandMode 键盘左右手模式，影响按键布局方向
      * @property keyboardThemeType 键盘主题样式类型
+     * @property keyboardKeyLayoutMode 键盘按键布局模式
      * @property keyPopupTipsEnabled 是否显示按键输入提示
      * @property audioFeedbackEnabled 是否启用按键音效反馈
      * @property hapticFeedbackEnabled 是否启用触觉反馈
@@ -91,9 +93,10 @@ data class ImeConfig(
      */
     @DataStoreConfig(prefix = "ui")
     data class Ui(
-        val keyboardInputMode: KeyboardInputMode = KeyboardInputMode.RectGrid,
+        val keyboardInputMode: KeyboardInputMode = KeyboardInputMode.Tap,
         val keyboardHandMode: KeyboardHandMode = KeyboardHandMode.Right,
         val keyboardThemeType: KeyboardThemeType = KeyboardThemeType.FollowSystem,
+        val keyboardKeyLayoutMode: KeyboardKeyLayoutMode = KeyboardKeyLayoutMode.Grid,
 
         val keyPopupTipsEnabled: Boolean = true,
         val audioFeedbackEnabled: Boolean = true,

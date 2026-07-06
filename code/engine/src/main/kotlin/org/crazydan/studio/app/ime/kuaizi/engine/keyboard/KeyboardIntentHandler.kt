@@ -27,8 +27,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
  * 各子类是无状态的策略对象——它们不持有可变状态，状态由 [KeyboardStateMachine] 集中管理。
  */
 interface KeyboardIntentHandler {
-    /** 当前处理器所属的键盘类型 */
-    val type: KeyboardType
 
     /**
      * 将 [ImeIntent] 映射为 [KeyboardStateTransition]
@@ -42,10 +40,8 @@ interface KeyboardIntentHandler {
 /**
  * 基础键盘意图处理器，所有键盘类型的默认实现。
  * 默认行为是返回 [KeyboardStateTransition.ReturnToIdle]。
- *
- * @param type 键盘类型
  */
-open class BaseKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
+open class BaseKeyboardIntentHandler() : KeyboardIntentHandler {
 
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
         return KeyboardStateTransition.ReturnToIdle
@@ -53,22 +49,22 @@ open class BaseKeyboardIntentHandler(override val type: KeyboardType) : Keyboard
 }
 
 /** 数字键盘意图处理器 */
-class NumberKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+class NumberKeyboardIntentHandler : BaseKeyboardIntentHandler()
 
 /** 符号键盘意图处理器 */
-class SymbolKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+class SymbolKeyboardIntentHandler : BaseKeyboardIntentHandler()
 
 /** Emoji 键盘意图处理器 */
-class EmojiKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+class EmojiKeyboardIntentHandler : BaseKeyboardIntentHandler()
 
 /** 数学键盘意图处理器 */
-class MathKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+class MathKeyboardIntentHandler : BaseKeyboardIntentHandler()
 
 /** 编辑键盘意图处理器 */
-class EditorKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+class EditorKeyboardIntentHandler : BaseKeyboardIntentHandler()
 
 /** 候选键盘意图处理器 */
-class CandidateKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+class CandidateKeyboardIntentHandler : BaseKeyboardIntentHandler()
 
 /** 提交选项键盘意图处理器 */
-class CommitOptionKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type)
+class CommitOptionKeyboardIntentHandler : BaseKeyboardIntentHandler()

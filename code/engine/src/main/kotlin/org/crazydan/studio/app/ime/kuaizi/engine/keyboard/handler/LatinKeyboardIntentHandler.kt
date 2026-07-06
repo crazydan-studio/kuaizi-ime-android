@@ -20,9 +20,11 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard.handler
 
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.BaseKeyboardIntentHandler
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
 
 /** 拉丁文键盘意图处理器 */
-class LatinKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type) {
+class LatinKeyboardIntentHandler(
+    val inputMode: KeyboardInputMode,
+) : BaseKeyboardIntentHandler() {
     //
 }

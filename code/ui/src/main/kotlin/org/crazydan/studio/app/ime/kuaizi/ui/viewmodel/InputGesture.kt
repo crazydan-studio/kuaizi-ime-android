@@ -21,21 +21,16 @@ package org.crazydan.studio.app.ime.kuaizi.ui.viewmodel
 
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
 
 /**
  * 输入手势，坐标无关。
  *
  * 由输入面板识别后发送到 ViewModel，描述用户的输入意图。
  * 不包含任何绝对坐标，只包含按键的语义标识。
- * 包含 [inputMode] 参数，使手势识别逻辑可根据不同输入模式采用不同策略。
  */
 sealed class InputGesture {
     /** 手势发生的时间戳（毫秒） */
     abstract val timestamp: Long
-
-    /** 产生此手势的输入模式 */
-    abstract val inputMode: KeyboardInputMode
 
     // ----------------------------------------------
 
@@ -46,7 +41,6 @@ sealed class InputGesture {
      */
     data class Press(
         override val timestamp: Long,
-        override val inputMode: KeyboardInputMode,
 
         val key: InputKey? = null,
 
@@ -61,7 +55,6 @@ sealed class InputGesture {
      */
     data class LongPress(
         override val timestamp: Long,
-        override val inputMode: KeyboardInputMode,
 
         val key: InputKey? = null,
         val tick: Int = 0,
@@ -76,7 +69,6 @@ sealed class InputGesture {
      */
     data class Tap(
         override val timestamp: Long,
-        override val inputMode: KeyboardInputMode,
 
         val key: InputKey? = null,
         val tick: Int = 0,
@@ -92,7 +84,6 @@ sealed class InputGesture {
      */
     data class Swipe(
         override val timestamp: Long,
-        override val inputMode: KeyboardInputMode,
 
         val key: InputKey? = null,
         val motion: Motion? = null,
@@ -107,7 +98,6 @@ sealed class InputGesture {
      */
     data class Flip(
         override val timestamp: Long,
-        override val inputMode: KeyboardInputMode,
 
         val key: InputKey? = null,
         val motion: Motion? = null,
@@ -118,7 +108,6 @@ sealed class InputGesture {
     /** 候选项选择 */
     data class CandidateTap(
         override val timestamp: Long,
-        override val inputMode: KeyboardInputMode,
 
         val candidateIndex: Int,
     ) : InputGesture()

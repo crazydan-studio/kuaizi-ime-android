@@ -416,24 +416,25 @@ class ImeEngine internal constructor(
     /**
      * 根据键盘类型解析对应的 [KeyboardIntentHandler]。
      *
-     * @param type 当前键盘类型
+     * @param keyboardType 当前键盘类型
      * @return 对应的意图处理器
      */
-    private fun resolveIntentHandler(type: KeyboardType): KeyboardIntentHandler {
-        // TODO 根据输入模式切换到不同的 handler：拼音和拉丁输入提供滑行和点击两种输入模式
-        return when (type) {
-            KeyboardType.Pinyin -> PinyinKeyboardIntentHandler(type)
-            KeyboardType.Latin -> LatinKeyboardIntentHandler(type)
+    private fun resolveIntentHandler(keyboardType: KeyboardType): KeyboardIntentHandler {
+        val keyboardInputMode = _state.value.config.ui.keyboardInputMode
+
+        return when (keyboardType) {
+            KeyboardType.Pinyin -> PinyinKeyboardIntentHandler(keyboardInputMode)
+            KeyboardType.Latin -> LatinKeyboardIntentHandler(keyboardInputMode)
             //
-            KeyboardType.Number -> NumberKeyboardIntentHandler(type)
-            KeyboardType.Symbol -> SymbolKeyboardIntentHandler(type)
-            KeyboardType.Emoji -> EmojiKeyboardIntentHandler(type)
+            KeyboardType.Number -> NumberKeyboardIntentHandler()
+            KeyboardType.Symbol -> SymbolKeyboardIntentHandler()
+            KeyboardType.Emoji -> EmojiKeyboardIntentHandler()
             //
-            KeyboardType.Math -> MathKeyboardIntentHandler(type)
+            KeyboardType.Math -> MathKeyboardIntentHandler()
             // TODO 考虑将复制、粘贴等常用功能集成到键盘面板中
-            KeyboardType.Editor -> EditorKeyboardIntentHandler(type)
-            KeyboardType.Candidate -> CandidateKeyboardIntentHandler(type)
-            KeyboardType.CommitOption -> CommitOptionKeyboardIntentHandler(type)
+            KeyboardType.Editor -> EditorKeyboardIntentHandler()
+            KeyboardType.Candidate -> CandidateKeyboardIntentHandler()
+            KeyboardType.CommitOption -> CommitOptionKeyboardIntentHandler()
         }
     }
 

@@ -64,16 +64,6 @@ sealed class KeyboardState {
             val level2Key: InputKey.Char.Alphabet? = null,
             val nextCharsByLength: Map<Int, List<String>> = emptyMap(),
         ) : PinyinInput()
-
-        /**
-         * 翻动输入状态
-         * @param startChar 翻动起始字符
-         * @param candidates 翻动产生的候选字符列表
-         */
-        data class Flipping(
-            val startChar: String = "",
-            val candidates: List<String> = emptyList(),
-        ) : PinyinInput()
     }
 
     // ------------------------------------------------------------------
