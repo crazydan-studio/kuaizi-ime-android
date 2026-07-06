@@ -301,19 +301,19 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
             is InputGesture.Press ->
                 ImeIntent.OnKey.Press(
                     key = gesture.key,
-                    state =
-                        if (gesture.released) ImeIntent.OnKey.Press.State.End
-                        else ImeIntent.OnKey.Press.State.Begin,
+                    stage =
+                        if (gesture.released) ImeIntent.OnKey.Press.Stage.End
+                        else ImeIntent.OnKey.Press.Stage.Begin,
                 )
 
             is InputGesture.LongPress ->
                 ImeIntent.OnKey.LongPress(
                     key = gesture.key,
                     tick = gesture.tick,
-                    state =
-                        if (gesture.released) ImeIntent.OnKey.LongPress.State.End
-                        else if (gesture.tick > 0) ImeIntent.OnKey.LongPress.State.Doing
-                        else ImeIntent.OnKey.LongPress.State.Begin,
+                    stage =
+                        if (gesture.released) ImeIntent.OnKey.LongPress.Stage.End
+                        else if (gesture.tick > 0) ImeIntent.OnKey.LongPress.Stage.Hold
+                        else ImeIntent.OnKey.LongPress.Stage.Begin,
                 )
 
             is InputGesture.Tap ->
@@ -323,10 +323,10 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
                 ImeIntent.OnKey.Swipe(
                     key = gesture.key,
                     motion = gesture.motion,
-                    state =
-                        if (gesture.released) ImeIntent.OnKey.Swipe.State.End
-                        else if (gesture.motion != null) ImeIntent.OnKey.Swipe.State.Doing
-                        else ImeIntent.OnKey.Swipe.State.Begin,
+                    stage =
+                        if (gesture.released) ImeIntent.OnKey.Swipe.Stage.End
+                        else if (gesture.motion != null) ImeIntent.OnKey.Swipe.Stage.Moving
+                        else ImeIntent.OnKey.Swipe.Stage.Begin,
                 )
 
             is InputGesture.Flip ->

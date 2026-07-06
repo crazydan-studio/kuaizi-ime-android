@@ -50,17 +50,18 @@ sealed class KeyboardState {
 
         /**
          * 滑行输入状态
-         * @param startKey 滑行起始按键
+         * @param lastKey 滑行的最后输入按键
          * @param level0Key 滑行第一级按键
          * @param level1Key 滑行第二级按键
          * @param level2Key 滑行第三级按键
          * @param nextCharsByLength 按字符长度分组的可输入字符
          */
         data class Swiping(
-            val startKey: InputKey,
-            val level0Key: InputKey,
-            val level1Key: InputKey? = null,
-            val level2Key: InputKey? = null,
+            val lastKey: InputKey.Char.Alphabet,
+
+            val level0Key: InputKey.Char.Alphabet,
+            val level1Key: InputKey.Char.Alphabet? = null,
+            val level2Key: InputKey.Char.Alphabet? = null,
             val nextCharsByLength: Map<Int, List<String>> = emptyMap(),
         ) : PinyinInput()
 

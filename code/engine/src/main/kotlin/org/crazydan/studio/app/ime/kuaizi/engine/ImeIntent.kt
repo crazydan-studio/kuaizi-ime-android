@@ -44,28 +44,28 @@ sealed class ImeIntent {
         abstract val key: InputKey?
 
         /**
-         * 按压按键。通过 [state] 判断是按压开始还是结束。
+         * 按压按键。通过 [stage] 判断是按压开始还是结束。
          *
          * 注意，[key] 为 `null` 时，表示在非按键上按压。
          */
         data class Press(
             override val key: InputKey? = null,
-            val state: State,
+            val stage: Stage,
         ) : OnKey() {
-            enum class State { Begin, End, }
+            enum class Stage { Begin, End, }
         }
 
         /**
-         * 长按按键。通过 [state] 判断是长按开始、结束还是进行中。
+         * 长按按键。通过 [stage] 判断是长按开始、结束还是停留中。
          *
          * 注意，[key] 为 `null` 时，表示在非按键上长按。
          */
         data class LongPress(
             override val key: InputKey? = null,
-            val state: State,
+            val stage: Stage,
             val tick: Int = 0,
         ) : OnKey() {
-            enum class State { Begin, End, Doing, }
+            enum class Stage { Begin, End, Hold, }
         }
 
         /**
@@ -79,20 +79,20 @@ sealed class ImeIntent {
         ) : OnKey()
 
         /**
-         * 在按键上滑行。通过 [state] 判断是滑行开始、结束还是进行中。
+         * 在按键上滑行。通过 [stage] 判断是滑行开始、结束、移动中还是停留中。
          *
          * 注意，[key] 为 `null` 时，表示在非按键上滑行。
          */
         data class Swipe(
             override val key: InputKey? = null,
-            val state: State,
+            val stage: Stage,
             val motion: Motion? = null,
         ) : OnKey() {
-            enum class State { Begin, End, Doing, }
+            enum class Stage { Begin, End, Moving, Hold, }
         }
 
         /**
-         * 在按键上翻动。其发生在 [Swipe.State.Begin] 与 [Swipe.State.End] 之间。
+         * 在按键上翻动。其发生在 [Swipe.Stage.Begin] 与 [Swipe.Stage.End] 之间。
          *
          * 注意，[key] 为 `null` 时，表示在非按键上翻动。
          */

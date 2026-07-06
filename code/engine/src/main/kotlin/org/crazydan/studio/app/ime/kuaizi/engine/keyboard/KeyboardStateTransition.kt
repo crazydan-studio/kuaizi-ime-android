@@ -59,24 +59,19 @@ sealed class KeyboardStateTransition {
 
     // ------------------------------------------------------------------------
 
-    /** 输入单个字符 */
-    data class InputChar(val key: InputKey.Char, val tick: Int = 0) : KeyboardStateTransition()
+    /**
+     * 输入字符：可用于单字符输入、滑行中输入、可替换输入等
+     * @property replacement 可替换字符的序号。大于 0 时有效
+     */
+    data class InputChar(val key: InputKey.Char, val replacement: Int = 0) : KeyboardStateTransition()
 
     // ------------------------------------------------------------------------
 
     /** 开始滑行输入 */
     data class StartSwipe(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
 
-    /** 选择滑行输入的目标字符 */
-    data class SelectSwipingChar(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
-
-    // ------------------------------------------------------------------------
-
-    /** 开始翻动输入 */
-    data class StartFlip(val char: Char) : KeyboardStateTransition()
-
-    /** 选择翻动输入的目标字符 */
-    data class SelectFlippingChar(val char: Char) : KeyboardStateTransition()
+    /** 结束滑行输入 */
+    data object StopSwipe : KeyboardStateTransition()
 
     // ------------------------------------------------------------------------
 

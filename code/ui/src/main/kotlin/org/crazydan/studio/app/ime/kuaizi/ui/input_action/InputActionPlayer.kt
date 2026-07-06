@@ -198,7 +198,7 @@ class InputActionPlayer(
                 viewModel.handleIntent(
                     ImeIntent.OnKey.Press(
                         key = action.key,
-                        state = ImeIntent.OnKey.Press.State.Begin,
+                        stage = ImeIntent.OnKey.Press.Stage.Begin,
                     )
                 )
             }
@@ -221,7 +221,7 @@ class InputActionPlayer(
                 viewModel.handleIntent(
                     ImeIntent.OnKey.Swipe(
                         key = action.toKey,
-                        state = ImeIntent.OnKey.Swipe.State.Doing,
+                        stage = ImeIntent.OnKey.Swipe.Stage.Moving,
                     )
                 )
             }

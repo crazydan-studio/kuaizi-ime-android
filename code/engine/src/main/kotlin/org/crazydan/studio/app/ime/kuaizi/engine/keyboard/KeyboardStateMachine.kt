@@ -51,7 +51,6 @@ class KeyboardStateMachine(
             //
             is KeyboardState.PinyinInput.Waiting -> handleFromPinyinWaiting(transition)
             is KeyboardState.PinyinInput.Swiping -> handleFromPinyinSwiping(transition)
-            is KeyboardState.PinyinInput.Flipping -> handleFromPinyinFlipping(transition)
             //
             is KeyboardState.CandidateSelection.Choosing -> handleFromCandidateChoosing(transition)
             is KeyboardState.CandidateSelection.Filtering -> handleFromCandidateFiltering(transition)
@@ -132,9 +131,6 @@ class KeyboardStateMachine(
                     )
                 )
 
-            is KeyboardStateTransition.StartFlip ->
-                KeyboardStateTransition.Result(KeyboardState.PinyinInput.Flipping(transition.char.toString()))
-
             is KeyboardStateTransition.LoadCandidates ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
 
@@ -148,14 +144,9 @@ class KeyboardStateMachine(
     /** 从 [KeyboardState.PinyinInput.Swiping] 状态处理转换 */
     private fun handleFromPinyinSwiping(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
         return when (transition) {
-            is KeyboardStateTransition.SelectSwipingChar ->
+            is KeyboardStateTransition.InputChar ->
                 KeyboardStateTransition.Result(
                     newState = KeyboardState.PinyinInput.Waiting()
-                )
-
-            is KeyboardStateTransition.StartFlip ->
-                KeyboardStateTransition.Result(
-                    newState = KeyboardState.PinyinInput.Flipping(transition.char.toString())
                 )
 
             is KeyboardStateTransition.LoadCandidates ->
@@ -167,22 +158,6 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     newState = KeyboardState.PinyinInput.Waiting()
                 )
-
-            else -> KeyboardStateTransition.Result(_state)
-        }
-    }
-
-    /** 从 [KeyboardState.PinyinInput.Flipping] 状态处理转换 */
-    private fun handleFromPinyinFlipping(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
-        return when (transition) {
-            is KeyboardStateTransition.SelectFlippingChar ->
-                KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
-
-            is KeyboardStateTransition.LoadCandidates ->
-                KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
-
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
 
             else -> KeyboardStateTransition.Result(_state)
         }

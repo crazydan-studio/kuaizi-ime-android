@@ -373,10 +373,22 @@ private fun generateBasicLayout(context: KeyTableContext): List<List<InputKey>> 
         )
 
         KeyboardType.Number -> listOf(
-            listOf(InputKey.Char.Number(value = 1), InputKey.Char.Number(value = 2), InputKey.Char.Number(value = 3)),
-            listOf(InputKey.Char.Number(value = 4), InputKey.Char.Number(value = 5), InputKey.Char.Number(value = 6)),
-            listOf(InputKey.Char.Number(value = 7), InputKey.Char.Number(value = 8), InputKey.Char.Number(value = 9)),
-            listOf(InputKey.Ctrl(type = ""), InputKey.Char.Number(value = 0), InputKey.Ctrl(type = "")),
+            listOf(
+                InputKey.Char.Number(actual = 1),
+                InputKey.Char.Number(actual = 2),
+                InputKey.Char.Number(actual = 3)
+            ),
+            listOf(
+                InputKey.Char.Number(actual = 4),
+                InputKey.Char.Number(actual = 5),
+                InputKey.Char.Number(actual = 6)
+            ),
+            listOf(
+                InputKey.Char.Number(actual = 7),
+                InputKey.Char.Number(actual = 8),
+                InputKey.Char.Number(actual = 9)
+            ),
+            listOf(InputKey.Ctrl(type = ""), InputKey.Char.Number(actual = 0), InputKey.Ctrl(type = "")),
         )
 
         else -> listOf(
