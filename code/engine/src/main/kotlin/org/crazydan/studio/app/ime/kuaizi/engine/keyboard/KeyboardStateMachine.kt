@@ -31,22 +31,21 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
 class KeyboardStateMachine(
     private val inputListOp: InputListOperator,
 ) {
-    private var _state: KeyboardState = KeyboardState.Idle
-
-    /** 当前键盘状态（只读） */
-    val state: KeyboardState get() = _state
-
     private val stateHistory = KeyboardStateHistory()
 
     // -----------------------------------------------------------------
 
     /**
-     * 执行状态转换
-     * @param transition 要执行的状态转换
+     * 处理状态转换
+     * @param handleTransition 要执行的状态转换
+     * @param currentState 当前键盘状态
      * @return 转换结果，包含新状态、副作用列表和编辑器动作
      */
-    fun transition(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
-        val result = when (_state) {
+    fun handleTransition(
+        transition: KeyboardStateTransition,
+        currentState: KeyboardState,
+    ): KeyboardStateTransition.Result =
+        when (currentState) {
             is KeyboardState.Idle -> handleFromIdle(transition)
             //
             is KeyboardState.PinyinInput.Waiting -> handleFromPinyinWaiting(transition)
@@ -62,38 +61,30 @@ class KeyboardStateMachine(
             //
             is KeyboardState.SymbolChoosing -> handleFromSymbolChoosing(transition)
             is KeyboardState.EmojiChoosing -> handleFromEmojiChoosing(transition)
+            //
+            else -> null
+        }?.apply {
+            if (newState != currentState) {
+                stateHistory.push(currentState)
+            }
         }
-
-        if (result.newState != _state) {
-            stateHistory.push(_state)
-            _state = result.newState
-        }
-        return result
-    }
+            ?: KeyboardStateTransition.Result(currentState)
 
     // -----------------------------------------------------------------
 
     /** 回退到前一状态，历史栈空时回退到 [KeyboardState.Idle] */
-    fun backToPrevious() {
-        _state = stateHistory.pop() ?: KeyboardState.Idle
-    }
+    fun backToPrevious(): KeyboardState =
+        stateHistory.pop() ?: KeyboardState.Idle
 
-    /** 重置到空闲状态，清空历史栈 */
-    fun resetToIdle() {
-        _state = KeyboardState.Idle
-        stateHistory.clear()
-    }
-
-    /** 重置到指定状态，清空历史栈 */
-    fun resetTo(state: KeyboardState) {
-        _state = state
+    /** 重置：清空历史栈 */
+    fun reset() {
         stateHistory.clear()
     }
 
     // -----------------------------------------------------------------
 
     /** 从 Idle 状态处理转换 */
-    private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.InputChar ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
@@ -113,19 +104,19 @@ class KeyboardStateMachine(
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 [KeyboardState.PinyinInput.Waiting] 状态处理转换 */
-    private fun handleFromPinyinWaiting(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromPinyinWaiting(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.InputChar ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
 
             is KeyboardStateTransition.StartSwipe ->
                 KeyboardStateTransition.Result(
-                    KeyboardState.PinyinInput.Swiping(
+                    newState = KeyboardState.PinyinInput.Swiping(
                         transition.key,
                         transition.key
                     )
@@ -137,12 +128,12 @@ class KeyboardStateMachine(
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.Idle)
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 [KeyboardState.PinyinInput.Swiping] 状态处理转换 */
-    private fun handleFromPinyinSwiping(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromPinyinSwiping(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.InputChar ->
                 KeyboardStateTransition.Result(
@@ -159,12 +150,12 @@ class KeyboardStateMachine(
                     newState = KeyboardState.PinyinInput.Waiting()
                 )
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 CandidateSelection.Choosing 状态处理转换 */
-    private fun handleFromCandidateChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromCandidateChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.FilterCandidates ->
                 KeyboardStateTransition.Result(
@@ -182,18 +173,12 @@ class KeyboardStateMachine(
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
 
-            is KeyboardStateTransition.PageCandidates ->
-                KeyboardStateTransition.Result(_state)
-
-            is KeyboardStateTransition.LoadCandidates ->
-                KeyboardStateTransition.Result(_state)
-
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 CandidateSelection.Filtering 状态处理转换 */
-    private fun handleFromCandidateFiltering(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromCandidateFiltering(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing())
@@ -203,18 +188,15 @@ class KeyboardStateMachine(
                     KeyboardState.CandidateSelection.Filtering(transition.filter),
                 )
 
-            is KeyboardStateTransition.PageCandidates ->
-                KeyboardStateTransition.Result(_state)
-
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 CandidateSelection.AdvanceFiltering 状态处理转换 */
-    private fun handleFromCandidateAdvanceFiltering(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromCandidateAdvanceFiltering(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing())
@@ -224,15 +206,12 @@ class KeyboardStateMachine(
                     KeyboardState.CandidateSelection.AdvanceFiltering(transition.radical, transition.tone),
                 )
 
-            is KeyboardStateTransition.PageCandidates ->
-                KeyboardStateTransition.Result(_state)
-
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 CommitOptionChoosing 状态处理转换 */
-    private fun handleFromCommitOptionChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromCommitOptionChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.PinyinInput.Waiting())
@@ -240,12 +219,12 @@ class KeyboardStateMachine(
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 EditorEditing.CursorMoving 状态处理转换 */
-    private fun handleFromEditorCursorMoving(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromEditorCursorMoving(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.MoveCursor ->
                 KeyboardStateTransition.Result(
@@ -263,12 +242,12 @@ class KeyboardStateMachine(
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 EditorEditing.TextSelecting 状态处理转换 */
-    private fun handleFromEditorTextSelecting(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromEditorTextSelecting(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.SelectText ->
                 KeyboardStateTransition.Result(
@@ -281,39 +260,33 @@ class KeyboardStateMachine(
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 SymbolChoosing 状态处理转换 */
-    private fun handleFromSymbolChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromSymbolChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.OpenSymbolGroup ->
                 KeyboardStateTransition.Result(KeyboardState.SymbolChoosing(transition.groupId))
 
-            is KeyboardStateTransition.PageCandidates ->
-                KeyboardStateTransition.Result(_state)
-
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.Idle)
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 
     /** 从 EmojiChoosing 状态处理转换 */
-    private fun handleFromEmojiChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result {
+    private fun handleFromEmojiChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.OpenEmojiGroup ->
                 KeyboardStateTransition.Result(KeyboardState.EmojiChoosing(transition.groupId))
 
-            is KeyboardStateTransition.PageCandidates ->
-                KeyboardStateTransition.Result(_state)
-
             is KeyboardStateTransition.ReturnToIdle ->
                 KeyboardStateTransition.Result(KeyboardState.Idle)
 
-            else -> KeyboardStateTransition.Result(_state)
+            else -> null
         }
     }
 }

@@ -48,11 +48,13 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CommitOptionKeyboardIn
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EditorKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EmojiKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardState
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardStateMachine
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.MathKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.NumberKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.SymbolKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.handler.LatinKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.handler.PinyinKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.log.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
@@ -148,13 +150,16 @@ class ImeEngine internal constructor(
     fun start(startupConfig: ImeConfig.Startup) {
         updateRuntimeConfig(startupConfig)
 
-        val keyboardType = resolveKeyboardType(startupConfig)
-        keyboardStateMachine.resetTo(keyboardType.initialState())
-
         // -----------------------------
+        val keyboardType = resolveKeyboardType(startupConfig)
+        val keyboardState = keyboardType.initialState()
+
         val isPassword = startupConfig.editorInputType == EditorInputType.Password
         val newState = _state.value.copy(
-            keyboard = _state.value.keyboard.copy(type = keyboardType),
+            keyboard = _state.value.keyboard.copy(
+                type = keyboardType,
+                state = keyboardState,
+            ),
             inputList =
                 // 清空输入列表，以确保采用直输模式
                 if (isPassword) InputList()
@@ -162,6 +167,7 @@ class ImeEngine internal constructor(
         )
 
         applyStateUpdate { newState }
+        keyboardStateMachine.reset()
 
         // -----------------------------
         // Note：_state.value 可能已变更
@@ -291,30 +297,36 @@ class ImeEngine internal constructor(
 
     // -----------------------------------------------
 
-    private fun handleSwitchKeyboard(type: KeyboardType) {
-        keyboardStateMachine.resetTo(type.initialState())
+    private fun handleSwitchKeyboard(keyboardType: KeyboardType) {
+        val keyboardState = keyboardType.initialState()
 
         applyStateUpdate { state ->
-            state.copy(keyboard = state.keyboard.copy(type = type))
+            state.copy(
+                keyboard = state.keyboard.copy(
+                    type = keyboardType,
+                    state = keyboardState,
+                )
+            )
         }
+        keyboardStateMachine.reset()
     }
 
     private fun handleIntentWithStateMachine(intent: ImeIntent) {
         val keyboard = _state.value.keyboard
-        val handler = resolveIntentHandler(keyboard.type)
-        val transition = handler.handleIntent(intent, keyboard.state)
+        val keyboardType = keyboard.type
+        val keyboardState = keyboard.state
+
+        val handler = resolveIntentHandler(keyboardType)
+        val transition = handler.handleIntent(intent, keyboardState)
 
         // --------------------
-        val result = keyboardStateMachine.transition(transition)
+        val result = keyboardStateMachine.handleTransition(transition, keyboardState)
+        updateKeyboardState(result.newState)
 
-        applyStateUpdate { state ->
-            state.copy(
-                keyboard = state.keyboard.copy(state = result.newState),
-            )
+        // --------------------
+        result.sideEffects?.also {
+            processSideEffects(it)
         }
-
-        // --------------------
-        processSideEffects(result.sideEffects)
 
         result.editorAction?.also {
             dispatchEditorAction(it)
@@ -410,10 +422,13 @@ class ImeEngine internal constructor(
     private fun resolveIntentHandler(type: KeyboardType): KeyboardIntentHandler {
         // TODO 根据输入模式切换到不同的 handler：拼音和拉丁输入提供滑行和点击两种输入模式
         return when (type) {
-            KeyboardType.Pinyin, KeyboardType.Latin -> PinyinKeyboardIntentHandler(type)
+            KeyboardType.Pinyin -> PinyinKeyboardIntentHandler(type)
+            KeyboardType.Latin -> LatinKeyboardIntentHandler(type)
+            //
             KeyboardType.Number -> NumberKeyboardIntentHandler(type)
             KeyboardType.Symbol -> SymbolKeyboardIntentHandler(type)
             KeyboardType.Emoji -> EmojiKeyboardIntentHandler(type)
+            //
             KeyboardType.Math -> MathKeyboardIntentHandler(type)
             // TODO 考虑将复制、粘贴等常用功能集成到键盘面板中
             KeyboardType.Editor -> EditorKeyboardIntentHandler(type)
@@ -476,6 +491,18 @@ class ImeEngine internal constructor(
 
         _state.value = new
     }
+
+    private fun updateKeyboardState(newState: KeyboardState) {
+        if (_state.value.keyboard.state == newState) return
+
+        applyStateUpdate { state ->
+            state.copy(
+                keyboard = state.keyboard.copy(state = newState),
+            )
+        }
+    }
+
+    // -----------------------------------------------
 
     /**
      * 断言状态不变式（仅在 DEBUG 等级下执行）。

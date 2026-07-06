@@ -42,7 +42,7 @@ sealed class KeyboardStateTransition {
      */
     data class Result(
         val newState: KeyboardState,
-        val sideEffects: List<ImeIntent> = emptyList(),
+        val sideEffects: List<ImeIntent>? = null,
         val editorAction: EditorAction? = null,
     )
 

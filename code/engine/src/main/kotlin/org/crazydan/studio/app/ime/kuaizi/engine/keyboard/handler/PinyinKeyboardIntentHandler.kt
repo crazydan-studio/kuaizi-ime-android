@@ -20,19 +20,19 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard.handler
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.BaseKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardState
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardStateTransition
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 
 /**
- * 拼音键盘意图处理器，支持三种输入模式（点击、滑行、翻动），
+ * 拼音键盘意图处理器，支持拼音滑行输入模式，
  * 管理拼音字符输入、候选字查询和输入补全。
  *
  * @param type 键盘类型
  */
-class PinyinKeyboardIntentHandler(override val type: KeyboardType) : KeyboardIntentHandler {
+class PinyinKeyboardIntentHandler(override val type: KeyboardType) : BaseKeyboardIntentHandler(type) {
 
     override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition =
         when (intent) {
