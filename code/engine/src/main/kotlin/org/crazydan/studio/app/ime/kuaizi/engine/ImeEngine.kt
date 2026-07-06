@@ -115,16 +115,20 @@ class ImeEngine internal constructor(
          * @param dictProvider 字典查询接口，由外部注入
          * @return 初始化完成的 [ImeEngine] 实例
          */
-        fun create(
+        suspend fun create(
             config: ImeConfig = ImeConfig(),
             dictProvider: ImeDictProvider,
         ): ImeEngine {
+            val pinyinTree = dictProvider.loadPinyinTree()
             val inputListOp = InputListOperator(InputListEditor())
 
             return ImeEngine(
                 config = config,
                 dictProvider = dictProvider,
-                keyboardStateMachine = KeyboardStateMachine(inputListOp = inputListOp),
+                keyboardStateMachine = KeyboardStateMachine(
+                    pinyinTree = pinyinTree,
+                    inputListOp = inputListOp,
+                ),
                 inputListOp = inputListOp,
             )
         }
@@ -243,7 +247,7 @@ class ImeEngine internal constructor(
      * 处理用户意图，MVI 架构的核心入口。
      *
      * 处理流程：
-     * 1. [SwitchKeyboard] 意图直接切换键盘，不经过状态机
+     * 1. [ImeIntent.SwitchKeyboard] 意图直接切换键盘，不经过状态机
      * 2. 其他意图通过 [KeyboardIntentHandler] 映射为 [KeyboardStateTransition]，
      *    由 [KeyboardStateMachine] 执行状态转换
      * 3. 处理 sideEffects 副作用意图

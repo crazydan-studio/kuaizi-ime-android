@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.dict
+package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 
@@ -31,35 +31,25 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
  * 查询时间复杂度为 O(m)，其中 m 为前缀长度，与字典规模无关。
  *
  * @property children 以字符为键的子树映射，每个字符对应拼音序列的下一个可能字符
- * @property keys 当前节点关联的按键列表，用于六边形键盘的滑行输入场景
  */
-data class PinyinCharsTree(
-    val children: Map<Char, PinyinCharsTree> = emptyMap(),
-    val keys: List<InputKey.Char.Alphabet> = emptyList(),
+data class PinyinTree(
+    private val children: Map<Char, PinyinTree> = emptyMap(),
 ) {
+
     /**
      * 查找指定前缀的子树。
      * 沿前缀字符逐层查找，返回匹配前缀的子树根节点；
      * 若前缀不匹配任何路径，返回 null。
      */
-    fun find(prefix: String): PinyinCharsTree? {
+    fun find(prefix: String): PinyinTree? {
         if (prefix.isEmpty()) return this
+
         val first = prefix.first()
         return children[first]?.find(prefix.drop(1))
     }
 
-    /** 获取当前节点的所有直接子字符，UI 层可据此高亮显示可输入的按键。 */
+    /** 获取当前节点的所有直接子字符。 */
     fun allReachableChars(): Set<Char> = children.keys
-
-    /** 递归收集当前子树下所有可达按键。 */
-    fun allReachableKeys(): List<InputKey.Char.Alphabet> {
-        val result = mutableListOf<InputKey.Char.Alphabet>()
-        result.addAll(keys)
-        for (child in children.values) {
-            result.addAll(child.allReachableKeys())
-        }
-        return result
-    }
 
     /**
      * 前缀树构建器，提供增量构建能力。
@@ -67,21 +57,22 @@ data class PinyinCharsTree(
      */
     class Builder {
         // key: 前缀路径，value: 该路径下的子字符映射
-        private val nodes = mutableMapOf<String, MutableMap<Char, PinyinCharsTree>>()
+        private val nodes = mutableMapOf<String, MutableMap<Char, PinyinTree>>()
 
         /** 逐字符添加 Trie 路径。 */
         fun addPath(path: String, key: InputKey.Char.Alphabet): Builder {
             var current = nodes.getOrPut("") { mutableMapOf() }
+
             for (c in path) {
-                val child = current.getOrPut(c) { PinyinCharsTree() }
+                val child = current.getOrPut(c) { PinyinTree() }
                 current = nodes.getOrPut(path.substring(0, path.indexOf(c) + 1)) { mutableMapOf() }
             }
             return this
         }
 
-        /** 构建不可变的 [PinyinCharsTree] 实例。 */
-        fun build(): PinyinCharsTree {
-            return PinyinCharsTree()
+        /** 构建不可变的 [PinyinTree] 实例。 */
+        fun build(): PinyinTree {
+            return PinyinTree()
         }
     }
 }

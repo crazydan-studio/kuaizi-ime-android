@@ -31,6 +31,12 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
  * 触发状态机转换的原子事件 sealed class。
  * 每个转换类型携带转换所需的上下文数据，由 [KeyboardIntentHandler] 子类
  * 在处理 [ImeIntent] 时构造并提交给 [KeyboardStateMachine]。
+ *
+ * 按照交互目的命名子类，而不是按交互动作命名，
+ * 比如，在拼音键盘中输入拼音时，不管采用滑行还是点击形式的交互，
+ * 其仅涉及输入开始 [StartInputPinyin]、输入中 [InputPinyin]
+ * 和输入结束 [StopInputPinyin] 三类转换，而在不同交互形式下何时启动下一种转换，
+ * 则由具体的 [KeyboardIntentHandler] 决定。
  */
 sealed class KeyboardStateTransition {
 
@@ -60,18 +66,21 @@ sealed class KeyboardStateTransition {
     // ------------------------------------------------------------------------
 
     /**
-     * 输入字符：可用于单字符输入、滑行中输入、可替换输入等
+     * 输入字符：可用于单字符输入、可替换字符输入等
      * @property replacement 可替换字符的序号。大于 0 时有效
      */
     data class InputChar(val key: InputKey.Char, val replacement: Int = 0) : KeyboardStateTransition()
 
     // ------------------------------------------------------------------------
 
-    /** 开始滑行输入 */
-    data class StartSwipe(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
+    /** 开始拼音输入 */
+    data class StartInputPinyin(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
 
-    /** 结束滑行输入 */
-    data object StopSwipe : KeyboardStateTransition()
+    /** 输入拼音 */
+    data class InputPinyin(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
+
+    /** 结束拼音输入 */
+    data object StopInputPinyin : KeyboardStateTransition()
 
     // ------------------------------------------------------------------------
 

@@ -62,7 +62,7 @@ enum class KeyboardType {
     /** 获取当前键盘类型的初始状态 */
     fun initialState(): KeyboardState {
         return when (this) {
-            Pinyin -> KeyboardState.PinyinInput.Waiting()
+            Pinyin -> KeyboardState.Pinyin.Waiting()
             Number, Math, Latin -> KeyboardState.Idle
             Symbol -> KeyboardState.SymbolChoosing()
             Emoji -> KeyboardState.EmojiChoosing()
@@ -85,7 +85,7 @@ enum class KeyboardInputMode {
 /** 键盘按键布局模式，定义按键的排列方式，并在一定程度上限制了所支持的 [KeyboardInputMode] */
 enum class KeyboardKeyLayoutMode {
     /** 网格布局，支持滑行和点击输入 */
-    Grid,
+    Grid, // TODO 细分为正六边形网格、矩形网格？
 
     /** X 型布局，仅支持滑行输入 */
     XPad,

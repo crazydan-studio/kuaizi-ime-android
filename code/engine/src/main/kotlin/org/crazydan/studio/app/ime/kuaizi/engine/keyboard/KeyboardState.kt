@@ -27,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
 
 /**
  * 键盘交互的有限状态集，以 sealed class 层级表达。
- * 每种状态对应一种键盘交互模式，状态数据作为子类字段内嵌。
+ * 每种状态对应一种键盘交互后的结果，而状态数据则以类属性形式记录在状态中。
  */
 sealed class KeyboardState {
 
@@ -36,34 +36,31 @@ sealed class KeyboardState {
 
     // ------------------------------------------------------------------
 
-    /**
-     * 拼音输入状态分支，包含等待、滑行和翻动三种子状态，
-     * 覆盖了拼音键盘的核心交互方式
-     */
-    sealed class PinyinInput : KeyboardState() {
+    /** 拼音输入的状态分支 */
+    sealed class Pinyin : KeyboardState() {
 
         /**
-         * 等待输入状态
+         * 等待拼音输入状态
          * @param pending 未确认的拼音字符，null 表示无待确认输入
          */
-        data class Waiting(val pending: InputItem.Char? = null) : PinyinInput()
+        data class Waiting(val pending: InputItem.Char? = null) : Pinyin()
 
         /**
-         * 滑行输入状态
+         * 拼音输入中状态
          * @param lastKey 滑行的最后输入按键
          * @param level0Key 滑行第一级按键
          * @param level1Key 滑行第二级按键
          * @param level2Key 滑行第三级按键
          * @param nextCharsByLength 按字符长度分组的可输入字符
          */
-        data class Swiping(
+        data class Inputting(
             val lastKey: InputKey.Char.Alphabet,
 
             val level0Key: InputKey.Char.Alphabet,
             val level1Key: InputKey.Char.Alphabet? = null,
             val level2Key: InputKey.Char.Alphabet? = null,
             val nextCharsByLength: Map<Int, List<String>> = emptyMap(),
-        ) : PinyinInput()
+        ) : Pinyin()
     }
 
     // ------------------------------------------------------------------
