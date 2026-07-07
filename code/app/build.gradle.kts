@@ -113,6 +113,7 @@ kotlin {
 dependencies {
     implementation(project(":engine"))
     implementation(project(":ui"))
+    implementation(project(":app-dict"))
     ksp(project(":app-codegen"))
 
     implementation(libs.appcompat)

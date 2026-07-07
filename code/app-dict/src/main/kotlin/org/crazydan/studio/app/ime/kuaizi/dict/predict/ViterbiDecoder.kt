@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.dict.predict
+package org.crazydan.studio.app.ime.kuaizi.dict.predict
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

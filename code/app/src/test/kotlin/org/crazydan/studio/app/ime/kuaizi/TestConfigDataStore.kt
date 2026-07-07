@@ -27,7 +27,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import okio.Path.Companion.toOkioPath
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeInMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 import org.junit.Rule
@@ -146,7 +146,7 @@ class TestConfigDataStore {
         val old = configDataStore.getConfig()
         val engine = ImeEngine.create(
             config = old,
-            dictProvider = InMemoryDictProvider()
+            dictProvider = ImeInMemoryDictProvider()
         )
 
         // 采用 backgroundScope 以确保 runTest 结束后能够自动清理协程

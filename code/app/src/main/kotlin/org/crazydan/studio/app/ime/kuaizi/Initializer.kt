@@ -28,7 +28,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.log.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogStorage
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogWriter
 import org.crazydan.studio.app.ime.kuaizi.engine.log.writer.FileLogWriter
-import org.crazydan.studio.app.ime.kuaizi.engine.log.writer.LogcatWriter
+import org.crazydan.studio.app.ime.kuaizi.log.LogcatWriter
 import java.io.File
 
 // -------------------------------------------------

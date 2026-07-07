@@ -45,8 +45,8 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.writeTo
-import org.crazydan.studio.app.ime.kuaizi.annotation.DataStoreConfig
-import org.crazydan.studio.app.ime.kuaizi.annotation.DataStoreConfigKey
+import org.crazydan.studio.app.ime.kuaizi.engine.DataStoreConfig
+import org.crazydan.studio.app.ime.kuaizi.engine.DataStoreConfigKey
 import kotlin.reflect.KClass
 
 /**

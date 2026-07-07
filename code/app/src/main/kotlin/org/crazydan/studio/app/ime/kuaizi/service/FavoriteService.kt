@@ -24,8 +24,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteDao
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.FavoriteEntity
+import org.crazydan.studio.app.ime.kuaizi.dict.db.FavoriteDao
+import org.crazydan.studio.app.ime.kuaizi.dict.db.FavoriteEntity
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputTextType
 

@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine
 
-import org.crazydan.studio.app.ime.kuaizi.annotation.DataStoreConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.ScreenOrientation

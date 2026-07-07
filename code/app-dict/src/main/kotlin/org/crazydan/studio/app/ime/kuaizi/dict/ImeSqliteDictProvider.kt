@@ -17,17 +17,17 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.dict.provider
+package org.crazydan.studio.app.ime.kuaizi.dict
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.DictRepository
+import org.crazydan.studio.app.ime.kuaizi.dict.db.DictDatabase
+import org.crazydan.studio.app.ime.kuaizi.dict.db.DictRepository
+import org.crazydan.studio.app.ime.kuaizi.dict.db.FavoriteDao
+import org.crazydan.studio.app.ime.kuaizi.dict.db.FavoriteEntity
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.DictDatabase
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.FavoriteDao
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.db.FavoriteEntity
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.input.Spell
 import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
@@ -45,7 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.VariantType
  * @param context Android Context，用于初始化 Room 数据库
  * @param favoriteDao 可选的收藏 DAO，不提供时使用空实现
  */
-class SqliteDictProvider(
+class ImeSqliteDictProvider(
     context: Context,
     private val favoriteDao: FavoriteDao? = null,
 ) : ImeDictProvider {
@@ -85,7 +85,7 @@ class SqliteDictProvider(
 
     /**
      * 根据完整拼音查询候选词，合并单字和词组结果按频率降序排列。
-     * 在 [Dispatchers.Default] 上异步执行以避免阻塞主线程。
+     * 在 [kotlinx.coroutines.Dispatchers.Default] 上异步执行以避免阻塞主线程。
      */
     override suspend fun query(pinyin: String): List<InputWord> = withContext(Dispatchers.Default) {
         val words = repository.lookupPinyinWords(pinyin).map { entity ->

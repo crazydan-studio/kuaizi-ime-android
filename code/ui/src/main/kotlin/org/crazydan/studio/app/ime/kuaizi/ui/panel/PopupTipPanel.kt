@@ -69,6 +69,7 @@ fun PopupTipPanel(
                 when (tipState) {
                     is PopupTipState.Message -> colors.tipMessageBackground
                     is PopupTipState.Action -> colors.tipActionBackground
+                    is PopupTipState.Key -> TODO()
                 }
             )
             .padding(horizontal = 12.dp, vertical = 8.dp),
@@ -89,6 +90,8 @@ fun PopupTipPanel(
                     }
                 }
             }
+
+            is PopupTipState.Key -> TODO()
         }
     }
 }

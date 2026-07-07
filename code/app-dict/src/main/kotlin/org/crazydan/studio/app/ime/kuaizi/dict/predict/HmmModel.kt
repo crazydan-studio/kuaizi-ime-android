@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.dict.predict
+package org.crazydan.studio.app.ime.kuaizi.dict.predict
 
 /**
  * 隐马尔可夫模型的隐藏状态（汉字），使用 [@JvmInline] value class 避免装箱开销。

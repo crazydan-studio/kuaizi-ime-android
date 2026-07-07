@@ -17,9 +17,8 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.dict.provider
+package org.crazydan.studio.app.ime.kuaizi.engine.dict
 
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 
 /**
@@ -28,7 +27,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
  * 为开发和测试提供轻量级字典，不依赖数据库或外部资源。
  * 包含一组常用拼音到汉字的静态映射，频率随索引递减。
  */
-class InMemoryDictProvider : ImeDictProvider {
+class ImeInMemoryDictProvider : ImeDictProvider {
     // 拼音到候选汉字的静态映射表，按频率降序排列
     private val dict = mapOf(
         "shi" to listOf("是", "时", "事", "十"),

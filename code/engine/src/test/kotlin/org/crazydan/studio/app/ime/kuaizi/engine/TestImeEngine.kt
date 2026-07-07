@@ -23,7 +23,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.provider.InMemoryDictProvider
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeInMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardThemeType
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
@@ -42,7 +42,7 @@ class TestImeEngine {
     @Test
     fun `should be detected when config was updated`() = runTest {
         val engine = ImeEngine.create(
-            dictProvider = InMemoryDictProvider()
+            dictProvider = ImeInMemoryDictProvider()
         )
 
         val changed = mutableListOf<Any?>()

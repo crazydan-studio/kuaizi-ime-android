@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.log.writer
+package org.crazydan.studio.app.ime.kuaizi.log
 
 import android.util.Log
 import kotlinx.coroutines.CoroutineScope
@@ -30,11 +30,11 @@ import org.crazydan.studio.app.ime.kuaizi.engine.log.LogEntry
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogWriter
 
 /**
- * Android Logcat 日志写入器：将引擎的 [LogEntry] 映射到 [android.util.Log] 输出。
+ * Android Logcat 日志写入器：将引擎的 [LogEntry] 映射到 [Log] 输出。
  *
  * 默认为同步写入（[bufferSize] = 0），直接调用 [Log.println]。
  * 可选的 Channel 缓冲将 Logcat 输出异步化，避免热路径中的同步 IPC 开销。
- * 缓冲满时通过 [trySend] 静默丢弃，确保写入者永不阻塞。
+ * 缓冲满时通过 [Channel.trySend] 静默丢弃，确保写入者永不阻塞。
  *
  * 通常仅在 Debug 构建中注册，Release 构建不包含此 Writer，
  * 确保发布版本不会向 Logcat 输出敏感信息。

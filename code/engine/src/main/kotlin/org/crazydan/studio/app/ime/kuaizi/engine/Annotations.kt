@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.annotation
+package org.crazydan.studio.app.ime.kuaizi.engine
 
 /**
  * 标记一个 DataStore 配置类。

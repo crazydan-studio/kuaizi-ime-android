@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.dict.db
+package org.crazydan.studio.app.ime.kuaizi.dict.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

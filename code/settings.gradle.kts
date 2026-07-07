@@ -21,7 +21,7 @@ dependencyResolutionManagement {
 
 include(":app")
 include(":app-codegen")
+include(":app-dict")
 
-include(":base")
 include(":engine")
 include(":ui")

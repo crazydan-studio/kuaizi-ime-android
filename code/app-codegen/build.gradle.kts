@@ -15,7 +15,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":base"))
+    implementation(project(":engine"))
 
     implementation(libs.ksp.api)
     implementation(libs.kotlinpoet.ksp)
