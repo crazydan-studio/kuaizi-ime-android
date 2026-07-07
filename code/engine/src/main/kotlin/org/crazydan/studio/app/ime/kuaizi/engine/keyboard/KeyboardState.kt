@@ -48,10 +48,13 @@ sealed class KeyboardState {
         /**
          * 拼音输入中状态
          * @param lastKey 滑行的最后输入按键
-         * @param level0Key 滑行第一级按键
-         * @param level1Key 滑行第二级按键
-         * @param level2Key 滑行第三级按键
-         * @param nextCharsByLength 按字符长度分组的可输入字符
+         * @param level0Key 滑行第 0 级按键
+         * @param level1Key 滑行第 1 级按键
+         * @param level2Key 滑行第 2 级按键
+         * @param vowelTree 以 [level0Key] 为声母的拼音的韵母树。
+         * 其中，key 为第一级韵母，value 为第二级韵母列表。
+         * 如果 value 为空，则表示该拼音为单字符韵母，
+         * 而若 value 中包含空字符，则表示第一级韵母本身就是一个有效拼音
          */
         data class Inputting(
             val lastKey: InputKey.Char.Alphabet,
@@ -59,7 +62,8 @@ sealed class KeyboardState {
             val level0Key: InputKey.Char.Alphabet,
             val level1Key: InputKey.Char.Alphabet? = null,
             val level2Key: InputKey.Char.Alphabet? = null,
-            val nextCharsByLength: Map<Int, List<String>> = emptyMap(),
+
+            val vowelTree: Map<String, List<String>>,
         ) : Pinyin()
     }
 

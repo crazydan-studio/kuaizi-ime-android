@@ -40,6 +40,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
@@ -119,7 +120,9 @@ class ImeEngine internal constructor(
             config: ImeConfig = ImeConfig(),
             dictProvider: ImeDictProvider,
         ): ImeEngine {
-            val pinyinTree = dictProvider.loadPinyinTree()
+            val pinyinList = dictProvider.loadAllPinyin()
+            val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
+
             val inputListOp = InputListOperator(InputListEditor())
 
             return ImeEngine(

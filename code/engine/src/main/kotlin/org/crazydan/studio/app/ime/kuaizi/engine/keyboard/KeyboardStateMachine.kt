@@ -120,6 +120,7 @@ class KeyboardStateMachine(
                     newState = KeyboardState.Pinyin.Inputting(
                         lastKey = transition.key,
                         level0Key = transition.key,
+                        vowelTree = emptyMap(),
                     )
                 )
 

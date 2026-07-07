@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.dict
 
-import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 
 /**
@@ -36,8 +35,8 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
  */
 interface ImeDictProvider {
 
-    /** 加载 [PinyinTree] */
-    suspend fun loadPinyinTree(): PinyinTree
+    /** 加载全量拼音 */
+    suspend fun loadAllPinyin(): List<String> = emptyList()
 
     /** 根据完整拼音查询候选词，返回按频率排序的 [InputWord] 列表。 */
     suspend fun query(pinyin: String): List<InputWord>
