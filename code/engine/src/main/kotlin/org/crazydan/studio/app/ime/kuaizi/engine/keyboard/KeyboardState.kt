@@ -53,7 +53,7 @@ sealed class KeyboardState {
          * @param level2Key 滑行第 2 级按键
          * @param vowelTree 以 [level0Key] 为声母的拼音的韵母树。
          * 其中，key 为第一级韵母，value 为第二级韵母列表。
-         * 如果 value 为空，则表示该拼音为单字符韵母，
+         * 如果 value 为空，则表示该拼音只有该单字符韵母，
          * 而若 value 中包含空字符，则表示第一级韵母本身就是一个有效拼音
          */
         data class Inputting(

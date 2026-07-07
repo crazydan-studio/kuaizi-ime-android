@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
 import kotlinx.coroutines.test.runTest
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.createVowelTree
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -165,5 +166,39 @@ class TestPinyinTree {
         assertTrue(nodeSH is PinyinTree.Branch)
         assertEquals(1, nodeSH.children.size)
         assertTrue(nodeSH.children["a"] is PinyinTree.Leaf)
+    }
+
+    @Test
+    fun `should create correct vowel tree`() = runTest {
+        val pinyinList =
+            listOf("ao", "ai", "a", "o", "ou", "e", "hua", "hu", "huai", "huang", "chi", "chuan", "chong", "chang")
+        val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
+
+        val vowelTree1 = createVowelTree(pinyinTree, "a")
+        assertEquals(2, vowelTree1.size)
+        assertTrue(vowelTree1["o"]?.isEmpty() == true)
+        assertTrue(vowelTree1["i"]?.isEmpty() == true)
+
+        val vowelTree2 = createVowelTree(pinyinTree, "o")
+        assertEquals(1, vowelTree2.size)
+        assertTrue(vowelTree2["u"]?.isEmpty() == true)
+
+        val vowelTree3 = createVowelTree(pinyinTree, "e")
+        assertTrue(vowelTree3.isEmpty())
+
+        val vowelTree4 = createVowelTree(pinyinTree, "h")
+        assertEquals(1, vowelTree4.size)
+        assertEquals(4, vowelTree4["u"]?.size)
+        assertEquals("a,,ai,ang", vowelTree4["u"]?.joinToString(","))
+
+        val vowelTree5 = createVowelTree(pinyinTree, "ch")
+        assertEquals(4, vowelTree5.size)
+        assertTrue(vowelTree5["i"]?.isEmpty() == true)
+        assertEquals(1, vowelTree5["u"]?.size)
+        assertEquals("an", vowelTree5["u"]?.get(0))
+        assertEquals(1, vowelTree5["o"]?.size)
+        assertEquals("ng", vowelTree5["o"]?.get(0))
+        assertEquals(1, vowelTree5["a"]?.size)
+        assertEquals("ng", vowelTree5["a"]?.get(0))
     }
 }

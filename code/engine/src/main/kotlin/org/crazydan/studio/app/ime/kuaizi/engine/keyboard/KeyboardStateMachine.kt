@@ -120,7 +120,7 @@ class KeyboardStateMachine(
                     newState = KeyboardState.Pinyin.Inputting(
                         lastKey = transition.key,
                         level0Key = transition.key,
-                        vowelTree = emptyMap(),
+                        vowelTree = createVowelTree(pinyinTree, transition.key.value),
                     )
                 )
 
@@ -332,3 +332,25 @@ class KeyboardStateHistory(private val maxSize: Int = 10) {
         stack.clear()
     }
 }
+
+/** 根据 [startChar] 构造其韵母树 */
+fun createVowelTree(pinyinTree: PinyinTree, startChar: String): Map<String, List<String>> =
+    // children 为声母树列表
+    (pinyinTree as PinyinTree.Branch).children[startChar]?.let { node ->
+        when (node) {
+            is PinyinTree.Leaf -> null
+            is PinyinTree.Branch -> {
+                // children 为声母节点的韵母树列表：需过滤掉 a、e、o 等单字母拼音
+                node.children.filter { it.key != "" }.mapValues { entry ->
+                    val child = entry.value // 第一级韵母树
+                    when (child) {
+                        is PinyinTree.Leaf -> emptyList() // 对应拼音 ou、ao、er 等
+                        is PinyinTree.Branch ->
+                            // children 为第二级韵母树列表
+                            child.children.keys.toList()
+                    }
+                }
+            }
+        }
+    }
+        ?: emptyMap()
