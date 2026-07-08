@@ -36,16 +36,13 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
  */
 sealed class KeyboardState {
 
-    /** 空闲状态，无任何交互正在进行 */
+    /** 空闲状态，等待新的状态转换 */
     data object Idle : KeyboardState()
 
     // ------------------------------------------------------------------
 
     /** 拼音输入的状态分支 */
     sealed class Pinyin : KeyboardState() {
-
-        /** 拼音待输入状态 */
-        data object Waiting : Pinyin()
 
         /**
          * 拼音输入中状态
@@ -69,6 +66,36 @@ sealed class KeyboardState {
             fun getChars(): String =
                 level0Key.value + (level1Key?.value ?: "") + (level2Key?.value ?: "")
         }
+    }
+
+    // ------------------------------------------------------------------
+
+    /**
+     * 拉丁文（字母+数字）输入的状态分支。
+     *
+     * 在实现滑行等不可中断的输入时采用该状态。
+     * 其余交互形式下的拉丁文输入均为一次性的，
+     * 在 [Idle] 到 [Idle] 之间没有中间状态。
+     */
+    sealed class Latin : KeyboardState() {
+
+        /**
+         * 拉丁文输入中状态
+         * @param lastKey 最新输入按键
+         * @param charList 已输入字符列表
+         */
+        data class Inputting(
+            val lastKey: InputKey.Char,
+
+            val charList: List<String>,
+        ) : Latin()
+    }
+
+    // ------------------------------------------------------------------
+
+    /** 算术输入的状态分支 */
+    sealed class Math : KeyboardState() {
+        //
     }
 
     // ------------------------------------------------------------------

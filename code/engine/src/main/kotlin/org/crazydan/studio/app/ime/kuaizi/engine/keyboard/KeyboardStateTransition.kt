@@ -61,27 +61,53 @@ sealed class KeyboardStateTransition {
     /** 回退到前一状态 */
     data object BackToPrevious : KeyboardStateTransition()
 
-    /** 无事可做 */
+    /** 保持现状，什么也不做 */
     data object NothingToDo : KeyboardStateTransition()
 
     // ------------------------------------------------------------------------
 
     /**
-     * 输入字符：可用于单字符输入、可替换字符输入等
+     * 字符单次输入：不迁移状态（[KeyboardState.Idle] -> [KeyboardState.Idle]），只是产生更新输入列表的副作用
      * @property replacement 可替换字符的序号。大于 0 时有效
      */
     data class InputChar(val key: InputKey.Char, val replacement: Int = 0) : KeyboardStateTransition()
 
     // ------------------------------------------------------------------------
 
-    /** 开始拼音输入 */
-    data class StartInputPinyin(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
+    /** 针对拼音输入 [KeyboardState.Pinyin] 的状态转换  */
+    sealed class Pinyin : KeyboardStateTransition() {
 
-    /** 正在输入拼音 */
-    data class DoInputPinyin(val key: InputKey.Char.Alphabet) : KeyboardStateTransition()
+        /** 开始输入 */
+        data class StartInput(val key: InputKey.Char.Alphabet) : Pinyin()
 
-    /** 结束拼音输入 */
-    data object StopInputPinyin : KeyboardStateTransition()
+        /** 正在输入 */
+        data class Inputting(val key: InputKey.Char.Alphabet) : Pinyin()
+
+        /** 结束输入 */
+        data object StopInput : Pinyin()
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** 针对拉丁文输入 [KeyboardState.Latin] 的状态转换  */
+    sealed class Latin : KeyboardStateTransition() {
+
+        /** 开始输入 */
+        data class StartInput(val key: InputKey.Char) : Latin()
+
+        /** 正在输入 */
+        data class Inputting(val key: InputKey.Char, val replacement: Int = 0) : Latin()
+
+        /** 结束输入 */
+        data object StopInput : Latin()
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** 针对算术输入 [KeyboardState.Math] 的状态转换  */
+    sealed class Math : KeyboardStateTransition() {
+        //
+    }
 
     // ------------------------------------------------------------------------
 

@@ -17,7 +17,7 @@
  * If not, see <https://www.gnu.org/licenses/lgpl-3.0.en.html#license-text>.
  */
 
-package org.crazydan.studio.app.ime.kuaizi.engine.keyboard.handler
+package org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.BaseKeyboardIntentHandler
@@ -39,10 +39,10 @@ class PinyinKeyboardIntentHandler(
         when (intent) {
             is ImeIntent.OnKey ->
                 when (currentState) {
-                    is KeyboardState.Pinyin.Waiting -> {
+                    is KeyboardState.Idle -> {
                         when (intent.key) {
                             is InputKey.Char ->
-                                handleCharKeyIntentWhenWaiting(intent)
+                                handleCharKeyIntentWhenIdle(intent)
 
                             is InputKey.Ctrl ->
                                 TODO("对控制按键的处理")
@@ -53,7 +53,7 @@ class PinyinKeyboardIntentHandler(
                     }
 
                     is KeyboardState.Pinyin.Inputting -> {
-                        handleIntentWhenInputting(intent, currentState)
+                        handleIntentWhenInputting(intent)
                             ?: KeyboardStateTransition.NothingToDo
                     }
 
@@ -65,8 +65,8 @@ class PinyinKeyboardIntentHandler(
 
     // ----------------------------------------------------------------------
 
-    /** 处理 [KeyboardState.Pinyin.Waiting] 状态下的与 [InputKey.Char] 相关的 [ImeIntent] */
-    private fun handleCharKeyIntentWhenWaiting(
+    /** 处理 [KeyboardState.Idle] 状态下的与 [InputKey.Char] 相关的 [ImeIntent] */
+    private fun handleCharKeyIntentWhenIdle(
         intent: ImeIntent.OnKey,
         //
         key: InputKey.Char = intent.key as InputKey.Char,
@@ -77,7 +77,7 @@ class PinyinKeyboardIntentHandler(
                     is ImeIntent.OnKey.Swipe
                         if intent.stage == ImeIntent.OnKey.Swipe.Stage.Begin
                         ->
-                        KeyboardStateTransition.StartInputPinyin(key)
+                        KeyboardStateTransition.Pinyin.StartInput(key)
 
                     is ImeIntent.OnKey.Tap ->
                         KeyboardStateTransition.InputChar(
@@ -88,16 +88,16 @@ class PinyinKeyboardIntentHandler(
                     else -> null
                 }
 
+            is InputKey.Char.Space,
             is InputKey.Char.Emoji,
             is InputKey.Char.Symbol ->
+                // TODO 滑行进入可替换字符选择状态？
                 when (intent) {
-                    // 仅支持对表情、符号做连续输入。
-                    // 若对字符按键做连续输入，其会与滑行拼音输入发生冲突
                     is ImeIntent.OnKey.LongPress
                         if intent.stage == ImeIntent.OnKey.LongPress.Stage.Hold
                         ->
-                        // 直接转由单击意图处理
-                        handleCharKeyIntentWhenWaiting(ImeIntent.OnKey.Tap(key))
+                        // 连续输入直接转由单击意图处理
+                        handleCharKeyIntentWhenIdle(ImeIntent.OnKey.Tap(key))
 
                     is ImeIntent.OnKey.Tap ->
                         KeyboardStateTransition.InputChar(
@@ -108,13 +108,12 @@ class PinyinKeyboardIntentHandler(
                     else -> null
                 }
 
-            is InputKey.Char.Number -> TODO("拼音键盘还未支持数字输入")
+            else -> null
         }
 
     /** 处理 [KeyboardState.Pinyin.Inputting] 状态下的 [ImeIntent] */
     private fun handleIntentWhenInputting(
         intent: ImeIntent.OnKey,
-        state: KeyboardState.Pinyin.Inputting,
         //
         key: InputKey.Char = intent.key as InputKey.Char,
     ): KeyboardStateTransition? =
@@ -124,10 +123,10 @@ class PinyinKeyboardIntentHandler(
                     is ImeIntent.OnKey.Swipe ->
                         when (intent.stage) {
                             ImeIntent.OnKey.Swipe.Stage.Moving ->
-                                KeyboardStateTransition.DoInputPinyin(key)
+                                KeyboardStateTransition.Pinyin.Inputting(key)
 
                             ImeIntent.OnKey.Swipe.Stage.End ->
-                                KeyboardStateTransition.StopInputPinyin
+                                KeyboardStateTransition.Pinyin.StopInput
 
                             else -> null
                         }

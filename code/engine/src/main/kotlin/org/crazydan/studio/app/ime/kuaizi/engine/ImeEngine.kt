@@ -55,8 +55,8 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.MathKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.NumberKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.SymbolKeyboardIntentHandler
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.handler.LatinKeyboardIntentHandler
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.handler.PinyinKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent.LatinKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent.PinyinKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.log.ImeLog
 import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
 
@@ -130,7 +130,6 @@ class ImeEngine internal constructor(
                 dictProvider = dictProvider,
                 keyboardStateMachine = KeyboardStateMachine(
                     pinyinTree = pinyinTree,
-                    inputListOp = inputListOp,
                 ),
                 inputListOp = inputListOp,
             )
@@ -370,27 +369,8 @@ class ImeEngine internal constructor(
     /** 处理单个副作用 */
     private suspend fun processSideEffect(sideEffect: ImeIntent) {
         when (sideEffect) {
-            // ---------------------------------------------------------
-            is ImeIntent.InputList.NewPending -> {
-                // TODO 若为拼音输入且拼音有效，则查询候选字
-                // TODO InputList 新建待输入
-            }
+            is ImeIntent.InputList -> processInputListSideEffect(sideEffect)
 
-            is ImeIntent.InputList.UpdatePending -> {
-                // TODO 若为拼音输入且拼音有效，则查询候选字
-                // TODO InputList 更新待输入
-            }
-
-            is ImeIntent.InputList.ConfirmPending -> {
-                // TODO InputList 确认待输入
-                // TODO 若为拼音输入，则更新拼音输入短语
-            }
-
-            is ImeIntent.InputList.DropPending -> {
-                // TODO InputList 丢弃待输入
-            }
-
-            // ---------------------------------------------------------
             is ImeIntent.LoadCandidates -> {
                 val candidates = dictProvider.query(sideEffect.pinyin)
 //                        handleIntent(ImeIntent.SetCandidates(candidates))
@@ -435,6 +415,36 @@ class ImeEngine internal constructor(
 
                 is EditorAction.PerformEdit ->
                     bridge.performEdit(action.action)
+            }
+        }
+    }
+
+
+    /** 处理输入列表的副作用 */
+    private suspend fun processInputListSideEffect(sideEffect: ImeIntent.InputList) {
+        when (sideEffect) {
+            is ImeIntent.InputList.AddChar -> {
+                // TODO 根据 InputList 当前状态决定字符添加和替换，以及是否为直输
+                // TODO 对拉丁文输入做数据库补全查询
+            }
+
+            is ImeIntent.InputList.NewPending -> {
+                // TODO 若为拼音输入且拼音有效，则查询候选字
+                // TODO InputList 新建待输入
+            }
+
+            is ImeIntent.InputList.UpdatePending -> {
+                // TODO 若为拼音输入且拼音有效，则查询候选字
+                // TODO InputList 更新待输入
+            }
+
+            is ImeIntent.InputList.ConfirmPending -> {
+                // TODO InputList 确认待输入
+                // TODO 若为拼音输入，则更新拼音输入短语
+            }
+
+            is ImeIntent.InputList.DropPending -> {
+                // TODO InputList 丢弃待输入
             }
         }
     }

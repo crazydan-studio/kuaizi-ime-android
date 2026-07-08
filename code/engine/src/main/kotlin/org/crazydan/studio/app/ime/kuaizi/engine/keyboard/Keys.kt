@@ -62,6 +62,13 @@ sealed class InputKey {
             override val replacements: List<String>? = null,
         ) : Char()
 
+        /** 空格按键 */
+        data object Space : Char() {
+            override val value: String = " "
+            override val label: String? = null
+            override val replacements: List<String>? = null
+        }
+
         /** 符号按键 */
         data class Symbol(
             override val value: String,
@@ -75,6 +82,19 @@ sealed class InputKey {
             override val label: String? = null,
             override val replacements: List<String>? = null,
         ) : Char()
+
+        /**
+         * 获取指定位置的可替换字符，循环获取，且按键 [value] 本身作为首字符参与替换列表的循环
+         * @param index 若 `<= 0`，则直接返回按键字符 [value]
+         * @return 若无可替换字符列表（[replacements] 为 `null` 或空），则返回按键字符 [value]
+         */
+        fun getReplacement(index: Int): String {
+            if (index <= 0 || replacements == null || replacements!!.isEmpty())
+                return value
+
+            val i = index % (replacements!!.size + 1)
+            return if (i == 0) value else replacements!![i - 1]
+        }
     }
 
     // -----------------------------------------------------

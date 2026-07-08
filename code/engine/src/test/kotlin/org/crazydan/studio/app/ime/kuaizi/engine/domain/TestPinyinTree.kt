@@ -178,6 +178,9 @@ class TestPinyinTree {
             assertTrue(pinyinTree.isPinyin(pinyin))
         }
 
+        assertFalse(pinyinTree.isPinyin(""))
+        assertFalse(pinyinTree.isPinyin("   "))
+        assertFalse(pinyinTree.isPinyin(",,,"))
         assertFalse(pinyinTree.isPinyin("b"))
         assertFalse(pinyinTree.isPinyin("c"))
         assertFalse(pinyinTree.isPinyin("cui"))

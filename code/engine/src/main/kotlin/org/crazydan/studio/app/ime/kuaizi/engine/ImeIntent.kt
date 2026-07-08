@@ -109,6 +109,19 @@ sealed class ImeIntent {
     /** 针对输入列表的意图 */
     sealed class InputList : ImeIntent() {
 
+        /**
+         * 添加字符：字母、数字、符号、表情等
+         * @property replacements 替换字符列表。
+         * 在添加时，首先判断前序字符是否在该替换列表内，
+         * 若存在，则将前序替换为 [char]，否则，不做替换，直接追加。
+         * 在发送该意图前，需由发送方判断是否需要尝试替换前序输入，
+         * 若不满足替换条件，则需要将 [replacements] 置为 `null` 或空
+         */
+        data class AddChar(
+            val char: InputItem,
+            val replacements: List<String>? = null,
+        ) : InputList()
+
         /** 新建待输入 */
         data class NewPending(val pending: InputItem) : InputList()
 

@@ -21,7 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputItem
 
 /**
  * 键盘状态机，集中处理状态转换的核心组件。
@@ -29,12 +29,9 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
  * 并根据当前状态执行转换规则，再返回转换结果。
  *
  * 遵循纯函数式转换原则：给定相同输入，始终产生相同输出。
- *
- * @param inputListOp 输入列表操作器，用于执行输入列表变更
  */
 class KeyboardStateMachine(
     private val pinyinTree: PinyinTree,
-    private val inputListOp: InputListOperator,
 ) {
     private val stateHistory = KeyboardStateHistory()
 
@@ -50,26 +47,36 @@ class KeyboardStateMachine(
         transition: KeyboardStateTransition,
         currentState: KeyboardState,
     ): KeyboardStateTransition.Result =
-        when (currentState) {
-            is KeyboardState.Idle -> handleFromIdle(transition)
-            //
-            is KeyboardState.Pinyin.Waiting -> handleFromPinyinWaiting(transition)
-            is KeyboardState.Pinyin.Inputting -> handleFromPinyinInputting(transition, currentState)
-            //
-            is KeyboardState.CandidateSelection.Choosing -> handleFromCandidateChoosing(transition)
-            is KeyboardState.CandidateSelection.Filtering -> handleFromCandidateFiltering(transition)
-            is KeyboardState.CandidateSelection.AdvanceFiltering -> handleFromCandidateAdvanceFiltering(transition)
-            //
-            is KeyboardState.CommitOptionChoosing -> handleFromCommitOptionChoosing(transition)
-            is KeyboardState.EditorEditing.CursorMoving -> handleFromEditorCursorMoving(transition)
-            is KeyboardState.EditorEditing.TextSelecting -> handleFromEditorTextSelecting(transition)
-            //
-            is KeyboardState.SymbolChoosing -> handleFromSymbolChoosing(transition)
-            is KeyboardState.EmojiChoosing -> handleFromEmojiChoosing(transition)
-        }?.apply {
-            if (newState != currentState) {
-                stateHistory.push(currentState)
-            }
+        when (transition) {
+            is KeyboardStateTransition.ReturnToIdle ->
+                KeyboardStateTransition.Result(KeyboardState.Idle)
+
+            is KeyboardStateTransition.NothingToDo -> null
+
+            else ->
+                when (currentState) {
+                    is KeyboardState.Idle -> handleFromIdle(transition)
+                    //
+                    is KeyboardState.Pinyin.Inputting -> handleFromPinyinInputting(transition, currentState)
+                    //
+                    is KeyboardState.CandidateSelection.Choosing -> handleFromCandidateChoosing(transition)
+                    is KeyboardState.CandidateSelection.Filtering -> handleFromCandidateFiltering(transition)
+                    is KeyboardState.CandidateSelection.AdvanceFiltering ->
+                        handleFromCandidateAdvanceFiltering(transition)
+                    //
+                    is KeyboardState.CommitOptionChoosing -> handleFromCommitOptionChoosing(transition)
+                    is KeyboardState.EditorEditing.CursorMoving -> handleFromEditorCursorMoving(transition)
+                    is KeyboardState.EditorEditing.TextSelecting -> handleFromEditorTextSelecting(transition)
+                    //
+                    is KeyboardState.SymbolChoosing -> handleFromSymbolChoosing(transition)
+                    is KeyboardState.EmojiChoosing -> handleFromEmojiChoosing(transition)
+                    //
+                    else -> null
+                }?.apply {
+                    if (newState != currentState) {
+                        stateHistory.push(currentState)
+                    }
+                }
         }
             ?: KeyboardStateTransition.Result(currentState)
 
@@ -86,11 +93,46 @@ class KeyboardStateMachine(
 
     // -----------------------------------------------------------------
 
-    /** 从 Idle 状态处理转换 */
+    /** 从 [KeyboardState.Idle] 状态处理转换 */
     private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
+            is KeyboardStateTransition.Pinyin.StartInput ->
+                transition.key.let { key ->
+                    KeyboardState.Pinyin.Inputting(
+                        level0Key = key,
+                        vowelTree = createVowelTree(pinyinTree, key.value),
+                    ).let { newState ->
+                        KeyboardStateTransition.Result(
+                            newState = newState,
+                            sideEffects = listOf(
+                                ImeIntent.InputList.NewPending(
+                                    pending = createPinyinInputPending(pinyinTree, newState)
+                                ),
+                            ),
+                        )
+                    }
+                }
+
             is KeyboardStateTransition.InputChar ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
+                KeyboardStateTransition.Result(
+                    newState = KeyboardState.Idle,
+                    sideEffects = listOf(
+                        ImeIntent.InputList.AddChar(
+                            char = when (transition.key) {
+                                is InputKey.Char.Space -> InputItem.Space
+
+                                else -> InputItem.Char(
+                                    value =
+                                        transition.key.getReplacement(transition.replacement)
+                                )
+                            },
+                            replacements =
+                                if (transition.replacement > 0)
+                                    transition.key.replacements
+                                else null,
+                        )
+                    ),
+                )
 
             is KeyboardStateTransition.OpenSymbolGroup ->
                 KeyboardStateTransition.Result(KeyboardState.SymbolChoosing(transition.groupId))
@@ -113,46 +155,13 @@ class KeyboardStateMachine(
 
     // -----------------------------------------------------------------
 
-    /** 从 [KeyboardState.Pinyin.Waiting] 状态处理转换 */
-    private fun handleFromPinyinWaiting(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
-        return when (transition) {
-            is KeyboardStateTransition.StartInputPinyin ->
-                transition.key.let { key ->
-                    KeyboardState.Pinyin.Inputting(
-                        level0Key = key,
-                        vowelTree = createVowelTree(pinyinTree, key.value),
-                    ).let { newState ->
-                        KeyboardStateTransition.Result(
-                            newState = newState,
-                            sideEffects = listOf(
-                                ImeIntent.InputList.NewPending(
-                                    pending = createPinyinInputPending(pinyinTree, newState)
-                                ),
-                            ),
-                        )
-                    }
-                }
-
-            is KeyboardStateTransition.InputChar ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
-
-            is KeyboardStateTransition.LoadCandidates ->
-                KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
-
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Idle)
-
-            else -> null
-        }
-    }
-
     /** 从 [KeyboardState.Pinyin.Inputting] 状态处理转换 */
     private fun handleFromPinyinInputting(
         transition: KeyboardStateTransition,
         state: KeyboardState.Pinyin.Inputting,
     ): KeyboardStateTransition.Result? =
         when (transition) {
-            is KeyboardStateTransition.DoInputPinyin ->
+            is KeyboardStateTransition.Pinyin.Inputting ->
                 transition.key.let { key ->
                     when (key.level) {
                         // Note：需考虑回退的情况，因此，必须显式置空 level2Key
@@ -171,9 +180,9 @@ class KeyboardStateMachine(
                     }
                 }
 
-            is KeyboardStateTransition.StopInputPinyin ->
+            is KeyboardStateTransition.Pinyin.StopInput ->
                 KeyboardStateTransition.Result(
-                    newState = KeyboardState.Pinyin.Waiting,
+                    newState = KeyboardState.Idle,
                     sideEffects = listOf(
                         // 丢弃无效的拼音输入，确认有效的拼音输入
                         if (pinyinTree.isPinyin(state.getChars()))
@@ -200,9 +209,6 @@ class KeyboardStateMachine(
                     KeyboardState.CandidateSelection.AdvanceFiltering(transition.radical, transition.tone),
                 )
 
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
-
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
 
@@ -220,9 +226,6 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     KeyboardState.CandidateSelection.Filtering(transition.filter),
                 )
-
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
 
             else -> null
         }
@@ -248,9 +251,6 @@ class KeyboardStateMachine(
     /** 从 CommitOptionChoosing 状态处理转换 */
     private fun handleFromCommitOptionChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
-
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
 
@@ -273,9 +273,6 @@ class KeyboardStateMachine(
                     KeyboardState.EditorEditing.TextSelecting(transition.start, transition.end),
                 )
 
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
-
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
 
@@ -290,9 +287,6 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     KeyboardState.EditorEditing.TextSelecting(transition.start, transition.end),
                 )
-
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
 
             is KeyboardStateTransition.BackToPrevious ->
                 KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
@@ -309,9 +303,6 @@ class KeyboardStateMachine(
             is KeyboardStateTransition.OpenSymbolGroup ->
                 KeyboardStateTransition.Result(KeyboardState.SymbolChoosing(transition.groupId))
 
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Idle)
-
             else -> null
         }
     }
@@ -321,9 +312,6 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.OpenEmojiGroup ->
                 KeyboardStateTransition.Result(KeyboardState.EmojiChoosing(transition.groupId))
-
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Idle)
 
             else -> null
         }

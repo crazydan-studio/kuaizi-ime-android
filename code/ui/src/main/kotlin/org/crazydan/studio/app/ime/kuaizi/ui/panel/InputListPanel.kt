@@ -70,7 +70,7 @@ fun InputListPanel(
         // 遍历输入字符列表逐项渲染
         inputList.chars.forEach { char ->
             Text(
-                text = char.text,
+                text = char.value,
                 modifier = Modifier.padding(horizontal = 2.dp),
                 color = colors.keyForeground,
                 fontSize = colors.charInputTextSize,

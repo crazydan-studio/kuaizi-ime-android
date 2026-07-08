@@ -26,15 +26,15 @@ sealed class InputItem {
 
     /**
      * 字符输入项，承载用户输入的字符数据
-     * @param text 字符的显示文本
+     * @param value 字符的显示文本
      * @param keys 触发该字符的按键序列
      * @param replacements 可替换文本列表，用于标点符号的长按替换
      * @param word 关联的候选词信息
      * @param pairSymbol 配对符号信息，null 表示非配对符号
      */
     data class Char(
-        val text: String,
-        val keys: List<InputKey>,
+        val value: String,
+        val keys: List<InputKey> = emptyList(),
         val replacements: List<String> = emptyList(),
         val word: InputWord? = null,
         val pairSymbol: PairSymbol? = null,
@@ -124,7 +124,7 @@ data class InputList(
 
     /** 输入文本内容，将 visibleInputs 的 text 字段拼接为完整字符串 */
     val text: String
-        get() = visibleInputs.joinToString("") { it.text }
+        get() = visibleInputs.joinToString("") { it.value }
 
     /** 输入列表是否为空（仅包含 Gap） */
     val isEmpty: Boolean
@@ -273,8 +273,8 @@ object InputGapSpacing {
     }
 
     private fun isLatinChar(char: InputItem.Char): Boolean =
-        char.word is InputWord.Latin || char.text.all { it.isLetter() && it.code < 128 }
+        char.word is InputWord.Latin || char.value.all { it.isLetter() && it.code < 128 }
 
     private fun isDigitChar(char: InputItem.Char): Boolean =
-        char.text.all { it.isDigit() }
+        char.value.all { it.isDigit() }
 }
