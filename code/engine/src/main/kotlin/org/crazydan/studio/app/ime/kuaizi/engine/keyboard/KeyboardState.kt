@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputItem
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.input.PinyinWordFilter
 import org.crazydan.studio.app.ime.kuaizi.engine.input.Radical
@@ -27,7 +26,13 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
 
 /**
  * 键盘交互的有限状态集，以 sealed class 层级表达。
- * 每种状态对应一种键盘交互后的结果，而状态数据则以类属性形式记录在状态中。
+ * 每种状态对应一种根据转换动作 [KeyboardStateTransition] 做状态驱动后的结果，
+ * 而状态数据则以类属性形式记录在相应的状态中。
+ *
+ * 状态转换是与具体键盘类型和具体 UI 交互动作无关的，
+ * 其由唯一的状态机 [KeyboardStateMachine] 做全局性转换控制，
+ * 再由 [KeyboardIntentHandler] 根据 [ImeIntent] 生成相应的转换动作
+ * [KeyboardStateTransition]，从而实现对键盘状态的驱动。
  */
 sealed class KeyboardState {
 
@@ -39,15 +44,11 @@ sealed class KeyboardState {
     /** 拼音输入的状态分支 */
     sealed class Pinyin : KeyboardState() {
 
-        /**
-         * 等待拼音输入状态
-         * @param pending 未确认的拼音字符，null 表示无待确认输入
-         */
-        data class Waiting(val pending: InputItem.Char? = null) : Pinyin()
+        /** 拼音待输入状态 */
+        data object Waiting : Pinyin()
 
         /**
          * 拼音输入中状态
-         * @param lastKey 滑行的最后输入按键
          * @param level0Key 滑行第 0 级按键
          * @param level1Key 滑行第 1 级按键
          * @param level2Key 滑行第 2 级按键
@@ -57,14 +58,17 @@ sealed class KeyboardState {
          * 而若 value 中包含空字符，则表示第一级韵母本身就是一个有效拼音
          */
         data class Inputting(
-            val lastKey: InputKey.Char.Alphabet,
-
             val level0Key: InputKey.Char.Alphabet,
             val level1Key: InputKey.Char.Alphabet? = null,
             val level2Key: InputKey.Char.Alphabet? = null,
 
             val vowelTree: Map<String, List<String>>,
-        ) : Pinyin()
+        ) : Pinyin() {
+
+            /** 已输入字符的有效组合 */
+            fun getChars(): String =
+                level0Key.value + (level1Key?.value ?: "") + (level2Key?.value ?: "")
+        }
     }
 
     // ------------------------------------------------------------------

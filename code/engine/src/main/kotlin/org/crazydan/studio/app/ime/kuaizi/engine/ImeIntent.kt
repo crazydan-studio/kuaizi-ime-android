@@ -24,6 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputItem
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
@@ -87,6 +88,7 @@ sealed class ImeIntent {
             override val key: InputKey? = null,
             val stage: Stage,
             val motion: Motion? = null,
+            val tick: Int = 0,
         ) : OnKey() {
             enum class Stage { Begin, End, Moving, Hold, }
         }
@@ -100,6 +102,24 @@ sealed class ImeIntent {
             override val key: InputKey? = null,
             val motion: Motion? = null,
         ) : OnKey()
+    }
+
+    // ---------------------------------------------------------------------
+
+    /** 针对输入列表的意图 */
+    sealed class InputList : ImeIntent() {
+
+        /** 新建待输入 */
+        data class NewPending(val pending: InputItem) : InputList()
+
+        /** 更新待输入 */
+        data class UpdatePending(val pending: InputItem) : InputList()
+
+        /** 确认待输入 */
+        data object ConfirmPending : InputList()
+
+        /** 丢弃待输入 */
+        data object DropPending : InputList()
     }
 
     // ---------------------------------------------------------------------

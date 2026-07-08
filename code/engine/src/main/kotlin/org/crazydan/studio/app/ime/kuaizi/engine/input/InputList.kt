@@ -21,14 +21,11 @@ package org.crazydan.studio.app.ime.kuaizi.engine.input
 
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 
-/** 输入列表元素的密封类型基类，所有子类共享唯一的 id 字段 */
+/** 输入列表元素的密封类型基类 */
 sealed class InputItem {
-    /** 元素的唯一标识，用于 Compose key 和动画标识 */
-    abstract val id: String
 
     /**
      * 字符输入项，承载用户输入的字符数据
-     * @param id 唯一标识
      * @param text 字符的显示文本
      * @param keys 触发该字符的按键序列
      * @param replacements 可替换文本列表，用于标点符号的长按替换
@@ -36,7 +33,6 @@ sealed class InputItem {
      * @param pairSymbol 配对符号信息，null 表示非配对符号
      */
     data class Char(
-        override val id: String,
         val text: String,
         val keys: List<InputKey>,
         val replacements: List<String> = emptyList(),
@@ -70,17 +66,27 @@ sealed class InputItem {
     }
 
     /** 游标间隔标记，所有实例共享同一身份 */
-    data object Gap : InputItem() {
-        override val id = "gap"
-    }
+    data object Gap : InputItem()
+
+    /** 空格输入项 */
+    data object Space : InputItem()
+
+    /**
+     * 拼音输入项
+     * @property valid 是否为有效拼音
+     * @property word 该（有效）拼音的候选字
+     */
+    data class Pinyin(
+        val value: String,
+        val valid: Boolean,
+        val word: InputWord.Pinyin? = null,
+    ) : InputItem()
 
     /**
      * 数学表达式输入项，内部持有一个完整的嵌套输入列表
-     * @param id 唯一标识
      * @param nestedList 嵌套的数学输入列表
      */
     data class MathExpr(
-        override val id: String,
         val nestedList: InputList,
     ) : InputItem()
 }

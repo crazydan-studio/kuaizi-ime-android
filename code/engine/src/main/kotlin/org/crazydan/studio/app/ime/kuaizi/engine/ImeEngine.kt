@@ -370,6 +370,27 @@ class ImeEngine internal constructor(
     /** 处理单个副作用 */
     private suspend fun processSideEffect(sideEffect: ImeIntent) {
         when (sideEffect) {
+            // ---------------------------------------------------------
+            is ImeIntent.InputList.NewPending -> {
+                // TODO 若为拼音输入且拼音有效，则查询候选字
+                // TODO InputList 新建待输入
+            }
+
+            is ImeIntent.InputList.UpdatePending -> {
+                // TODO 若为拼音输入且拼音有效，则查询候选字
+                // TODO InputList 更新待输入
+            }
+
+            is ImeIntent.InputList.ConfirmPending -> {
+                // TODO InputList 确认待输入
+                // TODO 若为拼音输入，则更新拼音输入短语
+            }
+
+            is ImeIntent.InputList.DropPending -> {
+                // TODO InputList 丢弃待输入
+            }
+
+            // ---------------------------------------------------------
             is ImeIntent.LoadCandidates -> {
                 val candidates = dictProvider.query(sideEffect.pinyin)
 //                        handleIntent(ImeIntent.SetCandidates(candidates))

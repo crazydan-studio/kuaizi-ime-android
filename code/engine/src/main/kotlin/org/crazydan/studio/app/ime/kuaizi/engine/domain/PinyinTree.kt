@@ -19,14 +19,19 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree.Builder.Companion.splitPinyin
+
 /**
  * 拼音树。
  *
- * 将拼音拆分为**声母+韵母首字母+韵母剩余字母**的三层结构，
+ * 将拼音拆分为**声母 + 韵母首字母 + 韵母剩余字母**的三层结构（见 [Builder.splitPinyin]），
  * 比如，将 `huang` 拆分为 `h -> u -> ang`，
  * 再按层级以相同字符为分支节点 [Branch] 构造子树，以最终形成拼音树。
  */
 sealed class PinyinTree {
+
+    /** 指定的 [str] 是否为拼音。 */
+    open fun isPinyin(str: String): Boolean = false
 
     /**
      * 拼音树构建器，提供增量构建能力。
@@ -67,7 +72,7 @@ sealed class PinyinTree {
 
         companion object {
 
-            /** 递归构造不可变 [Branch]，并剪去多余的标记拼音终点的分支 */
+            /** 递归构造不可变 [Branch]，并剪去多余的标记拼音终点的分支。 */
             private fun toImmutable(branch: Branch): Branch =
                 Branch(
                     children = branch.children.mapValues { entry ->
@@ -87,8 +92,13 @@ sealed class PinyinTree {
                     }
                 )
 
-            /** 将拼音拆分为三层，再依次添加到 [PinyinTree]。 */
-            private fun splitPinyin(pinyin: String): List<String> {
+            /**
+             * 将拼音拆分为**声母 + 韵母首字母 + 韵母剩余字母**的三层结构，
+             * 如 `huang` 拆分为 `h -> u -> ang`、`chuan` 拆分为 `ch -> u -> an`。
+             */
+            fun splitPinyin(pinyin: String): List<String> {
+                if (pinyin.isBlank()) return emptyList()
+
                 val nextPathIndex =
                     when {
                         pinyin.length > 1
@@ -128,9 +138,30 @@ sealed class PinyinTree {
     data class Branch(
         val children: Map<String, PinyinTree>,
     ) : PinyinTree() {
+
+        override fun isPinyin(str: String): Boolean {
+            val paths = splitPinyin(str)
+            if (paths.isEmpty()) return false
+
+            var node: PinyinTree? = this
+            for (path in paths) {
+                node = when (node) {
+                    is Branch ->
+                        node.children[path]
+
+                    else ->
+                        null
+                }
+            }
+
+            return when (node) {
+                is Leaf -> true
+                is Branch -> node.children[""] is Leaf
+                else -> false
+            }
+        }
     }
 
     /** 拼音树叶子节点 */
-    data object Leaf : PinyinTree() {
-    }
+    data object Leaf : PinyinTree()
 }

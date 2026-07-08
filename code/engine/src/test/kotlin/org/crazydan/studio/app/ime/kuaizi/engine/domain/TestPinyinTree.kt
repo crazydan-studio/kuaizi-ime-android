@@ -23,6 +23,7 @@ import kotlinx.coroutines.test.runTest
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.createVowelTree
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
@@ -166,6 +167,24 @@ class TestPinyinTree {
         assertTrue(nodeSH is PinyinTree.Branch)
         assertEquals(1, nodeSH.children.size)
         assertTrue(nodeSH.children["a"] is PinyinTree.Leaf)
+    }
+
+    @Test
+    fun `should verify whether string is a pinyin or not`() = runTest {
+        val pinyinList = listOf("a", "bi", "ci", "cu", "shu", "suan", "shuang", "e", "o", "ou")
+        val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
+
+        for (pinyin in pinyinList) {
+            assertTrue(pinyinTree.isPinyin(pinyin))
+        }
+
+        assertFalse(pinyinTree.isPinyin("b"))
+        assertFalse(pinyinTree.isPinyin("c"))
+        assertFalse(pinyinTree.isPinyin("cui"))
+        assertFalse(pinyinTree.isPinyin("ei"))
+        assertFalse(pinyinTree.isPinyin("su"))
+        assertFalse(pinyinTree.isPinyin("shua"))
+        assertFalse(pinyinTree.isPinyin("shuan"))
     }
 
     @Test

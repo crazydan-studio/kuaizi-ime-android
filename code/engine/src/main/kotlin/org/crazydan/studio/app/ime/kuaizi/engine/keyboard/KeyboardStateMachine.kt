@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
+import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
 
@@ -53,7 +54,7 @@ class KeyboardStateMachine(
             is KeyboardState.Idle -> handleFromIdle(transition)
             //
             is KeyboardState.Pinyin.Waiting -> handleFromPinyinWaiting(transition)
-            is KeyboardState.Pinyin.Inputting -> handleFromPinyinInputting(transition)
+            is KeyboardState.Pinyin.Inputting -> handleFromPinyinInputting(transition, currentState)
             //
             is KeyboardState.CandidateSelection.Choosing -> handleFromCandidateChoosing(transition)
             is KeyboardState.CandidateSelection.Filtering -> handleFromCandidateFiltering(transition)
@@ -89,7 +90,7 @@ class KeyboardStateMachine(
     private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.InputChar ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting())
+                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
 
             is KeyboardStateTransition.OpenSymbolGroup ->
                 KeyboardStateTransition.Result(KeyboardState.SymbolChoosing(transition.groupId))
@@ -116,16 +117,24 @@ class KeyboardStateMachine(
     private fun handleFromPinyinWaiting(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.StartInputPinyin ->
-                KeyboardStateTransition.Result(
-                    newState = KeyboardState.Pinyin.Inputting(
-                        lastKey = transition.key,
-                        level0Key = transition.key,
-                        vowelTree = createVowelTree(pinyinTree, transition.key.value),
-                    )
-                )
+                transition.key.let { key ->
+                    KeyboardState.Pinyin.Inputting(
+                        level0Key = key,
+                        vowelTree = createVowelTree(pinyinTree, key.value),
+                    ).let { newState ->
+                        KeyboardStateTransition.Result(
+                            newState = newState,
+                            sideEffects = listOf(
+                                ImeIntent.InputList.NewPending(
+                                    pending = createPinyinInputPending(pinyinTree, newState)
+                                ),
+                            ),
+                        )
+                    }
+                }
 
             is KeyboardStateTransition.InputChar ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting())
+                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
 
             is KeyboardStateTransition.LoadCandidates ->
                 KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
@@ -138,26 +147,43 @@ class KeyboardStateMachine(
     }
 
     /** 从 [KeyboardState.Pinyin.Inputting] 状态处理转换 */
-    private fun handleFromPinyinInputting(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
-        return when (transition) {
-            is KeyboardStateTransition.InputChar ->
-                KeyboardStateTransition.Result(
-                    newState = KeyboardState.Pinyin.Waiting()
-                )
+    private fun handleFromPinyinInputting(
+        transition: KeyboardStateTransition,
+        state: KeyboardState.Pinyin.Inputting,
+    ): KeyboardStateTransition.Result? =
+        when (transition) {
+            is KeyboardStateTransition.DoInputPinyin ->
+                transition.key.let { key ->
+                    when (key.level) {
+                        // Note：需考虑回退的情况，因此，必须显式置空 level2Key
+                        1 -> state.copy(level1Key = key, level2Key = null)
+                        2 -> state.copy(level2Key = key)
+                        else -> state
+                    }.let { newState ->
+                        KeyboardStateTransition.Result(
+                            newState = newState,
+                            sideEffects = listOf(
+                                ImeIntent.InputList.UpdatePending(
+                                    pending = createPinyinInputPending(pinyinTree, newState)
+                                )
+                            ),
+                        )
+                    }
+                }
 
-            is KeyboardStateTransition.LoadCandidates ->
+            is KeyboardStateTransition.StopInputPinyin ->
                 KeyboardStateTransition.Result(
-                    newState = KeyboardState.CandidateSelection.Choosing(transition.candidates)
-                )
-
-            is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(
-                    newState = KeyboardState.Pinyin.Waiting()
+                    newState = KeyboardState.Pinyin.Waiting,
+                    sideEffects = listOf(
+                        // 丢弃无效的拼音输入，确认有效的拼音输入
+                        if (pinyinTree.isPinyin(state.getChars()))
+                            ImeIntent.InputList.ConfirmPending
+                        else ImeIntent.InputList.DropPending
+                    ),
                 )
 
             else -> null
         }
-    }
 
     // -----------------------------------------------------------------
 
@@ -175,7 +201,7 @@ class KeyboardStateMachine(
                 )
 
             is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting())
+                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
 
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
@@ -196,7 +222,7 @@ class KeyboardStateMachine(
                 )
 
             is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting())
+                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
 
             else -> null
         }
@@ -223,7 +249,7 @@ class KeyboardStateMachine(
     private fun handleFromCommitOptionChoosing(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
             is KeyboardStateTransition.ReturnToIdle ->
-                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting())
+                KeyboardStateTransition.Result(KeyboardState.Pinyin.Waiting)
 
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
@@ -332,25 +358,3 @@ class KeyboardStateHistory(private val maxSize: Int = 10) {
         stack.clear()
     }
 }
-
-/** 根据 [startChar] 构造其韵母树 */
-fun createVowelTree(pinyinTree: PinyinTree, startChar: String): Map<String, List<String>> =
-    // children 为声母树列表
-    (pinyinTree as PinyinTree.Branch).children[startChar]?.let { node ->
-        when (node) {
-            is PinyinTree.Leaf -> null
-            is PinyinTree.Branch -> {
-                // children 为声母节点的韵母树列表：需过滤掉 a、e、o 等单字母拼音
-                node.children.filter { it.key != "" }.mapValues { entry ->
-                    val child = entry.value // 第一级韵母树
-                    when (child) {
-                        is PinyinTree.Leaf -> emptyList() // 对应拼音 ou、ao、er 等
-                        is PinyinTree.Branch ->
-                            // children 为第二级韵母树列表
-                            child.children.keys.toList()
-                    }
-                }
-            }
-        }
-    }
-        ?: emptyMap()

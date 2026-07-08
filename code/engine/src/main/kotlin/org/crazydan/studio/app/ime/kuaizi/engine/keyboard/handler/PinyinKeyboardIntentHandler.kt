@@ -53,7 +53,7 @@ class PinyinKeyboardIntentHandler(
                     }
 
                     is KeyboardState.Pinyin.Inputting -> {
-                        handleIntentWhenSwiping(intent, currentState)
+                        handleIntentWhenInputting(intent, currentState)
                             ?: KeyboardStateTransition.NothingToDo
                     }
 
@@ -112,7 +112,7 @@ class PinyinKeyboardIntentHandler(
         }
 
     /** 处理 [KeyboardState.Pinyin.Inputting] 状态下的 [ImeIntent] */
-    private fun handleIntentWhenSwiping(
+    private fun handleIntentWhenInputting(
         intent: ImeIntent.OnKey,
         state: KeyboardState.Pinyin.Inputting,
         //
@@ -123,11 +123,8 @@ class PinyinKeyboardIntentHandler(
                 when (intent) {
                     is ImeIntent.OnKey.Swipe ->
                         when (intent.stage) {
-                            ImeIntent.OnKey.Swipe.Stage.Moving
-                                // 拼音的后继不会是相同字母
-                                if key.value != state.lastKey.value
-                                ->
-                                KeyboardStateTransition.InputPinyin(key)
+                            ImeIntent.OnKey.Swipe.Stage.Moving ->
+                                KeyboardStateTransition.DoInputPinyin(key)
 
                             ImeIntent.OnKey.Swipe.Stage.End ->
                                 KeyboardStateTransition.StopInputPinyin
