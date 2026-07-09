@@ -35,8 +35,8 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
  * 从推动状态转换的角度来命名子类，而不是以 UI 交互动作命名，
  * 状态转换是与具体交互动作无关的，不同形式的交互均可以触发相同的状态转换。
  * 比如，在拼音键盘中输入拼音时，不管交互是滑行还是点击形式，
- * 拼音输入仅根据输入开始 [StartInputPinyin]、输入中 [DoInputPinyin]
- * 和输入结束 [StopInputPinyin] 做状态转换，而至于是哪个交互动作触发了何种转换，
+ * 拼音输入仅根据输入开始 [Pinyin.StartInput]、输入中 [Pinyin.Inputting]
+ * 和输入结束 [Pinyin.StopInput] 做状态转换，而至于是哪个交互动作触发了何种转换，
  * 则由具体的 [KeyboardIntentHandler] 做决定。
  */
 sealed class KeyboardStateTransition {
@@ -71,6 +71,9 @@ sealed class KeyboardStateTransition {
      * @property replacement 可替换字符的序号。大于 0 时有效
      */
     data class InputChar(val key: InputKey.Char, val replacement: Int = 0) : KeyboardStateTransition()
+
+    /** 回删字符：从输入列表或编辑器中删除光标之前的字符 */
+    data object BackspaceChar : KeyboardStateTransition()
 
     // ------------------------------------------------------------------------
 

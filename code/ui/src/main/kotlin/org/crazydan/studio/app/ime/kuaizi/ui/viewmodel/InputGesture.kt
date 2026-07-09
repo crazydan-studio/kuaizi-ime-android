@@ -50,7 +50,7 @@ sealed class InputGesture {
     /**
      * 长按
      * @param key 目标按键
-     * @param tick 滴答次数（0=首次）
+     * @param tick 停留的滴答次数
      * @param released 是否已释放
      */
     data class LongPress(
@@ -80,6 +80,7 @@ sealed class InputGesture {
      * 滑行
      * @param key 目标按键
      * @param motion 运动数据
+     * @param tick 停留的滴答次数
      * @param released 是否已释放
      */
     data class Swipe(
@@ -87,6 +88,7 @@ sealed class InputGesture {
 
         val key: InputKey? = null,
         val motion: Motion? = null,
+        val tick: Int = 0,
 
         val released: Boolean = false,
     ) : InputGesture()

@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent.BaseKeyboardIntentHandler
 
 /**
  * 键盘意图处理器接口，按不同 [KeyboardType] 创建子类，
@@ -35,17 +36,6 @@ interface KeyboardIntentHandler {
      * @return 映射得到的状态转换
      */
     fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition
-}
-
-/**
- * 基础键盘意图处理器，所有键盘类型的默认实现。
- * 默认行为是返回 [KeyboardStateTransition.ReturnToIdle]。
- */
-open class BaseKeyboardIntentHandler() : KeyboardIntentHandler {
-
-    override fun handleIntent(intent: ImeIntent, currentState: KeyboardState): KeyboardStateTransition {
-        return KeyboardStateTransition.ReturnToIdle
-    }
 }
 
 /** 数字键盘意图处理器 */

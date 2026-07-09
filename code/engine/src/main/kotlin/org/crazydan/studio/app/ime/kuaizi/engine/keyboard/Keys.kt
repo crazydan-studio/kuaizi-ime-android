@@ -30,6 +30,17 @@ package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
  */
 sealed class InputKey {
 
+    /** 空按键，表示无操作 */
+    data object NoOp : InputKey()
+
+    /**
+     * 被禁用按键
+     * @property key 原始按键
+     */
+    data class Disabled(val key: InputKey) : InputKey()
+
+    // -----------------------------------------------------
+
     /** 字符按键 */
     sealed class Char : InputKey() {
         /** 字符按键的实际输入字符，其与 [label] 可能并不相等 */
@@ -69,6 +80,13 @@ sealed class InputKey {
             override val replacements: List<String>? = null
         }
 
+        /** 回车按键 */
+        data object Enter : Char() {
+            override val value: String = "\n"
+            override val label: String? = null
+            override val replacements: List<String>? = null
+        }
+
         /** 符号按键 */
         data class Symbol(
             override val value: String,
@@ -100,24 +118,60 @@ sealed class InputKey {
     // -----------------------------------------------------
 
     /** 控制按键 */
-    data class Ctrl(
-        val type: String,
-    ) : InputKey()
+    sealed class Ctrl : InputKey() {
+
+        /** 回删 */
+        data object Backspace : Ctrl()
+
+        /** 退出 */
+        data object Exit : Ctrl()
+
+        // ------------------------
+
+        /** 切换键盘 */
+        data class SwitchKeyboard(val type: KeyboardType) : Ctrl()
+
+        /** 切换左右手模式：直接反转当前模式 */
+        data object SwitchHandMode : Ctrl()
+
+        // -------------------------
+
+        /** 针对输入列表的控制按键 */
+        sealed class InputList : Ctrl() {
+
+            /** 提交输入列表 */
+            data object Commit : InputList()
+
+            /** 撤回已提交的输入列表：将已提交到编辑器的输入撤回，以重新编辑 */
+            data object Revoke : InputList()
+
+            /** 丢弃当前选中的输入项 */
+            data object DropInputItem : InputList()
+
+            /** 确认待输入：将待输入提升为输入项 */
+            data object ConfirmPending : InputList()
+        }
+
+        // -------------------------
+
+        /** 与编辑器相关的控制按键 */
+        sealed class Editor : Ctrl() {
+
+            /** 光标定位：移动光标到目标位置 */
+            data object CursorLocator : Editor()
+
+            /** 区域选择：选择编辑器内容 */
+            data object RangeSelector : Editor()
+        }
+    }
+
+    // -----------------------------------------------------
 
     /** 数学运算按键 */
     data object MathOp : InputKey()
 
-    /** 候选词选择按键 */
-    data object Candidate : InputKey()
-
     // -----------------------------------------------------
 
-    /** 空按键，表示无操作 */
-    data object NoOp : InputKey()
-
-    /**
-     * 被禁用按键
-     * @property key 原始按键
-     */
-    data class Disabled(val key: InputKey) : InputKey()
+    /** 候选词选择按键 */
+    data object Candidate : InputKey()
 }

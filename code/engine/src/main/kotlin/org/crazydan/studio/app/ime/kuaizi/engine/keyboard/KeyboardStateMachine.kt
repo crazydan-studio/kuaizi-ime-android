@@ -120,6 +120,7 @@ class KeyboardStateMachine(
                         ImeIntent.InputList.AddChar(
                             char = when (transition.key) {
                                 is InputKey.Char.Space -> InputItem.Space
+                                is InputKey.Char.Enter -> InputItem.Enter
 
                                 else -> InputItem.Char(
                                     value =
@@ -131,6 +132,14 @@ class KeyboardStateMachine(
                                     transition.key.replacements
                                 else null,
                         )
+                    ),
+                )
+
+            is KeyboardStateTransition.BackspaceChar ->
+                KeyboardStateTransition.Result(
+                    newState = KeyboardState.Idle,
+                    sideEffects = listOf(
+                        ImeIntent.InputList.BackspaceChar
                     ),
                 )
 

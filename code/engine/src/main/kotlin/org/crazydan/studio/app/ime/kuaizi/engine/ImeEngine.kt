@@ -424,8 +424,12 @@ class ImeEngine internal constructor(
     private suspend fun processInputListSideEffect(sideEffect: ImeIntent.InputList) {
         when (sideEffect) {
             is ImeIntent.InputList.AddChar -> {
-                // TODO 根据 InputList 当前状态决定字符添加和替换，以及是否为直输
+                // TODO 根据 InputList 当前状态决定字符添加和替换，以及是否为直输（冻结或为空时）
                 // TODO 对拉丁文输入做数据库补全查询
+            }
+
+            is ImeIntent.InputList.BackspaceChar -> {
+                // TODO 回删 InputList 中字符或编辑器内字符（InputList 为直输时）
             }
 
             is ImeIntent.InputList.NewPending -> {

@@ -71,6 +71,9 @@ sealed class InputItem {
     /** 空格输入项 */
     data object Space : InputItem()
 
+    /** 回车输入项：仅用于直输 */
+    data object Enter : InputItem()
+
     /**
      * 拼音输入项
      * @property valid 是否为有效拼音

@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent
 
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.BaseKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardInputMode
 
 /** 拉丁文键盘意图处理器 */

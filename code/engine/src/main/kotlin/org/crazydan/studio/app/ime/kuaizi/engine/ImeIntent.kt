@@ -42,59 +42,89 @@ sealed class ImeIntent {
 
     /** 针对 [InputKey] 的意图 */
     sealed class OnKey : ImeIntent() {
+        /** 意图关联的按键，若其为 `null`，则表示无关联的按键 */
         abstract val key: InputKey?
 
-        /**
-         * 按压按键。通过 [stage] 判断是按压开始还是结束。
-         *
-         * 注意，[key] 为 `null` 时，表示在非按键上按压。
-         */
-        data class Press(
-            override val key: InputKey? = null,
-            val stage: Stage,
-        ) : OnKey() {
-            enum class Stage { Begin, End, }
+        /** 按压按键 */
+        sealed class Press : OnKey() {
+
+            /** 按压开始 */
+            data class Begin(
+                override val key: InputKey? = null,
+            ) : Press()
+
+            /** 按压结束 */
+            data class End(
+                override val key: InputKey? = null,
+            ) : Press()
         }
 
-        /**
-         * 长按按键。通过 [stage] 判断是长按开始、结束还是停留中。
-         *
-         * 注意，[key] 为 `null` 时，表示在非按键上长按。
-         */
-        data class LongPress(
-            override val key: InputKey? = null,
-            val stage: Stage,
-            val tick: Int = 0,
-        ) : OnKey() {
-            enum class Stage { Begin, End, Hold, }
+        /** 长按按键 */
+        sealed class LongPress : OnKey() {
+
+            /** 长按开始 */
+            data class Begin(
+                override val key: InputKey? = null,
+            ) : LongPress()
+
+            /** 长按结束 */
+            data class End(
+                override val key: InputKey? = null,
+            ) : LongPress()
+
+            /**
+             * 长按停留中
+             * @property tick 停留的滴答数。始终大于 0
+             */
+            data class Hold(
+                override val key: InputKey? = null,
+                val tick: Int = 1,
+            ) : LongPress()
         }
 
         /**
          * 点击按键。通过 [tick] 判断是单击（`tick==0`）还是双击（`tick==1`）
          *
          * 注意，[key] 为 `null` 时，表示在非按键上点击。
-         * */
+         *
+         * @property tick 点击的滴答数。`0` 表示单击，`1` 表示双击，`2` 表示三击
+         */
         data class Tap(
             override val key: InputKey? = null,
             val tick: Int = 0,
         ) : OnKey()
 
-        /**
-         * 在按键上滑行。通过 [stage] 判断是滑行开始、结束、移动中还是停留中。
-         *
-         * 注意，[key] 为 `null` 时，表示在非按键上滑行。
-         */
-        data class Swipe(
-            override val key: InputKey? = null,
-            val stage: Stage,
-            val motion: Motion? = null,
-            val tick: Int = 0,
-        ) : OnKey() {
-            enum class Stage { Begin, End, Moving, Hold, }
+        /** 在按键上滑行 */
+        sealed class Swipe : OnKey() {
+
+            /** 滑行开始 */
+            data class Begin(
+                override val key: InputKey? = null,
+            ) : Swipe()
+
+            /** 滑行结束 */
+            data class End(
+                override val key: InputKey? = null,
+            ) : Swipe()
+
+            /** 滑行进行中 */
+            data class Moving(
+                override val key: InputKey? = null,
+                val motion: Motion? = null,
+            ) : Swipe()
+
+            /**
+             * 滑行停留
+             * @property tick 停留的滴答数。始终大于 0
+             */
+            data class Hold(
+                override val key: InputKey? = null,
+                val tick: Int = 1,
+            ) : Swipe()
         }
 
         /**
-         * 在按键上翻动。其发生在 [Swipe.Stage.Begin] 与 [Swipe.Stage.End] 之间。
+         * 在按键上翻动。其发生在 [Swipe.Begin] 与 [Swipe.End] 之间。
          *
          * 注意，[key] 为 `null` 时，表示在非按键上翻动。
          */
@@ -121,6 +151,9 @@ sealed class ImeIntent {
             val char: InputItem,
             val replacements: List<String>? = null,
         ) : InputList()
+
+        /** 回删字符：在输入列表为空或已被冻结时，删除编辑器内字符 */
+        data object BackspaceChar : InputList()
 
         /** 新建待输入 */
         data class NewPending(val pending: InputItem) : InputList()
