@@ -40,13 +40,14 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
  */
 sealed class ImeIntent {
 
-    /** 针对 [InputKey] 的意图 */
-    sealed class OnKey : ImeIntent() {
-        /** 意图关联的按键，若其为 `null`，则表示无关联的按键 */
+    /** 针对发生在键盘上的意图：按压、点击、滑行等交互操作 */
+    sealed class OnKeyboard : ImeIntent() {
+        /** 与意图关联的按键，若其为 `null`，则表示无关联的按键 */
         abstract val key: InputKey?
 
-        /** 按压按键 */
-        sealed class Press : OnKey() {
+        // ---------------------------------------
+        /** 按压 */
+        sealed class Press : OnKeyboard() {
 
             /** 按压开始 */
             data class Begin(
@@ -59,8 +60,8 @@ sealed class ImeIntent {
             ) : Press()
         }
 
-        /** 长按按键 */
-        sealed class LongPress : OnKey() {
+        /** 长按 */
+        sealed class LongPress : OnKeyboard() {
 
             /** 长按开始 */
             data class Begin(
@@ -83,19 +84,16 @@ sealed class ImeIntent {
         }
 
         /**
-         * 点击按键。通过 [tick] 判断是单击（`tick==0`）还是双击（`tick==1`）
-         *
-         * 注意，[key] 为 `null` 时，表示在非按键上点击。
-         *
+         * 点击。通过 [tick] 判断是单击（`tick==0`）还是双击（`tick==1`）
          * @property tick 点击的滴答数。`0` 表示单击，`1` 表示双击，`2` 表示三击
          */
         data class Tap(
             override val key: InputKey? = null,
             val tick: Int = 0,
-        ) : OnKey()
+        ) : OnKeyboard()
 
-        /** 在按键上滑行 */
-        sealed class Swipe : OnKey() {
+        /** 滑行 */
+        sealed class Swipe : OnKeyboard() {
 
             /** 滑行开始 */
             data class Begin(
@@ -124,14 +122,12 @@ sealed class ImeIntent {
         }
 
         /**
-         * 在按键上翻动。其发生在 [Swipe.Begin] 与 [Swipe.End] 之间。
-         *
-         * 注意，[key] 为 `null` 时，表示在非按键上翻动。
+         * 翻动。其发生在 [Swipe.Begin] 与 [Swipe.End] 之间。
          */
         data class Flip(
             override val key: InputKey? = null,
             val motion: Motion? = null,
-        ) : OnKey()
+        ) : OnKeyboard()
     }
 
     // ---------------------------------------------------------------------
@@ -155,6 +151,9 @@ sealed class ImeIntent {
         /** 回删字符：在输入列表为空或已被冻结时，删除编辑器内字符 */
         data object BackspaceChar : InputList()
 
+        /** 删除当前已选中的输入项 */
+        data object DeleteSelected : InputList()
+
         /** 新建待输入 */
         data class NewPending(val pending: InputItem) : InputList()
 
@@ -168,6 +167,26 @@ sealed class ImeIntent {
         data object DropPending : InputList()
     }
 
+    // -----------------------------------------------------------------------
+
+    /** 针对键盘的意图 */
+    sealed class Keyboard : ImeIntent() {
+
+        /** 关闭键盘。 */
+        data object Close : Keyboard()
+
+        /** 切换到指定类型的键盘。 */
+        data class SwitchTo(val type: KeyboardType) : Keyboard()
+
+        /** 反转键盘左右手模式。 */
+        data object ToggleHandMode : Keyboard()
+    }
+
+    // -----------------------------------------------------------------------
+
+    /** 切换输入法：告知应用层切换输入法。 */
+    data object SwitchIme : ImeIntent()
+
     // ---------------------------------------------------------------------
 
     /** 候选选择：用户选中指定候选词。 */
@@ -175,18 +194,6 @@ sealed class ImeIntent {
 
     /** 候选翻页：用户向指定方向翻页候选列表。 */
     data class PageCandidate(val direction: PageDirection) : ImeIntent()
-
-    /** 键盘切换：切换到指定类型的键盘。 */
-    data class SwitchKeyboard(val type: KeyboardType) : ImeIntent()
-
-    /** 提交输入：确认输入并提交到编辑器。 */
-    data object CommitInput : ImeIntent()
-
-    /** 删除输入：删除最后一个输入项。 */
-    data object DeleteInput : ImeIntent()
-
-    /** 清空输入：清空当前输入列表。 */
-    data object CleanInput : ImeIntent()
 
     /** 游标移动：将输入列表游标移动到指定索引。 */
     data class MoveCursorTo(val index: Int) : ImeIntent()
@@ -217,14 +224,6 @@ sealed class ImeIntent {
 
     /** 设置候选词：将字典查询结果设置到状态中。 */
     data class SetCandidates(val candidates: CandidateList) : ImeIntent()
-
-    // -----------------------------------------------------------------------
-
-    /** 切换输入法：告知应用层切换输入法。 */
-    data object SwitchIme : ImeIntent()
-
-    /** 关闭键盘。 */
-    data object CloseKeyboard : ImeIntent()
 
     // -----------------------------------------------------------------------
 

@@ -145,7 +145,7 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
 
         // 转换手势为意图并发送给引擎
         val intent = gestureToIntent(gesture)
-        engine.handleIntent(intent)
+        launchHandleEngineIntent(intent)
     }
 
     /** 处理 [ImeIntent] */
@@ -156,12 +156,12 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
             is ImeIntent.SwitchIme ->
                 option.switchIme?.invoke()
 
-            is ImeIntent.CloseKeyboard ->
+            is ImeIntent.Keyboard.Close ->
                 option.closeKeyboard?.invoke()
             // >>>>>>>>>>>>>>>>>>>
 
             else ->
-                engine.handleIntent(intent)
+                launchHandleEngineIntent(intent)
         }
 
     // -----------------------------------------------------------------------
@@ -211,6 +211,12 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
                 .collect { keyboardType ->
                     _toolListState.value = computeToolList(keyboardType)
                 }
+        }
+    }
+
+    private fun launchHandleEngineIntent(intent: ImeIntent) {
+        viewModelScope.launch {
+            engine.handleIntent(intent)
         }
     }
 
@@ -300,39 +306,39 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
         when (gesture) {
             is InputGesture.Press ->
                 if (gesture.released)
-                    ImeIntent.OnKey.Press.End(gesture.key)
-                else ImeIntent.OnKey.Press.Begin(gesture.key)
+                    ImeIntent.OnKeyboard.Press.End(gesture.key)
+                else ImeIntent.OnKeyboard.Press.Begin(gesture.key)
 
             is InputGesture.LongPress ->
                 if (gesture.released)
-                    ImeIntent.OnKey.LongPress.End(gesture.key)
+                    ImeIntent.OnKeyboard.LongPress.End(gesture.key)
                 else if (gesture.tick > 0)
-                    ImeIntent.OnKey.LongPress.Hold(
+                    ImeIntent.OnKeyboard.LongPress.Hold(
                         key = gesture.key,
                         tick = gesture.tick,
                     )
-                else ImeIntent.OnKey.LongPress.Begin(gesture.key)
+                else ImeIntent.OnKeyboard.LongPress.Begin(gesture.key)
 
             is InputGesture.Tap ->
-                ImeIntent.OnKey.Tap(key = gesture.key, tick = gesture.tick)
+                ImeIntent.OnKeyboard.Tap(key = gesture.key, tick = gesture.tick)
 
             is InputGesture.Swipe ->
                 if (gesture.released)
-                    ImeIntent.OnKey.Swipe.End(gesture.key)
+                    ImeIntent.OnKeyboard.Swipe.End(gesture.key)
                 else if (gesture.motion != null)
-                    ImeIntent.OnKey.Swipe.Moving(
+                    ImeIntent.OnKeyboard.Swipe.Moving(
                         key = gesture.key,
                         motion = gesture.motion,
                     )
                 else if (gesture.tick > 0)
-                    ImeIntent.OnKey.Swipe.Hold(
+                    ImeIntent.OnKeyboard.Swipe.Hold(
                         key = gesture.key,
                         tick = gesture.tick,
                     )
-                else ImeIntent.OnKey.Swipe.Begin(gesture.key)
+                else ImeIntent.OnKeyboard.Swipe.Begin(gesture.key)
 
             is InputGesture.Flip ->
-                ImeIntent.OnKey.Flip(key = gesture.key, motion = gesture.motion)
+                ImeIntent.OnKeyboard.Flip(key = gesture.key, motion = gesture.motion)
 
             is InputGesture.CandidateTap -> {
                 val candidates = state.value.candidateList.candidates

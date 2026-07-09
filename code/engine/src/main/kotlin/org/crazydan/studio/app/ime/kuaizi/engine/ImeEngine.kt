@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
 import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeDictProvider
@@ -48,6 +47,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CandidateKeyboardInten
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CommitOptionKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EditorKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EmojiKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardState
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardStateMachine
@@ -161,32 +161,34 @@ class ImeEngine internal constructor(
         val keyboardState = keyboardType.initialState()
 
         val isPassword = startupConfig.editorInputType == EditorInputType.Password
-        val newState = _state.value.copy(
-            keyboard = _state.value.keyboard.copy(
-                type = keyboardType,
-                state = keyboardState,
-            ),
-            inputList =
-                // 清空输入列表，以确保采用直输模式
-                if (isPassword) InputList()
-                else _state.value.inputList,
-        )
 
-        applyStateUpdate { newState }
-        keyboardStateMachine.reset()
+        applyStateUpdate { state ->
+            state.copy(
+                keyboard = state.keyboard.copy(
+                    type = keyboardType,
+                    state = keyboardState,
+                    masterType = null,
+                ),
+                inputList =
+                    // 清空输入列表，以确保采用直输模式
+                    if (isPassword) InputList()
+                    else state.inputList,
+            )
+        }
 
         // -----------------------------
         // Note：_state.value 可能已变更
+        val state = _state.value
 
         // 检查剪贴板是否有可粘贴内容，若有则弹出粘贴确认提示
-        if (_state.value.config.ui.clipPastePopupTipsEnabled
-            && _state.value.clipboard.currentText != null
+        if (state.config.ui.clipPastePopupTipsEnabled
+            && state.clipboard.currentText != null
         ) {
             _effect.tryEmit(
                 ImeEffect.PopupTip.Action(
                     message = "可粘贴内容",
                     actionLabel = "粘贴",
-                    action = ImeIntent.PasteClip(_state.value.clipboard.currentText!!),
+                    action = ImeIntent.PasteClip(state.clipboard.currentText),
                     persistent = true,
                 ),
             )
@@ -248,23 +250,20 @@ class ImeEngine internal constructor(
     /**
      * 处理用户意图，MVI 架构的核心入口。
      *
-     * 处理流程：
-     * 1. [ImeIntent.SwitchKeyboard] 意图直接切换键盘，不经过状态机
-     * 2. 其他意图通过 [KeyboardIntentHandler] 映射为 [KeyboardStateTransition]，
-     *    由 [KeyboardStateMachine] 执行状态转换
-     * 3. 处理 sideEffects 副作用意图
-     * 4. 通过 [applyStateUpdate] 更新 [ImeState]
-     * 5. 分发 [EditorAction] 到 [ImeEditorBridge]
-     *
      * @param intent 用户意图
      */
-    fun handleIntent(intent: ImeIntent) {
+    suspend fun handleIntent(intent: ImeIntent) {
         when (intent) {
-            is ImeIntent.SwitchKeyboard ->
-                handleSwitchKeyboard(intent.type)
+            is ImeIntent.OnKeyboard ->
+                handleIntentOnKeyboard(intent)
 
-            else ->
-                handleIntentWithStateMachine(intent)
+            is ImeIntent.InputList ->
+                handleIntentWithInputList(intent)
+
+            is ImeIntent.Keyboard ->
+                handleIntentWithKeyboard(intent)
+
+            else -> {}
         }
     }
 
@@ -303,26 +302,13 @@ class ImeEngine internal constructor(
 
     // -----------------------------------------------
 
-    private fun handleSwitchKeyboard(keyboardType: KeyboardType) {
-        val keyboardState = keyboardType.initialState()
-
-        applyStateUpdate { state ->
-            state.copy(
-                keyboard = state.keyboard.copy(
-                    type = keyboardType,
-                    state = keyboardState,
-                )
-            )
-        }
-        keyboardStateMachine.reset()
-    }
-
-    private fun handleIntentWithStateMachine(intent: ImeIntent) {
+    /** 处理发生在键盘上的意图 */
+    private suspend fun handleIntentOnKeyboard(intent: ImeIntent.OnKeyboard) {
         val keyboard = _state.value.keyboard
         val keyboardType = keyboard.type
         val keyboardState = keyboard.state
 
-        val handler = resolveIntentHandler(keyboardType)
+        val handler = resolveKeyboardIntentHandler(keyboardType)
         val transition = handler.handleIntent(intent, keyboardState)
 
         // --------------------
@@ -330,8 +316,8 @@ class ImeEngine internal constructor(
         updateKeyboardState(result.newState)
 
         // --------------------
-        result.sideEffects?.also {
-            processSideEffects(it)
+        result.sideEffects?.forEach {
+            handleIntent(it)
         }
 
         result.editorAction?.also {
@@ -340,49 +326,56 @@ class ImeEngine internal constructor(
     }
 
     /**
-     * 处理副作用意图列表。
+     * 根据键盘类型解析对应的 [KeyboardIntentHandler]。
      *
-     * 通过 [ArrayDeque] 显式工作队列循环处理，而非递归调用。
-     * 队列最大深度 5 作为安全网防止无限递归。
-     *
-     * @param sideEffects 需要异步处理的副作用意图列表
+     * @param keyboardType 当前键盘类型
+     * @return 对应的意图处理器
      */
-    private fun processSideEffects(sideEffects: List<ImeIntent>) {
-        if (sideEffects.isEmpty()) return
+    private fun resolveKeyboardIntentHandler(keyboardType: KeyboardType): KeyboardIntentHandler {
+        val keyboardInputMode = _state.value.config.ui.keyboardInputMode
 
-        scope.launch(Dispatchers.Default) {
-            val queue = ArrayDeque(sideEffects)
-            var depth = 0
-            val maxDepth = 5
-
-            while (queue.isNotEmpty()) {
-                if (++depth > maxDepth) {
-                    throw IllegalStateException("Side effect recursion exceeds max depth $maxDepth")
-                }
-
-                val intent = queue.removeFirst()
-                processSideEffect(intent)
-            }
+        return when (keyboardType) {
+            KeyboardType.Pinyin -> PinyinKeyboardIntentHandler(keyboardInputMode)
+            KeyboardType.Latin -> LatinKeyboardIntentHandler(keyboardInputMode)
+            //
+            KeyboardType.Number -> NumberKeyboardIntentHandler()
+            KeyboardType.Symbol -> SymbolKeyboardIntentHandler()
+            KeyboardType.Emoji -> EmojiKeyboardIntentHandler()
+            //
+            KeyboardType.Math -> MathKeyboardIntentHandler()
+            // TODO 考虑将复制、粘贴等常用功能集成到键盘面板中
+            KeyboardType.Editor -> EditorKeyboardIntentHandler()
+            KeyboardType.Candidate -> CandidateKeyboardIntentHandler()
+            KeyboardType.CommitOption -> CommitOptionKeyboardIntentHandler()
         }
     }
 
-    /** 处理单个副作用 */
-    private suspend fun processSideEffect(sideEffect: ImeIntent) {
-        when (sideEffect) {
-            is ImeIntent.InputList -> processInputListSideEffect(sideEffect)
-
-            is ImeIntent.LoadCandidates -> {
-                val candidates = dictProvider.query(sideEffect.pinyin)
-//                        handleIntent(ImeIntent.SetCandidates(candidates))
-            }
-
-            is ImeIntent.SaveFavorite -> {
-                //
-            }
-
-            else -> handleIntent(sideEffect)
-        }
-    }
+//    /**
+//     * 处理副作用意图列表。
+//     *
+//     * 通过 [ArrayDeque] 显式工作队列循环处理，而非递归调用。
+//     * 队列最大深度 5 作为安全网防止无限递归。
+//     *
+//     * @param sideEffects 需要异步处理的副作用意图列表
+//     */
+//    private fun processSideEffects(sideEffects: List<ImeIntent>) {
+//        if (sideEffects.isEmpty()) return
+//
+//        scope.launch(Dispatchers.Default) {
+//            val queue = ArrayDeque(sideEffects)
+//            var depth = 0
+//            val maxDepth = 5
+//
+//            while (queue.isNotEmpty()) {
+//                if (++depth > maxDepth) {
+//                    throw IllegalStateException("Side effect recursion exceeds max depth $maxDepth")
+//                }
+//
+//                val intent = queue.removeFirst()
+//                handleIntent(intent)
+//            }
+//        }
+//    }
 
     /**
      * 分发 [EditorAction] 到所有已注册的 [ImeEditorBridge]。
@@ -419,10 +412,9 @@ class ImeEngine internal constructor(
         }
     }
 
-
-    /** 处理输入列表的副作用 */
-    private suspend fun processInputListSideEffect(sideEffect: ImeIntent.InputList) {
-        when (sideEffect) {
+    /** 处理与输入列表相关的意图 */
+    private suspend fun handleIntentWithInputList(intent: ImeIntent.InputList) {
+        when (intent) {
             is ImeIntent.InputList.AddChar -> {
                 // TODO 根据 InputList 当前状态决定字符添加和替换，以及是否为直输（冻结或为空时）
                 // TODO 对拉丁文输入做数据库补全查询
@@ -430,6 +422,9 @@ class ImeEngine internal constructor(
 
             is ImeIntent.InputList.BackspaceChar -> {
                 // TODO 回删 InputList 中字符或编辑器内字符（InputList 为直输时）
+            }
+
+            is ImeIntent.InputList.DeleteSelected -> {
             }
 
             is ImeIntent.InputList.NewPending -> {
@@ -453,32 +448,20 @@ class ImeEngine internal constructor(
         }
     }
 
-    // -----------------------------------------------
+    /** 处理与键盘相关的意图 */
+    private fun handleIntentWithKeyboard(intent: ImeIntent.Keyboard) {
+        when (intent) {
+            is ImeIntent.Keyboard.SwitchTo ->
+                switchKeyboard(intent.type)
 
-    /**
-     * 根据键盘类型解析对应的 [KeyboardIntentHandler]。
-     *
-     * @param keyboardType 当前键盘类型
-     * @return 对应的意图处理器
-     */
-    private fun resolveIntentHandler(keyboardType: KeyboardType): KeyboardIntentHandler {
-        val keyboardInputMode = _state.value.config.ui.keyboardInputMode
+            is ImeIntent.Keyboard.ToggleHandMode ->
+                toggleKeyboardHandMode()
 
-        return when (keyboardType) {
-            KeyboardType.Pinyin -> PinyinKeyboardIntentHandler(keyboardInputMode)
-            KeyboardType.Latin -> LatinKeyboardIntentHandler(keyboardInputMode)
-            //
-            KeyboardType.Number -> NumberKeyboardIntentHandler()
-            KeyboardType.Symbol -> SymbolKeyboardIntentHandler()
-            KeyboardType.Emoji -> EmojiKeyboardIntentHandler()
-            //
-            KeyboardType.Math -> MathKeyboardIntentHandler()
-            // TODO 考虑将复制、粘贴等常用功能集成到键盘面板中
-            KeyboardType.Editor -> EditorKeyboardIntentHandler()
-            KeyboardType.Candidate -> CandidateKeyboardIntentHandler()
-            KeyboardType.CommitOption -> CommitOptionKeyboardIntentHandler()
+            else -> {}
         }
     }
+
+    // -----------------------------------------------
 
     /**
      * 根据启动配置确定启动时的键盘类型。
@@ -509,6 +492,46 @@ class ImeEngine internal constructor(
             else -> baseType
         }
     }
+
+    private fun switchKeyboard(keyboardType: KeyboardType) =
+        applyStateUpdate { state ->
+            val oldKeyboardType = state.keyboard.type
+            val oldMasterKeyboardType = state.keyboard.masterType
+
+            val keyboardState = keyboardType.initialState()
+
+            state.copy(
+                keyboard = state.keyboard.copy(
+                    type = keyboardType,
+                    state = keyboardState,
+                    masterType = when {
+                        // 主键盘之间采用直接切换，不需要退回
+                        keyboardType.isMaster() -> null
+                        // 从主键盘切换过来的临时性键盘，需要能够退回到原主键盘
+                        oldKeyboardType.isMaster() -> oldKeyboardType
+                        // 临时性键盘之间的切换不改变所要退回到的主键盘
+                        else -> oldMasterKeyboardType
+                    },
+                )
+            )
+        }
+
+    private fun toggleKeyboardHandMode() =
+        applyStateUpdate { state ->
+            val oldHandMode = state.keyboard.handMode ?: state.config.ui.keyboardHandMode
+
+            state.copy(
+                keyboard = state.keyboard.copy(
+                    handMode = when (oldHandMode) {
+                        KeyboardHandMode.Left ->
+                            KeyboardHandMode.Right
+
+                        KeyboardHandMode.Right ->
+                            KeyboardHandMode.Left
+                    },
+                )
+            )
+        }
 
     // -----------------------------------------------
 

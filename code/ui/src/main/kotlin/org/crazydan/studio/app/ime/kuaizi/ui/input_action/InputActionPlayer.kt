@@ -196,7 +196,7 @@ class InputActionPlayer(
                     )
                 }
                 viewModel.handleIntent(
-                    ImeIntent.OnKey.Press.Begin(
+                    ImeIntent.OnKeyboard.Press.Begin(
                         key = action.key,
                     )
                 )
@@ -218,7 +218,7 @@ class InputActionPlayer(
                     )
                 }
                 viewModel.handleIntent(
-                    ImeIntent.OnKey.Swipe.Moving(
+                    ImeIntent.OnKeyboard.Swipe.Moving(
                         key = action.toKey,
                     )
                 )
@@ -261,7 +261,7 @@ class InputActionPlayer(
             }
 
             is InputAction.SwitchKeyboard -> {
-                viewModel.handleIntent(ImeIntent.SwitchKeyboard(action.targetType))
+                viewModel.handleIntent(ImeIntent.Keyboard.SwitchTo(action.targetType))
             }
         }
     }

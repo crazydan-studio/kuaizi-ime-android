@@ -28,6 +28,9 @@ data class Keyboard(
 
     /** 左右手模式的临时切换状态，null 表示未切换，使用 [ImeConfig.Ui.keyboardHandMode] 的值 */
     val handMode: KeyboardHandMode? = null,
+
+    /** 主键盘类型：临时性键盘需要退回到在其切换前所在的主键盘上 */
+    val masterType: KeyboardType? = null,
 )
 
 /** 键盘类型，定义了键盘的内容类型和语义 */
@@ -41,35 +44,45 @@ enum class KeyboardType {
     /** 数字键盘（主键盘） */
     Number,
 
-    /** 数学表达式键盘（临时键盘） */
+    /** 数学表达式键盘 */
     Math,
 
-    /** 符号选择键盘（临时键盘） */
+    /** 符号选择键盘 */
     Symbol,
 
-    /** Emoji 选择键盘（临时键盘） */
+    /** Emoji 选择键盘 */
     Emoji,
 
-    /** 编辑功能键盘（临时键盘） */
+    /** 编辑功能键盘 */
     Editor,
 
-    /** 候选词选择键盘（超临时键盘） */
+    /** 候选词选择键盘 */
     Candidate,
 
-    /** 提交选项键盘（超临时键盘） */
+    /** 提交选项键盘 */
     CommitOption;
 
     /** 获取当前键盘类型的初始状态 */
-    fun initialState(): KeyboardState {
-        return when (this) {
-            Pinyin, Number, Math, Latin -> KeyboardState.Idle
+    fun initialState(): KeyboardState =
+        when (this) {
+            Pinyin, Latin, Number, Math -> KeyboardState.Idle
             Symbol -> KeyboardState.SymbolChoosing()
             Emoji -> KeyboardState.EmojiChoosing()
             Candidate -> KeyboardState.CandidateSelection.Choosing()
             CommitOption -> KeyboardState.CommitOptionChoosing()
             Editor -> KeyboardState.EditorEditing.CursorMoving()
         }
-    }
+
+    /**
+     * 是否为主键盘。
+     * 主键盘为常驻性键盘，其余键盘均属于临时性键盘，用于临时切换以进行一些操作，
+     * 其在退出后均需要回到切换前所在的主键盘上。
+     */
+    fun isMaster(): Boolean =
+        when (this) {
+            Pinyin, Latin, Number -> true
+            else -> false
+        }
 }
 
 /** 键盘输入模式，定义按键的交互范式 */

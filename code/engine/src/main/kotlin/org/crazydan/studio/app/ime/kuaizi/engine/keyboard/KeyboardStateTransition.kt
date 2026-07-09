@@ -66,14 +66,18 @@ sealed class KeyboardStateTransition {
 
     // ------------------------------------------------------------------------
 
-    /**
-     * 字符单次输入：不迁移状态（[KeyboardState.Idle] -> [KeyboardState.Idle]），只是产生更新输入列表的副作用
-     * @property replacement 可替换字符的序号。大于 0 时有效
-     */
-    data class InputChar(val key: InputKey.Char, val replacement: Int = 0) : KeyboardStateTransition()
+    /** 针对字符输入的状态转换  */
+    sealed class Char : KeyboardStateTransition() {
 
-    /** 回删字符：从输入列表或编辑器中删除光标之前的字符 */
-    data object BackspaceChar : KeyboardStateTransition()
+        /**
+         * 字符输入：向输入列表或编辑器输入字符
+         * @property replacement 可替换字符的序号。大于 0 时有效
+         */
+        data class Input(val key: InputKey.Char, val replacement: Int = 0) : Char()
+
+        /** 回删字符：从输入列表或编辑器中删除光标之前的字符 */
+        data object Backspace : Char()
+    }
 
     // ------------------------------------------------------------------------
 
@@ -110,6 +114,18 @@ sealed class KeyboardStateTransition {
     /** 针对算术输入 [KeyboardState.Math] 的状态转换  */
     sealed class Math : KeyboardStateTransition() {
         //
+    }
+
+    // ------------------------------------------------------------------------
+
+    /** 针对键盘的状态转换  */
+    sealed class Keyboard : KeyboardStateTransition() {
+
+        /** 切换到指定类型键盘 */
+        data class SwitchTo(val type: KeyboardType) : Keyboard()
+
+        /** 反转左右手模式 */
+        data object ToggleHandMode : Keyboard()
     }
 
     // ------------------------------------------------------------------------

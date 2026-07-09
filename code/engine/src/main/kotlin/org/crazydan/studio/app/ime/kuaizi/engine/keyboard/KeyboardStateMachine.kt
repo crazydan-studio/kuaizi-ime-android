@@ -33,9 +33,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.InputItem
 class KeyboardStateMachine(
     private val pinyinTree: PinyinTree,
 ) {
-    private val stateHistory = KeyboardStateHistory()
-
-    // -----------------------------------------------------------------
 
     /**
      * 处理状态转换
@@ -52,6 +49,20 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(KeyboardState.Idle)
 
             is KeyboardStateTransition.NothingToDo -> null
+
+            is KeyboardStateTransition.Keyboard ->
+                KeyboardStateTransition.Result(
+                    newState = currentState,
+                    sideEffects = listOf(
+                        when (transition) {
+                            is KeyboardStateTransition.Keyboard.SwitchTo ->
+                                ImeIntent.Keyboard.SwitchTo(transition.type)
+
+                            is KeyboardStateTransition.Keyboard.ToggleHandMode ->
+                                ImeIntent.Keyboard.ToggleHandMode
+                        }
+                    ),
+                )
 
             else ->
                 when (currentState) {
@@ -72,24 +83,9 @@ class KeyboardStateMachine(
                     is KeyboardState.EmojiChoosing -> handleFromEmojiChoosing(transition)
                     //
                     else -> null
-                }?.apply {
-                    if (newState != currentState) {
-                        stateHistory.push(currentState)
-                    }
                 }
         }
             ?: KeyboardStateTransition.Result(currentState)
-
-    // -----------------------------------------------------------------
-
-    /** 回退到前一状态，历史栈空时回退到 [KeyboardState.Idle] */
-    fun backToPrevious(): KeyboardState =
-        stateHistory.pop() ?: KeyboardState.Idle
-
-    /** 重置：清空历史栈 */
-    fun reset() {
-        stateHistory.clear()
-    }
 
     // -----------------------------------------------------------------
 
@@ -113,7 +109,7 @@ class KeyboardStateMachine(
                     }
                 }
 
-            is KeyboardStateTransition.InputChar ->
+            is KeyboardStateTransition.Char.Input ->
                 KeyboardStateTransition.Result(
                     newState = KeyboardState.Idle,
                     sideEffects = listOf(
@@ -135,28 +131,13 @@ class KeyboardStateMachine(
                     ),
                 )
 
-            is KeyboardStateTransition.BackspaceChar ->
+            is KeyboardStateTransition.Char.Backspace ->
                 KeyboardStateTransition.Result(
                     newState = KeyboardState.Idle,
                     sideEffects = listOf(
                         ImeIntent.InputList.BackspaceChar
                     ),
                 )
-
-            is KeyboardStateTransition.OpenSymbolGroup ->
-                KeyboardStateTransition.Result(KeyboardState.SymbolChoosing(transition.groupId))
-
-            is KeyboardStateTransition.OpenEmojiGroup ->
-                KeyboardStateTransition.Result(KeyboardState.EmojiChoosing(transition.groupId))
-
-            is KeyboardStateTransition.MoveCursor ->
-                KeyboardStateTransition.Result(KeyboardState.EditorEditing.CursorMoving(transition.position))
-
-            is KeyboardStateTransition.LoadCandidates ->
-                KeyboardStateTransition.Result(KeyboardState.CandidateSelection.Choosing(transition.candidates))
-
-            is KeyboardStateTransition.LoadCommitOptions ->
-                KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
 
             else -> null
         }
@@ -282,9 +263,6 @@ class KeyboardStateMachine(
                     KeyboardState.EditorEditing.TextSelecting(transition.start, transition.end),
                 )
 
-            is KeyboardStateTransition.BackToPrevious ->
-                KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
-
             else -> null
         }
     }
@@ -296,9 +274,6 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     KeyboardState.EditorEditing.TextSelecting(transition.start, transition.end),
                 )
-
-            is KeyboardStateTransition.BackToPrevious ->
-                KeyboardStateTransition.Result(stateHistory.pop() ?: KeyboardState.Idle)
 
             else -> null
         }
@@ -324,34 +299,5 @@ class KeyboardStateMachine(
 
             else -> null
         }
-    }
-}
-
-/**
- * 键盘状态历史的有界栈，用于实现同一键盘类型内的子状态回退。
- * 采用 ArrayDeque 实现，最大容量为 10，FIFO 淘汰策略。
- *
- * @param maxSize 历史栈最大容量
- */
-class KeyboardStateHistory(private val maxSize: Int = 10) {
-    private val stack = ArrayDeque<KeyboardState>(maxSize)
-
-    /** 当前历史栈大小 */
-    val size: Int get() = stack.size
-
-    /** 将当前状态压入历史栈，超出上限时淘汰最旧条目 */
-    fun push(state: KeyboardState) {
-        if (stack.size >= maxSize) {
-            stack.removeFirst()
-        }
-        stack.addLast(state)
-    }
-
-    /** 弹出最近的历史状态，栈空时返回 null */
-    fun pop(): KeyboardState? = stack.removeLastOrNull()
-
-    /** 清空历史栈 */
-    fun clear() {
-        stack.clear()
     }
 }

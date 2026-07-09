@@ -123,18 +123,7 @@ sealed class InputKey {
         /** 回删 */
         data object Backspace : Ctrl()
 
-        /** 退出 */
-        data object Exit : Ctrl()
-
         // ------------------------
-
-        /** 切换键盘 */
-        data class SwitchKeyboard(val type: KeyboardType) : Ctrl()
-
-        /** 切换左右手模式：直接反转当前模式 */
-        data object SwitchHandMode : Ctrl()
-
-        // -------------------------
 
         /** 针对输入列表的控制按键 */
         sealed class InputList : Ctrl() {
@@ -145,11 +134,26 @@ sealed class InputKey {
             /** 撤回已提交的输入列表：将已提交到编辑器的输入撤回，以重新编辑 */
             data object Revoke : InputList()
 
-            /** 丢弃当前选中的输入项 */
-            data object DropInputItem : InputList()
+            /** 删除当前已选中的输入项 */
+            data object DeleteSelected : InputList()
 
             /** 确认待输入：将待输入提升为输入项 */
             data object ConfirmPending : InputList()
+        }
+
+        // -------------------------
+
+        /** 针对键盘的控制按键 */
+        sealed class Keyboard : Ctrl() {
+
+            /** 切换到指定类型 [type] 的键盘 */
+            data class SwitchTo(val type: KeyboardType) : Keyboard()
+
+            /** 退回到指定类型 [type] 的键盘 */
+            data class BackTo(val type: KeyboardType) : Keyboard()
+
+            /** 反转键盘左右手模式 */
+            data object ToggleHandMode : Keyboard()
         }
 
         // -------------------------

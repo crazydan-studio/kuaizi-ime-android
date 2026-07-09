@@ -36,19 +36,36 @@ open class BaseKeyboardIntentHandler() : KeyboardIntentHandler {
 
     /** 处理与 [InputKey.Ctrl] 相关的 [ImeIntent] */
     protected fun handleCtrlKeyIntent(
-        intent: ImeIntent.OnKey, state: KeyboardState,
+        intent: ImeIntent.OnKeyboard, state: KeyboardState,
         //
         key: InputKey.Ctrl = intent.key as InputKey.Ctrl,
     ): KeyboardStateTransition? =
         when (key) {
             is InputKey.Ctrl.Backspace ->
                 when (intent) {
-                    is ImeIntent.OnKey.LongPress.Hold ->
+                    is ImeIntent.OnKeyboard.LongPress.Hold ->
                         // 直接转由单击意图处理
-                        handleCtrlKeyIntent(intent = ImeIntent.OnKey.Tap(key), state = state)
+                        handleCtrlKeyIntent(intent = ImeIntent.OnKeyboard.Tap(key), state = state)
 
-                    is ImeIntent.OnKey.Tap ->
-                        KeyboardStateTransition.BackspaceChar
+                    is ImeIntent.OnKeyboard.Tap ->
+                        KeyboardStateTransition.Char.Backspace
+
+                    else -> null
+                }
+
+            is InputKey.Ctrl.Keyboard ->
+                when (intent) {
+                    is ImeIntent.OnKeyboard.Tap ->
+                        when (key) {
+                            is InputKey.Ctrl.Keyboard.SwitchTo ->
+                                KeyboardStateTransition.Keyboard.SwitchTo(key.type)
+
+                            is InputKey.Ctrl.Keyboard.BackTo ->
+                                KeyboardStateTransition.Keyboard.SwitchTo(key.type)
+
+                            is InputKey.Ctrl.Keyboard.ToggleHandMode ->
+                                KeyboardStateTransition.Keyboard.ToggleHandMode
+                        }
 
                     else -> null
                 }
