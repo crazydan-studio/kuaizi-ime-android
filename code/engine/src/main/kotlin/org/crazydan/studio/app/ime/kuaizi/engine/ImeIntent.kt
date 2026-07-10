@@ -197,6 +197,15 @@ sealed class ImeIntent {
 
     // -----------------------------------------------------------------------
 
+    /** 针对编辑器的意图 */
+    sealed class Editor : ImeIntent() {
+
+        /** 编辑操作：对编辑器执行指定的编辑动作。 */
+        data class PerformEdit(val action: EditorEditAction) : Editor()
+    }
+
+    // -----------------------------------------------------------------------
+
     /** 切换输入法：告知应用层切换输入法。 */
     data object SwitchIme : ImeIntent()
 
@@ -207,9 +216,6 @@ sealed class ImeIntent {
 
     /** 候选翻页：用户向指定方向翻页候选列表。 */
     data class PageCandidate(val direction: PageDirection) : ImeIntent()
-
-    /** 编辑操作：对编辑器执行指定的编辑动作。 */
-    data class PerformEdit(val action: EditorEditAction) : ImeIntent()
 
     /** 粘贴剪贴板内容：将指定文本粘贴到编辑器。 */
     data class PasteClip(val text: String) : ImeIntent()

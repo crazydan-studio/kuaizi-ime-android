@@ -22,6 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.PageDirection
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.input.PinyinWordFilter
@@ -159,6 +160,9 @@ sealed class KeyboardStateTransition {
             /** 结束选取 */
             data object StopSelect : Selection()
         }
+
+        /** 编辑操作：对编辑器执行指定的编辑动作 */
+        data class PerformEdit(val action: EditorEditAction) : Editor()
     }
 
     // ------------------------------------------------------------------------

@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
+
 /**
  * 输入按键的密封类型，表示键盘上的一个可交互按键。
  *
@@ -166,6 +168,9 @@ sealed class InputKey {
 
             /** 选取选区：选取编辑器内容 */
             data object SelectSelection : Editor()
+
+            /** 编辑操作：对编辑器执行指定的编辑动作 */
+            data class PerformEdit(val action: EditorEditAction) : Editor()
         }
     }
 

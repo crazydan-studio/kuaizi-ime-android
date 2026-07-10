@@ -143,17 +143,17 @@ class InputConnectionBridge(
         val ic = targetSupplier() ?: return
 
         when (action) {
-            EditorEditAction.SELECT_ALL -> ic.performContextMenuAction(android.R.id.selectAll)
+            EditorEditAction.SelectAll -> ic.performContextMenuAction(android.R.id.selectAll)
             //
-            EditorEditAction.COPY -> ic.performContextMenuAction(android.R.id.copy)
-            EditorEditAction.PASTE -> ic.performContextMenuAction(android.R.id.paste)
-            EditorEditAction.CUT -> ic.performContextMenuAction(android.R.id.cut)
+            EditorEditAction.Copy -> ic.performContextMenuAction(android.R.id.copy)
+            EditorEditAction.Paste -> ic.performContextMenuAction(android.R.id.paste)
+            EditorEditAction.Cut -> ic.performContextMenuAction(android.R.id.cut)
             //
-            EditorEditAction.UNDO -> ic.performContextMenuAction(android.R.id.undo)
-            EditorEditAction.REDO -> ic.performContextMenuAction(android.R.id.redo)
+            EditorEditAction.Undo -> ic.performContextMenuAction(android.R.id.undo)
+            EditorEditAction.Redo -> ic.performContextMenuAction(android.R.id.redo)
             //
-            EditorEditAction.BACKSPACE ->
-                // Note: 发送按键事件的兼容性更好，可由组件处理删除操作
+            EditorEditAction.Backspace ->
+                // Note: 发送按键事件的兼容性更好，可由编辑器内组件处理删除操作
                 sendKey(ic, KeyEvent.KEYCODE_DEL)
         }
     }

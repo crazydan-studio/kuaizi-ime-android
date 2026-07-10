@@ -32,7 +32,7 @@ class EditorKeyboardIntentHandler : BaseKeyboardIntentHandler() {
             is ImeIntent.OnKeyboard ->
                 when (currentState) {
                     is KeyboardState.Idle ->
-                        handleCtrlKeyIntentWhenIdle(intent)
+                        handleCtrlKeyIntentWhenIdle(intent = intent, state = currentState)
 
                     is KeyboardState.Editor ->
                         handleIntentWhenEditorEditing(intent = intent, state = currentState)
@@ -48,9 +48,10 @@ class EditorKeyboardIntentHandler : BaseKeyboardIntentHandler() {
      * 处理 [KeyboardState.Idle] 状态下的与 [InputKey.Ctrl] 相关的 [ImeIntent]：
      * - 若在按键 [InputKey.Ctrl.Editor.MoveCursor] 或 [InputKey.Ctrl.Editor.SelectSelection]
      *   上开始滑行，则分别触发进入光标移动和选区选取状态；
+     * - 若在按键 [InputKey.Ctrl.Editor.PerformEdit] 上点击，则触发编辑操作；
      */
     private fun handleCtrlKeyIntentWhenIdle(
-        intent: ImeIntent.OnKeyboard,
+        intent: ImeIntent.OnKeyboard, state: KeyboardState.Idle,
         //
         key: InputKey.Ctrl = intent.key as InputKey.Ctrl,
     ): KeyboardStateTransition? =
@@ -71,6 +72,15 @@ class EditorKeyboardIntentHandler : BaseKeyboardIntentHandler() {
                     else -> null
                 }
 
-            else -> null
+            is InputKey.Ctrl.Editor.PerformEdit ->
+                when (intent) {
+                    is ImeIntent.OnKeyboard.Tap ->
+                        KeyboardStateTransition.Editor.PerformEdit(key.action)
+
+                    else -> null
+                }
+
+            else ->
+                handleCtrlKeyIntent(intent = intent, state = state)
         }
 }

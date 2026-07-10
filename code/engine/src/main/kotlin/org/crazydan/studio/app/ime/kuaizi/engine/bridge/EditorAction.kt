@@ -32,7 +32,6 @@ sealed class EditorAction {
 
     /**
      * 提交文本到编辑器。
-     *
      * @property text 要提交的文本内容
      * @property replacements 替换列表，支持直输模式下的字符轮换
      */
@@ -46,7 +45,6 @@ sealed class EditorAction {
 
     /**
      * 插入配对符号：在光标位置插入左右配对符号对。
-     *
      * @property left 左符号
      * @property right 右符号
      */
@@ -57,7 +55,6 @@ sealed class EditorAction {
 
     /**
      * 移动光标：向指定方向移动编辑器光标。
-     *
      * @property motion 光标移动信息
      */
     data class MoveCursor(
@@ -66,7 +63,6 @@ sealed class EditorAction {
 
     /**
      * 选取选区：从光标位置向指定方向选取内容。
-     *
      * @property motion 光标移动信息
      */
     data class SelectSelection(
@@ -75,7 +71,6 @@ sealed class EditorAction {
 
     /**
      * 执行编辑操作：对编辑器执行系统级编辑动作。
-     *
      * @property action 要执行的编辑动作
      */
     data class PerformEdit(

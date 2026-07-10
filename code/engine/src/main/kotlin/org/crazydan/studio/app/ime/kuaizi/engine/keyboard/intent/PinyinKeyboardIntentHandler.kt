@@ -138,7 +138,7 @@ class PinyinKeyboardIntentHandler(
 
     /** 处理 [KeyboardState.Idle] 状态下的与 [InputKey.Ctrl] 相关的 [ImeIntent] */
     private fun handleCtrlKeyIntentWhenIdle(
-        intent: ImeIntent.OnKeyboard, state: KeyboardState,
+        intent: ImeIntent.OnKeyboard, state: KeyboardState.Idle,
         //
         key: InputKey.Ctrl = intent.key as InputKey.Ctrl,
     ): KeyboardStateTransition? =

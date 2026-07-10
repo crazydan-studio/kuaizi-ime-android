@@ -140,16 +140,16 @@ class EditTextBridge(
         val et = targetSupplier() ?: return
 
         when (action) {
-            EditorEditAction.SELECT_ALL -> et.onTextContextMenuItem(android.R.id.selectAll)
+            EditorEditAction.SelectAll -> et.onTextContextMenuItem(android.R.id.selectAll)
             //
-            EditorEditAction.COPY -> et.onTextContextMenuItem(android.R.id.copy)
-            EditorEditAction.PASTE -> et.onTextContextMenuItem(android.R.id.paste)
-            EditorEditAction.CUT -> et.onTextContextMenuItem(android.R.id.cut)
+            EditorEditAction.Copy -> et.onTextContextMenuItem(android.R.id.copy)
+            EditorEditAction.Paste -> et.onTextContextMenuItem(android.R.id.paste)
+            EditorEditAction.Cut -> et.onTextContextMenuItem(android.R.id.cut)
             //
-            EditorEditAction.UNDO -> et.onTextContextMenuItem(android.R.id.undo)
-            EditorEditAction.REDO -> et.onTextContextMenuItem(android.R.id.redo)
+            EditorEditAction.Undo -> et.onTextContextMenuItem(android.R.id.undo)
+            EditorEditAction.Redo -> et.onTextContextMenuItem(android.R.id.redo)
             //
-            EditorEditAction.BACKSPACE ->
+            EditorEditAction.Backspace ->
                 // Note: 发送按键事件的兼容性更好，可由组件处理删除操作
                 sendKey(et, KeyEvent.KEYCODE_DEL)
         }

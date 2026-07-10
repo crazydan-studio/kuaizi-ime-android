@@ -45,7 +45,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CandidateKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CommitOptionKeyboardIntentHandler
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent.EditorKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EmojiKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardIntentHandler
@@ -55,6 +54,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.MathKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.NumberKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.SymbolKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent.EditorKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent.LatinKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent.PinyinKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.log.ImeLog
@@ -263,6 +263,11 @@ class ImeEngine internal constructor(
             is ImeIntent.Keyboard ->
                 handleIntentWithKeyboard(intent)
 
+            is ImeIntent.Editor.PerformEdit ->
+                dispatchEditorAction(
+                    action = EditorAction.PerformEdit(intent.action)
+                )
+
             else -> {}
         }
     }
@@ -423,6 +428,7 @@ class ImeEngine internal constructor(
 
             is ImeIntent.InputList.BackspaceChar -> {
                 // TODO 回删 InputList 中字符或编辑器内字符（InputList 为直输时）
+                // TODO 编辑器回删通过 EditorEditAction.Backspace
             }
 
             is ImeIntent.InputList.DeleteSelected -> {

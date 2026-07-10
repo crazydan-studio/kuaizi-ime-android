@@ -65,6 +65,12 @@ class KeyboardStateMachine(
                     ),
                 )
 
+            is KeyboardStateTransition.Editor.PerformEdit ->
+                KeyboardStateTransition.Result(
+                    newState = currentState,
+                    editorAction = EditorAction.PerformEdit(transition.action),
+                )
+
             else ->
                 when (currentState) {
                     is KeyboardState.Idle -> handleFromIdle(transition)
