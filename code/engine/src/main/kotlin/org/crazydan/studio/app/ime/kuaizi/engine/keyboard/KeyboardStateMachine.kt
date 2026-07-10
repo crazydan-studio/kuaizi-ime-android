@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
+import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputItem
 
@@ -70,14 +71,14 @@ class KeyboardStateMachine(
                     //
                     is KeyboardState.Pinyin.Inputting -> handleFromPinyinInputting(transition, currentState)
                     //
+                    is KeyboardState.Editor -> handleFromEditor(transition, currentState)
+                    //
                     is KeyboardState.CandidateSelection.Choosing -> handleFromCandidateChoosing(transition)
                     is KeyboardState.CandidateSelection.Filtering -> handleFromCandidateFiltering(transition)
                     is KeyboardState.CandidateSelection.AdvanceFiltering ->
                         handleFromCandidateAdvanceFiltering(transition)
                     //
                     is KeyboardState.CommitOptionChoosing -> handleFromCommitOptionChoosing(transition)
-                    is KeyboardState.EditorEditing.CursorMoving -> handleFromEditorCursorMoving(transition)
-                    is KeyboardState.EditorEditing.TextSelecting -> handleFromEditorTextSelecting(transition)
                     //
                     is KeyboardState.SymbolChoosing -> handleFromSymbolChoosing(transition)
                     is KeyboardState.EmojiChoosing -> handleFromEmojiChoosing(transition)
@@ -92,6 +93,7 @@ class KeyboardStateMachine(
     /** 从 [KeyboardState.Idle] 状态处理转换 */
     private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
         return when (transition) {
+            // --------------------------------------
             is KeyboardStateTransition.Pinyin.StartInput ->
                 transition.key.let { key ->
                     KeyboardState.Pinyin.Inputting(
@@ -109,6 +111,7 @@ class KeyboardStateMachine(
                     }
                 }
 
+            // --------------------------------------
             is KeyboardStateTransition.Char.Input ->
                 KeyboardStateTransition.Result(
                     newState = KeyboardState.Idle,
@@ -139,6 +142,18 @@ class KeyboardStateMachine(
                     ),
                 )
 
+            // --------------------------------------
+            is KeyboardStateTransition.Editor.Cursor.StartMove ->
+                KeyboardStateTransition.Result(
+                    newState = KeyboardState.Editor.CursorMoving,
+                )
+
+            is KeyboardStateTransition.Editor.Selection.StartSelect ->
+                KeyboardStateTransition.Result(
+                    newState = KeyboardState.Editor.SelectionSelecting,
+                )
+
+            // --------------------------------------
             else -> null
         }
     }
@@ -183,6 +198,40 @@ class KeyboardStateMachine(
 
             else -> null
         }
+
+    // -----------------------------------------------------------------
+
+    /** 从 [KeyboardState.Editor] 状态处理转换 */
+    private fun handleFromEditor(
+        transition: KeyboardStateTransition,
+        state: KeyboardState.Editor,
+    ): KeyboardStateTransition.Result =
+        when (transition) {
+            is KeyboardStateTransition.Editor.Cursor.Moving ->
+                KeyboardStateTransition.Result(
+                    newState = state,
+                    editorAction =
+                        EditorAction.MoveCursor(
+                            motion = transition.motion,
+                        ),
+                )
+
+            is KeyboardStateTransition.Editor.Selection.Selecting ->
+                KeyboardStateTransition.Result(
+                    newState = state,
+                    editorAction =
+                        EditorAction.SelectSelection(
+                            motion = transition.motion,
+                        ),
+                )
+
+            is KeyboardStateTransition.Editor.Cursor.StopMove,
+            is KeyboardStateTransition.Editor.Selection.StopSelect ->
+                null
+
+            else -> null
+        }
+            ?: KeyboardStateTransition.Result(KeyboardState.Idle)
 
     // -----------------------------------------------------------------
 
@@ -243,37 +292,6 @@ class KeyboardStateMachine(
         return when (transition) {
             is KeyboardStateTransition.LoadCommitOptions ->
                 KeyboardStateTransition.Result(KeyboardState.CommitOptionChoosing(transition.options))
-
-            else -> null
-        }
-    }
-
-    // -----------------------------------------------------------------
-
-    /** 从 EditorEditing.CursorMoving 状态处理转换 */
-    private fun handleFromEditorCursorMoving(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
-        return when (transition) {
-            is KeyboardStateTransition.MoveCursor ->
-                KeyboardStateTransition.Result(
-                    KeyboardState.EditorEditing.CursorMoving(transition.position),
-                )
-
-            is KeyboardStateTransition.SelectText ->
-                KeyboardStateTransition.Result(
-                    KeyboardState.EditorEditing.TextSelecting(transition.start, transition.end),
-                )
-
-            else -> null
-        }
-    }
-
-    /** 从 EditorEditing.TextSelecting 状态处理转换 */
-    private fun handleFromEditorTextSelecting(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
-        return when (transition) {
-            is KeyboardStateTransition.SelectText ->
-                KeyboardStateTransition.Result(
-                    KeyboardState.EditorEditing.TextSelecting(transition.start, transition.end),
-                )
 
             else -> null
         }

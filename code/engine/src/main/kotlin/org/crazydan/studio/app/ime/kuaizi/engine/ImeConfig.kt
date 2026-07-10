@@ -84,6 +84,8 @@ data class ImeConfig(
      * @property hapticFeedbackEnabled 是否启用触觉反馈
      * @property keyAnimationEnabled 是否启用按键动画
      * @property gestureSlippingTrailEnabled 是否启用滑行轨迹显示
+     * @property scaledTouchSlop 在触摸屏上移动多少像素会被视为滑行。
+     *           通过 [ViewConfiguration.getScaledTouchSlop] 可获取系统值
      * @property clipPopupTipsEnabled 是否启用剪贴板收藏弹出提示
      * @property clipPastePopupTipsEnabled 是否启用可粘贴内容的弹出提示
      * @property clipPopupTipsTimeout 剪贴板弹出提示超时（秒）
@@ -102,6 +104,8 @@ data class ImeConfig(
         val hapticFeedbackEnabled: Boolean = true,
         val keyAnimationEnabled: Boolean = true,
         val gestureSlippingTrailEnabled: Boolean = true,
+
+        val scaledTouchSlop: Int = 8,
 
         val clipPopupTipsEnabled: Boolean = true,
         val clipPastePopupTipsEnabled: Boolean = true,

@@ -129,7 +129,7 @@ class InputConnectionBridge(
     }
 
     /** 按方向扩展选区，模拟 Shift + 方向键。 */
-    override fun selectRange(motion: EditorCursorMotion) {
+    override fun selectSelection(motion: EditorCursorMotion) {
         val ic = targetSupplier() ?: return
 
         // Note: 通过 shift + 方向键 的方式进行文本选择

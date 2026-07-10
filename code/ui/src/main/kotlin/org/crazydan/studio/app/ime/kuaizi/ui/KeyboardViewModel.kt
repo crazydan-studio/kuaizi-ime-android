@@ -37,7 +37,6 @@ import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeState
 import org.crazydan.studio.app.ime.kuaizi.engine.ToolItem
 import org.crazydan.studio.app.ime.kuaizi.engine.ToolListState
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
 import org.crazydan.studio.app.ime.kuaizi.ui.domain.AudioType
 import org.crazydan.studio.app.ime.kuaizi.ui.domain.HapticType
@@ -306,25 +305,47 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
         when (gesture) {
             is InputGesture.Press ->
                 if (gesture.released)
-                    ImeIntent.OnKeyboard.Press.End(gesture.key)
-                else ImeIntent.OnKeyboard.Press.Begin(gesture.key)
+                    ImeIntent.OnKeyboard.Press.End(
+                        key = gesture.key,
+                    )
+                else ImeIntent.OnKeyboard.Press.Begin(
+                    key = gesture.key,
+                )
 
             is InputGesture.LongPress ->
                 if (gesture.released)
-                    ImeIntent.OnKeyboard.LongPress.End(gesture.key)
+                    ImeIntent.OnKeyboard.LongPress.End(
+                        key = gesture.key,
+                    )
                 else if (gesture.tick > 0)
                     ImeIntent.OnKeyboard.LongPress.Hold(
                         key = gesture.key,
                         tick = gesture.tick,
                     )
-                else ImeIntent.OnKeyboard.LongPress.Begin(gesture.key)
+                else ImeIntent.OnKeyboard.LongPress.Begin(
+                    key = gesture.key,
+                )
 
             is InputGesture.Tap ->
-                ImeIntent.OnKeyboard.Tap(key = gesture.key, tick = gesture.tick)
+                when (gesture.tick) {
+                    1 -> ImeIntent.OnKeyboard.Tap.Double(
+                        key = gesture.key,
+                    )
+
+                    2 -> ImeIntent.OnKeyboard.Tap.Triple(
+                        key = gesture.key,
+                    )
+
+                    else -> ImeIntent.OnKeyboard.Tap.Single(
+                        key = gesture.key,
+                    )
+                }
 
             is InputGesture.Swipe ->
                 if (gesture.released)
-                    ImeIntent.OnKeyboard.Swipe.End(gesture.key)
+                    ImeIntent.OnKeyboard.Swipe.End(
+                        key = gesture.key,
+                    )
                 else if (gesture.motion != null)
                     ImeIntent.OnKeyboard.Swipe.Moving(
                         key = gesture.key,
@@ -335,24 +356,15 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
                         key = gesture.key,
                         tick = gesture.tick,
                     )
-                else ImeIntent.OnKeyboard.Swipe.Begin(gesture.key)
+                else ImeIntent.OnKeyboard.Swipe.Begin(
+                    key = gesture.key,
+                )
 
             is InputGesture.Flip ->
-                ImeIntent.OnKeyboard.Flip(key = gesture.key, motion = gesture.motion)
-
-            is InputGesture.CandidateTap -> {
-                val candidates = state.value.candidateList.candidates
-
-                val idx = gesture.candidateIndex
-                if (idx in candidates.indices) {
-                    ImeIntent.SelectCandidate(candidates[idx])
-                } else {
-                    // 索引越界时用空词兜底
-                    ImeIntent.SelectCandidate(
-                        InputWord.Pinyin(text = "", frequency = 1)
-                    )
-                }
-            }
+                ImeIntent.OnKeyboard.Flip(
+                    key = gesture.key,
+                    motion = gesture.motion,
+                )
         }
 
     /** 根据键盘类型动态计算工具列表 */

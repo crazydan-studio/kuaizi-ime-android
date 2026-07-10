@@ -36,7 +36,12 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.Tone
  */
 sealed class KeyboardState {
 
-    /** 空闲状态，等待新的状态转换 */
+    /**
+     * 空闲状态，等待新的状态转换。
+     *
+     * 所有状态结束后都回到该状态，而如何从该状态驱动到其他状态，
+     * 则由具体类型键盘对应的 [KeyboardIntentHandler] 决定。
+     */
     data object Idle : KeyboardState()
 
     // ------------------------------------------------------------------
@@ -100,6 +105,18 @@ sealed class KeyboardState {
 
     // ------------------------------------------------------------------
 
+    /** 编辑器编辑状态分支 */
+    sealed class Editor : KeyboardState() {
+
+        /** 光标移动中状态 */
+        data object CursorMoving : Editor()
+
+        /** 选区选取中状态 */
+        data object SelectionSelecting : Editor()
+    }
+
+    // ------------------------------------------------------------------
+
     /**
      * 候选选择状态分支，包含选择、过滤和高级过滤三个递进子状态
      */
@@ -138,27 +155,6 @@ sealed class KeyboardState {
             val tone: Tone? = null,
             val filtered: List<InputWord> = emptyList(),
         ) : CandidateSelection()
-    }
-
-    // ------------------------------------------------------------------
-
-    /**
-     * 编辑器编辑状态分支，包含光标移动和文本范围选择两种子状态
-     */
-    sealed class EditorEditing : KeyboardState() {
-
-        /**
-         * 光标移动状态
-         * @param position 光标在输入列表中的索引
-         */
-        data class CursorMoving(val position: Int = 0) : EditorEditing()
-
-        /**
-         * 文本范围选择状态
-         * @param start 选择起始索引
-         * @param end 选择结束索引
-         */
-        data class TextSelecting(val start: Int = 0, val end: Int = 0) : EditorEditing()
     }
 
     // ------------------------------------------------------------------

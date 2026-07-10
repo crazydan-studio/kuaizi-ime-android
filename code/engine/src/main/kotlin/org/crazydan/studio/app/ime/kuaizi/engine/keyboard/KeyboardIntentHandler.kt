@@ -50,9 +50,6 @@ class EmojiKeyboardIntentHandler : BaseKeyboardIntentHandler()
 /** 数学键盘意图处理器 */
 class MathKeyboardIntentHandler : BaseKeyboardIntentHandler()
 
-/** 编辑键盘意图处理器 */
-class EditorKeyboardIntentHandler : BaseKeyboardIntentHandler()
-
 /** 候选键盘意图处理器 */
 class CandidateKeyboardIntentHandler : BaseKeyboardIntentHandler()
 

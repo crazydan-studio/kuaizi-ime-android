@@ -27,38 +27,30 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
  *
  * 由引擎内部的 [ImeEngine.dispatchEditorAction] 统一分发到 [ImeEditorBridge]，
  * 桥梁实现者无需理解 [EditorAction] 类型体系。
- * 每种输出类型携带时间戳，用于日志记录和调试追踪。
- *
- * @property timestamp 操作时间戳
  */
 sealed class EditorAction {
-    abstract val timestamp: Long
 
     /**
      * 提交文本到编辑器。
      *
-     * @property timestamp 操作时间戳
      * @property text 要提交的文本内容
      * @property replacements 替换列表，支持直输模式下的字符轮换
      */
     data class CommitText(
-        override val timestamp: Long,
         val text: String,
         val replacements: List<String>? = null,
     ) : EditorAction()
 
     /** 撤回提交：撤销上一次 [CommitText] 操作。 */
-    data class RevokeCommit(override val timestamp: Long) : EditorAction()
+    data object RevokeCommit : EditorAction()
 
     /**
      * 插入配对符号：在光标位置插入左右配对符号对。
      *
-     * @property timestamp 操作时间戳
      * @property left 左符号
      * @property right 右符号
      */
     data class InsertPairedSymbols(
-        override val timestamp: Long,
         val left: String,
         val right: String,
     ) : EditorAction()
@@ -66,33 +58,27 @@ sealed class EditorAction {
     /**
      * 移动光标：向指定方向移动编辑器光标。
      *
-     * @property timestamp 操作时间戳
      * @property motion 光标移动信息
      */
     data class MoveCursor(
-        override val timestamp: Long,
         val motion: EditorCursorMotion,
     ) : EditorAction()
 
     /**
-     * 选择范围：从光标位置向指定方向选取文本范围。
+     * 选取选区：从光标位置向指定方向选取内容。
      *
-     * @property timestamp 操作时间戳
      * @property motion 光标移动信息
      */
-    data class SelectRange(
-        override val timestamp: Long,
+    data class SelectSelection(
         val motion: EditorCursorMotion,
     ) : EditorAction()
 
     /**
      * 执行编辑操作：对编辑器执行系统级编辑动作。
      *
-     * @property timestamp 操作时间戳
      * @property action 要执行的编辑动作
      */
     data class PerformEdit(
-        override val timestamp: Long,
         val action: EditorEditAction,
     ) : EditorAction()
 }

@@ -126,7 +126,7 @@ class EditTextBridge(
     }
 
     /** 向指定方向扩展选区 */
-    override fun selectRange(motion: EditorCursorMotion) {
+    override fun selectSelection(motion: EditorCursorMotion) {
         val et = targetSupplier() ?: return
 
         // Note: 通过 shift + 方向键 的方式进行文本选择

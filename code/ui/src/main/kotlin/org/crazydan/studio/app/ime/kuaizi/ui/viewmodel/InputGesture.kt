@@ -29,48 +29,40 @@ import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
  * 不包含任何绝对坐标，只包含按键的语义标识。
  */
 sealed class InputGesture {
-    /** 手势发生的时间戳（毫秒） */
-    abstract val timestamp: Long
+    /** 手势发生时所在的按键，若其为 `null`，则表示无相关按键 */
+    abstract val key: InputKey?
 
     // ----------------------------------------------
 
     /**
      * 按压
-     * @param key 目标按键
      * @param released 是否已释放
      */
     data class Press(
-        override val timestamp: Long,
-
-        val key: InputKey? = null,
+        override val key: InputKey? = null,
 
         val released: Boolean = false,
     ) : InputGesture()
 
     /**
      * 长按
-     * @param key 目标按键
      * @param tick 停留的滴答次数
      * @param released 是否已释放
      */
     data class LongPress(
-        override val timestamp: Long,
+        override val key: InputKey? = null,
 
-        val key: InputKey? = null,
         val tick: Int = 0,
-
         val released: Boolean = false,
     ) : InputGesture()
 
     /**
      * 点击
-     * @param key 目标按键
      * @param tick 连击次数（0=首次，1=双击...）
      */
     data class Tap(
-        override val timestamp: Long,
+        override val key: InputKey? = null,
 
-        val key: InputKey? = null,
         val tick: Int = 0,
     ) : InputGesture()
 
@@ -78,39 +70,25 @@ sealed class InputGesture {
 
     /**
      * 滑行
-     * @param key 目标按键
-     * @param motion 运动数据
+     * @param motion 运动数据。[Motion.distance] 为实际滑行像素数与 [ImeConfig.Ui.scaledTouchSlop] 的比值
      * @param tick 停留的滴答次数
      * @param released 是否已释放
      */
     data class Swipe(
-        override val timestamp: Long,
+        override val key: InputKey? = null,
 
-        val key: InputKey? = null,
         val motion: Motion? = null,
         val tick: Int = 0,
-
         val released: Boolean = false,
     ) : InputGesture()
 
     /**
      * 翻动（快速滑行后松手）
-     * @param key 目标按键
-     * @param motion 运动数据
+     * @param motion 运动数据。[Motion.distance] 为实际滑行像素数与 [ImeConfig.Ui.scaledTouchSlop] 的比值
      */
     data class Flip(
-        override val timestamp: Long,
+        override val key: InputKey? = null,
 
-        val key: InputKey? = null,
         val motion: Motion? = null,
-    ) : InputGesture()
-
-    // ----------------------------------------------
-
-    /** 候选项选择 */
-    data class CandidateTap(
-        override val timestamp: Long,
-
-        val candidateIndex: Int,
     ) : InputGesture()
 }

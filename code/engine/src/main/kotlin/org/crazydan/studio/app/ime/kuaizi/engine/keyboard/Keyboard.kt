@@ -53,7 +53,7 @@ enum class KeyboardType {
     /** Emoji 选择键盘 */
     Emoji,
 
-    /** 编辑功能键盘 */
+    /** 编辑器操作键盘 */
     Editor,
 
     /** 候选词选择键盘 */
@@ -70,7 +70,7 @@ enum class KeyboardType {
             Emoji -> KeyboardState.EmojiChoosing()
             Candidate -> KeyboardState.CandidateSelection.Choosing()
             CommitOption -> KeyboardState.CommitOptionChoosing()
-            Editor -> KeyboardState.EditorEditing.CursorMoving()
+            Editor -> KeyboardState.Editor.CursorMoving()
         }
 
     /**

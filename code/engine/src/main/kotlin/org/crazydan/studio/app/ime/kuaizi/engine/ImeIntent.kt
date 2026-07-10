@@ -60,7 +60,7 @@ sealed class ImeIntent {
             ) : Press()
         }
 
-        /** 长按 */
+        /** 长按。如果长按开始后直接移动手指，将自动结束长按并生成滑行意图 */
         sealed class LongPress : OnKeyboard() {
 
             /** 长按开始 */
@@ -84,13 +84,26 @@ sealed class ImeIntent {
         }
 
         /**
-         * 点击。通过 [tick] 判断是单击（`tick==0`）还是双击（`tick==1`）
+         * 点击。
          * @property tick 点击的滴答数。`0` 表示单击，`1` 表示双击，`2` 表示三击
          */
-        data class Tap(
-            override val key: InputKey? = null,
-            val tick: Int = 0,
-        ) : OnKeyboard()
+        sealed class Tap(val tick: Int) : OnKeyboard() {
+
+            /** 单击 */
+            data class Single(
+                override val key: InputKey? = null,
+            ) : Tap(tick = 0)
+
+            /** 双击 */
+            data class Double(
+                override val key: InputKey? = null,
+            ) : Tap(tick = 1)
+
+            /** 三击 */
+            data class Triple(
+                override val key: InputKey? = null,
+            ) : Tap(tick = 2)
+        }
 
         /** 滑行 */
         sealed class Swipe : OnKeyboard() {
@@ -108,7 +121,7 @@ sealed class ImeIntent {
             /** 滑行进行中 */
             data class Moving(
                 override val key: InputKey? = null,
-                val motion: Motion? = null,
+                val motion: Motion,
             ) : Swipe()
 
             /**
@@ -126,7 +139,7 @@ sealed class ImeIntent {
          */
         data class Flip(
             override val key: InputKey? = null,
-            val motion: Motion? = null,
+            val motion: Motion,
         ) : OnKeyboard()
     }
 
@@ -194,9 +207,6 @@ sealed class ImeIntent {
 
     /** 候选翻页：用户向指定方向翻页候选列表。 */
     data class PageCandidate(val direction: PageDirection) : ImeIntent()
-
-    /** 游标移动：将输入列表游标移动到指定索引。 */
-    data class MoveCursorTo(val index: Int) : ImeIntent()
 
     /** 编辑操作：对编辑器执行指定的编辑动作。 */
     data class PerformEdit(val action: EditorEditAction) : ImeIntent()

@@ -45,7 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CandidateKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CommitOptionKeyboardIntentHandler
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EditorKeyboardIntentHandler
+import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.intent.EditorKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.EmojiKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardHandMode
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardIntentHandler
@@ -400,11 +400,12 @@ class ImeEngine internal constructor(
                 is EditorAction.InsertPairedSymbols ->
                     bridge.insertPairedSymbols(action.left, action.right)
 
+                // -----------------------------
                 is EditorAction.MoveCursor ->
                     bridge.moveCursor(action.motion)
 
-                is EditorAction.SelectRange ->
-                    bridge.selectRange(action.motion)
+                is EditorAction.SelectSelection ->
+                    bridge.selectSelection(action.motion)
 
                 is EditorAction.PerformEdit ->
                     bridge.performEdit(action.action)

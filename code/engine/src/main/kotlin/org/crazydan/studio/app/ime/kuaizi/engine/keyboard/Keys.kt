@@ -161,11 +161,11 @@ sealed class InputKey {
         /** 与编辑器相关的控制按键 */
         sealed class Editor : Ctrl() {
 
-            /** 光标定位：移动光标到目标位置 */
-            data object CursorLocator : Editor()
+            /** 移动光标：将光标移动到目标位置 */
+            data object MoveCursor : Editor()
 
-            /** 区域选择：选择编辑器内容 */
-            data object RangeSelector : Editor()
+            /** 选取选区：选取编辑器内容 */
+            data object SelectSelection : Editor()
         }
     }
 

@@ -22,6 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.PageDirection
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.input.PinyinWordFilter
 import org.crazydan.studio.app.ime.kuaizi.engine.input.Radical
@@ -130,6 +131,38 @@ sealed class KeyboardStateTransition {
 
     // ------------------------------------------------------------------------
 
+    /** 针对编辑器的状态转换  */
+    sealed class Editor : KeyboardStateTransition() {
+
+        /** 编辑器光标的状态转换 */
+        sealed class Cursor : Editor() {
+
+            /** 开始光标移动 */
+            data object StartMove : Cursor()
+
+            /** 正在光标移动中 */
+            data class Moving(val motion: Motion) : Cursor()
+
+            /** 结束光标移动 */
+            data object StopMove : Cursor()
+        }
+
+        /** 编辑器选区的状态转换 */
+        sealed class Selection : Editor() {
+
+            /** 开始选取 */
+            data object StartSelect : Selection()
+
+            /** 正在选取中 */
+            data class Selecting(val motion: Motion) : Selection()
+
+            /** 结束选取 */
+            data object StopSelect : Selection()
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
     /** 加载候选词 */
     data class LoadCandidates(val candidates: List<InputWord>) : KeyboardStateTransition()
 
@@ -147,12 +180,6 @@ sealed class KeyboardStateTransition {
 
     /** 加载提交选项 */
     data class LoadCommitOptions(val options: List<InputWord.CommitOption>) : KeyboardStateTransition()
-
-    /** 移动光标 */
-    data class MoveCursor(val position: Int) : KeyboardStateTransition()
-
-    /** 选择文本范围 */
-    data class SelectText(val start: Int, val end: Int) : KeyboardStateTransition()
 
     /** 打开符号分组 */
     data class OpenSymbolGroup(val groupId: String?) : KeyboardStateTransition()

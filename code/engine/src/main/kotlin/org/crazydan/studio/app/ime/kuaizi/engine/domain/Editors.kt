@@ -58,7 +58,7 @@ enum class EditorInputType {
 
 // ----------------------------------------------------
 
-/** 编辑器光标移动信息。*/
+/** 编辑器光标移动信息。其中 [Motion.distance] 代表光标移动次数 */
 typealias EditorCursorMotion = Motion
 
 /**

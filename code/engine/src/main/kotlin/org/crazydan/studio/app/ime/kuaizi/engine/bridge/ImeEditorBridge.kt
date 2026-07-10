@@ -79,7 +79,7 @@ interface ImeEditorBridge {
     fun moveCursor(motion: EditorCursorMotion)
 
     /** 按指定方向扩展选区。 */
-    fun selectRange(motion: EditorCursorMotion)
+    fun selectSelection(motion: EditorCursorMotion)
 
     /** 执行编辑器编辑操作（全选、复制、剪切、粘贴、撤销、重做等）。 */
     fun performEdit(action: EditorEditAction)
