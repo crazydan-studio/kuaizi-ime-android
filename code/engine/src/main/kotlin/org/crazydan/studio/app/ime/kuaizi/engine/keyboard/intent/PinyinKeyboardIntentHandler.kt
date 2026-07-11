@@ -41,10 +41,16 @@ class PinyinKeyboardIntentHandler(
                     is KeyboardState.Idle -> {
                         when (intent.key) {
                             is InputKey.Char ->
-                                handleCharKeyIntentWhenIdle(intent)
+                                handleCharKeyIntentWhenIdle(
+                                    intent = intent,
+                                    key = intent.key as InputKey.Char,
+                                )
 
                             is InputKey.Ctrl ->
-                                handleCtrlKeyIntentWhenIdle(intent = intent, state = currentState)
+                                handleCtrlKeyIntent(
+                                    intent = intent,
+                                    key = intent.key as InputKey.Ctrl,
+                                )
 
                             else -> null
                         }
@@ -52,7 +58,15 @@ class PinyinKeyboardIntentHandler(
                     }
 
                     is KeyboardState.Pinyin.Inputting ->
-                        handleIntentWhenInputting(intent)
+                        when (intent.key) {
+                            is InputKey.Char ->
+                                handleIntentWhenInputting(
+                                    intent = intent,
+                                    key = intent.key as InputKey.Char,
+                                )
+
+                            else -> null
+                        }
 
                     is KeyboardState.Editor ->
                         handleIntentWhenEditorEditing(intent = intent, state = currentState)
@@ -69,8 +83,7 @@ class PinyinKeyboardIntentHandler(
     /** 处理 [KeyboardState.Idle] 状态下的与 [InputKey.Char] 相关的 [ImeIntent] */
     private fun handleCharKeyIntentWhenIdle(
         intent: ImeIntent.OnKeyboard,
-        //
-        key: InputKey.Char = intent.key as InputKey.Char,
+        key: InputKey.Char,
     ): KeyboardStateTransition? =
         // 仅关心对按键的操作
         when (key) {
@@ -95,9 +108,9 @@ class PinyinKeyboardIntentHandler(
                 // TODO 滑行进入可替换字符选择状态？
                 when (intent) {
                     is ImeIntent.OnKeyboard.LongPress.Hold ->
-                        // 直接转由单击意图处理
-                        handleCharKeyIntentWhenIdle(
-                            intent = ImeIntent.OnKeyboard.Tap.Single(key)
+                        KeyboardStateTransition.Char.Input(
+                            key = key,
+                            replacement = 0,
                         )
 
                     is ImeIntent.OnKeyboard.Tap ->
@@ -115,8 +128,7 @@ class PinyinKeyboardIntentHandler(
     /** 处理 [KeyboardState.Pinyin.Inputting] 状态下的 [ImeIntent] */
     private fun handleIntentWhenInputting(
         intent: ImeIntent.OnKeyboard,
-        //
-        key: InputKey.Char = intent.key as InputKey.Char,
+        key: InputKey.Char,
     ): KeyboardStateTransition? =
     // Note：滑行结束时可能并未绑定按键，
     // 因此，必须从 intent 角度做分支处理，
@@ -132,23 +144,6 @@ class PinyinKeyboardIntentHandler(
 
             is ImeIntent.OnKeyboard.Swipe.End ->
                 KeyboardStateTransition.Pinyin.StopInput
-
-            else -> null
-        }
-
-    /** 处理 [KeyboardState.Idle] 状态下的与 [InputKey.Ctrl] 相关的 [ImeIntent] */
-    private fun handleCtrlKeyIntentWhenIdle(
-        intent: ImeIntent.OnKeyboard, state: KeyboardState.Idle,
-        //
-        key: InputKey.Ctrl = intent.key as InputKey.Ctrl,
-    ): KeyboardStateTransition? =
-        when (key) {
-            is InputKey.Ctrl.Backspace,
-            is InputKey.Ctrl.Keyboard ->
-                handleCtrlKeyIntent(intent = intent, state = state)
-
-            is InputKey.Ctrl.Editor.MoveCursor ->
-                handleEditorMoveCursorKeyIntentWhenIdle(intent = intent)
 
             else -> null
         }

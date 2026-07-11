@@ -35,55 +35,43 @@ open class BaseKeyboardIntentHandler() : KeyboardIntentHandler {
         return KeyboardStateTransition.ReturnToIdle
     }
 
-    /** 处理与 [InputKey.Ctrl] 相关的 [ImeIntent.OnKeyboard] */
+    /**
+     * 处理与 [InputKey.Ctrl] 相关的 [ImeIntent.OnKeyboard]：
+     * - 若长按或点击按键 [InputKey.Ctrl.Backspace]，均准备回删字符；
+     * - 若操作按键 [InputKey.Ctrl.Keyboard]，则由 [handleKeyboardCtrlKeyIntent] 处理；
+     * - 若操作按键 [InputKey.Ctrl.Editor.MoveCursor]，则由 [handleEditorMoveCursorKeyIntent] 处理；
+     */
     protected fun handleCtrlKeyIntent(
-        intent: ImeIntent.OnKeyboard, state: KeyboardState,
-        //
-        key: InputKey.Ctrl = intent.key as InputKey.Ctrl,
+        intent: ImeIntent.OnKeyboard,
+        key: InputKey.Ctrl,
     ): KeyboardStateTransition? =
         when (key) {
             is InputKey.Ctrl.Backspace ->
                 when (intent) {
-                    is ImeIntent.OnKeyboard.LongPress.Hold ->
-                        // 直接转由单击意图处理
-                        handleCtrlKeyIntent(
-                            intent = ImeIntent.OnKeyboard.Tap.Single(key),
-                            state = state,
-                        )
-
-                    is ImeIntent.OnKeyboard.Tap ->
+                    is ImeIntent.OnKeyboard.Tap,
+                    is ImeIntent.OnKeyboard.LongPress.Hold,
+                        ->
                         KeyboardStateTransition.Char.Backspace
 
                     else -> null
                 }
 
             is InputKey.Ctrl.Keyboard ->
-                when (intent) {
-                    is ImeIntent.OnKeyboard.Tap ->
-                        when (key) {
-                            is InputKey.Ctrl.Keyboard.SwitchTo ->
-                                KeyboardStateTransition.Keyboard.SwitchTo(key.type)
+                handleKeyboardCtrlKeyIntent(intent = intent, key = key)
 
-                            is InputKey.Ctrl.Keyboard.BackTo ->
-                                KeyboardStateTransition.Keyboard.SwitchTo(key.type)
-
-                            is InputKey.Ctrl.Keyboard.ToggleHandMode ->
-                                KeyboardStateTransition.Keyboard.ToggleHandMode
-                        }
-
-                    else -> null
-                }
+            is InputKey.Ctrl.Editor.MoveCursor ->
+                handleEditorMoveCursorKeyIntent(intent)
 
             else -> null
         }
 
     /**
-     * 处理 [KeyboardState.Idle] 状态下的与 [InputKey.Ctrl.Editor.MoveCursor] 相关的 [ImeIntent.OnKeyboard]：
-     * - 若双击，则直接切换到编辑器键盘；
-     * - 若滑行，则进入光标移动状态；
-     * - 若长按，则进入选区选区状态；
+     * 处理与 [InputKey.Ctrl.Editor.MoveCursor] 相关的 [ImeIntent.OnKeyboard]：
+     * - 若双击，则准备切换到编辑器键盘；
+     * - 若滑行，则准备进入光标移动状态；
+     * - 若长按，则准备进入选区选区状态；
      */
-    protected fun handleEditorMoveCursorKeyIntentWhenIdle(
+    protected fun handleEditorMoveCursorKeyIntent(
         intent: ImeIntent.OnKeyboard,
     ): KeyboardStateTransition? =
         when (intent) {
@@ -100,18 +88,42 @@ open class BaseKeyboardIntentHandler() : KeyboardIntentHandler {
         }
 
     /**
+     * 处理与 [InputKey.Ctrl.Keyboard] 相关的 [ImeIntent.OnKeyboard]：
+     * - 若点击切换按键，则准备切换到目标类型键盘；
+     * - 若点击退回按键，则准备切换到所要退回到的目标类型键盘；
+     * - 若点击左右手模式按键，则准备反转键盘的左右手模式；
+     */
+    protected fun handleKeyboardCtrlKeyIntent(
+        intent: ImeIntent.OnKeyboard,
+        key: InputKey.Ctrl.Keyboard,
+    ): KeyboardStateTransition? =
+        when (intent) {
+            is ImeIntent.OnKeyboard.Tap ->
+                when (key) {
+                    is InputKey.Ctrl.Keyboard.SwitchTo ->
+                        KeyboardStateTransition.Keyboard.SwitchTo(key.type)
+
+                    is InputKey.Ctrl.Keyboard.BackTo ->
+                        KeyboardStateTransition.Keyboard.SwitchTo(key.type)
+
+                    is InputKey.Ctrl.Keyboard.ToggleHandMode ->
+                        KeyboardStateTransition.Keyboard.ToggleHandMode
+                }
+
+            else -> null
+        }
+
+    /**
      * 处理 [KeyboardState.Editor] 状态下的 [ImeIntent.OnKeyboard]：
-     * - 若为滑行中，则将产生 [KeyboardStateTransition.Editor.Cursor.Moving] 和 [KeyboardStateTransition.Editor.Selection.Selecting]，
-     *   用于更新光标位置和选区范围；
-     * - 若为滑行结束，则将产生 [KeyboardStateTransition.Editor.Cursor.StopMove] 和 [KeyboardStateTransition.Editor.Selection.StopSelect]，
-     *   用于结束光标移动和选区选取；
+     * - 若为滑行中，则准备更新光标位置或更新选区范围；
+     * - 若为滑行结束，则准备结束光标移动或结束选区选取状态；
      */
     protected fun handleIntentWhenEditorEditing(
         intent: ImeIntent.OnKeyboard, state: KeyboardState.Editor,
     ): KeyboardStateTransition =
         when (intent) {
             is ImeIntent.OnKeyboard.Swipe.Moving ->
-                // 根据单位移动距离计算得出光标的移动次数
+                // 仅作一次有效移动，避免光标移动过于灵活
                 if (intent.motion.distance < 1) null
                 else
                     when (state) {

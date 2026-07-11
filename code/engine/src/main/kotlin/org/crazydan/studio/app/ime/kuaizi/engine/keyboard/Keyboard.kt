@@ -65,12 +65,11 @@ enum class KeyboardType {
     /** 获取当前键盘类型的初始状态 */
     fun initialState(): KeyboardState =
         when (this) {
-            Pinyin, Latin, Number, Math -> KeyboardState.Idle
+            Pinyin, Latin, Number, Math, Editor -> KeyboardState.Idle
             Symbol -> KeyboardState.SymbolChoosing()
             Emoji -> KeyboardState.EmojiChoosing()
             Candidate -> KeyboardState.CandidateSelection.Choosing()
             CommitOption -> KeyboardState.CommitOptionChoosing()
-            Editor -> KeyboardState.Editor.CursorMoving()
         }
 
     /**
