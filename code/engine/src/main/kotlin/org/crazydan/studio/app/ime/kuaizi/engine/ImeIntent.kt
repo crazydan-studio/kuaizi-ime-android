@@ -148,6 +148,12 @@ sealed class ImeIntent {
     /** 针对输入列表的意图 */
     sealed class InputList : ImeIntent() {
 
+        /** 提交输入列表 */
+        data object Commit : InputList()
+
+        /** 撤回已提交的输入列表：将已提交到编辑器的输入撤回，以重新编辑 */
+        data object Revoke : InputList()
+
         /**
          * 添加字符：字母、数字、符号、表情等
          * @property replacements 替换字符列表。

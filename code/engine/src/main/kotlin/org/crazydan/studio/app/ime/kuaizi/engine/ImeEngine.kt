@@ -421,6 +421,19 @@ class ImeEngine internal constructor(
     /** 处理与输入列表相关的意图 */
     private suspend fun handleIntentWithInputList(intent: ImeIntent.InputList) {
         when (intent) {
+            is ImeIntent.InputList.Commit -> {
+                // TODO 向编辑器提交文本：EditorAction.CommitText、EditorAction.InsertPairedSymbols
+                // TODO 更新数据库
+                // TODO 主键盘切换到 Idle 状态，临时性键盘切换回主键盘
+            }
+
+            is ImeIntent.InputList.Revoke -> {
+                // TODO 从编辑器撤销提交：EditorAction.RevokeCommit
+                // TODO 恢复 InputList
+                // TODO 还原数据库记录
+                // TODO 选中 InputList 中的已选中项
+            }
+
             is ImeIntent.InputList.AddChar -> {
                 // TODO 根据 InputList 当前状态决定字符添加和替换，以及是否为直输（冻结或为空时）
                 // TODO 对拉丁文输入做数据库补全查询

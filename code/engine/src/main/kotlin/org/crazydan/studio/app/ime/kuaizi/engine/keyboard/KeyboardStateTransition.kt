@@ -20,7 +20,6 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
-import org.crazydan.studio.app.ime.kuaizi.engine.PageDirection
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
@@ -167,6 +166,24 @@ sealed class KeyboardStateTransition {
 
     // ------------------------------------------------------------------------
 
+    /** 针对输入列表的状态转换 */
+    sealed class InputList : KeyboardStateTransition() {
+
+        /** 提交输入列表 */
+        data object Commit : InputList()
+
+        /** 撤回已提交的输入列表：将已提交到编辑器的输入撤回，以重新编辑 */
+        data object Revoke : InputList()
+
+        /** 删除当前已选中的输入项 */
+        data object DeleteSelected : InputList()
+
+        /** 确认待输入：将待输入提升为输入项 */
+        data object ConfirmPending : InputList()
+    }
+
+    // ------------------------------------------------------------------------
+
     /** 加载候选词 */
     data class LoadCandidates(val candidates: List<InputWord>) : KeyboardStateTransition()
 
@@ -179,9 +196,6 @@ sealed class KeyboardStateTransition {
         val tone: Tone?,
     ) : KeyboardStateTransition()
 
-    /** 翻页候选词 */
-    data class PageCandidates(val direction: PageDirection) : KeyboardStateTransition()
-
     /** 加载提交选项 */
     data class LoadCommitOptions(val options: List<InputWord.CommitOption>) : KeyboardStateTransition()
 
@@ -190,22 +204,4 @@ sealed class KeyboardStateTransition {
 
     /** 打开 Emoji 分组 */
     data class OpenEmojiGroup(val groupId: String?) : KeyboardStateTransition()
-
-    /** 加载更多候选词 */
-    data object LoadMoreCandidates : KeyboardStateTransition()
-
-    /** 选择候选词 */
-    data object SelectCandidate : KeyboardStateTransition()
-
-    /** 提交输入 */
-    data object CommitInput : KeyboardStateTransition()
-
-    /** 删除输入 */
-    data object DeleteInput : KeyboardStateTransition()
-
-    /** 回到输入状态 */
-    data object BackToInput : KeyboardStateTransition()
-
-    /** 回到候选选择状态 */
-    data object BackToChoosing : KeyboardStateTransition()
 }

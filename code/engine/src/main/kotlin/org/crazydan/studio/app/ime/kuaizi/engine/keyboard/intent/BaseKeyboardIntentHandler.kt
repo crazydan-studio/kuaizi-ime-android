@@ -62,6 +62,9 @@ open class BaseKeyboardIntentHandler() : KeyboardIntentHandler {
             is InputKey.Ctrl.Editor.MoveCursor ->
                 handleEditorMoveCursorKeyIntent(intent)
 
+            is InputKey.Ctrl.InputList ->
+                handleInputListCtrlKeyIntent(intent = intent, key = key)
+
             else -> null
         }
 
@@ -112,6 +115,34 @@ open class BaseKeyboardIntentHandler() : KeyboardIntentHandler {
 
             else -> null
         }
+
+    /**
+     * 处理与 [InputKey.Ctrl.InputList] 相关的 [ImeIntent.OnKeyboard]：
+     */
+    protected fun handleInputListCtrlKeyIntent(
+        intent: ImeIntent.OnKeyboard,
+        key: InputKey.Ctrl.InputList,
+    ): KeyboardStateTransition? =
+        when (intent) {
+            is ImeIntent.OnKeyboard.Tap ->
+                when (key) {
+                    is InputKey.Ctrl.InputList.Commit ->
+                        KeyboardStateTransition.InputList.Commit
+
+                    is InputKey.Ctrl.InputList.Revoke ->
+                        KeyboardStateTransition.InputList.Revoke
+
+                    is InputKey.Ctrl.InputList.DeleteSelected ->
+                        KeyboardStateTransition.InputList.DeleteSelected
+
+                    is InputKey.Ctrl.InputList.ConfirmPending ->
+                        KeyboardStateTransition.InputList.ConfirmPending
+                }
+
+            else -> null
+        }
+
+    // ------------------------------------------------------------------------
 
     /**
      * 处理 [KeyboardState.Editor] 状态下的 [ImeIntent.OnKeyboard]：

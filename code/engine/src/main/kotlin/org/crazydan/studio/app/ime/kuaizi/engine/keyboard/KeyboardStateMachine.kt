@@ -52,18 +52,10 @@ class KeyboardStateMachine(
             is KeyboardStateTransition.NothingToDo -> null
 
             is KeyboardStateTransition.Keyboard ->
-                KeyboardStateTransition.Result(
-                    newState = currentState,
-                    sideEffects = listOf(
-                        when (transition) {
-                            is KeyboardStateTransition.Keyboard.SwitchTo ->
-                                ImeIntent.Keyboard.SwitchTo(transition.type)
+                handleWithKeyboard(transition, currentState)
 
-                            is KeyboardStateTransition.Keyboard.ToggleHandMode ->
-                                ImeIntent.Keyboard.ToggleHandMode
-                        }
-                    ),
-                )
+            is KeyboardStateTransition.InputList ->
+                handleWithInputList(transition, currentState)
 
             is KeyboardStateTransition.Editor.PerformEdit ->
                 KeyboardStateTransition.Result(
@@ -96,9 +88,53 @@ class KeyboardStateMachine(
 
     // -----------------------------------------------------------------
 
+    /** 处理 [KeyboardStateTransition.Keyboard] 类型的状态转换 */
+    private fun handleWithKeyboard(
+        transition: KeyboardStateTransition.Keyboard,
+        state: KeyboardState,
+    ): KeyboardStateTransition.Result =
+        KeyboardStateTransition.Result(
+            newState = state,
+            sideEffects = listOf(
+                when (transition) {
+                    is KeyboardStateTransition.Keyboard.SwitchTo ->
+                        ImeIntent.Keyboard.SwitchTo(transition.type)
+
+                    is KeyboardStateTransition.Keyboard.ToggleHandMode ->
+                        ImeIntent.Keyboard.ToggleHandMode
+                }
+            ),
+        )
+
+    /** 处理 [KeyboardStateTransition.InputList] 类型的状态转换 */
+    private fun handleWithInputList(
+        transition: KeyboardStateTransition.InputList,
+        state: KeyboardState,
+    ): KeyboardStateTransition.Result =
+        KeyboardStateTransition.Result(
+            newState = state,
+            sideEffects = listOf(
+                when (transition) {
+                    is KeyboardStateTransition.InputList.Commit ->
+                        ImeIntent.InputList.Commit
+
+                    is KeyboardStateTransition.InputList.Revoke ->
+                        ImeIntent.InputList.Revoke
+
+                    is KeyboardStateTransition.InputList.ConfirmPending ->
+                        ImeIntent.InputList.ConfirmPending
+
+                    is KeyboardStateTransition.InputList.DeleteSelected ->
+                        ImeIntent.InputList.DeleteSelected
+                }
+            ),
+        )
+
+    // -----------------------------------------------------------------
+
     /** 从 [KeyboardState.Idle] 状态处理转换 */
-    private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result? {
-        return when (transition) {
+    private fun handleFromIdle(transition: KeyboardStateTransition): KeyboardStateTransition.Result? =
+        when (transition) {
             // --------------------------------------
             is KeyboardStateTransition.Pinyin.StartInput ->
                 transition.key.let { key ->
@@ -162,7 +198,6 @@ class KeyboardStateMachine(
             // --------------------------------------
             else -> null
         }
-    }
 
     // -----------------------------------------------------------------
 
