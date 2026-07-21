@@ -33,7 +33,7 @@ import org.crazydan.studio.app.ime.kuaizi.device.HapticPlayer
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeConfig
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeEngine
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.ImeEditorBridge
-import org.crazydan.studio.app.ime.kuaizi.engine.dict.ImeInMemoryDictProvider
+import org.crazydan.studio.app.ime.kuaizi.engine.dict.InMemoryDictProvider
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorInputType
 import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardHost
 import org.crazydan.studio.app.ime.kuaizi.ui.KeyboardViewModel
@@ -184,7 +184,7 @@ class IMEService : InputMethodService() {
     ) {
         engine = ImeEngine.create(
             config = configDataStore.getConfig(),
-            dictProvider = ImeInMemoryDictProvider(),
+            dictProvider = InMemoryDictProvider(),
         )
         engine!!.attachEditorBridge(editorBridge)
 

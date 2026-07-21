@@ -45,7 +45,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.VariantType
  * @param context Android Context，用于初始化 Room 数据库
  * @param favoriteDao 可选的收藏 DAO，不提供时使用空实现
  */
-class ImeSqliteDictProvider(
+class SqliteDictProvider(
     context: Context,
     private val favoriteDao: FavoriteDao? = null,
 ) : ImeDictProvider {
