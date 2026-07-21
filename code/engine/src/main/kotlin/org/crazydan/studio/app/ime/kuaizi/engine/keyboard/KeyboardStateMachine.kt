@@ -145,7 +145,7 @@ class KeyboardStateMachine(
                         KeyboardStateTransition.Result(
                             newState = newState,
                             sideEffects = listOf(
-                                ImeIntent.InputList.NewPending(
+                                ImeIntent.InputList.UpdatePending(
                                     pending = createPinyinInputPending(pinyinTree, newState)
                                 ),
                             ),
@@ -159,15 +159,20 @@ class KeyboardStateMachine(
                     newState = KeyboardState.Idle,
                     sideEffects = listOf(
                         ImeIntent.InputList.AddChar(
-                            char = when (transition.key) {
-                                is InputKey.Char.Space -> InputItem.Space
-                                is InputKey.Char.Enter -> InputItem.Enter
-
-                                else -> InputItem.Char(
-                                    value =
-                                        transition.key.getReplacement(transition.replacement)
-                                )
-                            },
+                            char =
+                                transition.key.getReplacement(transition.replacement).let { ch ->
+                                    when (transition.key) {
+                                        is InputKey.Char.Space -> InputItem.Char.Space
+                                        is InputKey.Char.Enter -> InputItem.Enter
+                                        //
+                                        is InputKey.Char.Emoji -> InputItem.Char.Emoji(value = ch)
+                                        is InputKey.Char.Symbol -> InputItem.Char.Symbol(value = ch)
+                                        //
+                                        is InputKey.Char.Alphabet,
+                                        is InputKey.Char.Number ->
+                                            InputItem.Char.Latin(chars = listOf(ch))
+                                    }
+                                },
                             replacements =
                                 if (transition.replacement > 0)
                                     transition.key.replacements
@@ -180,7 +185,7 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     newState = KeyboardState.Idle,
                     sideEffects = listOf(
-                        ImeIntent.InputList.BackspaceChar
+                        ImeIntent.InputList.DeleteBackward
                     ),
                 )
 

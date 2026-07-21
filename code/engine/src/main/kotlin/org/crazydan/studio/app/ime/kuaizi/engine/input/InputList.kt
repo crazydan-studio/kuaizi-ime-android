@@ -19,107 +19,39 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input
 
-import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
-
-/** 输入列表元素的密封类型基类 */
-sealed class InputItem {
-
-    /**
-     * 字符输入项，承载用户输入的字符数据
-     * @param value 字符的显示文本
-     * @param keys 触发该字符的按键序列
-     * @param replacements 可替换文本列表，用于标点符号的长按替换
-     * @param word 关联的候选词信息
-     * @param pairSymbol 配对符号信息，null 表示非配对符号
-     */
-    data class Char(
-        val value: String,
-        val keys: List<InputKey> = emptyList(),
-        val replacements: List<String> = emptyList(),
-        val word: InputWord? = null,
-        val pairSymbol: PairSymbol? = null,
-    ) : InputItem() {
-        /** 是否为配对符号 */
-        val hasPair: Boolean get() = pairSymbol != null
-
-        /** 是否存在多个替换选项（至少两个才构成可轮换的替换列表） */
-        val hasReplacements: Boolean get() = replacements.size > 1
-
-        /**
-         * 获取替换轮换中的下一个文本
-         * @param text 当前文本
-         * @return 替换列表中的下一个文本，若无替换则返回当前文本
-         */
-        fun nextReplacement(text: String): String {
-            if (replacements.size <= 1) return text
-            val index = replacements.indexOf(text)
-            return if (index >= 0) replacements[(index + 1) % replacements.size] else replacements[0]
-        }
-
-        /**
-         * 判断指定按键是否可以触发替换操作
-         * @param key 字符按键
-         * @return 是否可以替换
-         */
-        fun canReplace(key: InputKey.Char.Alphabet): Boolean =
-            replacements.size > 1 && key.value in replacements
-    }
-
-    /** 游标间隔标记，所有实例共享同一身份 */
-    data object Gap : InputItem()
-
-    /** 空格输入项 */
-    data object Space : InputItem()
-
-    /** 回车输入项：仅用于直输 */
-    data object Enter : InputItem()
-
-    /**
-     * 拼音输入项
-     * @property valid 是否为有效拼音
-     * @property word 该（有效）拼音的候选字
-     */
-    data class Pinyin(
-        val value: String,
-        val valid: Boolean,
-        val word: InputWord.Pinyin? = null,
-    ) : InputItem()
-
-    /**
-     * 数学表达式输入项，内部持有一个完整的嵌套输入列表
-     * @param nestedList 嵌套的数学输入列表
-     */
-    data class MathExpr(
-        val nestedList: InputList,
-    ) : InputItem()
-}
-
 /**
  * 输入列表，管理用户输入的字符序列、游标位置、待确认输入和嵌套数学表达式。
- * 采用不可变 data class 设计，所有状态变更通过 copy() 创建新实例。
  *
- * @param inputs Char-Gap 交替排列的输入序列
- * @param gapIndex 当前游标位置（指向 inputs 列表中的 Gap 索引）
- * @param pending 待确认的拼音输入
- * @param mathExprNested 嵌套的数学输入列表
+ * @param inputs [InputItem.Gap]-[InputItem.Char] 交替排列的输入序列。
+ * 始终不为空，且列表末尾始终多一个 [InputItem.Gap]
+ * @param cursor 当前游标位置（指向 inputs 列表中的被选中输入的索引）
+ * @param pending 待输入
+ * @param frozen 是否已被冻结：被冻结后，将不能对输入列表做修改
  */
 data class InputList(
-    val inputs: List<InputItem> = emptyList(),
-    val gapIndex: Int = 0,
-    val pending: PendingInput? = null,
-    val mathExprNested: InputList? = null,
+    val inputs: List<InputItem> = listOf(InputItem.Gap),
+    val cursor: Int = 0,
+    val pending: InputItem? = null,
+    val frozen: Boolean = false,
 ) {
     init {
-        require(gapIndex >= 0)
-        require(gapIndex <= inputs.lastIndex + 1)
+        require(cursor >= 0 && cursor <= inputs.lastIndex)
     }
+
+    /** 输入列表是否为空 */
+    val empty: Boolean
+        get() = inputs.size == 1
+
+    /** 已选中输入项 */
+    private val selected: InputItem
+        get() = inputs[cursor]
 
     val hasPending: Boolean
         get() = !inputs.isEmpty()
 
     /** 当前游标位置的 Gap 元素 */
     val cursorGap: InputItem.Gap
-        get() = inputs.getOrElse(gapIndex) { InputItem.Gap } as InputItem.Gap
+        get() = inputs.getOrElse(cursor) { InputItem.Gap } as InputItem.Gap
 
     /** 可见的字符输入列表（排除 Gap） */
     val visibleInputs: List<InputItem.Char>
@@ -129,155 +61,174 @@ data class InputList(
     val text: String
         get() = visibleInputs.joinToString("") { it.value }
 
-    /** 输入列表是否为空（仅包含 Gap） */
-    val isEmpty: Boolean
-        get() = inputs.all { it is InputItem.Gap }
-
     val chars: List<InputItem.Char>
         get() = visibleInputs
 
+    // ------------------------------------------------------
+
+    /** 是否冻结输入列表？  */
+    fun freeze(frozen: Boolean): InputList =
+        copy(frozen = frozen)
+
+    /** 清空输入列表 */
+    fun clean(): InputList =
+        InputList(inputs = listOf(InputItem.Gap), cursor = 0, pending = null)
+
+    // ------------------------------------------------------
+
     /**
-     * 在游标位置追加字符输入
-     * @param char 要追加的字符输入项
-     * @return 新的 InputList 实例
+     * 选中指定位置输入项：
+     * - 若指定位置已选中或者 [index] 不在有效范围，则不做处理；
+     * - 若在其他位置，则先 [confirmPending] 确认当前待输入，再做选中；
      */
-    fun appendChar(char: InputItem.Char): InputList {
-        val newInputs = inputs.toMutableList().apply {
-            add(gapIndex, char)
-            add(gapIndex + 1, InputItem.Gap)
+    fun select(index: Int): InputList =
+        if (cursor == index || index < 0 || index > inputs.lastIndex) this
+        else
+            confirmPending().let {
+                it.copy(
+                    cursor =
+                        if (index < cursor) index
+                        // 加上后移偏移量：可能为正，可能为负
+                        else index + (it.inputs.size - inputs.size),
+                    pending = null,
+                )
+            }
+
+    // ------------------------------------------------------
+
+    /** 更新待输入：直接替换当前的待输入 */
+    fun updatePending(input: InputItem): InputList =
+        copy(pending = input)
+
+    /** 丢弃待输入 */
+    fun dropPending(): InputList =
+        copy(pending = null)
+
+    /** 确认待输入 */
+    fun confirmPending(): InputList {
+        if (pending == null) return this
+        if (InputItem.isEmpty(pending)) return dropPending()
+
+        return when (selected) {
+            is InputItem.Gap -> {
+                // 在当前游标位置新增 Gap-Char 对
+                copy(
+                    inputs = updateInputs {
+                        add(cursor, InputItem.Gap)
+                        add(cursor + 1, pending)
+                    },
+                    pending = null,
+                    cursor = cursor + 2,
+                )
+            }
+
+            is InputItem.Char -> {
+                // 直接原地替换
+                copy(
+                    inputs = updateInputs { set(cursor, pending) },
+                    pending = null,
+                    cursor = cursor + 1,
+                )
+            }
+
+            else -> this
         }
-        return copy(inputs = newInputs, gapIndex = gapIndex + 2)
     }
 
-    /**
-     * 删除游标前的一个字符
-     * @return 新的 InputList 实例
-     */
-    fun deleteCharBeforeCursor(): InputList {
-        if (gapIndex < 2) return this
-        val newInputs = inputs.toMutableList().apply {
-            removeAt(gapIndex - 2)
-            removeAt(gapIndex - 2)
+    // ---------------------------------------------------------
+
+    /** 添加字符：替换 [pending]，或向 [pending] 追加字符，[cursor] 位置不变 */
+    fun addChar(char: InputItem.Char, replacements: List<String>?): InputList =
+        when (char) {
+            // 非拉丁输入直接替换
+            is InputItem.Char.Space,
+            is InputItem.Char.Emoji,
+            is InputItem.Char.Symbol
+                ->
+                // TODO 处理配对符号
+                when (selected) {
+                    // 替换输入
+                    is InputItem.Gap
+                        if (cursor > 1 && InputItem.isEmpty(pending) && replacements != null)
+                        -> {
+                        inputs[cursor - 1].let { prev ->
+                            when (prev) {
+                                is InputItem.Char if (replacements.contains(prev.value))
+                                    ->
+                                    copy(
+                                        inputs = updateInputs { set(cursor - 1, char) },
+                                        pending = null,
+                                    )
+
+                                else -> null
+                            }
+                        } ?: copy(pending = char)
+                    }
+
+                    else -> copy(pending = char)
+                }
+
+            is InputItem.Char.Latin ->
+                when (pending) {
+                    is InputItem.Char.Latin if (!InputItem.isEmpty(pending))
+                        ->
+                        copy(
+                            pending = pending.appendChar(
+                                char = char.chars[0],
+                                replacements = replacements,
+                            )
+                        )
+
+                    else -> copy(pending = char)
+                }
         }
-        return copy(inputs = newInputs, gapIndex = gapIndex - 2)
+
+    // ---------------------------------------------------------
+
+    /**
+     * 删除已选中输入项：
+     * - 若 [selected] 为 [InputItem.Gap]，则 [dropPending] 即可；
+     * - 否则，执行 [deleteBackward]；
+     */
+    fun deleteSelected(): InputList =
+        when (selected) {
+            is InputItem.Gap -> dropPending()
+            else -> doDeleteBackward(false)
+        }
+
+    /**
+     * 回删输入（项）：
+     * - 若 [pending] 或 [selected]（待输入为空时）为 [InputItem.Char.Latin]，则从其尾部逐字符删除；
+     * - 若 [selected] 为 [InputItem.Gap]，则删除其前面的输入项；
+     * - 若 [selected] 为配对符号输入，则同时删除其另一侧的符号输入项；
+     * - 否则，直接删除 [selected]；
+     */
+    fun deleteBackward(): InputList =
+        doDeleteBackward(true)
+
+    private fun doDeleteBackward(oneByOne: Boolean): InputList {
+        if (oneByOne) {
+            val emptyPending = InputItem.isEmpty(pending)
+            val current = if (emptyPending) selected else pending
+
+            if (current is InputItem.Char.Latin && current.chars.size > 1) {
+                return copy(
+                    inputs =
+                        if (emptyPending) updateInputs { set(cursor, current.dropLastChar()) }
+                        else inputs,
+                    pending =
+                        if (emptyPending) null
+                        else current.dropLastChar(),
+                )
+            }
+        }
+
+        return this
     }
 
-    /**
-     * 移动游标到指定位置
-     * @param newGapIndex 目标游标索引
-     * @return 新的 InputList 实例
-     */
-    fun moveCursorTo(newGapIndex: Int): InputList {
-        val clampedIndex = newGapIndex.coerceIn(0, inputs.lastIndex)
-        return copy(gapIndex = clampedIndex)
-    }
+    // ------------------------------------------
 
-    /** 清空所有输入，返回空输入列表 */
-    fun clean(): InputList = InputList()
+    private fun updateInputs(block: MutableList<InputItem>.() -> Unit): List<InputItem> =
+        inputs.toMutableList().apply(block)
 
-    /**
-     * 设置待确认输入
-     * @param pending 待确认输入信息
-     * @return 新的 InputList 实例
-     */
-    fun withPending(pending: PendingInput?): InputList =
-        copy(pending = pending)
-}
-
-/**
- * 待确认的拼音输入数据
- * @param chars 待确认的拼音字符列表
- * @param completions 输入补全列表
- * @param pinyinToggles 拼音切换类型集合，如全拼/双拼/注音
- */
-data class PendingInput(
-    val chars: List<InputItem.Char>,
-    val completions: List<InputCompletion> = emptyList(),
-    val pinyinToggles: Set<PinyinToggleType> = emptySet(),
-)
-
-/** 输入补全的密封类型基类 */
-sealed class InputCompletion {
-    /** 补全的完整文本 */
-    abstract val text: String
-
-    /**
-     * 拉丁词汇补全建议
-     * @param text 补全的完整词汇
-     * @param remaining 用户尚未输入的剩余部分
-     */
-    data class LatinWord(
-        override val text: String,
-        val remaining: String,
-    ) : InputCompletion()
-
-    /**
-     * 拼音词组补全建议
-     * @param text 补全的中文词组文本
-     * @param remaining 用户尚未输入的拼音部分
-     * @param spells 词组各字的拼音拼写列表
-     */
-    data class PhraseWord(
-        override val text: String,
-        val remaining: String,
-        val spells: List<String>,
-    ) : InputCompletion()
-}
-
-/**
- * 配对符号结构信息
- * @param open 左半部分符号
- * @param close 右半部分符号
- * @param content 左右符号之间的可选内容，null 表示内部为空
- */
-data class PairSymbol(
-    val open: String,
-    val close: String,
-    val content: String? = null,
-)
-
-/** 拼音切换类型 */
-enum class PinyinToggleType {
-    /** 全拼模式 */
-    FullPinyin,
-
-    /** 双拼模式 */
-    DoublePinyin,
-
-    /** 注音模式 */
-    Bopomofo,
-
-    /** 显示声调 */
-    ShowTone,
-}
-
-/**
- * 输入间距规则，定义不同类型字符之间的 Gap 插入策略。
- * 核心原则是：游标仅在语义边界处停留。
- */
-object InputGapSpacing {
-    /**
-     * 判断两个相邻 Char 之间是否需要插入 Gap
-     * @param left 左侧字符
-     * @param right 右侧字符
-     * @return true 表示需要间隔（游标可停留），false 表示紧密连接
-     */
-    fun needsGap(left: InputItem.Char, right: InputItem.Char): Boolean {
-        // 配对符号内部不需要间隔
-        if (left.pairSymbol != null && left.pairSymbol.content == null) return false
-        // 同一拼音词组的字符不需要间隔
-        if (left.word is InputWord.PinyinPhrase && left.word == right.word) return false
-        // 英文单词内部不需要间隔
-        if (isLatinChar(left) && isLatinChar(right)) return false
-        // 数字序列内部不需要间隔
-        if (isDigitChar(left) && isDigitChar(right)) return false
-        // 其他情况均需间隔
-        return true
-    }
-
-    private fun isLatinChar(char: InputItem.Char): Boolean =
-        char.word is InputWord.Latin || char.value.all { it.isLetter() && it.code < 128 }
-
-    private fun isDigitChar(char: InputItem.Char): Boolean =
-        char.value.all { it.isDigit() }
 }

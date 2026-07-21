@@ -439,17 +439,12 @@ class ImeEngine internal constructor(
                 // TODO 对拉丁文输入做数据库补全查询
             }
 
-            is ImeIntent.InputList.BackspaceChar -> {
+            is ImeIntent.InputList.DeleteBackward -> {
                 // TODO 回删 InputList 中字符或编辑器内字符（InputList 为直输时）
                 // TODO 编辑器回删通过 EditorEditAction.Backspace
             }
 
             is ImeIntent.InputList.DeleteSelected -> {
-            }
-
-            is ImeIntent.InputList.NewPending -> {
-                // TODO 若为拼音输入且拼音有效，则查询候选字
-                // TODO InputList 新建待输入
             }
 
             is ImeIntent.InputList.UpdatePending -> {
@@ -584,6 +579,16 @@ class ImeEngine internal constructor(
         applyStateUpdate { state ->
             state.copy(
                 keyboard = state.keyboard.copy(state = newState),
+            )
+        }
+    }
+
+    private fun updateInputList(inputList: InputList) {
+        if (_state.value.inputList == inputList) return
+
+        applyStateUpdate { state ->
+            state.copy(
+                inputList = inputList,
             )
         }
     }

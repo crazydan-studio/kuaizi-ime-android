@@ -80,7 +80,11 @@ sealed class ImeIntent {
             data class Hold(
                 override val key: InputKey? = null,
                 val tick: Int = 1,
-            ) : LongPress()
+            ) : LongPress() {
+                init {
+                    require(tick > 0)
+                }
+            }
         }
 
         /**
@@ -131,7 +135,11 @@ sealed class ImeIntent {
             data class Hold(
                 override val key: InputKey? = null,
                 val tick: Int = 1,
-            ) : Swipe()
+            ) : Swipe() {
+                init {
+                    require(tick > 0)
+                }
+            }
         }
 
         /**
@@ -167,14 +175,14 @@ sealed class ImeIntent {
             val replacements: List<String>? = null,
         ) : InputList()
 
-        /** 回删字符：在输入列表为空或已被冻结时，删除编辑器内字符 */
-        data object BackspaceChar : InputList()
+        /** 回删：在输入列表为空或已被冻结时，回删编辑器内的内容 */
+        data object DeleteBackward : InputList()
 
         /** 删除当前已选中的输入项 */
         data object DeleteSelected : InputList()
 
-        /** 新建待输入 */
-        data class NewPending(val pending: InputItem) : InputList()
+        /** 选中指定位置的输入项 */
+        data class SelectAt(val index: Int) : InputList()
 
         /** 更新待输入 */
         data class UpdatePending(val pending: InputItem) : InputList()

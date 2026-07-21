@@ -61,7 +61,12 @@ data class ImeState(
     val clipboard: Clipboard = Clipboard(),
     val favoriteList: FavoriteList = FavoriteList(),
     val toolListState: ToolListState = ToolListState(),
-)
+) {
+
+    /** 是否应该直接输入到目标编辑器 */
+    fun shouldDirectInput(): Boolean =
+        inputList.frozen || inputList.empty
+}
 
 /**
  * 工具栏状态：管理键盘上方工具栏中各按钮的可用性和配置。
