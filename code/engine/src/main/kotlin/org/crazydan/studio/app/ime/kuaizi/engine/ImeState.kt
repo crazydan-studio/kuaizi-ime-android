@@ -65,7 +65,7 @@ data class ImeState(
 
     /** 是否应该直接输入到目标编辑器 */
     fun shouldDirectInput(): Boolean =
-        inputList.frozen || inputList.empty
+        inputList.isFrozen() || inputList.isEmpty()
 }
 
 /**

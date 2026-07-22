@@ -186,7 +186,7 @@ private fun StackedLayout(
             )
         }
         // Row 2：输入栏与工具列表互斥切换
-        if (inputList.hasPending) {
+        if (inputList.emptyPending) {
             InputListPanel(
 //                items = inputList.inputs,
 //                cursorIndex = inputList.gapIndex,
@@ -289,7 +289,7 @@ private fun SeparatedLayout(
             showIndicator = showIndicator,
         )
         // Row 2：输入栏与工具列表互斥切换
-        if (inputList.hasPending) {
+        if (inputList.emptyPending) {
             InputListPanel(
 //                items = inputList.inputs,
 //                cursorIndex = inputList.gapIndex,

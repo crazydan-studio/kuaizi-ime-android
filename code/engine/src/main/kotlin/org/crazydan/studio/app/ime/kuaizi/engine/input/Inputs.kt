@@ -19,7 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input
 
-/** 输入列表元素的密封类型基类 */
+/** 输入项 */
 sealed class InputItem {
 
     /** 游标间隔标记，所有实例共享同一身份 */
@@ -43,9 +43,13 @@ sealed class InputItem {
             override val value: String,
         ) : Char()
 
-        /** 符号输入项（单字符） */
+        /**
+         * 符号输入项（单字符）
+         * @property right 左配对符号的右配对符号
+         */
         data class Symbol(
             override val value: String,
+            val right: Symbol?,
         ) : Char()
 
         /** 拉丁文（字母 + 数字）输入项（多字符） */
@@ -54,10 +58,6 @@ sealed class InputItem {
         ) : Char() {
             override val value: String
                 get() = chars.joinToString("")
-
-            init {
-                require(chars.isNotEmpty())
-            }
 
             /** 丢弃最后一个字符 */
             fun dropLastChar(): Latin =
@@ -95,17 +95,14 @@ sealed class InputItem {
     data class MathExpr(
         val nestedList: InputList,
     ) : InputItem()
-
-    companion object {
-
-        /** 输入项是否为空 */
-        fun isEmpty(input: InputItem?): Boolean =
-            when (input) {
-                is Char -> input.value.isEmpty()
-                else -> true
-            }
-    }
 }
+
+/** 输入项是否为空：主要针对算术输入项，其余除了 [InputItem.Gap] 以外，实际都不应该为空 */
+fun InputItem.isEmpty(): Boolean =
+    when (this) {
+        is InputItem.Char -> value.isEmpty()
+        else -> true
+    }
 
 /**
  * 待确认的拼音输入数据
@@ -146,18 +143,6 @@ sealed class InputCompletion {
         val spells: List<String>,
     ) : InputCompletion()
 }
-
-/**
- * 配对符号结构信息
- * @param open 左半部分符号
- * @param close 右半部分符号
- * @param content 左右符号之间的可选内容，null 表示内部为空
- */
-data class PairSymbol(
-    val open: String,
-    val close: String,
-    val content: String? = null,
-)
 
 /** 拼音切换类型 */
 enum class PinyinToggleType {

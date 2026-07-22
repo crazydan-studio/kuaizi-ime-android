@@ -116,7 +116,7 @@ class KeyboardViewModel(private val option: Option) : ViewModel() {
     )
 
     /** 是否正在输入，由 inputList.hasPending 直接派生 */
-    val isInputting: Boolean get() = state.value.inputList.hasPending
+    val isInputting: Boolean get() = state.value.inputList.emptyPending
 
     // -----------------------------------------------------------------------
 
