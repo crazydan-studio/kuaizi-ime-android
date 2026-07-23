@@ -19,10 +19,12 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input
 
+import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInputList
+
 /** 输入项 */
 sealed class InputItem {
 
-    /** 游标间隔标记，所有实例共享同一身份 */
+    /** 输入项之间的空隙，便于在相邻输入项之间插入其他输入项 */
     data object Gap : InputItem()
 
     /** 回车输入项：仅用于直输 */
@@ -58,22 +60,6 @@ sealed class InputItem {
         ) : Char() {
             override val value: String
                 get() = chars.joinToString("")
-
-            /** 丢弃最后一个字符 */
-            fun dropLastChar(): Latin =
-                copy(chars = chars.dropLast(1))
-
-            /** 向尾部追加字符，或替换尾部字符 */
-            fun appendChar(char: String, replacements: List<String>?): Latin =
-                copy(
-                    chars = (
-                            replacements?.first { chars.last() == it }
-                                // 替换最后一个
-                                ?.let { chars.dropLast(1) }
-                            // 追加
-                                ?: chars
-                            ) + char
-                )
         }
     }
 
@@ -89,32 +75,48 @@ sealed class InputItem {
     ) : InputItem()
 
     /**
-     * 数学表达式输入项，内部持有一个完整的嵌套输入列表
-     * @param nestedList 嵌套的数学输入列表
+     * 算术表达式输入项
+     * @property inputList 表达式输入列表
      */
     data class MathExpr(
-        val nestedList: InputList,
+        val inputList: MathInputList = MathInputList(),
     ) : InputItem()
 }
 
-/** 输入项是否为空：主要针对算术输入项，其余除了 [InputItem.Gap] 以外，实际都不应该为空 */
+/** 输入项是否为空：主要针对 [InputItem.MathExpr]，其余除了 [InputItem.Gap] 以外，实际都不应该为空 */
 fun InputItem.isEmpty(): Boolean =
     when (this) {
         is InputItem.Char -> value.isEmpty()
+        is InputItem.MathExpr -> inputList.isEmpty()
         else -> true
     }
 
-/**
- * 待确认的拼音输入数据
- * @param chars 待确认的拼音字符列表
- * @param completions 输入补全列表
- * @param pinyinToggles 拼音切换类型集合，如全拼/双拼/注音
- */
-data class PendingInput(
-    val chars: List<InputItem.Char>,
-    val completions: List<InputCompletion> = emptyList(),
-    val pinyinToggles: Set<PinyinToggleType> = emptySet(),
-)
+/** 丢弃最后一个字符 */
+fun InputItem.Char.Latin.dropLastChar(): InputItem.Char.Latin =
+    copy(chars = chars.dropLast(1))
+
+/** 向尾部追加字符，或替换尾部字符 */
+fun InputItem.Char.Latin.appendChar(
+    char: String,
+    replacements: List<String>?,
+): InputItem.Char.Latin =
+    copy(
+        chars = (
+                replacements?.first { chars.last() == it }
+                    // 替换最后一个
+                    ?.let { chars.dropLast(1) }
+                // 追加
+                    ?: chars
+                ) + char
+    )
+
+/** 应用算术表达式输入列表更新 */
+fun InputItem.MathExpr.applyInputListUpdate(
+    block: MathInputList.() -> MathInputList,
+): InputItem.MathExpr =
+    InputItem.MathExpr(
+        inputList = inputList.block()
+    )
 
 /** 输入补全的密封类型基类 */
 sealed class InputCompletion {

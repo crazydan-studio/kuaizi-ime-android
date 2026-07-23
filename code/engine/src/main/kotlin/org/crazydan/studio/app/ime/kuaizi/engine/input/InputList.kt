@@ -19,8 +19,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input
 
+import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInputList
+
 /**
- * 输入列表，管理用户输入的字符序列、游标位置、待确认输入和嵌套数学表达式。
+ * 输入列表，管理用户输入的字符序列、游标位置、待确认输入。
  *
  * @param inputs [InputItem.Gap]-[InputItem.Char] 交替排列的输入序列。
  * 始终不为空，且列表末尾始终多一个 [InputItem.Gap]
@@ -38,20 +40,12 @@ data class InputList(
         require(cursor >= 0 && cursor <= inputs.lastIndex)
     }
 
-    /** 已选中输入项 */
+    /**
+     * 已选中输入项：
+     * - 若 [selected] 为 [InputItem.MathExpr]，则 [pending] 始终为 `null`；
+     */
     private val selected: InputItem
         get() = inputs[cursor]
-
-    /** 可见的字符输入列表（排除 Gap） */
-    val visibleInputs: List<InputItem.Char>
-        get() = inputs.filterIsInstance<InputItem.Char>()
-
-    /** 输入文本内容，将 visibleInputs 的 text 字段拼接为完整字符串 */
-    val text: String
-        get() = visibleInputs.joinToString("") { it.value }
-
-    val chars: List<InputItem.Char>
-        get() = visibleInputs
 
     // ------------------------------------------------------
 
@@ -107,34 +101,42 @@ data class InputList(
 
     /**
      * 确认待输入：
-     * - 若 [pending] 为空，则 [dropPending]，并在 [selected] 不为 [InputItem.Gap] 时将 [cursor] 后移一位；
+     * - 若 [pending] 为空，则 [dropPending]，并在 [selected] 不为 [InputItem.Gap] 时将 [cursor] 后移一位，
+     *   若 [selected] 为 [InputItem.MathExpr] 还需要先确认算术输入列表的待输入；
      * - 若 [selected] 为 [InputItem.Gap]，则将 [pending] 的 Gap-Char 对插入到 [selected] 之前；
      * - 否则，直接以 [pending] 覆盖 [selected]；
      *
      * [cursor] 始终指向 Gap 位。
      */
     fun confirmPending(): InputList {
+        // Note：在 selected 为算术输入时，pending 始终为 null
         if (hasEmptyPending()) {
             return when (selected) {
-                is InputItem.Gap -> dropPending()
-                else -> copy(
-                    pending = null,
-                    cursor = cursor + 1,
-                )
+                is InputItem.Gap ->
+                    dropPending()
+
+                is InputItem.MathExpr ->
+                    withMathExprUpdate { confirmPending() }
+                        .copy(cursor = cursor + 1)
+
+                else ->
+                    copy(
+                        pending = null,
+                        cursor = cursor + 1,
+                    )
             }
         }
 
-        // TODO 对算术输入的确认
         return when (selected) {
             // 插入 Gap-Char 对
             is InputItem.Gap ->
-                moveCursorAndUpdateInputs(cursor + 2) {
+                applyInputsUpdate(cursor + 2) {
                     addAll(cursor, listOf(InputItem.Gap, pending!!))
                 }
 
             // 原地覆盖
             else ->
-                moveCursorAndUpdateInputs(cursor + 1) {
+                applyInputsUpdate(cursor + 1) {
                     set(cursor, pending!!)
                 }
         }
@@ -152,6 +154,9 @@ data class InputList(
      * - 否则，用 [char] 覆盖 [selected]；
      *
      * 仅当 [char] 为 [InputItem.Char.Latin] 时 [cursor] 指向 Char 位，其余情况均将 [cursor] 指向 Gap 位。
+     *
+     * 不管 [pending] 或 [selected] 是否为 [InputItem.MathExpr]，均按以上规则处理，
+     * 对算术输入自身的更新需通过 [withMathExprUpdate] 处理。
      */
     fun addChar(char: InputItem.Char, replacements: List<String>?): InputList =
         when (char) {
@@ -181,21 +186,22 @@ data class InputList(
                 else -> when (selected) {
                     is InputItem.Gap -> {
                         val prev = inputs.getOrNull(cursor - 1)
+
                         // 替换前序 Char
                         if (prev is InputItem.Char && replacements?.contains(prev.value) == true)
-                            moveCursorAndUpdateInputs(cursor) {
+                            applyInputsUpdate {
                                 set(cursor - 1, char)
                             }
                         // 插入 Gap-Char 对
                         else
-                            moveCursorAndUpdateInputs(cursor + 2) {
+                            applyInputsUpdate(cursor + 2) {
                                 addAll(cursor, listOf(InputItem.Gap, char))
                             }
                     }
 
                     // 原地覆盖
                     else ->
-                        moveCursorAndUpdateInputs(cursor + 1) {
+                        applyInputsUpdate(cursor + 1) {
                             set(cursor, char)
                         }
                 }
@@ -218,7 +224,7 @@ data class InputList(
         val emptyPending = hasEmptyPending()
 
         if (emptyPending && selected is InputItem.Gap) {
-            return moveCursorAndUpdateInputs(cursor + 2) {
+            return applyInputsUpdate(cursor + 2) {
                 addAll(cursor, listOf(InputItem.Gap, left, InputItem.Gap, right))
             }
         } //
@@ -227,7 +233,7 @@ data class InputList(
 
             // 替换原配对符号
             if (pairIndex >= 0) {
-                return moveCursorAndUpdateInputs(cursor + 1) {
+                return applyInputsUpdate(cursor + 1) {
                     // 选中的是左侧符号
                     if (cursor < pairIndex) {
                         set(cursor, left)
@@ -245,7 +251,7 @@ data class InputList(
         // 先确认待输入，再包裹该已确认的输入项（确认后，其 cursor 必然在该输入项之后的 Gap 位置）
         return confirmPending().run {
             // Note: cursor 为确认待输入后的游标
-            moveCursorAndUpdateInputs(cursor + 1) {
+            applyInputsUpdate(cursor + 1) {
                 // 先插入右侧符号，再插入左侧符号，以避免其 selected 的位置发生变动
                 addAll(cursor, listOf(InputItem.Gap, right))
                 addAll(cursor - 2, listOf(InputItem.Gap, left))
@@ -277,6 +283,9 @@ data class InputList(
      * - 否则，直接删除 [selected]（包括其配对符号）；
      *
      * 自动根据 [inputs] 缺口偏移 [cursor] 位置。
+     *
+     * 不管 [pending] 或 [selected] 是否为 [InputItem.MathExpr]，均按以上规则处理，
+     * 对算术输入自身的更新需通过 [withMathExprUpdate] 处理。
      */
     private fun doRemoveBackward(oneByOne: Boolean): InputList {
         val selected = this.selected
@@ -286,35 +295,31 @@ data class InputList(
             val current = if (emptyPending) selected else pending
 
             if (current is InputItem.Char.Latin && current.chars.size > 1) {
-                return copy(
-                    inputs =
-                        if (emptyPending)
-                            doUpdateInputs { set(cursor, current.dropLastChar()) }
-                        else inputs,
-                    pending =
-                        if (emptyPending) null
-                        else current.dropLastChar(),
-                )
+                val char = current.dropLastChar()
+
+                return applyInputsUpdate(
+                    pending = if (emptyPending) null else char,
+                ) {
+                    if (emptyPending) set(cursor, char)
+                }
             }
         }
 
         return when (selected) {
             // 删除 Gap 之前的输入项或该 Gap 的待输入
-            is InputItem.Gap -> {
-                if (cursor == 0 || !emptyPending) {
+            is InputItem.Gap ->
+                if (cursor == 0 || !emptyPending)
                     dropPending()
-                } else {
+                else {
                     val prevIndex = cursor - 1
                     val prev = inputs[prevIndex]
 
                     // 若前序为包含多个字符的 Latin，则对其做选中，以支持后续逐字符删除
-                    if (prev is InputItem.Char.Latin && prev.chars.size > 1) {
+                    if (prev is InputItem.Char.Latin && prev.chars.size > 1)
                         doSelectAt(prevIndex)
-                    } else {
+                    else
                         doRemovePairSymbol(prev).doRemoveNonGap(prev)
-                    }
                 }
-            }
             // 删除当前选中输入项及其 Gap 位
             else ->
                 doRemovePairSymbol(selected).doRemoveNonGap(selected)
@@ -323,16 +328,49 @@ data class InputList(
 
     // ------------------------------------------
 
+    /**
+     * 在 [InputItem.MathExpr] 上进行更新：
+     * - 若 [pending] 或 [selected] 为 [InputItem.MathExpr] 类型，
+     *   则直接对其 [MathInputList] 进行更新操作；
+     * - 否则，新建 [InputItem.MathExpr] 类型的 [pending]，
+     *   再在该 [pending] 的 [MathInputList] 上进行更新操作；
+     */
+    fun withMathExprUpdate(block: MathInputList.() -> MathInputList): InputList =
+        when (pending) {
+            is InputItem.MathExpr ->
+                copy(
+                    pending = pending.applyInputListUpdate(block)
+                )
+
+            else -> {
+                val selected = this.selected
+                when (selected) {
+                    is InputItem.MathExpr ->
+                        applyInputsUpdate {
+                            set(cursor, selected.applyInputListUpdate(block))
+                        }
+
+                    else ->
+                        copy(
+                            pending = InputItem.MathExpr().applyInputListUpdate(block),
+                        )
+                }
+            }
+        }
+
+    // ------------------------------------------
+
     /** 移动 [cursor] 并更新 [inputs] */
-    private fun moveCursorAndUpdateInputs(cursor: Int, block: MutableList<InputItem>.() -> Unit): InputList =
+    private fun applyInputsUpdate(
+        cursor: Int = this.cursor,
+        pending: InputItem? = null,
+        block: MutableList<InputItem>.() -> Unit,
+    ): InputList =
         copy(
-            inputs = doUpdateInputs(block),
-            pending = null,
+            inputs = inputs.toMutableList().apply(block),
+            pending = pending,
             cursor = cursor,
         )
-
-    private fun doUpdateInputs(block: MutableList<InputItem>.() -> Unit): List<InputItem> =
-        inputs.toMutableList().apply(block)
 
     /** 选中指定位置的输入项，并置空 [pending] */
     private fun doSelectAt(index: Int): InputList =
@@ -360,13 +398,7 @@ data class InputList(
         when (inputs.getOrNull(index)) {
             null, is InputItem.Gap -> this
             else ->
-                copy(
-                    inputs = doUpdateInputs {
-                        // 目标输入项
-                        removeAt(index)
-                        // 与之配对的 Gap
-                        removeAt(index - 1)
-                    },
+                applyInputsUpdate(
                     cursor =
                         if (cursor < index - 1) cursor
                         else if (cursor > index) cursor - 2
@@ -374,7 +406,12 @@ data class InputList(
                     pending =
                         if (cursor >= index - 1 && cursor <= index) null
                         else pending,
-                )
+                ) {
+                    // 目标输入项
+                    removeAt(index)
+                    // 与之配对的 Gap
+                    removeAt(index - 1)
+                }
         }
 
     /**
