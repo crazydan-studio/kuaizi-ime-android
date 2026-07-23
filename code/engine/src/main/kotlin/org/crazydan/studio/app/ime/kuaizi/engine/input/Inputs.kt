@@ -23,17 +23,21 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInputList
 
 /** 输入项 */
 sealed class InputItem {
+    /** 输入项字符值 */
+    abstract val value: String
 
     /** 输入项之间的空隙，便于在相邻输入项之间插入其他输入项 */
-    data object Gap : InputItem()
+    data object Gap : InputItem() {
+        override val value: String = ""
+    }
 
     /** 回车输入项：仅用于直输 */
-    data object Enter : InputItem()
+    data object Enter : InputItem() {
+        override val value: String = "\n"
+    }
 
     /** 字符输入项，承载用户输入的字符数据 */
     sealed class Char : InputItem() {
-        /** 字符原始内容 */
-        abstract val value: String
 
         /** 空格输入项 */
         data object Space : Char() {
@@ -69,7 +73,7 @@ sealed class InputItem {
      * @property word 该（有效）拼音的候选字
      */
     data class Pinyin(
-        val value: String,
+        override val value: String,
         val valid: Boolean,
         val word: InputWord.Pinyin? = null,
     ) : InputItem()
@@ -80,8 +84,11 @@ sealed class InputItem {
      */
     data class MathExpr(
         val inputList: MathInputList = MathInputList(),
+        override val value: String = "",
     ) : InputItem()
 }
+
+// -----------------------------------------------------------------
 
 /** 输入项是否为空：主要针对 [InputItem.MathExpr]，其余除了 [InputItem.Gap] 以外，实际都不应该为空 */
 fun InputItem.isEmpty(): Boolean =
@@ -117,6 +124,8 @@ fun InputItem.MathExpr.applyInputListUpdate(
     InputItem.MathExpr(
         inputList = inputList.block()
     )
+
+// -----------------------------------------------------------------
 
 /** 输入补全的密封类型基类 */
 sealed class InputCompletion {
