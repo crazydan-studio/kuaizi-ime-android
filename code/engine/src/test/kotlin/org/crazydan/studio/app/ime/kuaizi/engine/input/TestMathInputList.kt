@@ -22,7 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.input
 /**
  *
  * @author <a href="mailto:flytreeleft@crazydan.org">flytreeleft</a>
- * @date 2026-07-21
+ * @date 2026-07-24
  */
-class TestInputList {
+class TestMathInputList {
 }

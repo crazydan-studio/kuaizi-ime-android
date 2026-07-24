@@ -39,11 +39,7 @@ sealed class MathInput {
 
         /** 常数 */
         sealed class Const : Item() {
-            /**
-             * 正/负符号：对已选中或正在输入的常数可多次应用正负符号，
-             * 连续应用相同符号时，仅奇数次有效，若相邻两次符号不同时，
-             * 则最后一次有效。
-             */
+            /** 正/负符号：添加逻辑见 [MathInput.Item.Const.addSign] */
             abstract val sign: Sign?
 
             /** 真实数值 */
@@ -58,6 +54,10 @@ sealed class MathInput {
                     get() = sign.withString(chars.joinToString(""))
                 override val actual: Double
                     get() = value.toDouble()
+
+                init {
+                    require(chars.isNotEmpty())
+                }
             }
 
             /** 自然数 `e` */
@@ -81,7 +81,11 @@ sealed class MathInput {
             }
 
             enum class Sign {
-                Positive, Negative
+                /** `+` */
+                Positive,
+
+                /** `-` */
+                Negative
             }
         }
 
@@ -195,6 +199,18 @@ sealed class MathInput {
             val close: Symbol = Symbol(MathSymbol.Bracket.right),
         ) : Item()
 
+        /** 小数点 */
+        data object Dot : Item() {
+            override val value: String
+                get() = MathSymbol.Dot.value
+        }
+
+        /** 等于号 */
+        data object Equal : Item() {
+            override val value: String
+                get() = MathSymbol.Equal.value
+        }
+
         /** 数学符号：仅内部使用，用于对括号、函数等符号的闭合符号的引用，确保二者始终成对出现和删除 */
         data class Symbol(
             override val value: String,
@@ -203,6 +219,54 @@ sealed class MathInput {
 }
 
 // -----------------------------------------------------------------------
+
+/**
+ * 追加字符：
+ * - 若 [char] 为数字，或者 [char] 是小数点且该输入不含小数点，则追加 [char]。
+ *   注意，该输入必然已包含至少一个数字，故而，不会出现以小数点开头的数字；
+ * - 否则，不做处理；
+ */
+fun MathInput.Item.Const.Number.appendChar(char: Char): MathInput.Item.Const.Number =
+    if (
+        (char == MathSymbol.Dot.value[0] && !chars.contains(char))
+        || char.isDigit()
+    )
+        copy(chars = chars + char)
+    else
+        this
+
+/** 丢弃最后一个字符 */
+fun MathInput.Item.Const.Number.dropLastChar(): MathInput.Item.Const.Number =
+    copy(chars = chars.dropLast(1))
+
+/**
+ * 添加正负号：
+ * - 若当前正负号与 [sign] 相同，则去掉正负号；
+ * - 否则，加上 [sign]；
+ */
+fun <T : MathInput.Item.Const> T.addSign(sign: MathInput.Item.Const.Sign?): T =
+    (if (this.sign == sign) null else sign).let { s ->
+        when (this) {
+            is MathInput.Item.Const.Number ->
+                copy(sign = s)
+
+            is MathInput.Item.Const.E ->
+                copy(sign = s)
+
+            is MathInput.Item.Const.PI ->
+                copy(sign = s)
+        } as T
+    }
+
+/** 根据 [MathInput.Item.Op] 向常数补充正负号 */
+fun <T : MathInput.Item.Const> T.addSignByOp(op: MathInput.Item.Op): T =
+    addSign(
+        when (op) {
+            is MathInput.Item.Op.Plus -> MathInput.Item.Const.Sign.Positive
+            is MathInput.Item.Op.Minus -> MathInput.Item.Const.Sign.Negative
+            else -> null
+        }
+    )
 
 private fun MathInput.Item.Const.Sign?.withString(s: String): String =
     when (this) {

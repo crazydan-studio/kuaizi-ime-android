@@ -106,41 +106,34 @@ data class InputList(
      * - 若 [selected] 为 [CommonInput.Gap]，则将 [pending] 的 Gap-Item 对插入到 [selected] 之前；
      * - 否则，直接以 [pending] 覆盖 [selected]；
      *
-     * [cursor] 始终指向 Gap 位。
+     * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
      */
-    fun confirmPending(): InputList {
+    fun confirmPending(): InputList =
         // Note：在 selected 为算术输入时，pending 始终为 null
-        if (hasEmptyPending()) {
-            return when (selected) {
-                is CommonInput.Gap ->
-                    dropPending()
+        if (hasEmptyPending())
+            when (selected) {
+                is CommonInput.Gap -> dropPending()
 
                 is CommonInput.Item.MathExpr ->
                     withMathExprUpdate { confirmPending() }
-                        .copy(cursor = cursor + 1)
+                        .doSelectOffset(1)
 
-                else ->
-                    copy(
-                        pending = null,
-                        cursor = cursor + 1,
-                    )
+                else -> doSelectOffset(1)
             }
-        }
+        else
+            when (selected) {
+                // 插入 Gap-Item 对
+                is CommonInput.Gap ->
+                    applyInputsUpdate(cursor + 2) {
+                        addAll(cursor, listOf(CommonInput.Gap, pending!!))
+                    }
 
-        return when (selected) {
-            // 插入 Gap-Item 对
-            is CommonInput.Gap ->
-                applyInputsUpdate(cursor + 2) {
-                    addAll(cursor, listOf(CommonInput.Gap, pending!!))
-                }
-
-            // 原地覆盖
-            else ->
-                applyInputsUpdate(cursor + 1) {
-                    set(cursor, pending!!)
-                }
-        }
-    }
+                // 原地覆盖
+                else ->
+                    applyInputsUpdate(cursor + 1) {
+                        set(cursor, pending!!)
+                    }
+            }
 
     // ---------------------------------------------------------
 
@@ -153,7 +146,8 @@ data class InputList(
      * - 若 [selected] 为 [CommonInput.Gap]，则按 [replacements] 替换前序输入或者插入 Gap-Item 对；
      * - 否则，用 [input] 覆盖 [selected]；
      *
-     * 仅当 [input] 为 [CommonInput.Item.Char.Latin] 时 [cursor] 指向 Char 位，其余情况均将 [cursor] 指向 Gap 位。
+     * 仅当 [input] 为 [CommonInput.Item.Char.Latin] 时 [cursor] 指向 Item 位，
+     * 其余情况均将 [cursor] 指向 Gap 位，且 [pending] 为 `null`。
      *
      * 不管 [pending] 或 [selected] 是否为 [CommonInput.Item.MathExpr]，均按以上规则处理，
      * 对算术输入自身的更新需通过 [withMathExprUpdate] 处理。
@@ -199,6 +193,7 @@ data class InputList(
                             }
                     }
 
+                    // TODO 处理配对符号：只有配对符号可相互替换，否则，只能新增
                     // 原地覆盖
                     else ->
                         applyInputsUpdate(cursor + 1) {
@@ -295,13 +290,8 @@ data class InputList(
             val current = if (emptyPending) selected else pending
 
             if (current is CommonInput.Item.Char.Latin && current.chars.size > 1) {
-                val char = current.dropLastChar()
-
-                return applyInputsUpdate(
-                    pending = if (emptyPending) null else char,
-                ) {
-                    if (emptyPending) set(cursor, char)
-                }
+                // 回删后将其挂到 pending 上，以支持对其做逐字符追加
+                return copy(pending = current.dropLastChar())
             }
         }
 
@@ -375,6 +365,10 @@ data class InputList(
     /** 选中指定位置的输入项，并置空 [pending] */
     private fun doSelectAt(index: Int): InputList =
         copy(cursor = index, pending = null)
+
+    /** 选中指定位置偏移的输入项，并置空 [pending] */
+    private fun doSelectOffset(offset: Int): InputList =
+        doSelectAt(cursor + offset)
 
     /**
      * 删除指定的非 Gap 输入项。

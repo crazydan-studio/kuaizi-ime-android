@@ -60,6 +60,10 @@ sealed class CommonInput {
             ) : Char() {
                 override val value: String
                     get() = chars.joinToString("")
+
+                init {
+                    require(chars.isNotEmpty())
+                }
             }
         }
 
