@@ -22,7 +22,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 import org.crazydan.studio.app.ime.kuaizi.engine.ImeIntent
 import org.crazydan.studio.app.ime.kuaizi.engine.bridge.EditorAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputItem
+import org.crazydan.studio.app.ime.kuaizi.engine.input.CommonInput
 
 /**
  * 键盘状态机，集中处理状态转换的核心组件。
@@ -158,26 +158,32 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     newState = KeyboardState.Idle,
                     sideEffects = listOf(
-                        ImeIntent.InputList.AddChar(
-                            char =
-                                transition.key.getReplacement(transition.replacement).let { ch ->
-                                    when (transition.key) {
-                                        is InputKey.Char.Space -> InputItem.Char.Space
-                                        is InputKey.Char.Enter -> InputItem.Enter
-                                        //
-                                        is InputKey.Char.Emoji -> InputItem.Char.Emoji(value = ch)
-                                        is InputKey.Char.Symbol -> InputItem.Char.Symbol(value = ch)
-                                        //
-                                        is InputKey.Char.Alphabet,
-                                        is InputKey.Char.Number ->
-                                            InputItem.Char.Latin(chars = listOf(ch))
-                                    }
-                                },
-                            replacements =
-                                if (transition.replacement > 0)
-                                    transition.key.replacements
-                                else null,
-                        )
+                        when (transition.key) {
+                            // TODO 向编辑器提交换行符
+                            is InputKey.Char.Enter -> TODO()
+                            else -> {
+                                val ch = transition.key.getReplacement(transition.replacement)
+
+                                val char = when (transition.key) {
+                                    is InputKey.Char.Emoji -> CommonInput.Item.Char.Emoji(value = ch)
+                                    is InputKey.Char.Symbol -> CommonInput.Item.Char.Symbol(value = ch)
+                                    //
+                                    is InputKey.Char.Alphabet,
+                                    is InputKey.Char.Number ->
+                                        CommonInput.Item.Char.Latin(chars = listOf(ch))
+
+                                    else -> CommonInput.Item.Char.Space
+                                }
+
+                                ImeIntent.InputList.AddChar(
+                                    char = char,
+                                    replacements =
+                                        if (transition.replacement > 0)
+                                            transition.key.replacements
+                                        else null,
+                                )
+                            }
+                        }
                     ),
                 )
 

@@ -460,6 +460,8 @@ class ImeEngine internal constructor(
             is ImeIntent.InputList.DropPending -> {
                 // TODO InputList 丢弃待输入
             }
+
+            is ImeIntent.InputList.SelectAt -> TODO()
         }
     }
 

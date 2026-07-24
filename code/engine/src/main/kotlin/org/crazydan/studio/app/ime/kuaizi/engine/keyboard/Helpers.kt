@@ -20,7 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputItem
+import org.crazydan.studio.app.ime.kuaizi.engine.input.CommonInput
 
 /** 根据 [startChar] 构造其韵母树 */
 fun createVowelTree(pinyinTree: PinyinTree, startChar: String): Map<String, List<String>> =
@@ -45,9 +45,12 @@ fun createVowelTree(pinyinTree: PinyinTree, startChar: String): Map<String, List
         ?: emptyMap()
 
 /** 创建拼音待输入 */
-fun createPinyinInputPending(pinyinTree: PinyinTree, state: KeyboardState.Pinyin.Inputting): InputItem.Pinyin =
+fun createPinyinInputPending(
+    pinyinTree: PinyinTree,
+    state: KeyboardState.Pinyin.Inputting,
+): CommonInput.Item.Pinyin =
     state.getChars().let { chars ->
-        InputItem.Pinyin(
+        CommonInput.Item.Pinyin(
             value = chars,
             valid = pinyinTree.isPinyin(chars),
         )

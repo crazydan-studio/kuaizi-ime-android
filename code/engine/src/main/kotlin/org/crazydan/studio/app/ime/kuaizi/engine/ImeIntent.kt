@@ -24,7 +24,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputItem
+import org.crazydan.studio.app.ime.kuaizi.engine.input.CommonInput
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
@@ -163,7 +163,7 @@ sealed class ImeIntent {
         data object Revoke : InputList()
 
         /**
-         * 添加字符：字母、数字、符号、表情等
+         * 添加输入：字母、数字、符号、表情等
          * @property replacements 替换字符列表。
          * 在添加时，首先判断前序字符是否在该替换列表内，
          * 若存在，则将前序替换为 [char]，否则，不做替换，直接追加。
@@ -171,7 +171,7 @@ sealed class ImeIntent {
          * 若不满足替换条件，则需要将 [replacements] 置为 `null` 或空
          */
         data class AddChar(
-            val char: InputItem,
+            val char: CommonInput.Item.Char,
             val replacements: List<String>? = null,
         ) : InputList()
 
@@ -185,7 +185,7 @@ sealed class ImeIntent {
         data class SelectAt(val index: Int) : InputList()
 
         /** 更新待输入 */
-        data class UpdatePending(val pending: InputItem) : InputList()
+        data class UpdatePending(val pending: CommonInput.Item) : InputList()
 
         /** 确认待输入 */
         data object ConfirmPending : InputList()

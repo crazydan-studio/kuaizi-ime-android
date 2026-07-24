@@ -21,92 +21,89 @@ package org.crazydan.studio.app.ime.kuaizi.engine.input
 
 import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInputList
 
-/** 输入项 */
-sealed class InputItem {
-    /** 输入项字符值 */
-    abstract val value: String
+/** 通用输入 */
+sealed class CommonInput {
 
-    /** 输入项之间的空隙，便于在相邻输入项之间插入其他输入项 */
-    data object Gap : InputItem() {
-        override val value: String = ""
-    }
+    /** [Item] 之间的空隙，便于在相邻输入项之间添加其他输入项 */
+    data object Gap : CommonInput()
 
-    /** 回车输入项：仅用于直输 */
-    data object Enter : InputItem() {
-        override val value: String = "\n"
-    }
+    /** 输入项：承载实际可见的输入内容 */
+    sealed class Item : CommonInput() {
+        /** 输入项字符值 */
+        abstract val value: String
 
-    /** 字符输入项，承载用户输入的字符数据 */
-    sealed class Char : InputItem() {
+        /** 字符输入项，承载用户输入的字符数据 */
+        sealed class Char : Item() {
 
-        /** 空格输入项 */
-        data object Space : Char() {
-            override val value: String = " "
+            /** 空格输入项 */
+            data object Space : Char() {
+                override val value: String = " "
+            }
+
+            /** 表情输入项（单字符） */
+            data class Emoji(
+                override val value: String,
+            ) : Char()
+
+            /**
+             * 符号输入项（单字符）
+             * @property right 左配对符号的右配对符号
+             */
+            data class Symbol(
+                override val value: String,
+                val right: Symbol? = null,
+            ) : Char()
+
+            /** 拉丁文（字母 + 数字）输入项（多字符） */
+            data class Latin(
+                val chars: List<String>,
+            ) : Char() {
+                override val value: String
+                    get() = chars.joinToString("")
+            }
         }
-
-        /** 表情输入项（单字符） */
-        data class Emoji(
-            override val value: String,
-        ) : Char()
 
         /**
-         * 符号输入项（单字符）
-         * @property right 左配对符号的右配对符号
+         * 拼音输入项
+         * @property valid 是否为有效拼音
+         * @property word 该（有效）拼音的候选字
          */
-        data class Symbol(
+        data class Pinyin(
             override val value: String,
-            val right: Symbol?,
-        ) : Char()
+            val valid: Boolean,
+            val word: InputWord.Pinyin? = null,
+        ) : Item()
 
-        /** 拉丁文（字母 + 数字）输入项（多字符） */
-        data class Latin(
-            val chars: List<String>,
-        ) : Char() {
-            override val value: String
-                get() = chars.joinToString("")
-        }
+        /**
+         * 算术表达式输入项
+         * @property inputList 表达式输入列表
+         */
+        data class MathExpr(
+            val inputList: MathInputList = MathInputList(),
+            override val value: String = "",
+        ) : Item()
     }
-
-    /**
-     * 拼音输入项
-     * @property valid 是否为有效拼音
-     * @property word 该（有效）拼音的候选字
-     */
-    data class Pinyin(
-        override val value: String,
-        val valid: Boolean,
-        val word: InputWord.Pinyin? = null,
-    ) : InputItem()
-
-    /**
-     * 算术表达式输入项
-     * @property inputList 表达式输入列表
-     */
-    data class MathExpr(
-        val inputList: MathInputList = MathInputList(),
-        override val value: String = "",
-    ) : InputItem()
 }
 
 // -----------------------------------------------------------------
 
-/** 输入项是否为空：主要针对 [InputItem.MathExpr]，其余除了 [InputItem.Gap] 以外，实际都不应该为空 */
-fun InputItem.isEmpty(): Boolean =
+/** 输入项是否为空：主要针对 [CommonInput.Item.MathExpr]，其余都不应该为空 */
+fun CommonInput.Item.isEmpty(): Boolean =
     when (this) {
-        is InputItem.Char -> value.isEmpty()
-        is InputItem.MathExpr -> inputList.isEmpty()
+        is CommonInput.Item.Char -> value.isEmpty()
+        is CommonInput.Item.MathExpr -> inputList.isEmpty()
         else -> true
     }
 
 /** 丢弃最后一个字符 */
-fun InputItem.Char.Latin.dropLastChar(): InputItem.Char.Latin =
+fun CommonInput.Item.Char.Latin.dropLastChar(): CommonInput.Item.Char.Latin =
     copy(chars = chars.dropLast(1))
 
 /** 向尾部追加字符，或替换尾部字符 */
-fun InputItem.Char.Latin.appendChar(
+fun CommonInput.Item.Char.Latin.appendChar(
     char: String,
     replacements: List<String>?,
-): InputItem.Char.Latin =
+): CommonInput.Item.Char.Latin =
     copy(
         chars = (
                 replacements?.first { chars.last() == it }
@@ -118,10 +115,10 @@ fun InputItem.Char.Latin.appendChar(
     )
 
 /** 应用算术表达式输入列表更新 */
-fun InputItem.MathExpr.applyInputListUpdate(
+fun CommonInput.Item.MathExpr.applyInputListUpdate(
     block: MathInputList.() -> MathInputList,
-): InputItem.MathExpr =
-    InputItem.MathExpr(
+): CommonInput.Item.MathExpr =
+    CommonInput.Item.MathExpr(
         inputList = inputList.block()
     )
 
@@ -181,7 +178,7 @@ object InputGapSpacing {
      * @param right 右侧字符
      * @return true 表示需要间隔（游标可停留），false 表示紧密连接
      */
-    fun needsGap(left: InputItem.Char, right: InputItem.Char): Boolean {
+    fun needsGap(left: CommonInput.Char, right: CommonInput.Char): Boolean {
         // 配对符号内部不需要间隔
         if (left.pairSymbol != null && left.pairSymbol.content == null) return false
         // 同一拼音词组的字符不需要间隔
@@ -194,9 +191,9 @@ object InputGapSpacing {
         return true
     }
 
-    private fun isLatinChar(char: InputItem.Char): Boolean =
+    private fun isLatinChar(char: CommonInput.Char): Boolean =
         char.word is InputWord.Latin || char.value.all { it.isLetter() && it.code < 128 }
 
-    private fun isDigitChar(char: InputItem.Char): Boolean =
+    private fun isDigitChar(char: CommonInput.Char): Boolean =
         char.value.all { it.isDigit() }
 }
