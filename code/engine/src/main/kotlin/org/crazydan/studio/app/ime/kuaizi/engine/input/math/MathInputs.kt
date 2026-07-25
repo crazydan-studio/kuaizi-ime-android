@@ -220,6 +220,14 @@ sealed class MathInput {
 
 // -----------------------------------------------------------------------
 
+/** 获取指定输入项的闭合输入项 */
+fun MathInput.Item.getClose(): MathInput.Item.Symbol? =
+    when (this) {
+        is MathInput.Item.Func -> close
+        is MathInput.Item.Bracket -> close
+        else -> null
+    }
+
 /**
  * 追加字符：
  * - 若 [char] 为数字，或者 [char] 是小数点且该输入不含小数点，则追加 [char]。

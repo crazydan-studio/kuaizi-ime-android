@@ -151,26 +151,65 @@ data class MathInputList(
     }
 
     /**
-     * 插入输入项：
-     * - 若 [selected] 为 [MathInput.Gap]，则在 [cursor] 前插入 [input] 的 Gap-Item 对；
-     * - 否则，用 [input] 覆盖 [selected]；
+     * 替换或插入输入项：
+     * - 若 [selected] 为 [MathInput.Gap]，则在 [cursor] 前插入 [input] 的 Gap-Item 对（包括配对输入）；
+     * - 若 [selected] 为配对输入项，则：
+     *   - 若 [input] 为配对输入项，则由 [input] 的开闭符号替换 [selected] 的开闭符号；
+     *   - 否则，在选中位置之后插入 [input] 的 Gap-Item 对；
+     * - 否则：
+     *   - 若 [input] 为配对输入项，则由 [input] 的开闭符号包裹 [selected]；
+     *   - 否则，用 [input] 替换 [selected]；
      *
-     * 插入后，[cursor] 为 [input] 之后的 Gap，且 [pending] 为 `null`。
+     * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
      */
     private fun doReplaceOrInsertInput(input: MathInput.Item): MathInputList =
-        when (selected) {
-            is MathInput.Gap ->
-                // 插入 Gap-Item 对
-                applyInputsUpdate(cursor + 2) {
-                    addAll(cursor, listOf(MathInput.Gap, input))
-                }
+        input.getClose().let { inputClose ->
+            when (selected) {
+                is MathInput.Gap ->
+                    // 插入 Gap-Item 对
+                    applyInputsUpdate(cursor + 2) {
+                        if (inputClose != null) {
+                            addAll(cursor, listOf(MathInput.Gap, input, MathInput.Gap, inputClose))
+                        } else {
+                            addAll(cursor, listOf(MathInput.Gap, input))
+                        }
+                    }
 
-            // TODO 处理配对符号：只有配对符号可相互替换，否则，只能新增
-            // 原地覆盖
-            else ->
-                applyInputsUpdate(cursor + 1) {
-                    set(cursor, input)
+                else -> indexOfPairInputAt(cursor).let { selectedCloseIndex ->
+                    if (selectedCloseIndex < 0)
+                    // 包裹已选中输入项
+                        if (inputClose != null)
+                            applyInputsUpdate(cursor + 1 + 2) {
+                                // 先插入右侧符号，再插入左侧符号，以避免其 selected 的位置发生变动
+                                addAll(cursor + 1, listOf(MathInput.Gap, inputClose))
+                                addAll(cursor - 1, listOf(MathInput.Gap, input))
+                            }
+                        // 替换已选中输入项
+                        else
+                            applyInputsUpdate(cursor + 1) {
+                                set(cursor, input)
+                            }
+                    // 在 input 也是配对输入项时，替换已选中的配对输入项
+                    else if (inputClose != null)
+                        applyInputsUpdate(cursor + 1) {
+                            // 选中的是左侧符号
+                            if (cursor < selectedCloseIndex) {
+                                set(cursor, input)
+                                set(selectedCloseIndex, inputClose)
+                            }
+                            // 选中的是右侧符号
+                            else {
+                                set(cursor, inputClose)
+                                set(selectedCloseIndex, input)
+                            }
+                        }
+                    // 插入 Gap-Item 对
+                    else
+                        applyInputsUpdate(cursor + 1 + 2) {
+                            addAll(cursor + 1, listOf(MathInput.Gap, input))
+                        }
                 }
+            }
         }
 
     // ------------------------------------------
@@ -192,4 +231,44 @@ data class MathInputList(
             pending = pending,
             cursor = cursor,
         )
+
+    /** 选中指定位置的输入项，并置空 [pending] */
+    private fun doSelectAt(index: Int): MathInputList =
+        copy(cursor = index, pending = null)
+
+    /** 选中指定位置偏移的输入项，并置空 [pending] */
+    private fun doSelectOffset(offset: Int): MathInputList =
+        doSelectAt(cursor + offset)
+
+    /** 查找指定位置输入项的配对（开启/关闭）输入项的序号 */
+    private fun indexOfPairInputAt(sourceIndex: Int): Int {
+        val source = inputs[sourceIndex]
+        when (source) {
+            is MathInput.Gap ->
+                return -1
+
+            is MathInput.Item -> {
+                val sourceClose = source.getClose()
+                if (sourceClose != null) {
+                    // 向右查找
+                    for (i in sourceIndex + 1..inputs.lastIndex) {
+                        val close = inputs[i]
+                        if (sourceClose == close) {
+                            return i
+                        }
+                    }
+                } else if (source is MathInput.Item.Symbol) {
+                    // 向左查找
+                    for (i in sourceIndex - 1 downTo 0) {
+                        val open = inputs[i]
+                        if (open is MathInput.Item && open.getClose() == source) {
+                            return i
+                        }
+                    }
+                }
+
+                return -1
+            }
+        }
+    }
 }

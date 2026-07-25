@@ -104,7 +104,7 @@ data class InputList(
      * - 若 [pending] 为空，则 [dropPending]，并在 [selected] 不为 [CommonInput.Gap] 时将 [cursor] 后移一位，
      *   若 [selected] 为 [CommonInput.Item.MathExpr] 还需要先确认算术输入列表的待输入；
      * - 若 [selected] 为 [CommonInput.Gap]，则将 [pending] 的 Gap-Item 对插入到 [selected] 之前；
-     * - 否则，直接以 [pending] 覆盖 [selected]；
+     * - 否则，直接以 [pending] 替换 [selected]；
      *
      * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
      */
@@ -128,7 +128,7 @@ data class InputList(
                         addAll(cursor, listOf(CommonInput.Gap, pending!!))
                     }
 
-                // 原地覆盖
+                // 原地替换
                 else ->
                     applyInputsUpdate(cursor + 1) {
                         set(cursor, pending!!)
@@ -144,7 +144,7 @@ data class InputList(
      * - 若 [input] 为配对符号，则执行 [doAddPairSymbolChar]；
      * - 若 [pending] 为 [CommonInput.Item.Char.Latin]，则先 [confirmPending] 再继续 [addInput]；
      * - 若 [selected] 为 [CommonInput.Gap]，则按 [replacements] 替换前序输入或者插入 Gap-Item 对；
-     * - 否则，用 [input] 覆盖 [selected]；
+     * - 否则，用 [input] 替换 [selected]；
      *
      * 仅当 [input] 为 [CommonInput.Item.Char.Latin] 时 [cursor] 指向 Item 位，
      * 其余情况均将 [cursor] 指向 Gap 位，且 [pending] 为 `null`。
@@ -194,7 +194,7 @@ data class InputList(
                     }
 
                     // TODO 处理配对符号：只有配对符号可相互替换，否则，只能新增
-                    // 原地覆盖
+                    // 原地替换
                     else ->
                         applyInputsUpdate(cursor + 1) {
                             set(cursor, input)
@@ -246,7 +246,8 @@ data class InputList(
         // 先确认待输入，再包裹该已确认的输入项（确认后，其 cursor 必然在该输入项之后的 Gap 位置）
         return confirmPending().run {
             // Note: cursor 为确认待输入后的游标
-            applyInputsUpdate(cursor + 1) {
+            // 包裹后，需将游标放在包裹项之后
+            applyInputsUpdate(cursor + 2) {
                 // 先插入右侧符号，再插入左侧符号，以避免其 selected 的位置发生变动
                 addAll(cursor, listOf(CommonInput.Gap, right))
                 addAll(cursor - 2, listOf(CommonInput.Gap, left))
