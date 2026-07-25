@@ -24,10 +24,8 @@ package org.crazydan.studio.app.ime.kuaizi.engine.input.math
  *
  * @param inputs [MathInput.Gap]-[MathInput.Item] 交替排列的输入序列。
  * 始终不为空，且列表末尾始终多一个 [MathInput.Gap]
- * @param cursor 当前游标位置（指向 inputs 列表中的被选中输入的索引）
- * @param pending 待输入：正在输入还未更新到 [inputs] 的输入项。
- * 只有 [MathInput.Item.Const.Number] 才支持连续输入，因此，
- * 只有此类输入才存在待输入，其余类型均在添加时完成确认
+ * @param cursor 当前游标位置（指向 inputs 列表中的被选中 [MathInput] 的索引）
+ * @param pending 待输入：用于承载对非 Gap 的 [selected] 的持续性修改，从而避免频繁更新 [inputs] 列表
  */
 data class MathInputList(
     val inputs: List<MathInput> = listOf(MathInput.Gap),
@@ -50,8 +48,16 @@ data class MathInputList(
 
     // ------------------------------------------
 
+    /**
+     * 选中指定位置输入项：
+     * - 若指定位置已选中或者 [index] 不在有效范围，则不做处理；
+     * - 否则，先 [confirmPending]，再做 [selectAt]。[pending] 将被重置为 `null`；
+     */
     fun select(index: Int): MathInputList =
-        this
+        if (cursor == index || index < 0 || index > inputs.lastIndex)
+            this
+        else
+            confirmPending().selectAt(index)
 
     // ------------------------------------------
 
@@ -62,155 +68,220 @@ data class MathInputList(
 
     /**
      * 确认待输入：
-     * - 若 [pending] 为空，则 [dropPending]，并在 [selected] 不为 [MathInput.Gap] 时将 [cursor] 后移一位，
-     * - 若 [selected] 为 [MathInput.Gap]，则将 [pending] 的 Gap-Item 对插入到 [selected] 之前；
-     * - 否则，执行 [doReplaceOrInsertInput]；
+     * - 若 [selected] 为 [MathInput.Gap]，则不做处理；
+     * - 否则，若 [pending] 为 `null`，则将 [cursor] 后移一位；
+     * - 否则，使用 [pending] 替换 [selected]，并将 [cursor] 后移一位；
      *
-     * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
+     * 注意：
+     * - [cursor] 始终指向 Gap 位，且 [pending] 为 `null`；
+     * - [inputs] 长度不会发生变化；
      */
     fun confirmPending(): MathInputList =
-        if (pending == null)
-            when (selected) {
-                is MathInput.Gap -> dropPending()
-                else -> copy(cursor = cursor + 1)
-            }
-        else
-            doReplaceOrInsertInput(pending)
+        when (selected) {
+            is MathInput.Gap -> this
+            is MathInput.Item ->
+                if (pending == null)
+                    selectByOffset(1)
+                else
+                    applyInputsUpdate(cursor + 1) { set(cursor, pending) }
+        }
 
     // ------------------------------------------
 
     /**
      * 添加输入项：
-     * - 若 [input] 为 [MathInput.Item.Const.Number]，则在 [pending] 也为 [MathInput.Item.Const.Number] 时，
-     *   向其追加数字，否则，直接用 [input] 覆盖 [pending]；
-     * - 否则，执行 [doReplaceOrInsertInput]；
-     *
-     * 仅当 [input] 为 [MathInput.Item.Const.Number] 时 [cursor] 指向 Item 位，
-     * 其余情况均将 [cursor] 指向 Gap 位，且 [pending] 为 `null`。
+     * - 若 [input] 为 [MathInput.Item.Const.Number]，则执行 [doAddNumberInput]；
+     * - 否则，若 [input] 为 [MathInput.Item.Dot]，则执行 [doAddDotInput]；
+     * - 否则，若 [input] 为 [MathInput.Item.Op]，则执行 [doAddOpInput]；
+     * - 否则，执行 [doAddOtherInput]；
      */
-    fun addInput(input: MathInput.Item): MathInputList {
-        val selected = this.selected
+    fun addInput(input: MathInput.Item): MathInputList =
+        when (input) {
+            is MathInput.Item.Const.Number ->
+                doAddNumberInput(input)
 
-        return when (input) {
-            is MathInput.Item.Const -> when (input) {
-                is MathInput.Item.Const.Number -> when (pending) {
-                    // 追加数字输入
-                    is MathInput.Item.Const.Number ->
-                        copy(pending = pending.appendChar(input.chars[0]))
+            is MathInput.Item.Dot ->
+                doAddDotInput(input)
 
-                    // 新的数字待输入
-                    else -> copy(pending = input)
-                }
+            is MathInput.Item.Op ->
+                doAddOpInput(input)
 
-                // e、π 等直接替换或插入
-                else -> doReplaceOrInsertInput(input)
-            }
-
-            // 仅向数字输入添加小数点，其余直接忽略
-            is MathInput.Item.Dot -> when (pending) {
-                is MathInput.Item.Const.Number ->
-                    copy(pending = pending.appendChar(input.value[0]))
-
-                else -> when (selected) {
-                    // 将追加后的数字输入挂到 pending 上，以支持对其做数字追加
-                    is MathInput.Item.Const.Number ->
-                        copy(pending = selected.appendChar(input.value[0]))
-
-                    else -> this
-                }
-            }
-
-            is MathInput.Item.Op -> when (input) {
-                is MathInput.Item.Op.Plus,
-                is MathInput.Item.Op.Minus
-                    -> when (pending) {
-                    // Note：只有数字输入才会有 pending
-                    is MathInput.Item.Const.Number ->
-                        copy(pending = pending.addSignByOp(input))
-
-                    else -> when (selected) {
-                        // 仅支持对常数补充正负号
-                        is MathInput.Item.Const ->
-                            applyInputsUpdate(cursor + 1) {
-                                set(cursor, selected.addSignByOp(input))
-                            }
-
-                        // 正常添加 加号、减号
-                        else -> doReplaceOrInsertInput(input)
-                    }
-                }
-
-                else -> doReplaceOrInsertInput(input)
-            }
-
-            is MathInput.Item.Bracket ->
-                this
-
-            else -> this
+            else ->
+                doAddOtherInput(input)
         }
-    }
 
     /**
-     * 替换或插入输入项：
-     * - 若 [selected] 为 [MathInput.Gap]，则在 [cursor] 前插入 [input] 的 Gap-Item 对（包括配对输入）；
-     * - 若 [selected] 为配对输入项，则：
-     *   - 若 [input] 为配对输入项，则由 [input] 的开闭符号替换 [selected] 的开闭符号；
-     *   - 否则，在选中位置之后插入 [input] 的 Gap-Item 对；
-     * - 否则：
-     *   - 若 [input] 为配对输入项，则由 [input] 的开闭符号包裹 [selected]；
-     *   - 否则，用 [input] 替换 [selected]；
+     * 添加数字：
+     * - 若 [pending] 为 [MathInput.Item.Const.Number]，则向 [pending] 追加数字；
+     * - 否则，若 [selected] 为 [MathInput.Gap]，则插入 Gap-Item 对，并将 [cursor] 指向 [input]，
+     *   同时将 [input] 也挂到 [pending] 上，以继续数字输入；
+     * - 否则，将 [pending] 设置为 [input]，以继续数字输入并准备替代 [selected]；
+     *
+     * [cursor] 始终指向 [MathInput.Item]，且 [pending] 为正在处理的数字输入。
+     */
+    private fun doAddNumberInput(input: MathInput.Item.Const.Number): MathInputList =
+        when (pending) {
+            is MathInput.Item.Const.Number ->
+                copy(pending = pending.appendChar(input.chars[0]))
+
+            else -> when (selected) {
+                is MathInput.Gap ->
+                    applyInputsUpdate(cursor = cursor + 1, pending = input) {
+                        addAll(cursor, listOf(MathInput.Gap, input))
+                    }
+
+                else ->
+                    copy(pending = input)
+            }
+        }
+
+    /**
+     * 添加小数点：
+     * - 若 [pending] 为 [MathInput.Item.Const.Number]，则向 [pending] 追加小数点；
+     * - 否则，若 [selected] 为 [MathInput.Item.Const.Number]，则向 [selected] 追加小数点，
+     *   再挂到 [pending] 上，以继续数字输入；
+     * - 否则，不做处理，因为，小数点仅对数字输入有效；
+     *
+     * [cursor] 位置始终不变。
+     */
+    private fun doAddDotInput(input: MathInput.Item.Dot): MathInputList =
+        input.value[0].let { dot ->
+            when (pending) {
+                is MathInput.Item.Const.Number ->
+                    copy(pending = pending.appendChar(dot))
+
+                else -> selected.let { s ->
+                    when (s) {
+                        is MathInput.Item.Const.Number ->
+                            copy(pending = s.appendChar(dot))
+
+                        else -> this
+                    }
+                }
+            }
+        }
+
+    /**
+     * 添加运算符：
+     * - 若 [input] 为加号和减号，则：
+     *   - 若 [pending] 为 [MathInput.Item.Const.Number]，则为该数字输入添加正负号；
+     *   - 否则，若 [selected] 为 [MathInput.Item.Const]，则为该常数输入添加正负号，并将 [cursor] 后移一位，且将 [pending] 重置为 `null`；
+     *   - 否则，执行 [doAddOtherInput]；
+     * - 否则，执行 [doAddOtherInput]；
+     */
+    private fun doAddOpInput(input: MathInput.Item.Op): MathInputList =
+        when (input) {
+            is MathInput.Item.Op.Plus,
+            is MathInput.Item.Op.Minus
+                -> when (pending) {
+                is MathInput.Item.Const.Number ->
+                    copy(pending = pending.addSignByOp(input))
+
+                else -> selected.let { s ->
+                    when (s) {
+                        is MathInput.Item.Const ->
+                            applyInputsUpdate(cursor + 1) {
+                                set(cursor, s.addSignByOp(input))
+                            }
+
+                        else -> doAddOtherInput(input)
+                    }
+                }
+            }
+
+            else -> doAddOtherInput(input)
+        }
+
+    /**
+     * 添加其他类型输入项：
+     * - 若 [input] 为配对输入项，则执行 [doAddPairInput]；
+     * - 否则，执行 [doAddNonPairInput]；
      *
      * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
      */
-    private fun doReplaceOrInsertInput(input: MathInput.Item): MathInputList =
-        input.getClose().let { inputClose ->
+    private fun doAddOtherInput(input: MathInput.Item): MathInputList =
+        input.getClose().let { close ->
+            if (close == null) {
+                doAddNonPairInput(input)
+            } else {
+                doAddPairInput(input, close)
+            }
+        }
+
+    /**
+     * 添加非配对输入项：
+     * - 若 [pending] 不为 `null`，则先 [confirmPending] 再插入 Gap-Item 对；
+     * - 否则，若 [selected] 为 [MathInput.Gap]，则插入 Gap-Item 对；
+     * - 否则：
+     *   - 若 [selected] 为配对输入，则先 [confirmPending] 再插入 Gap-Item 对；
+     *   - 否则，使用 [input] 替换 [selected]；
+     *
+     * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
+     */
+    private fun doAddNonPairInput(input: MathInput.Item): MathInputList =
+        if (pending != null)
+            confirmPending().doAddNonPairInput(input)
+        else
             when (selected) {
                 is MathInput.Gap ->
-                    // 插入 Gap-Item 对
                     applyInputsUpdate(cursor + 2) {
-                        if (inputClose != null) {
-                            addAll(cursor, listOf(MathInput.Gap, input, MathInput.Gap, inputClose))
-                        } else {
-                            addAll(cursor, listOf(MathInput.Gap, input))
-                        }
+                        addAll(cursor, listOf(MathInput.Gap, input))
                     }
 
                 else -> indexOfPairInputAt(cursor).let { selectedCloseIndex ->
                     if (selectedCloseIndex < 0)
-                    // 包裹已选中输入项
-                        if (inputClose != null)
-                            applyInputsUpdate(cursor + 1 + 2) {
-                                // 先插入右侧符号，再插入左侧符号，以避免其 selected 的位置发生变动
-                                addAll(cursor + 1, listOf(MathInput.Gap, inputClose))
-                                addAll(cursor - 1, listOf(MathInput.Gap, input))
-                            }
-                        // 替换已选中输入项
-                        else
-                            applyInputsUpdate(cursor + 1) {
-                                set(cursor, input)
-                            }
-                    // 在 input 也是配对输入项时，替换已选中的配对输入项
-                    else if (inputClose != null)
+                        applyInputsUpdate(cursor + 1) {
+                            set(cursor, input)
+                        }
+                    else
+                        confirmPending().doAddNonPairInput(input)
+                }
+            }
+
+    /**
+     * 添加配对输入项：
+     * - 若 [pending] 不为 `null`，则先 [confirmPending] 再以 [open] 和 [close] 包裹该已确认的输入项；
+     * - 否则，若 [selected] 为 [MathInput.Gap]，则插入 [open] 和 [close] 的 Gap-Item 对；
+     * - 否则：
+     *   - 若 [selected] 为配对输入，则使用 [open] 和 [close] 替换其开闭输入项；
+     *   - 否则，使用 [open] 和 [close] 包裹 [selected]；
+     *
+     * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
+     */
+    private fun doAddPairInput(open: MathInput.Item, close: MathInput.Item): MathInputList =
+        if (pending != null) // 先确认再包裹
+            confirmPending().selectByOffset(-1).doAddPairInput(open, close)
+        else
+            when (selected) {
+                is MathInput.Gap ->
+                    applyInputsUpdate(cursor + 2) {
+                        addAll(cursor, listOf(MathInput.Gap, open, MathInput.Gap, close))
+                    }
+
+                else -> indexOfPairInputAt(cursor).let { selectedCloseIndex ->
+                    // 包裹非配对输入项
+                    if (selectedCloseIndex < 0)
+                        applyInputsUpdate(cursor + 1 + 2) {
+                            // 先插入右侧符号，再插入左侧符号，以避免其 selected 的位置发生变动
+                            addAll(cursor + 1, listOf(MathInput.Gap, close))
+                            addAll(cursor - 1, listOf(MathInput.Gap, open))
+                        }
+                    // 替换配对输入项
+                    else
                         applyInputsUpdate(cursor + 1) {
                             // 选中的是左侧符号
                             if (cursor < selectedCloseIndex) {
-                                set(cursor, input)
-                                set(selectedCloseIndex, inputClose)
+                                set(cursor, open)
+                                set(selectedCloseIndex, close)
                             }
                             // 选中的是右侧符号
                             else {
-                                set(cursor, inputClose)
-                                set(selectedCloseIndex, input)
+                                set(cursor, close)
+                                set(selectedCloseIndex, open)
                             }
-                        }
-                    // 插入 Gap-Item 对
-                    else
-                        applyInputsUpdate(cursor + 1 + 2) {
-                            addAll(cursor + 1, listOf(MathInput.Gap, input))
                         }
                 }
             }
-        }
 
     // ------------------------------------------
 
@@ -220,7 +291,7 @@ data class MathInputList(
 
     // ------------------------------------------
 
-    /** 移动 [cursor] 并更新 [inputs] */
+    /** 移动 [cursor] 重置 [pending] 并更新 [inputs] */
     private fun applyInputsUpdate(
         cursor: Int = this.cursor,
         pending: MathInput.Item? = null,
@@ -233,12 +304,12 @@ data class MathInputList(
         )
 
     /** 选中指定位置的输入项，并置空 [pending] */
-    private fun doSelectAt(index: Int): MathInputList =
+    private fun selectAt(index: Int): MathInputList =
         copy(cursor = index, pending = null)
 
     /** 选中指定位置偏移的输入项，并置空 [pending] */
-    private fun doSelectOffset(offset: Int): MathInputList =
-        doSelectAt(cursor + offset)
+    private fun selectByOffset(offset: Int): MathInputList =
+        selectAt(cursor + offset)
 
     /** 查找指定位置输入项的配对（开启/关闭）输入项的序号 */
     private fun indexOfPairInputAt(sourceIndex: Int): Int {
