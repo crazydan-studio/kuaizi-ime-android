@@ -23,11 +23,18 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInputList
 
 /**
  * 输入列表
+ * - 在列表 [inputs] 中为成对的 [CommonInput.Gap]-[CommonInput.Item]（`Gap-Item`），
+ *   且在该列表末尾始终放置一个 Gap，从而确保列表头、尾和 Item 之间的间隙均有一个 Gap，
+ *   以方便自由定位列表中具体的输入项以及输入项之间的空隙；
+ * - 通过游标 [cursor] 实现对 Gap 或 Item 的定位，从而在指向的 Gap 位置插入新的 Gap-Item 对，
+ *   或者对指向的 Item 做替换、修改和删除；
+ * - 待输入 [pending] 用于承载对 [cursor] 指向的 Item 的持续性修改（主要针对 [CommonInput.Item.Char.Latin]），
+ *   从而避免频繁更新 [inputs] 列表。而由于 Gap 位置只能做 Gap-Item 对的插入，
+ *   因此，当 [cursor] 指向 Gap 时，[pending] 将始终为 `null`；
  *
- * @param inputs [CommonInput.Gap]-[CommonInput.Item] 交替排列的输入序列。
- * 始终不为空，且列表末尾始终多一个 [CommonInput.Gap]
- * @param cursor 当前游标位置（指向 inputs 列表中的被选中输入的索引）
- * @param pending 待输入：正在输入还未更新到 [inputs] 的输入项
+ * @param inputs Gap-Item 交替排列的输入序列。始终不为空
+ * @param cursor 当前游标位置（指向 inputs 列表中的 Gap 或 Item 的索引）
+ * @param pending 待输入
  * @param frozen 是否已被冻结：被冻结后，将不能对输入列表做修改
  */
 data class InputList(
@@ -40,10 +47,7 @@ data class InputList(
         require(cursor >= 0 && cursor <= inputs.lastIndex)
     }
 
-    /**
-     * 已选中输入项：
-     * - 若 [selected] 为 [CommonInput.Item.MathExpr]，则 [pending] 始终为 `null`；
-     */
+    /** 已选中输入项：[cursor] 指向的 [CommonInput.Gap] 或 [CommonInput.Item] */
     private val selected: CommonInput
         get() = inputs[cursor]
 
@@ -62,13 +66,9 @@ data class InputList(
     fun clean(): InputList =
         InputList(inputs = listOf(CommonInput.Gap), cursor = 0, pending = null)
 
-    /** 输入列表是否为空 */
+    /** 输入列表是否为空：只包含唯一的 Gap 时，该输入列表即为空 */
     fun isEmpty(): Boolean =
         inputs.size == 1
-
-    /** 待输入是否为空 */
-    fun hasEmptyPending(): Boolean =
-        pending == null || pending.isEmpty()
 
     // ------------------------------------------------------
 
@@ -110,7 +110,7 @@ data class InputList(
      */
     fun confirmPending(): InputList =
         // Note：在 selected 为算术输入时，pending 始终为 null
-        if (hasEmptyPending())
+        if (pending.isEmpty())
             when (selected) {
                 is CommonInput.Gap -> dropPending()
 
@@ -216,7 +216,7 @@ data class InputList(
         val right = symbol.right!!
 
         val selected = this.selected
-        val emptyPending = hasEmptyPending()
+        val emptyPending = pending.isEmpty()
 
         if (emptyPending && selected is CommonInput.Gap) {
             return applyInputsUpdate(cursor + 2) {
@@ -285,7 +285,7 @@ data class InputList(
      */
     private fun doRemoveBackward(oneByOne: Boolean): InputList {
         val selected = this.selected
-        val emptyPending = hasEmptyPending()
+        val emptyPending = pending.isEmpty()
 
         if (oneByOne) {
             val current = if (emptyPending) selected else pending
@@ -309,13 +309,68 @@ data class InputList(
                     if (prev is CommonInput.Item.Char.Latin && prev.chars.size > 1)
                         doSelectAt(prevIndex)
                     else
-                        doRemovePairSymbol(prev).doRemoveNonGap(prev)
+                        tryRemovePairSymbol(prev).doRemoveNonGap(prev)
                 }
             // 删除当前选中输入项及其 Gap 位
             else ->
-                doRemovePairSymbol(selected).doRemoveNonGap(selected)
+                tryRemovePairSymbol(selected).doRemoveNonGap(selected)
         }
     }
+
+    /**
+     * 尝试删除 [input] 的对端配对符号输入项：
+     * - ；
+     * 自动根据 [inputs] 缺口偏移 [cursor] 位置。
+     *
+     * 若没有配对的符号输入项，则不做处理。
+     */
+    private fun tryRemovePairSymbol(input: CommonInput): InputList =
+        when (input) {
+            !is CommonInput.Item.Char.Symbol -> this
+            else ->
+                indexOfPairSymbol(input).let { index ->
+                    if (index < 0) this
+                    else doRemoveNonGapAt(index)
+                }
+        }
+
+    /**
+     * 删除指定的非 Gap 输入项。
+     * 自动根据 [inputs] 缺口偏移 [cursor] 位置。
+     */
+    private fun doRemoveNonGap(input: CommonInput): InputList =
+        when (input) {
+            is CommonInput.Gap -> this
+            else ->
+                inputs.indexOf(input).let { index ->
+                    if (index < 0) this
+                    else doRemoveNonGapAt(index)
+                }
+        }
+
+    /**
+     * 删除指定位置的非 Gap 输入项。
+     * 自动根据 [inputs] 缺口偏移 [cursor] 位置。
+     */
+    private fun doRemoveNonGapAt(index: Int): InputList =
+        when (inputs.getOrNull(index)) {
+            null, is CommonInput.Gap -> this
+            else ->
+                applyInputsUpdate(
+                    cursor =
+                        if (cursor < index - 1) cursor
+                        else if (cursor > index) cursor - 2
+                        else index - 1,
+                    pending =
+                        if (cursor >= index - 1 && cursor <= index) null
+                        else pending,
+                ) {
+                    // 目标输入项
+                    removeAt(index)
+                    // 与之配对的 Gap
+                    removeAt(index - 1)
+                }
+        }
 
     // ------------------------------------------
 
@@ -370,60 +425,6 @@ data class InputList(
     /** 选中指定位置偏移的输入项，并置空 [pending] */
     private fun doSelectOffset(offset: Int): InputList =
         doSelectAt(cursor + offset)
-
-    /**
-     * 删除指定的非 Gap 输入项。
-     * 自动根据 [inputs] 缺口偏移 [cursor] 位置。
-     */
-    private fun doRemoveNonGap(input: CommonInput): InputList =
-        when (input) {
-            is CommonInput.Gap -> this
-            else ->
-                inputs.indexOf(input).let { index ->
-                    if (index < 0) this
-                    else doRemoveNonGapAt(index)
-                }
-        }
-
-    /**
-     * 删除指定位置的非 Gap 输入项。
-     * 自动根据 [inputs] 缺口偏移 [cursor] 位置。
-     */
-    private fun doRemoveNonGapAt(index: Int): InputList =
-        when (inputs.getOrNull(index)) {
-            null, is CommonInput.Gap -> this
-            else ->
-                applyInputsUpdate(
-                    cursor =
-                        if (cursor < index - 1) cursor
-                        else if (cursor > index) cursor - 2
-                        else index - 1,
-                    pending =
-                        if (cursor >= index - 1 && cursor <= index) null
-                        else pending,
-                ) {
-                    // 目标输入项
-                    removeAt(index)
-                    // 与之配对的 Gap
-                    removeAt(index - 1)
-                }
-        }
-
-    /**
-     * 删除指定输入项（仅针对 [CommonInput.Item.Char.Symbol]）的对端配对符号输入项。
-     * 自动根据 [inputs] 缺口偏移 [cursor] 位置。
-     *
-     * 若没有配对的符号输入项，则不做处理。
-     */
-    private fun doRemovePairSymbol(input: CommonInput): InputList =
-        when (input) {
-            !is CommonInput.Item.Char.Symbol -> this
-            else ->
-                indexOfPairSymbol(input).let { index ->
-                    if (index < 0) this
-                    else doRemoveNonGapAt(index)
-                }
-        }
 
     /** 查找指定符号输入项的配对符号输入项的序号 */
     private fun indexOfPairSymbol(symbol: CommonInput.Item.Char.Symbol): Int =

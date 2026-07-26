@@ -92,11 +92,10 @@ sealed class CommonInput {
 // -----------------------------------------------------------------
 
 /** 输入项是否为空：主要针对 [CommonInput.Item.MathExpr]，其余都不应该为空 */
-fun CommonInput.Item.isEmpty(): Boolean =
+fun CommonInput.Item?.isEmpty(): Boolean =
     when (this) {
-        is CommonInput.Item.Char -> value.isEmpty()
         is CommonInput.Item.MathExpr -> inputList.isEmpty()
-        else -> true
+        else -> false
     }
 
 /** 丢弃最后一个字符 */

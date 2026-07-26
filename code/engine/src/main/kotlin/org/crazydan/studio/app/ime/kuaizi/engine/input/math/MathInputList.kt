@@ -69,11 +69,6 @@ data class MathInputList(
 
     // ------------------------------------------
 
-    /** 丢弃待输入 */
-    fun dropPending(): MathInputList =
-        if (pending == null) this
-        else copy(pending = null)
-
     /**
      * 确认 [pending]，将其更新到 [inputs]：
      * - 若 [selected] 为 [MathInput.Gap]，则不做处理，因为，Gap 位置不对应任何输入项；
@@ -297,9 +292,112 @@ data class MathInputList(
 
     // ------------------------------------------
 
-    /** 回删输入 */
+    /**
+     * 删除已选中输入：
+     * - 若 [selected] 为 [MathInput.Gap]，则不做处理；
+     * - 否则，执行 [doRemoveBackward] (false)；
+     */
+    fun removeSelected(): MathInputList =
+        when (selected) {
+            is MathInput.Gap -> this
+            else -> doRemoveBackward(false)
+        }
+
+    /** 回删输入项，执行 [doRemoveBackward] (true) */
     fun removeBackward(): MathInputList =
-        this
+        doRemoveBackward(true)
+
+    /**
+     * 回删输入：
+     * - 若 [pending] 或 [selected] 为包含多个字符的 [MathInput.Item.Const.Number]，则删除其尾部字符；
+     * - 否则，若 [selected] 为 [MathInput.Gap]，则：
+     *   - 若 [cursor] 为 `0`，则不做处理；
+     *   - 否则，若 [cursor] 前序输入项为包含多个字符的 [MathInput.Item.Const.Number]，则执行 [selectAt] 以将其选中，从而等待后续处理；
+     *   - 否则，执行 [tryRemovePairInputAt] 先尝试删除前序输入项的配对输入项，再执行 [doRemoveNonGap] 以删除前序输入项；
+     * - 否则，执行 [tryRemovePairInputAt] 先尝试删除 [selected] 的配对输入项，再执行 [doRemoveNonGap] 以删除 [selected]；
+     *
+     * 对于数字输入项会尝试逐字符删除，其余类型的输入项则将被直接删除，[cursor] 也将指向删除后的空隙（Gap）。
+     */
+    private fun doRemoveBackward(oneByOne: Boolean): MathInputList {
+        val selected = this.selected
+
+        if (oneByOne) {
+            val current = pending ?: selected
+
+            if (current is MathInput.Item.Const.Number && current.chars.size > 1) {
+                return copy(pending = current.dropLastChar())
+            }
+        }
+
+        return when (selected) {
+            is MathInput.Gap ->
+                if (cursor == 0) this
+                else {
+                    val prevIndex = cursor - 1
+                    val prev = inputs[prevIndex]
+
+                    if (prev is MathInput.Item.Const.Number && prev.chars.size > 1)
+                        selectAt(prevIndex)
+                    else
+                        tryRemovePairInputAt(prevIndex).doRemoveNonGap(prev)
+                }
+
+            else ->
+                tryRemovePairInputAt(cursor).doRemoveNonGap(selected)
+        }
+    }
+
+    /**
+     * 尝试删除指定位置的输入项的配对（开启/关闭）输入项：
+     * - 若 [sourceIndex] 位置的输入项没有配对输入项，则不做处理；
+     * - 否则，执行 [doRemoveNonGapAt] 以按位置删除对应的配对输入项；
+     */
+    private fun tryRemovePairInputAt(sourceIndex: Int): MathInputList =
+        indexOfPairInputAt(sourceIndex).let { targetIndex ->
+            if (targetIndex < 0) this
+            else doRemoveNonGapAt(targetIndex)
+        }
+
+    /**
+     * 删除指定的非 Gap 输入：
+     * - 若 [input] 为 [MathInput.Gap]，则不做处理；
+     * - 否则，若 [input] 不在 [inputs] 内，则不做处理；
+     * - 否则，执行 [doRemoveNonGapAt] 以按位置删除 [input] 的 Gap-Item 对；
+     */
+    private fun doRemoveNonGap(input: MathInput): MathInputList =
+        when (input) {
+            is MathInput.Gap -> this
+            else ->
+                inputs.indexOf(input).let { index ->
+                    if (index < 0) this
+                    else doRemoveNonGapAt(index)
+                }
+        }
+
+    /**
+     * 删除指定位置的非 Gap 输入（即，Item 输入项）：
+     * - 若 [index] 位置的输入为 `null` 或 [MathInput.Gap]，则不做处理；
+     * - 否则，删除 [index] 位置的 Gap-Item 对，并根据 [inputs] 缺口偏移 [cursor] 的位置；
+     */
+    private fun doRemoveNonGapAt(index: Int): MathInputList =
+        when (inputs.getOrNull(index)) {
+            null, is MathInput.Gap -> this
+            else ->
+                applyInputsUpdate(
+                    cursor =
+                        if (cursor < index - 1) cursor
+                        else if (cursor > index) cursor - 2
+                        else index - 1,
+                    pending =
+                        if (cursor >= index - 1 && cursor <= index) null
+                        else pending,
+                ) {
+                    // 目标输入项
+                    removeAt(index)
+                    // 与之配对的 Gap
+                    removeAt(index - 1)
+                }
+        }
 
     // ------------------------------------------
 
