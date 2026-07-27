@@ -220,7 +220,7 @@ sealed class MathInput {
 
 // -----------------------------------------------------------------------
 
-/** 获取指定输入项的闭合输入项 */
+/** 获取输入项的闭合输入项 */
 fun MathInput.Item.getClose(): MathInput.Item.Symbol? =
     when (this) {
         is MathInput.Item.Func -> close

@@ -85,7 +85,7 @@ data class MathInputList(
             is MathInput.Gap -> this
             is MathInput.Item ->
                 if (pending == null)
-                    selectByOffset(1)
+                    selectAt(cursor + 1)
                 else
                     applyInputsUpdate(cursor + 1) {
                         set(cursor, pending)
@@ -257,7 +257,7 @@ data class MathInputList(
      */
     private fun doAddPairInput(open: MathInput.Item, close: MathInput.Item): MathInputList =
         if (pending != null) // 先确认再包裹
-            confirmPending().selectByOffset(-1).doAddPairInput(open, close)
+            confirmPending().selectAt(cursor - 1).doAddPairInput(open, close)
         else
             when (selected) {
                 is MathInput.Gap ->
@@ -309,7 +309,8 @@ data class MathInputList(
 
     /**
      * 回删输入：
-     * - 若 [pending] 或 [selected] 为包含多个字符的 [MathInput.Item.Const.Number]，则删除其尾部字符；
+     * - 若 [pending] 或 [selected] 为包含多个字符的 [MathInput.Item.Const.Number]
+     *   且 [oneByOne]=`true` 时，则删除其尾部字符；
      * - 否则，若 [selected] 为 [MathInput.Gap]，则：
      *   - 若 [cursor] 为 `0`，则不做处理；
      *   - 否则，若 [cursor] 前序输入项为包含多个字符的 [MathInput.Item.Const.Number]，则执行 [selectAt] 以将其选中，从而等待后续处理；
@@ -394,7 +395,7 @@ data class MathInputList(
                 ) {
                     // 目标输入项
                     removeAt(index)
-                    // 与之配对的 Gap
+                    // 与之成对的 Gap
                     removeAt(index - 1)
                 }
         }
@@ -417,10 +418,6 @@ data class MathInputList(
     private fun selectAt(index: Int): MathInputList =
         copy(cursor = index, pending = null)
 
-    /** 选中指定位置偏移的输入项，并重置 [pending] 为 `null` */
-    private fun selectByOffset(offset: Int): MathInputList =
-        selectAt(cursor + offset)
-
     /** 查找指定位置输入项的配对（开启/关闭）输入项的序号 */
     private fun indexOfPairInputAt(sourceIndex: Int): Int {
         val source = inputs[sourceIndex]
@@ -433,16 +430,16 @@ data class MathInputList(
                 if (sourceClose != null) {
                     // 向右查找
                     for (i in sourceIndex + 1..inputs.lastIndex) {
-                        val close = inputs[i]
-                        if (sourceClose == close) {
+                        val input = inputs[i]
+                        if (sourceClose == input) {
                             return i
                         }
                     }
                 } else if (source is MathInput.Item.Symbol) {
                     // 向左查找
                     for (i in sourceIndex - 1 downTo 0) {
-                        val open = inputs[i]
-                        if (open is MathInput.Item && open.getClose() == source) {
+                        val input = inputs[i]
+                        if (input is MathInput.Item && input.getClose() == source) {
                             return i
                         }
                     }

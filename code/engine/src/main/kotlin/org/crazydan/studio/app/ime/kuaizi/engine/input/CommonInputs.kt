@@ -91,11 +91,19 @@ sealed class CommonInput {
 
 // -----------------------------------------------------------------
 
-/** 输入项是否为空：主要针对 [CommonInput.Item.MathExpr]，其余都不应该为空 */
+/** 输入项是否为空：主要针对 [CommonInput.Item.MathExpr] 和 `null`，其余均不应该为空 */
 fun CommonInput.Item?.isEmpty(): Boolean =
     when (this) {
+        null -> true
         is CommonInput.Item.MathExpr -> inputList.isEmpty()
         else -> false
+    }
+
+/** 获取输入项的配对输入项 */
+fun CommonInput.Item.getPair(): CommonInput.Item? =
+    when (this) {
+        is CommonInput.Item.Char.Symbol -> right
+        else -> null
     }
 
 /** 丢弃最后一个字符 */
@@ -121,9 +129,7 @@ fun CommonInput.Item.Char.Latin.appendChar(
 fun CommonInput.Item.MathExpr.applyInputListUpdate(
     block: MathInputList.() -> MathInputList,
 ): CommonInput.Item.MathExpr =
-    CommonInput.Item.MathExpr(
-        inputList = inputList.block()
-    )
+    copy(inputList = inputList.block())
 
 // -----------------------------------------------------------------
 
