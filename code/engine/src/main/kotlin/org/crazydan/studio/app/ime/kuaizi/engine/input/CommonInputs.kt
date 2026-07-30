@@ -47,11 +47,11 @@ sealed class CommonInput {
 
             /**
              * 符号输入项（单字符）
-             * @property right 左配对符号的右配对符号
+             * @property close 闭合符号：当前输入项作为与其配对的开符号
              */
             data class Symbol(
                 override val value: String,
-                val right: Symbol? = null,
+                val close: Symbol? = null,
             ) : Char()
 
             /** 拉丁文（字母 + 数字）输入项（多字符） */
@@ -99,10 +99,10 @@ fun CommonInput.Item?.isEmpty(): Boolean =
         else -> false
     }
 
-/** 获取输入项的配对输入项 */
-fun CommonInput.Item.getPair(): CommonInput.Item? =
+/** 获取与当前输入项配对的闭合输入项 */
+fun CommonInput.Item.getClose(): CommonInput.Item? =
     when (this) {
-        is CommonInput.Item.Char.Symbol -> right
+        is CommonInput.Item.Char.Symbol -> close
         else -> null
     }
 
