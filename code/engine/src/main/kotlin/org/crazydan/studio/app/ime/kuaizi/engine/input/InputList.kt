@@ -40,8 +40,8 @@ data class InputList(
     pending = pending,
 ) {
 
-    override fun isGap(input: CommonInput): Boolean =
-        input is CommonInput.Gap
+    override fun getGap(): CommonInput.Gap =
+        CommonInput.Gap
 
     override fun getPairCloseItem(input: CommonInput.Item): CommonInput.Item? =
         input.getClose()
@@ -188,9 +188,9 @@ data class InputList(
         // 对拼音输入项是做整体替换，而不是追加
         when (selected) {
             is CommonInput.Gap ->
-                applyInputsUpdate(cursor = cursor + 1, pending = item) {
-                    addAll(cursor, listOf(CommonInput.Gap, item))
-                }
+                insertItemAt(cursor, item).copy(
+                    cursor = cursor + 1, pending = item,
+                )
 
             else ->
                 copy(pending = item)
@@ -218,9 +218,9 @@ data class InputList(
 
             else -> when (selected) {
                 is CommonInput.Gap ->
-                    applyInputsUpdate(cursor = cursor + 1, pending = item) {
-                        addAll(cursor, listOf(CommonInput.Gap, item))
-                    }
+                    insertItemAt(cursor, item).copy(
+                        cursor = cursor + 1, pending = item,
+                    )
 
                 else ->
                     copy(pending = item)
@@ -240,7 +240,7 @@ data class InputList(
             if (close == null) {
                 doAddNonPairItem(item, replacements)
             } else {
-                doAddPairItem(item, close, CommonInput.Gap)
+                doAddPairItem(item, close)
             }
         }
 
@@ -271,9 +271,7 @@ data class InputList(
                             set(prevIndex, item)
                         }
                     else
-                        applyInputsUpdate(cursor + 2) {
-                            addAll(cursor, listOf(CommonInput.Gap, item))
-                        }
+                        insertItemAt(cursor, item).selectAt(cursor + 2)
                 }
 
                 else -> indexOfPairItemAt(cursor).let { selectedCloseIndex ->

@@ -37,8 +37,8 @@ data class MathInputList(
     pending = pending,
 ) {
 
-    override fun isGap(input: MathInput): Boolean =
-        input is MathInput.Gap
+    override fun getGap(): MathInput.Gap =
+        MathInput.Gap
 
     override fun getPairCloseItem(input: MathInput.Item): MathInput.Item? =
         input.getClose()
@@ -88,6 +88,7 @@ data class MathInputList(
      * - 若 [item] 为 [MathInput.Item.Const.Number]，则执行 [doAddNumberItem]；
      * - 否则，若 [item] 为 [MathInput.Item.Dot]，则执行 [doAddDotItem]；
      * - 否则，若 [item] 为 [MathInput.Item.Op]，则执行 [doAddOpItem]；
+     * - 否则，若 [item] 为 [MathInput.Item.Equal]，则执行 [doAddEqualItem]；
      * - 否则，执行 [doAddOtherItem]；
      */
     fun addItem(item: MathInput.Item): MathInputList =
@@ -101,7 +102,8 @@ data class MathInputList(
             is MathInput.Item.Op ->
                 doAddOpItem(item)
 
-            // TODO 等号只能加到开头或结尾，且不可重复
+            is MathInput.Item.Equal ->
+                doAddEqualItem(item)
 
             else ->
                 doAddOtherItem(item)
@@ -124,9 +126,9 @@ data class MathInputList(
 
             else -> when (selected) {
                 is MathInput.Gap ->
-                    applyInputsUpdate(cursor = cursor + 1, pending = item) {
-                        addAll(cursor, listOf(MathInput.Gap, item))
-                    }
+                    insertItemAt(cursor, item).copy(
+                        cursor = cursor + 1, pending = item,
+                    )
 
                 else ->
                     copy(pending = item)
@@ -189,6 +191,23 @@ data class MathInputList(
         }
 
     /**
+     * 添加等号：
+     * - 若 [inputs] 中已包含 [MathInput.Item.Equal]，则不做处理；
+     * - 否则，若 [cursor] 为 `0`，则在 [inputs] 头部插入等号，表示仅计算得到表达式结果；
+     * - 否则，将等号插入到 [inputs] 尾部，并保持 [cursor] 不变，表示保留表达式并在等号后放置该表达式的计算结果；
+     *
+     * 允许在尾部等号后添加其他输入，对此将不做任何计算，直接原样提交到目标编辑器中。
+     */
+    private fun doAddEqualItem(item: MathInput.Item.Equal): MathInputList =
+        if (inputs.contains(item)) this
+        else if (cursor == 0)
+            insertItemAt(cursor, item).selectAt(cursor + 2)
+        else
+            applyInputsUpdate {
+                addAll(listOf(item, MathInput.Gap))
+            }
+
+    /**
      * 添加其他输入项：
      * - 若 [item] 不是配对输入项（括号、单参函数等），则执行 [doAddNonPairItem]；
      * - 否则，执行 [doAddPairItem]；
@@ -200,7 +219,7 @@ data class MathInputList(
             if (close == null) {
                 doAddNonPairItem(item)
             } else {
-                doAddPairItem(item, close, MathInput.Gap)
+                doAddPairItem(item, close)
             }
         }
 
@@ -221,9 +240,7 @@ data class MathInputList(
         else
             when (selected) {
                 is MathInput.Gap ->
-                    applyInputsUpdate(cursor + 2) {
-                        addAll(cursor, listOf(MathInput.Gap, item))
-                    }
+                    insertItemAt(cursor, item).selectAt(cursor + 2)
 
                 else -> indexOfPairItemAt(cursor).let { selectedCloseIndex ->
                     if (selectedCloseIndex < 0)

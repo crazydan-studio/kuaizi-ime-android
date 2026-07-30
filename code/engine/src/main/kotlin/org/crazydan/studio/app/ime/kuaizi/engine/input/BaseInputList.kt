@@ -55,8 +55,12 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
     fun isEmpty(): Boolean =
         inputs.size == 1
 
+    /** 获取 [Gap] 类型实体 */
+    protected abstract fun getGap(): Gap
+
     /** 判断指定的输入是否为 Gap */
-    protected abstract fun isGap(input: Input): Boolean
+    private fun isGap(input: Input): Boolean =
+        input == getGap()
 
     // ------------------------------------------
 
@@ -78,6 +82,10 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
                     else index + (it.inputs.size - inputs.size)
                 )
             }
+
+    /** 选中指定位置的输入项，并重置 [pending] 为 `null` */
+    protected fun selectAt(index: Int): This =
+        doCopy(cursor = index, pending = null)
 
     // ------------------------------------------
 
@@ -101,6 +109,12 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         pending: Item? = this.pending,
     ): This
 
+    /** 在 [index] 位置插入 [items] 的 Gap-Item 对 */
+    protected fun insertItemAt(index: Int, vararg items: Item): This =
+        applyInputsUpdate {
+            addAll(index, items.flatMap { listOf(getGap(), it) })
+        }
+
     /**
      * 添加配对输入项：
      * - 若 [pending] 不为 `null`，则先 [confirmPending] 再以 [open] 和 [close] 包裹该已确认的输入项，并将 [cursor] 指向其后的 Gap；
@@ -111,27 +125,24 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
      *
      * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
      */
-    protected fun doAddPairItem(open: Item, close: Item, gap: Gap): This =
+    protected fun doAddPairItem(open: Item, close: Item): This =
         if (pending != null) // 先确认再包裹
             confirmPending().let {
                 // 未发生 inputs 列表元素移动
                 if (it.inputs.size == inputs.size) it.selectAt(cursor - 1)
                 // cursor 已指向 Gap 位
                 else it
-            }.doAddPairItem(open, close, gap)
+            }.doAddPairItem(open, close)
         else if (isGap(selected))
-            applyInputsUpdate(cursor + 2) {
-                addAll(cursor, listOf(gap, open, gap, close))
-            }
+            insertItemAt(cursor, open, close).selectAt(cursor + 2)
         else
             indexOfPairItemAt(cursor).let { selectedCloseIndex ->
                 // 包裹非配对输入项
                 if (selectedCloseIndex < 0)
-                    applyInputsUpdate(cursor + 1 + 2) {
-                        // 先插入右侧符号，再插入左侧符号，以避免其 selected 的位置发生变动
-                        addAll(cursor + 1, listOf(gap, close))
-                        addAll(cursor - 1, listOf(gap, open))
-                    }
+                // 先插入闭符号，再插入开符号，以避免其 selected 的位置发生变动
+                    insertItemAt(cursor + 1, close)
+                        .insertItemAt(cursor - 1, open)
+                        .selectAt(cursor + 1 + 2)
                 // 替换配对输入项
                 else
                     applyInputsUpdate(cursor + 1) {
@@ -263,10 +274,6 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
             pending = pending,
             cursor = cursor,
         )
-
-    /** 选中指定位置的输入项，并重置 [pending] 为 `null` */
-    protected fun selectAt(index: Int): This =
-        doCopy(cursor = index, pending = null)
 
     /** 获取与指定输入项配对的闭合输入项 */
     protected abstract fun getPairCloseItem(input: Item): Item?
