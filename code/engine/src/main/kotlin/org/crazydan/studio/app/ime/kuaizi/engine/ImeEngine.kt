@@ -444,7 +444,7 @@ class ImeEngine internal constructor(
                 // TODO 编辑器回删通过 EditorEditAction.Backspace
             }
 
-            is ImeIntent.InputList.DeleteSelected -> {
+            is ImeIntent.InputList.RemoveSelected -> {
             }
 
             is ImeIntent.InputList.UpdatePending -> {

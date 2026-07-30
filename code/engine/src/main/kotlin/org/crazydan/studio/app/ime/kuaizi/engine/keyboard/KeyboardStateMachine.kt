@@ -125,7 +125,7 @@ class KeyboardStateMachine(
                         ImeIntent.InputList.ConfirmPending
 
                     is KeyboardStateTransition.InputList.DeleteSelected ->
-                        ImeIntent.InputList.DeleteSelected
+                        ImeIntent.InputList.RemoveSelected
                 }
             ),
         )
@@ -241,10 +241,7 @@ class KeyboardStateMachine(
                 KeyboardStateTransition.Result(
                     newState = KeyboardState.Idle,
                     sideEffects = listOf(
-                        // 丢弃无效的拼音输入，确认有效的拼音输入
-                        if (pinyinTree.isPinyin(state.getChars()))
-                            ImeIntent.InputList.ConfirmPending
-                        else ImeIntent.InputList.DropPending
+                        ImeIntent.InputList.ConfirmPending
                     ),
                 )
 

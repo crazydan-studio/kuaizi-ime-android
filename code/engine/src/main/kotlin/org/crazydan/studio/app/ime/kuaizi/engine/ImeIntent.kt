@@ -179,7 +179,7 @@ sealed class ImeIntent {
         data object DeleteBackward : InputList()
 
         /** 删除当前已选中的输入项 */
-        data object DeleteSelected : InputList()
+        data object RemoveSelected : InputList()
 
         /** 选中指定位置的输入项 */
         data class SelectAt(val index: Int) : InputList()
