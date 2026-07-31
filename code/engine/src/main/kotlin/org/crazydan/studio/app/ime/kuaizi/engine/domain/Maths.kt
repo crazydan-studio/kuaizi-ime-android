@@ -56,19 +56,19 @@ sealed class MathSymbol {
             get() = "÷"
     }
 
-    /** `%` */
+    /** 百分号 `%` */
     data object Percent : MathSymbol() {
         override val value: String
             get() = "%"
     }
 
-    /** `‰` */
+    /** 千分号 `‰` */
     data object Permillage : MathSymbol() {
         override val value: String
             get() = "‰"
     }
 
-    /** `‱` */
+    /** 万分号 `‱` */
     data object Permyriad : MathSymbol() {
         override val value: String
             get() = "‱"

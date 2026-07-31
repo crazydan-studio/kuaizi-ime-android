@@ -32,9 +32,9 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInput
  *   从而避免频繁更新 [inputs] 列表。此外，由于 [Gap] 位置只能做 Gap-Item 对的插入，
  *   因此，当 [cursor] 指向 [Gap] 时，[pending] 将始终为 `null`；
  *
- * @param inputs Gap-Item 交替排列的输入序列。始终不为空
- * @param cursor 当前游标位置（指向 inputs 列表中的 [Gap] 或 [Item] 的索引）
- * @param pending 待输入。若当前并未更新持续性输入项，则其始终为 `null`
+ * @property inputs Gap-Item 交替排列的输入序列。始终不为空
+ * @property cursor 当前游标位置（指向 inputs 列表中的 [Gap] 或 [Item] 的索引）
+ * @property pending 待输入。若当前并未更新持续性输入项，则其始终为 `null`
  */
 abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input, Item : Input, Gap : Input>(
     open val inputs: List<Input>,
@@ -61,6 +61,10 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
     /** 判断指定的输入是否为 Gap */
     private fun isGap(input: Input): Boolean =
         input == getGap()
+
+    /** 判断指定的 [item] 是否为空 */
+    protected open fun isEmptyItem(item: Item?): Boolean =
+        item != null
 
     // ------------------------------------------
 
@@ -92,12 +96,12 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
     /** 确认 [pending]，将其更新到 [inputs] */
     abstract fun confirmPending(): This
 
-    /** 将 [selected]（非 Gap）替换为 [input]，并将 [cursor] 后移一位指向 Gap 位，以等待插入新的输入项 */
-    protected fun doReplaceSelected(input: Item): This =
+    /** 将 [selected]（非 Gap）替换为 [item]，并将 [cursor] 后移一位指向 Gap 位，以等待插入新的输入项 */
+    protected fun doReplaceSelected(item: Item): This =
         if (isGap(selected)) this as This
         else
             applyInputsUpdate(cursor + 1) {
-                set(cursor, input)
+                set(cursor, item)
             }
 
     // ------------------------------------------
@@ -263,6 +267,48 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
 
     // ------------------------------------------
 
+    /** 获取输入列表的可提交文本：将根据 [needGapSpace] 决定是否在 Gap 位插入空格 */
+    fun getText(option: InputTextOption): CharSequence =
+        inputs.mapIndexed { i, input ->
+            if (isGap(input))
+                if (
+                    i > 0 && i < inputs.lastIndex
+                    && needGapSpace(i, option)
+                ) " "
+                else ""
+            else
+                getText(item = getValidItemAt(i), option)
+
+        }.joinTo(StringBuilder(), "")
+
+    /** 获取输入项的可提交文本 */
+    protected abstract fun getText(item: Item, option: InputTextOption): CharSequence
+
+    /**
+     * 通过 [needGapSpaceBetween] 判断指定位置（[gapIndex] 不包含 [inputs] 首尾序号）的
+     * [Gap] 位的左右两侧的输入项之间是否需要插入空格间隔
+     */
+    fun needGapSpace(gapIndex: Int, option: InputTextOption): Boolean {
+        val left = getValidItemAt(gapIndex - 1)
+        val right = getValidItemAt(gapIndex + 1)
+
+        return needGapSpaceBetween(left, right, option)
+    }
+
+    /** 判断指定的左右两个输入项之间是否需要插入空格间隔 */
+    abstract fun needGapSpaceBetween(left: Item, right: Item, option: InputTextOption): Boolean
+
+    /**
+     * 获取指定位置的有效输入项：
+     * - 若 [index] 为 [cursor] 且 [pending] 不为 `null` 或空，则返回 [pending]；
+     * - 需确保 [index] 指向的是 [Item] 而不是 [Gap]；
+     */
+    fun getValidItemAt(index: Int): Item =
+        if (cursor == index && !isEmptyItem(pending)) pending!!
+        else inputs[index] as Item
+
+    // ------------------------------------------
+
     /** 移动 [cursor] 重置 [pending] 并更新 [inputs] */
     protected fun applyInputsUpdate(
         cursor: Int = this.cursor,
@@ -276,10 +322,10 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         )
 
     /** 获取与指定输入项配对的闭合输入项 */
-    protected abstract fun getPairCloseItem(input: Item): Item?
+    protected abstract fun getPairCloseItem(item: Item): Item?
 
     /** 判断指定输入项是否为配对的闭合输入项 */
-    protected abstract fun isPairCloseItem(input: Item): Boolean
+    protected abstract fun isPairCloseItem(item: Item): Boolean
 
     /** 查找指定位置输入项的配对输入项（开或闭）的序号 */
     protected fun indexOfPairItemAt(sourceIndex: Int): Int {

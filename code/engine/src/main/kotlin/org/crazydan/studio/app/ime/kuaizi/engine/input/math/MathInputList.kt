@@ -20,6 +20,7 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.input.math
 
 import org.crazydan.studio.app.ime.kuaizi.engine.input.BaseInputList
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputTextOption
 
 /**
  * 算术表达式 [BaseInputList]：
@@ -40,11 +41,11 @@ data class MathInputList(
     override fun getGap(): MathInput.Gap =
         MathInput.Gap
 
-    override fun getPairCloseItem(input: MathInput.Item): MathInput.Item? =
-        input.getClose()
+    override fun getPairCloseItem(item: MathInput.Item): MathInput.Item? =
+        item.getClose()
 
-    override fun isPairCloseItem(input: MathInput.Item): Boolean =
-        input is MathInput.Item.Symbol
+    override fun isPairCloseItem(item: MathInput.Item): Boolean =
+        item is MathInput.Item.Symbol
 
     override fun isContinuousInputItem(input: MathInput): Boolean =
         input is MathInput.Item.Const.Number && input.chars.size > 1
@@ -273,4 +274,27 @@ data class MathInputList(
 
         return doDeleteBackwardOnSelected()
     }
+
+    // ------------------------------------------
+
+    override fun getText(item: MathInput.Item, option: InputTextOption): CharSequence =
+        item.value
+
+    override fun needGapSpaceBetween(
+        left: MathInput.Item, right: MathInput.Item,
+        option: InputTextOption,
+    ): Boolean =
+        when (left) {
+            is MathInput.Item.Const.Number ->
+                when (right) {
+                    is MathInput.Item.Op.Percent,
+                    is MathInput.Item.Op.Permillage,
+                    is MathInput.Item.Op.Permyriad,
+                        -> false
+
+                    else -> true
+                }
+
+            else -> true
+        }
 }

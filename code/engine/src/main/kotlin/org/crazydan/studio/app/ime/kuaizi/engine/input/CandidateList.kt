@@ -102,22 +102,33 @@ sealed class InputWord {
     abstract val frequency: Int
 
     /**
-     * 拼音字候选
-     * @param text 候选字文本
+     * 汉字
+     * @param text 汉字文本
      * @param frequency 使用频率
      * @param spell 拼音拼写信息
-     * @param variant 变体信息（繁体/异体）
+     * @param variant 变体文本。若当前为简体，则该变体为繁体，若当前为繁体，则该变体为简体
      * @param radical 部首信息
      * @param tone 声调信息
      */
-    data class Pinyin(
+    data class Hanzi(
         override val text: String,
         override val frequency: Int,
-        val spell: Spell? = null,
-        val variant: Variant? = null,
+        val type: Type,
+        val spell: Spell,
+        val variant: String? = null,
         val radical: Radical? = null,
         val tone: Tone? = null,
-    ) : InputWord()
+    ) : InputWord() {
+
+        /** 汉字类型：简体 or 繁体 */
+        enum class Type {
+            /** 简体字 */
+            Simplified,
+
+            /** 繁体字 */
+            Traditional,
+        }
+    }
 
     /**
      * 拼音词组候选
@@ -170,12 +181,21 @@ sealed class InputWord {
         val spell: Spell? = null,
         val variant: Variant? = null,
     ) : InputWord()
+
+    /** 读音使用模式：跟随或替换 [InputWord] */
+    enum class SpellUseMode {
+        /** 跟随 */
+        Follow,
+
+        /** 替换 */
+        Replace,
+    }
 }
 
 /**
- * 拼音拼写信息
- * @param id 拼写唯一标识，用于去重和索引
- * @param value 拼写的显示值
+ * 汉字/英文读音
+ * @param id 读音唯一标识，用于去重和索引
+ * @param value 读音的显示值
  */
 data class Spell(val id: String, val value: String)
 
@@ -211,18 +231,6 @@ enum class Tone {
     Neutral,
 }
 
-/** 拼音拼写使用模式 */
-enum class SpellUsedMode {
-    /** 全拼模式 */
-    FullPinyin,
-
-    /** 双拼模式 */
-    DoublePinyin,
-
-    /** 注音模式 */
-    Bopomofo,
-}
-
 /** 变体类型 */
 enum class VariantType {
     /** 繁体字 */
@@ -252,7 +260,7 @@ data class PinyinWordFilter(
      * @return 是否匹配
      */
     fun matched(word: InputWord): Boolean {
-        if (word !is InputWord.Pinyin) return false
+        if (word !is InputWord.Hanzi) return false
         if (tones.isNotEmpty() && word.tone !in tones) return false
         if (spells.isNotEmpty() && word.spell !in spells) return false
         return true

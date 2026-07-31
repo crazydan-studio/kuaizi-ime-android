@@ -122,7 +122,7 @@ sealed class MathInput {
                     get() = fun(v1: Double, v2: Double): Double { return v1 / v2 }
             }
 
-            /** `%` */
+            /** 百分号 `%` */
             data object Percent : Op() {
                 override val value: String
                     get() = MathSymbol.Percent.value
@@ -130,7 +130,7 @@ sealed class MathInput {
                     get() = fun(v1: Double, _: Double): Double { return v1 * 0.01 }
             }
 
-            /** `‰` */
+            /** 千分号 `‰` */
             data object Permillage : Op() {
                 override val value: String
                     get() = MathSymbol.Permillage.value
@@ -138,7 +138,7 @@ sealed class MathInput {
                     get() = fun(v1: Double, _: Double): Double { return v1 * 0.001 }
             }
 
-            /** `‱` */
+            /** 万分号 `‱` */
             data object Permyriad : Op() {
                 override val value: String
                     get() = MathSymbol.Permyriad.value

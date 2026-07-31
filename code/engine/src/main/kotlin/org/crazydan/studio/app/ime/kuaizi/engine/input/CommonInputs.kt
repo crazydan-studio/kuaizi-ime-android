@@ -47,16 +47,19 @@ sealed class CommonInput {
 
             /**
              * 符号输入项（单字符）
+             * @property fullWidth 是否为全角符号：其视觉宽度占两个拉丁字符空间（https://zh.wikipedia.org/zh-cn/%E5%85%A8%E5%BD%A2%E5%92%8C%E5%8D%8A%E5%BD%A2）
              * @property close 闭合符号：当前输入项作为与其配对的开符号
              */
             data class Symbol(
                 override val value: String,
+                val fullWidth: Boolean = false,
                 val close: Symbol? = null,
             ) : Char()
 
             /** 拉丁文（字母 + 数字）输入项（多字符） */
             data class Latin(
                 val chars: List<String>,
+                val spell: Spell? = null,
             ) : Char() {
                 override val value: String
                     get() = chars.joinToString("")
@@ -70,12 +73,12 @@ sealed class CommonInput {
         /**
          * 拼音输入项
          * @property valid 是否为有效拼音
-         * @property word 该（有效）拼音的候选字
+         * @property word 该拼音的候选字：仅针对有效拼音
          */
         data class Pinyin(
             override val value: String,
             val valid: Boolean,
-            val word: InputWord.Pinyin? = null,
+            val word: InputWord.Hanzi? = null,
         ) : Item()
 
         /**
@@ -83,27 +86,52 @@ sealed class CommonInput {
          * @property inputList 表达式输入列表
          */
         data class MathExpr(
-            val inputList: MathInputList = MathInputList(),
             override val value: String = "",
+            val inputList: MathInputList = MathInputList(),
         ) : Item()
     }
 }
 
 // -----------------------------------------------------------------
 
-/** 输入项是否为空：主要针对 [CommonInput.Item.MathExpr] 和 `null`，其余均不应该为空 */
-fun CommonInput.Item?.isEmpty(): Boolean =
-    when (this) {
-        null -> true
-        is CommonInput.Item.MathExpr -> inputList.isEmpty()
-        else -> false
-    }
-
 /** 获取与当前输入项配对的闭合输入项 */
 fun CommonInput.Item.getClose(): CommonInput.Item? =
     when (this) {
         is CommonInput.Item.Char.Symbol -> close
         else -> null
+    }
+
+/** 按配置将当前输入项转换为提交至目标编辑器的文本 */
+fun CommonInput.Item.getText(option: InputTextOption): CharSequence =
+    when (this) {
+        is CommonInput.Item.MathExpr ->
+            inputList.getText(option)
+
+        is CommonInput.Item.Pinyin if word != null -> {
+            val spell = word.spell.value
+            val char = when (option.hanziType) {
+                InputWord.Hanzi.Type.Traditional -> word.variant
+                else -> null
+            } ?: word.text
+
+            when (option.spellUseMode) {
+                InputWord.SpellUseMode.Replace -> spell
+                InputWord.SpellUseMode.Follow -> "$char($spell)"
+                else -> char
+            }
+        }
+
+        is CommonInput.Item.Char.Latin
+            if spell != null && option.spellUseMode != null
+            ->
+            spell.value.let {
+                when (option.spellUseMode) {
+                    InputWord.SpellUseMode.Replace -> "/$it/"
+                    InputWord.SpellUseMode.Follow -> "$value /$it/"
+                }
+            }
+
+        else -> value
     }
 
 /** 丢弃最后一个字符 */
@@ -130,6 +158,23 @@ fun CommonInput.Item.MathExpr.applyInputListUpdate(
     block: MathInputList.() -> MathInputList,
 ): CommonInput.Item.MathExpr =
     copy(inputList = inputList.block())
+
+// -----------------------------------------------------------------
+
+/**
+ * 输入的可提交文本的转换选项：用于控制将输入转换为何种形式的文本
+ * @property hanziType 汉字类型：向目标编辑器提交汉字的简体或繁体形式。
+ * 为 `null` 时，采用简体字
+ * @property spellUseMode 汉字/英文读音使用模式：
+ * 向目标编辑器提交携带读音的汉字/英文（如 `汉(hàn)字(zì)`、`better /ˈbetər/ world /wɜrld/`）
+ * 或将汉字/英文替换为其读音（如 `hàn zì`、`/ˈbetər/ /wɜrld/`）。为 `null` 时，不携带读音，仅为汉字/英文
+ * @property mathResultPrecision 算术表达式计算结果的精度（小数点位数）。缺省为 `4`
+ */
+data class InputTextOption(
+    val hanziType: InputWord.Hanzi.Type? = null,
+    val spellUseMode: InputWord.SpellUseMode? = null,
+    val mathResultPrecision: Int = 4,
+)
 
 // -----------------------------------------------------------------
 
@@ -174,35 +219,4 @@ enum class PinyinToggleType {
 
     /** 显示声调 */
     ShowTone,
-}
-
-/**
- * 输入间距规则，定义不同类型字符之间的 Gap 插入策略。
- * 核心原则是：游标仅在语义边界处停留。
- */
-object InputGapSpacing {
-    /**
-     * 判断两个相邻 Char 之间是否需要插入 Gap
-     * @param left 左侧字符
-     * @param right 右侧字符
-     * @return true 表示需要间隔（游标可停留），false 表示紧密连接
-     */
-    fun needsGap(left: CommonInput.Char, right: CommonInput.Char): Boolean {
-        // 配对符号内部不需要间隔
-        if (left.pairSymbol != null && left.pairSymbol.content == null) return false
-        // 同一拼音词组的字符不需要间隔
-        if (left.word is InputWord.PinyinPhrase && left.word == right.word) return false
-        // 英文单词内部不需要间隔
-        if (isLatinChar(left) && isLatinChar(right)) return false
-        // 数字序列内部不需要间隔
-        if (isDigitChar(left) && isDigitChar(right)) return false
-        // 其他情况均需间隔
-        return true
-    }
-
-    private fun isLatinChar(char: CommonInput.Char): Boolean =
-        char.word is InputWord.Latin || char.value.all { it.isLetter() && it.code < 128 }
-
-    private fun isDigitChar(char: CommonInput.Char): Boolean =
-        char.value.all { it.isDigit() }
 }

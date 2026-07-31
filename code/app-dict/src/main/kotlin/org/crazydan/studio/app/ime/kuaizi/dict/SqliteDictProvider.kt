@@ -89,7 +89,7 @@ class SqliteDictProvider(
      */
     override suspend fun query(pinyin: String): List<InputWord> = withContext(Dispatchers.Default) {
         val words = repository.lookupPinyinWords(pinyin).map { entity ->
-            InputWord.Pinyin(
+            InputWord.Hanzi(
                 text = entity.text,
                 spell = Spell(id = entity.spell, value = entity.spell),
                 frequency = entity.freq,
@@ -110,7 +110,7 @@ class SqliteDictProvider(
     /** 根据拼音前缀模糊查询候选词，在 IO 线程异步执行。 */
     override suspend fun queryPrefix(prefix: String): List<InputWord> = withContext(Dispatchers.Default) {
         repository.lookupByPrefix(prefix).map { entity ->
-            InputWord.Pinyin(
+            InputWord.Hanzi(
                 text = entity.text,
                 spell = Spell(id = entity.spell, value = entity.spell),
                 frequency = entity.freq,
@@ -138,7 +138,7 @@ class SqliteDictProvider(
         val all = spells.flatMap { spell ->
             val words = repository.lookupPinyinWords(spell)
             words.map { entity ->
-                InputWord.Pinyin(
+                InputWord.Hanzi(
                     text = entity.text,
                     spell = Spell(id = entity.spell, value = entity.spell),
                     frequency = entity.freq,

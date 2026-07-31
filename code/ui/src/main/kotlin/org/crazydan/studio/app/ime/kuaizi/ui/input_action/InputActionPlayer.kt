@@ -253,7 +253,7 @@ class InputActionPlayer(
                         visible = true,
                     )
                 }
-                val word = InputWord.Pinyin(text = "", frequency = 1)
+                val word = InputWord.Hanzi(text = "", frequency = 1)
                 viewModel.handleIntent(ImeIntent.SelectCandidate(word))
             }
 

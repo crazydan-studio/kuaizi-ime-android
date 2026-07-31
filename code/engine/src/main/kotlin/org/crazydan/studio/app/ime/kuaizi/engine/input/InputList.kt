@@ -26,13 +26,17 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInputList
  * - Gap 为 [CommonInput.Gap]，Item 为 [CommonInput.Item]；
  * - 持续性输入项为 [CommonInput.Item.Char.Latin]、[CommonInput.Item.Pinyin] 和 [CommonInput.Item.MathExpr]；
  * - 配对输入项为 [CommonInput.Item.Char.Symbol]；
+ * - 只能通过 [withMathExprUpdate] 对 [CommonInput.Item.MathExpr] 类型的输入项进行更新；
+ * - 只能通过 [withTextOptionUpdate] 对 [textOption] 进行更新；
  *
- * @param frozen 是否已被冻结：被冻结后，将不能对输入列表做修改
+ * @property textOption 可提交文本的转换配置
+ * @property frozen 是否已被冻结：被冻结后，将不能对输入列表做修改
  */
 data class InputList(
     override val inputs: List<CommonInput> = listOf(CommonInput.Gap),
     override val cursor: Int = 0,
     override val pending: CommonInput.Item? = null,
+    val textOption: InputTextOption = InputTextOption(),
     private val frozen: Boolean = false,
 ) : BaseInputList<InputList, CommonInput, CommonInput.Item, CommonInput.Gap>(
     inputs = inputs,
@@ -43,21 +47,28 @@ data class InputList(
     override fun getGap(): CommonInput.Gap =
         CommonInput.Gap
 
-    override fun getPairCloseItem(input: CommonInput.Item): CommonInput.Item? =
-        input.getClose()
+    override fun getPairCloseItem(item: CommonInput.Item): CommonInput.Item? =
+        item.getClose()
 
-    override fun isPairCloseItem(input: CommonInput.Item): Boolean =
-        input is CommonInput.Item.Char.Symbol && input.close == null
+    override fun isPairCloseItem(item: CommonInput.Item): Boolean =
+        item is CommonInput.Item.Char.Symbol && item.close == null
 
     override fun isContinuousInputItem(input: CommonInput): Boolean =
         input is CommonInput.Item.Char.Latin && input.chars.size > 1
+
+    override fun isEmptyItem(item: CommonInput.Item?): Boolean =
+        when (item) {
+            null -> true
+            is CommonInput.Item.MathExpr -> item.inputList.isEmpty()
+            else -> false
+        }
 
     override fun doCopy(
         inputs: List<CommonInput>,
         cursor: Int,
         pending: CommonInput.Item?,
     ): InputList =
-        copy(inputs = inputs, cursor = cursor, pending = pending, frozen = frozen)
+        copy(inputs = inputs, cursor = cursor, pending = pending)
 
     // ------------------------------------------------------
 
@@ -72,7 +83,11 @@ data class InputList(
 
     /** 清空输入列表 */
     fun clean(): InputList =
-        InputList(inputs = listOf(CommonInput.Gap), cursor = 0, pending = null)
+        InputList(
+            inputs = listOf(CommonInput.Gap),
+            cursor = 0, pending = null,
+            textOption = textOption,
+        )
 
     // ------------------------------------------------------
 
@@ -123,7 +138,7 @@ data class InputList(
         withMathExprUpdate {
             confirmPending()
         }.run {
-            if (pending.isEmpty())
+            if (isEmptyItem(pending))
                 doRemoveNonGapAt(cursor)
             else
                 doReplaceSelected(pending!!)
@@ -295,7 +310,7 @@ data class InputList(
      */
     override fun doDeleteBackward(oneByOne: Boolean): InputList {
         val selected = this.selected
-        val emptyPending = pending.isEmpty()
+        val emptyPending = isEmptyItem(pending)
 
         if (oneByOne) {
             val current = if (emptyPending) selected else pending
@@ -328,8 +343,58 @@ data class InputList(
                 }
             }
         }.let {
-            copy(
-                pending = it.applyInputListUpdate(block)
-            )
+            copy(pending = it.applyInputListUpdate(block))
+        }
+
+    /** 对 [textOption] 进行更新 */
+    fun withTextOptionUpdate(block: InputTextOption.() -> InputTextOption): InputList =
+        copy(textOption = textOption.block())
+
+    // -------------------------------------------------
+
+    /** 以 [textOption] 作为选项获取可提交文本 */
+    fun getText(): CharSequence =
+        getText(textOption)
+
+    override fun getText(item: CommonInput.Item, option: InputTextOption): CharSequence =
+        item.getText(option)
+
+    override fun needGapSpaceBetween(
+        left: CommonInput.Item, right: CommonInput.Item,
+        option: InputTextOption,
+    ): Boolean =
+        // 已经有显式的空格，则不需要空格间隔
+        if (left is CommonInput.Item.Char.Space || right is CommonInput.Item.Char.Space) false
+        // 算术表达式输入项与其他输入项之间需要空格间隔
+        else if (left is CommonInput.Item.MathExpr || right is CommonInput.Item.MathExpr) true
+        // 拉丁文输入项与符号输入项之间不需要空格间隔
+        else if (left is CommonInput.Item.Char.Latin)
+            right !is CommonInput.Item.Char.Symbol
+        // 仅全角符号输入项与拉丁文输入项之间不需要空格间隔
+        else if (right is CommonInput.Item.Char.Latin)
+            !(left is CommonInput.Item.Char.Symbol && left.fullWidth)
+        else {
+            val onlyUseSpell =
+                fun(item: CommonInput.Item): Boolean =
+                    item is CommonInput.Item.Pinyin
+                            && (
+                            item.word == null
+                                    || option.spellUseMode == InputWord.SpellUseMode.Replace
+                            )
+
+            // 汉字与其他输入之间均不需要空格间隔，而其纯读音则按照拉丁文处理
+            if (onlyUseSpell(left))
+                needGapSpaceBetween(
+                    CommonInput.Item.Char.Latin(chars = listOf("L")),
+                    right, option
+                )
+            else if (onlyUseSpell(right))
+                needGapSpaceBetween(
+                    left,
+                    CommonInput.Item.Char.Latin(chars = listOf("R")),
+                    option
+                )
+            else
+                false
         }
 }
