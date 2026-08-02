@@ -21,6 +21,7 @@ package org.crazydan.studio.app.ime.kuaizi.engine.input.math
 
 import org.crazydan.studio.app.ime.kuaizi.engine.input.BaseInputList
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputTextOption
+import java.text.DecimalFormat
 
 /**
  * 算术表达式 [BaseInputList]：
@@ -45,7 +46,7 @@ data class MathInputList(
         item.getClose()
 
     override fun isPairCloseItem(item: MathInput.Item): Boolean =
-        item is MathInput.Item.Symbol
+        item is MathInput.Item.CloseSymbol
 
     override fun isContinuousInputItem(input: MathInput): Boolean =
         input is MathInput.Item.Const.Number && input.chars.size > 1
@@ -277,6 +278,41 @@ data class MathInputList(
 
     // ------------------------------------------
 
+    override fun getText(option: InputTextOption): CharSequence {
+        val sb = super.getText(option) as StringBuilder
+        // 至少得有两个输入项
+        if (inputs.size < 5) {
+            return sb
+        }
+
+        val hasHeadEqual = inputs[1] is MathInput.Item.Equal
+        val hasTailEqual = inputs[inputs.lastIndex - 1] is MathInput.Item.Equal
+        // 首/尾必须有等号才做算术运算
+        if (!hasHeadEqual && !hasTailEqual) {
+            return sb
+        }
+
+        val expr = MathExpr.create(
+            inputs.filter { it is MathInput.Item && it !is MathInput.Item.Equal }
+                .mapIndexed { i, item ->
+                    getValidItemAt(i)
+                }
+        )
+        val result = expr.eval()
+        // 若无计算结果，则直接返回表达式本身
+        if (result == null) {
+            return sb
+        }
+
+        val df = DecimalFormat("#." + "#".repeat(option.mathResultPrecision))
+        val text = df.format(result)
+
+        if (hasHeadEqual) {
+            return StringBuilder(text)
+        }
+        return sb.append(" ").append(text)
+    }
+
     override fun getText(item: MathInput.Item, option: InputTextOption): CharSequence =
         item.value
 
@@ -285,11 +321,26 @@ data class MathInputList(
         option: InputTextOption,
     ): Boolean =
         when (left) {
-            is MathInput.Item.Const.Number ->
+            is MathInput.Item.Const,
+            is MathInput.Item.CloseSymbol,
+                ->
+                // 在 常数/括号 和 ^/%/‰/‱/° 之间无空格间隔
                 when (right) {
+                    is MathInput.Item.Op.Power,
                     is MathInput.Item.Op.Percent,
                     is MathInput.Item.Op.Permillage,
                     is MathInput.Item.Op.Permyriad,
+                    is MathInput.Item.Op.Degree,
+                        -> false
+
+                    else -> true
+                }
+
+            is MathInput.Item.Op.Power ->
+                when (right) {
+                    // 在 ^ 与 常数/括号 之间无空格间隔
+                    is MathInput.Item.Const,
+                    is MathInput.Item.CloseSymbol,
                         -> false
 
                     else -> true

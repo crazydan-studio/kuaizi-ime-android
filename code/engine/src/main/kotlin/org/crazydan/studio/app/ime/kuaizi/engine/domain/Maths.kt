@@ -74,17 +74,29 @@ sealed class MathSymbol {
             get() = "‱"
     }
 
+    /** 度 `°` */
+    data object Degree : MathSymbol() {
+        override val value: String
+            get() = "°"
+    }
+
+    /** 乘方 `^` */
+    data object Power : MathSymbol() {
+        override val value: String
+            get() = "^"
+    }
+
     // ------------------------------------------
 
     /** `( )` */
     data object Bracket : MathSymbol() {
-        val left: String
+        val open: String
             get() = "("
-        val right: String
+        val close: String
             get() = ")"
 
         override val value: String
-            get() = "$left $right"
+            get() = "$open $close"
     }
 
     // ------------------------------------------
@@ -93,57 +105,57 @@ sealed class MathSymbol {
 
         /** `sin(x)` */
         data object Sin : Func() {
-            val left: String
+            val open: String
                 get() = "sin("
-            val right: String
+            val close: String
                 get() = ")"
 
             override val value: String
-                get() = left + "x" + right
+                get() = open + "x" + close
         }
 
         /** `cos(x)` */
         data object Cos : Func() {
-            val left: String
+            val open: String
                 get() = "cos("
-            val right: String
+            val close: String
                 get() = ")"
 
             override val value: String
-                get() = left + "x" + right
+                get() = open + "x" + close
         }
 
         /** `tan(x)` */
         data object Tan : Func() {
-            val left: String
+            val open: String
                 get() = "tan("
-            val right: String
+            val close: String
                 get() = ")"
 
             override val value: String
-                get() = left + "x" + right
+                get() = open + "x" + close
         }
 
         /** `√(x)` */
         data object Sqrt : Func() {
-            val left: String
+            val open: String
                 get() = "√("
-            val right: String
+            val close: String
                 get() = ")"
 
             override val value: String
-                get() = left + "x" + right
+                get() = open + "x" + close
         }
 
         /** `ln(x)` */
         data object LogE : Func() {
-            val left: String
+            val open: String
                 get() = "ln("
-            val right: String
+            val close: String
                 get() = ")"
 
             override val value: String
-                get() = left + "x" + right
+                get() = open + "x" + close
         }
     }
 

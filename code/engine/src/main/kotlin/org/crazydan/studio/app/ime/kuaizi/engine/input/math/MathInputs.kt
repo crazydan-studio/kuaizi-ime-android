@@ -20,11 +20,6 @@
 package org.crazydan.studio.app.ime.kuaizi.engine.input.math
 
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.MathSymbol
-import kotlin.math.cos
-import kotlin.math.ln
-import kotlin.math.sin
-import kotlin.math.sqrt
-import kotlin.math.tan
 
 /** 算术输入 */
 sealed class MathInput {
@@ -91,112 +86,104 @@ sealed class MathInput {
 
         /** 运算符 */
         sealed class Op : Item() {
-            /** 计算函数：可能发生除零异常 */
-            abstract val compute: (Double, Double) -> Double
 
             data object Plus : Op() {
                 override val value: String
                     get() = MathSymbol.Plus.value
-                override val compute: (Double, Double) -> Double
-                    get() = fun(v1: Double, v2: Double): Double { return v1 + v2 }
             }
 
             data object Minus : Op() {
                 override val value: String
                     get() = MathSymbol.Minus.value
-                override val compute: (Double, Double) -> Double
-                    get() = fun(v1: Double, v2: Double): Double { return v1 - v2 }
             }
 
             data object Multiply : Op() {
                 override val value: String
                     get() = MathSymbol.Multiply.value
-                override val compute: (Double, Double) -> Double
-                    get() = fun(v1: Double, v2: Double): Double { return v1 * v2 }
             }
 
             data object Divide : Op() {
                 override val value: String
                     get() = MathSymbol.Divide.value
-                override val compute: (Double, Double) -> Double
-                    get() = fun(v1: Double, v2: Double): Double { return v1 / v2 }
             }
+
+            /** 乘方 `^` */
+            data object Power : Op() {
+                override val value: String
+                    get() = MathSymbol.Power.value
+            }
+
+            // ---------------------------------------
 
             /** 百分号 `%` */
             data object Percent : Op() {
                 override val value: String
                     get() = MathSymbol.Percent.value
-                override val compute: (Double, Double) -> Double
-                    get() = fun(v1: Double, _: Double): Double { return v1 * 0.01 }
             }
 
             /** 千分号 `‰` */
             data object Permillage : Op() {
                 override val value: String
                     get() = MathSymbol.Permillage.value
-                override val compute: (Double, Double) -> Double
-                    get() = fun(v1: Double, _: Double): Double { return v1 * 0.001 }
             }
 
             /** 万分号 `‱` */
             data object Permyriad : Op() {
                 override val value: String
                     get() = MathSymbol.Permyriad.value
-                override val compute: (Double, Double) -> Double
-                    get() = fun(v1: Double, _: Double): Double { return v1 * 0.0001 }
+            }
+
+            /** 度 `°` */
+            data object Degree : Op() {
+                override val value: String
+                    get() = MathSymbol.Degree.value
             }
         }
 
+        // Note：配对符号必须成对实例化，以便于通过实例的引用做唯一性搜索，
+        // 确保多个实例之间能够相互区分，因此，不能以 data object 定义单例对象
         /** 函数 */
         sealed class Func : Item() {
             /** 闭合符号 */
-            abstract val close: Symbol
-
-            /** 计算函数：可能发生计算异常 */
-            abstract val compute: (Double) -> Double
+            abstract val close: CloseSymbol
 
             /** 三角函數 `sin(x)` */
             data class Sin(
-                override val value: String = MathSymbol.Func.Sin.left,
-                override val close: Symbol = Symbol(MathSymbol.Func.Sin.right),
-                override val compute: (Double) -> Double = fun(v: Double): Double { return sin(v) },
+                override val value: String = MathSymbol.Func.Sin.open,
+                override val close: CloseSymbol = CloseSymbol(MathSymbol.Func.Sin.close),
             ) : Func()
 
             /** 三角函數 `cos(x)` */
             data class Cos(
-                override val value: String = MathSymbol.Func.Cos.left,
-                override val close: Symbol = Symbol(MathSymbol.Func.Cos.right),
-                override val compute: (Double) -> Double = fun(v: Double): Double { return cos(v) },
+                override val value: String = MathSymbol.Func.Cos.open,
+                override val close: CloseSymbol = CloseSymbol(MathSymbol.Func.Cos.close),
             ) : Func()
 
             /** 三角函數 `tan(x)` */
             data class Tan(
-                override val value: String = MathSymbol.Func.Tan.left,
-                override val close: Symbol = Symbol(MathSymbol.Func.Tan.right),
-                override val compute: (Double) -> Double = fun(v: Double): Double { return tan(v) },
+                override val value: String = MathSymbol.Func.Tan.open,
+                override val close: CloseSymbol = CloseSymbol(MathSymbol.Func.Tan.close),
             ) : Func()
 
             /** 开平方 */
             data class Sqrt(
-                override val value: String = MathSymbol.Func.Sqrt.left,
-                override val close: Symbol = Symbol(MathSymbol.Func.Sqrt.right),
-                override val compute: (Double) -> Double = fun(v: Double): Double { return sqrt(v) },
+                override val value: String = MathSymbol.Func.Sqrt.open,
+                override val close: CloseSymbol = CloseSymbol(MathSymbol.Func.Sqrt.close),
             ) : Func()
 
             /** 以自然数 `e` 为底的对数 */
             data class LogE(
-                override val value: String = MathSymbol.Func.LogE.left,
-                override val close: Symbol = Symbol(MathSymbol.Func.LogE.right),
-                override val compute: (Double) -> Double = fun(v: Double): Double { return ln(v) },
+                override val value: String = MathSymbol.Func.LogE.open,
+                override val close: CloseSymbol = CloseSymbol(MathSymbol.Func.LogE.close),
             ) : Func()
         }
 
         /** (圆)括号 */
         data class Bracket(
             /** 输入项字符值 */
-            override val value: String = MathSymbol.Bracket.left,
+            override val value: String = MathSymbol.Bracket.open,
             /** 闭合符号 */
-            val close: Symbol = Symbol(MathSymbol.Bracket.right),
+            val close: CloseSymbol = CloseSymbol(MathSymbol.Bracket.close),
         ) : Item()
 
         /** 小数点 */
@@ -211,8 +198,8 @@ sealed class MathInput {
                 get() = MathSymbol.Equal.value
         }
 
-        /** 数学符号：仅内部使用，用于对括号、函数等符号的闭合符号的引用，确保二者始终成对出现和删除 */
-        data class Symbol(
+        /** 闭合符号：用于对括号、函数等符号的闭合符号的引用，确保二者始终成对出现和删除 */
+        data class CloseSymbol(
             override val value: String,
         ) : Item()
     }
@@ -221,7 +208,7 @@ sealed class MathInput {
 // -----------------------------------------------------------------------
 
 /** 获取输入项的闭合输入项 */
-fun MathInput.Item.getClose(): MathInput.Item.Symbol? =
+fun MathInput.Item.getClose(): MathInput.Item.CloseSymbol? =
     when (this) {
         is MathInput.Item.Func -> close
         is MathInput.Item.Bracket -> close

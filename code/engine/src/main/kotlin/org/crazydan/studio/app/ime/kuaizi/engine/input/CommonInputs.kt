@@ -166,9 +166,9 @@ fun CommonInput.Item.MathExpr.applyInputListUpdate(
  * @property hanziType 汉字类型：向目标编辑器提交汉字的简体或繁体形式。
  * 为 `null` 时，采用简体字
  * @property spellUseMode 汉字/英文读音使用模式：
- * 向目标编辑器提交携带读音的汉字/英文（如 `汉(hàn)字(zì)`、`better /ˈbetər/ world /wɜrld/`）
- * 或将汉字/英文替换为其读音（如 `hàn zì`、`/ˈbetər/ /wɜrld/`）。为 `null` 时，不携带读音，仅为汉字/英文
- * @property mathResultPrecision 算术表达式计算结果的精度（小数点位数）。缺省为 `4`
+ * 向目标编辑器提交携带读音的汉字/英文（如 `汉(hàn)字(zì)`、`better /ˈbetər/ world /wɜːld/`）
+ * 或将汉字/英文替换为其读音（如 `hàn zì`、`/ˈbetər/ /wɜːld/`）。为 `null` 时，不携带读音，仅为汉字/英文
+ * @property mathResultPrecision 算术表达式计算结果的精度（小数点位数）。缺省为 `4`，从而支持万分数 `‱` 的精度
  */
 data class InputTextOption(
     val hanziType: InputWord.Hanzi.Type? = null,

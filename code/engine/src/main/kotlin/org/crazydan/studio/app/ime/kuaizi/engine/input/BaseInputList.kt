@@ -268,7 +268,7 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
     // ------------------------------------------
 
     /** 获取输入列表的可提交文本：将根据 [needGapSpace] 决定是否在 Gap 位插入空格 */
-    fun getText(option: InputTextOption): CharSequence =
+    open fun getText(option: InputTextOption): CharSequence =
         inputs.mapIndexed { i, input ->
             if (isGap(input))
                 if (
@@ -340,7 +340,8 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
             for (i in sourceIndex + 1..inputs.lastIndex) {
                 val input = inputs[i]
 
-                if (sourceClose == input) {
+                // Note：配对实例需做引用相等判断
+                if (sourceClose === input) {
                     return i
                 }
             }
@@ -351,7 +352,8 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
                 val input = inputs[i]
                 val inputClose = getPairCloseItem(input as Item)
 
-                if (inputClose == source) {
+                // Note：配对实例需做引用相等判断
+                if (inputClose === source) {
                     return i
                 }
             }
