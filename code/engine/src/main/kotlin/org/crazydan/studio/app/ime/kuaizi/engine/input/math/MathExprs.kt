@@ -19,6 +19,7 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input.math
 
+import org.crazydan.studio.app.ime.kuaizi.engine.domain.isZero
 import java.util.Stack
 import kotlin.math.cos
 import kotlin.math.ln
@@ -125,6 +126,7 @@ class MathExpr(val items: List<Item>) {
         /** 函数：暂时仅支持单参函数 */
         data class Func(
             val name: String,
+            val args: Int = 1,
             val fn: (Double) -> Double?,
         ) : Item()
     }
@@ -132,18 +134,25 @@ class MathExpr(val items: List<Item>) {
 
 // ----------------------------------------------------------------------------
 
-/** 计算结果 */
-fun MathExpr.Item.Op.calc(numbers: List<MathExpr.Item.Num>): Double? =
-    if (numbers.size != args)
+/** 执行运算得到结果 */
+fun MathExpr.Item.Op.exec(operands: DoubleArray?): Double? =
+    if (operands == null || operands.size != args)
         null
     else
         when (this) {
             is MathExpr.Item.Op.Unary ->
-                fn(numbers[0].value)
+                fn(operands[0])
 
             is MathExpr.Item.Op.Binary ->
-                fn(numbers[0].value, numbers[1].value)
+                fn(operands[0], operands[1])
         }
+
+/** 调用函数获得运算结果 */
+fun MathExpr.Item.Func.call(operands: DoubleArray?): Double? =
+    if (operands == null || operands.size != args)
+        null
+    else
+        fn(operands[0])
 
 // ----------------------------------------------------------------------------
 
@@ -196,7 +205,7 @@ private fun MathInput.Item.Op.toExprItem(): MathExpr.Item.Op =
             priority = 20,
             fn =
                 fun(v1: Double, v2: Double): Double? =
-                    if (v2 == 0.0) null
+                    if (isZero(v2)) null
                     else v1 / v2,
         )
 
@@ -206,7 +215,7 @@ private fun MathInput.Item.Op.toExprItem(): MathExpr.Item.Op =
             rightAssociative = true,
             fn =
                 fun(v1: Double, v2: Double): Double? =
-                    if (v1 == 0.0 && v2 < 0) null
+                    if (isZero(v1) && v2 < 0) null
                     else v1.pow(v2),
         )
 
@@ -241,27 +250,30 @@ private fun MathInput.Item.Func.toExprItem(): MathExpr.Item.Func =
     when (this) {
         is MathInput.Item.Func.Sin -> MathExpr.Item.Func(
             name = value.removeSuffix("("),
-            fn = fun(v: Double): Double = sin(v),
+            fn = fun(v: Double): Double? = sin(v),
         )
 
         is MathInput.Item.Func.Cos -> MathExpr.Item.Func(
             name = value.removeSuffix("("),
-            fn = fun(v: Double): Double = cos(v),
+            fn = fun(v: Double): Double? = cos(v),
         )
 
         is MathInput.Item.Func.Tan -> MathExpr.Item.Func(
             name = value.removeSuffix("("),
-            fn = fun(v: Double): Double = tan(v),
+            // cos(v) 不能等于 0
+            fn =
+                fun(v: Double): Double? =
+                    if (isZero(cos(v))) null else tan(v),
         )
 
         is MathInput.Item.Func.Sqrt -> MathExpr.Item.Func(
             name = value.removeSuffix("("),
-            fn = fun(v: Double): Double = sqrt(v),
+            fn = fun(v: Double): Double? = sqrt(v),
         )
 
         is MathInput.Item.Func.LogE -> MathExpr.Item.Func(
             name = value.removeSuffix("("),
-            fn = fun(v: Double): Double = ln(v),
+            fn = fun(v: Double): Double? = if (v > 0) ln(v) else null,
         )
     }
 
@@ -269,40 +281,57 @@ private fun MathInput.Item.Func.toExprItem(): MathExpr.Item.Func =
 
 private fun evalMathExpr(expr: MathExpr): Double? {
     val items = infixToPostfix(expr.items)
+    val values = Stack<Double>()
+
+    val popOperands = fun(stack: Stack<Double>, count: Int): DoubleArray? {
+        // 缺少足够的操作数
+        if (stack.size < count) {
+            return null
+        }
+
+        val operands = DoubleArray(count)
+        // Note：后缀表达式的操作数顺序是倒置的，需恢复其原始顺序
+        for (i in count - 1 downTo 0) {
+            operands[i] = stack.pop()
+        }
+
+        return operands
+    }
 
     // 后缀表达式的计算过程：
     // https://zh.wikipedia.org/wiki/%E9%80%86%E6%B3%A2%E5%85%B0%E8%A1%A8%E7%A4%BA%E6%B3%95
-    val values = Stack<MathExpr.Item.Num>()
-    for (expr in items) {
-        if (expr is MathExpr.Item.Num) {
-            values.push(expr)
-        } else if (expr is MathExpr.Item.Op) {
-            val op = expr
-            val numbers = ArrayList<MathExpr.Item.Num>(op.args)
+    for (item in items) {
+        when (item) {
+            is MathExpr.Item.Num ->
+                values.push(item.value)
 
-            var i = op.args
-            while (!values.isEmpty() && i > 0) {
-                val num = values.pop()
-                numbers.add(num)
-                i--
-            }
+            is MathExpr.Item.Op -> {
+                val operands = popOperands(values, item.args)
 
-            if (numbers.size != op.args) {
-                return null
-            } else {
-                numbers.reverse()
-
-                val result: Double? = op.calc(numbers)
-                if (result == null) {
+                val value = item.exec(operands)
+                if (value == null) {
                     return null
                 }
 
-                values.add(MathExpr.Item.Num(result))
+                values.push(value)
             }
+
+            is MathExpr.Item.Func -> {
+                val operands = popOperands(values, item.args)
+
+                val value = item.call(operands)
+                if (value == null) {
+                    return null
+                }
+
+                values.push(value)
+            }
+
+            else -> {}
         }
     }
 
-    return if (values.size == 1) values.pop().value else null
+    return if (values.size == 1) values.pop() else null
 }
 
 /**

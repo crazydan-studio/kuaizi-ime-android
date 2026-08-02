@@ -19,6 +19,8 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
+import kotlin.math.abs
+
 /** 数学符号 */
 sealed class MathSymbol {
     /** 符号字符值 */
@@ -176,3 +178,7 @@ sealed class MathSymbol {
         }
     }
 }
+
+/** 判断指定的浮点数是否为 `0` */
+fun isZero(n: Double): Boolean =
+    n.compareTo(0.0) == 0 || abs(n) < 1e-15
