@@ -43,6 +43,18 @@ class MathExpr(val items: List<Item>) {
     fun eval(): Double? =
         evalMathExpr(this)
 
+    /** 返回完整的中缀表达式 */
+    override fun toString(): String =
+        items.map {
+            when (it) {
+                is Item.Op -> it.name
+                is Item.Num -> it.value
+                is Item.Func -> it.name
+                is Item.Bracket.Left -> "("
+                is Item.Bracket.Right -> ")"
+            }
+        }.joinToString(" ")
+
     // --------------------------------------------------------
 
     /** [MathExpr] 元素 */
@@ -53,6 +65,9 @@ class MathExpr(val items: List<Item>) {
 
         /** 运算符 */
         sealed class Op : Item() {
+            /** 名字 */
+            abstract val name: String
+
             /** 参数数量 */
             abstract val args: Int
 
@@ -61,10 +76,16 @@ class MathExpr(val items: List<Item>) {
 
             /** 判断当前运算符是否优先于指定的运算符  */
             fun isPriorTo(other: Op): Boolean =
-                this.priority >= other.priority
+                when (other) {
+                    is Binary if other.rightAssociative ->
+                        other.priority < this.priority
+
+                    else -> other.priority <= this.priority
+                }
 
             /** 一元运算符 */
             data class Unary(
+                override val name: String,
                 override val priority: Int = 0,
                 val fn: (Double) -> Double?,
             ) : Op() {
@@ -74,7 +95,16 @@ class MathExpr(val items: List<Item>) {
 
             /** 二元运算符 */
             data class Binary(
+                override val name: String,
                 override val priority: Int = 0,
+                /**
+                 * 是否为右结合性。
+                 *
+                 * 结合性表示，相同运算符连续出现时，先计算左侧还是右侧，
+                 * 如 `1 + 2 + 3` 等价于 `(1 + 2) + 3`，即，加号为左结合性，
+                 * 而 `2^3^4` 则等价于 `2^(3^4)`，即，幂指数为右结合性。
+                 */
+                val rightAssociative: Boolean = false,
                 val fn: (Double, Double) -> Double?,
             ) : Op() {
                 override val args: Int
@@ -91,6 +121,12 @@ class MathExpr(val items: List<Item>) {
             /** 右括号 */
             data object Right : Bracket()
         }
+
+        /** 函数：暂时仅支持单参函数 */
+        data class Func(
+            val name: String,
+            val fn: (Double) -> Double?,
+        ) : Item()
     }
 }
 
@@ -111,29 +147,52 @@ fun MathExpr.Item.Op.calc(numbers: List<MathExpr.Item.Num>): Double? =
 
 // ----------------------------------------------------------------------------
 
-private fun createMathExpr(items: List<MathInput.Item>): MathExpr {
-    TODO()
+private fun createMathExpr(inputs: List<MathInput.Item>): MathExpr {
+    val items = ArrayList<MathExpr.Item>(inputs.size * 2)
+
+    inputs.forEach { input ->
+        when (input) {
+            is MathInput.Item.Op -> items.add(input.toExprItem())
+            is MathInput.Item.Const -> items.add(MathExpr.Item.Num(input.actual))
+
+            is MathInput.Item.Bracket -> items.add(MathExpr.Item.Bracket.Left)
+            is MathInput.Item.CloseSymbol -> items.add(MathExpr.Item.Bracket.Right)
+
+            is MathInput.Item.Func -> {
+                items.add(input.toExprItem())
+                items.add(MathExpr.Item.Bracket.Left)
+            }
+
+            else -> {}
+        }
+    }
+
+    return MathExpr(items)
 }
 
 /** 从输入项转换为算术表达式元素 */
 private fun MathInput.Item.Op.toExprItem(): MathExpr.Item.Op =
     when (this) {
         is MathInput.Item.Op.Plus -> MathExpr.Item.Op.Binary(
+            name = value,
             priority = 10,
             fn = fun(v1: Double, v2: Double): Double? = v1 + v2,
         )
 
         is MathInput.Item.Op.Minus -> MathExpr.Item.Op.Binary(
+            name = value,
             priority = 10,
             fn = fun(v1: Double, v2: Double): Double? = v1 - v2,
         )
 
         is MathInput.Item.Op.Multiply -> MathExpr.Item.Op.Binary(
+            name = value,
             priority = 20,
             fn = fun(v1: Double, v2: Double): Double? = v1 * v2,
         )
 
         is MathInput.Item.Op.Divide -> MathExpr.Item.Op.Binary(
+            name = value,
             priority = 20,
             fn =
                 fun(v1: Double, v2: Double): Double? =
@@ -142,7 +201,9 @@ private fun MathInput.Item.Op.toExprItem(): MathExpr.Item.Op =
         )
 
         is MathInput.Item.Op.Power -> MathExpr.Item.Op.Binary(
+            name = value,
             priority = 30,
+            rightAssociative = true,
             fn =
                 fun(v1: Double, v2: Double): Double? =
                     if (v1 == 0.0 && v2 < 0) null
@@ -150,21 +211,25 @@ private fun MathInput.Item.Op.toExprItem(): MathExpr.Item.Op =
         )
 
         is MathInput.Item.Op.Percent -> MathExpr.Item.Op.Unary(
+            name = value,
             priority = 1000,
             fn = fun(v1: Double): Double? = v1 * 0.01,
         )
 
         is MathInput.Item.Op.Permillage -> MathExpr.Item.Op.Unary(
+            name = value,
             priority = 1000,
             fn = fun(v1: Double): Double? = v1 * 0.001,
         )
 
         is MathInput.Item.Op.Permyriad -> MathExpr.Item.Op.Unary(
+            name = value,
             priority = 1000,
             fn = fun(v1: Double): Double? = v1 * 0.0001,
         )
 
         is MathInput.Item.Op.Degree -> MathExpr.Item.Op.Unary(
+            name = value,
             priority = 1010,
             // 1° = π/180
             fn = fun(v1: Double): Double? = Math.toRadians(v1),
@@ -172,30 +237,30 @@ private fun MathInput.Item.Op.toExprItem(): MathExpr.Item.Op =
     }
 
 /** 从输入项转换为算术表达式元素 */
-private fun MathInput.Item.Func.toExprItem(): MathExpr.Item.Op =
+private fun MathInput.Item.Func.toExprItem(): MathExpr.Item.Func =
     when (this) {
-        is MathInput.Item.Func.Sin -> MathExpr.Item.Op.Unary(
-            priority = 500,
+        is MathInput.Item.Func.Sin -> MathExpr.Item.Func(
+            name = value.removeSuffix("("),
             fn = fun(v: Double): Double = sin(v),
         )
 
-        is MathInput.Item.Func.Cos -> MathExpr.Item.Op.Unary(
-            priority = 500,
+        is MathInput.Item.Func.Cos -> MathExpr.Item.Func(
+            name = value.removeSuffix("("),
             fn = fun(v: Double): Double = cos(v),
         )
 
-        is MathInput.Item.Func.Tan -> MathExpr.Item.Op.Unary(
-            priority = 500,
+        is MathInput.Item.Func.Tan -> MathExpr.Item.Func(
+            name = value.removeSuffix("("),
             fn = fun(v: Double): Double = tan(v),
         )
 
-        is MathInput.Item.Func.Sqrt -> MathExpr.Item.Op.Unary(
-            priority = 500,
+        is MathInput.Item.Func.Sqrt -> MathExpr.Item.Func(
+            name = value.removeSuffix("("),
             fn = fun(v: Double): Double = sqrt(v),
         )
 
-        is MathInput.Item.Func.LogE -> MathExpr.Item.Op.Unary(
-            priority = 500,
+        is MathInput.Item.Func.LogE -> MathExpr.Item.Func(
+            name = value.removeSuffix("("),
             fn = fun(v: Double): Double = ln(v),
         )
     }
@@ -246,24 +311,52 @@ private fun evalMathExpr(expr: MathExpr): Double? {
  */
 private fun infixToPostfix(items: List<MathExpr.Item>): List<MathExpr.Item> {
     val output = ArrayList<MathExpr.Item>(items.size)
-    val operators = Stack<MathExpr.Item.Op>()
+    val operators = Stack<MathExpr.Item>()
 
     items.forEach { item ->
+        // Note：暂时仅支持单参函数，因此，不处理参数分隔符
         when (item) {
-            is MathExpr.Item.Num -> output.add(item)
+            is MathExpr.Item.Num ->
+                output.add(item)
+
+            is MathExpr.Item.Func,
+            is MathExpr.Item.Bracket.Left,
+                ->
+                operators.add(item)
+
             is MathExpr.Item.Op -> {
-                val op1 = item
+                val o1 = item
                 while (!operators.isEmpty()) {
-                    val op2 = operators.peek()
-                    if (!op2.isPriorTo(op1)) {
+                    val o2 = operators.peek()
+                    if (o2 is MathExpr.Item.Op && !o2.isPriorTo(o1)) {
                         break
                     }
-                    operators.pop()
 
-                    output.add(op2)
+                    operators.pop()
+                    output.add(o2)
                 }
 
-                operators.push(op1)
+                operators.push(o1)
+            }
+
+            is MathExpr.Item.Bracket.Right -> {
+                // Note：括号由 MathInputList 保证其必然成对出现，因此，无需考虑左括号不存在的情况
+                while (!operators.isEmpty()) {
+                    val op = operators.pop()
+                    if (op is MathExpr.Item.Bracket.Left) {
+                        break
+                    }
+
+                    output.add(op)
+                }
+
+                if (!operators.isEmpty()) {
+                    val op = operators.peek()
+                    if (op is MathExpr.Item.Func) {
+                        operators.pop()
+                        output.add(op)
+                    }
+                }
             }
         }
     }
