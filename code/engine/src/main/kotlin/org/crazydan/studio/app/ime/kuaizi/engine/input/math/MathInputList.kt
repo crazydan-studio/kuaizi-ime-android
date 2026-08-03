@@ -36,7 +36,6 @@ data class MathInputList(
 ) : BaseInputList<MathInputList, MathInput, MathInput.Item, MathInput.Gap>(
     inputs = inputs,
     cursor = cursor,
-    pending = pending,
 ) {
 
     override fun getGap(): MathInput.Gap =
@@ -165,28 +164,20 @@ data class MathInputList(
 
     /**
      * 添加运算符：
-     * - 若 [item] 为加号（MathInput.Item.Op.Plus）和减号（MathInput.Item.Op.Minus），则：
-     *   - - 若 [pending] 为 [MathInput.Item.Const.Number]，则向其添加正负号；
-     *   - - 否则，若 [selected] 为 [MathInput.Item.Const]，则向该常数添加正负号，并执行 [doReplaceSelected] 使用带符号的该常数替换 [selected] 并将 [cursor] 指向其后的 Gap，从而禁止对常数做连续修改；
-     *   - - 否则，执行 [doAddOtherItem]；
+     * - 若 [item] 为加号（[MathInput.Item.Op.Plus]）和减号（[MathInput.Item.Op.Minus]），则：
+     *   - - 若 [pending] 不是 [MathInput.Item.Const.Number] 且 [selected] 是 [MathInput.Item.Const]，则向该常量添加正负号，并执行 [doReplaceSelected] 使用带符号的该常量替换 [selected] 并将 [cursor] 指向其后的 Gap，从而禁止对常量做连续修改；
+     *   - - 否则，执行 [doAddOtherItem]，即，仅对选中的常量添加正负号；
      * - 否则，执行 [doAddOtherItem]；
      */
     private fun doAddOpItem(item: MathInput.Item.Op): MathInputList =
         when (item) {
             is MathInput.Item.Op.Plus,
             is MathInput.Item.Op.Minus
-                -> when (pending) {
-                is MathInput.Item.Const.Number ->
-                    copy(pending = pending.addSignByOp(item))
-
-                else -> selected.let { s ->
-                    when (s) {
-                        is MathInput.Item.Const ->
-                            doReplaceSelected(s.addSignByOp(item))
-
-                        else -> doAddOtherItem(item)
-                    }
-                }
+                -> selected.let { s ->
+                if (pending !is MathInput.Item.Const.Number && s is MathInput.Item.Const)
+                    doReplaceSelected(s.addSignByOp(item))
+                else
+                    doAddOtherItem(item)
             }
 
             else -> doAddOtherItem(item)
@@ -324,12 +315,12 @@ data class MathInputList(
             is MathInput.Item.Const,
             is MathInput.Item.CloseSymbol,
                 ->
-                // 在 常数/括号 和 ^/%/‰/‱/° 之间无空格间隔
+                // 在 常量/闭括号 和 ^/%/‰/‱/° 之间无空格间隔
                 when (right) {
-                    is MathInput.Item.Op.Power,
                     is MathInput.Item.Op.Percent,
                     is MathInput.Item.Op.Permillage,
                     is MathInput.Item.Op.Permyriad,
+                    is MathInput.Item.Op.Power,
                     is MathInput.Item.Op.Degree,
                         -> false
 
@@ -338,9 +329,23 @@ data class MathInputList(
 
             is MathInput.Item.Op.Power ->
                 when (right) {
-                    // 在 ^ 与 常数/括号 之间无空格间隔
+                    // 在 ^ 与 常量/左括号/函数 之间无空格间隔
                     is MathInput.Item.Const,
-                    is MathInput.Item.CloseSymbol,
+                    is MathInput.Item.Func,
+                    is MathInput.Item.Bracket,
+                        -> false
+
+                    else -> true
+                }
+
+            is MathInput.Item.Op.Percent,
+            is MathInput.Item.Op.Permillage,
+            is MathInput.Item.Op.Permyriad,
+                ->
+                when (right) {
+                    is MathInput.Item.Op.Percent,
+                    is MathInput.Item.Op.Permillage,
+                    is MathInput.Item.Op.Permyriad,
                         -> false
 
                     else -> true

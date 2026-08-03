@@ -211,7 +211,7 @@ private fun MathInput.Item.Op.toExprItem(): MathExpr.Item.Op =
 
         is MathInput.Item.Op.Power -> MathExpr.Item.Op.Binary(
             name = value,
-            priority = 30,
+            priority = 500,
             rightAssociative = true,
             fn =
                 fun(v1: Double, v2: Double): Double? =
@@ -221,25 +221,25 @@ private fun MathInput.Item.Op.toExprItem(): MathExpr.Item.Op =
 
         is MathInput.Item.Op.Percent -> MathExpr.Item.Op.Unary(
             name = value,
-            priority = 1000,
+            priority = 100,
             fn = fun(v1: Double): Double? = v1 * 0.01,
         )
 
         is MathInput.Item.Op.Permillage -> MathExpr.Item.Op.Unary(
             name = value,
-            priority = 1000,
+            priority = 100,
             fn = fun(v1: Double): Double? = v1 * 0.001,
         )
 
         is MathInput.Item.Op.Permyriad -> MathExpr.Item.Op.Unary(
             name = value,
-            priority = 1000,
+            priority = 100,
             fn = fun(v1: Double): Double? = v1 * 0.0001,
         )
 
         is MathInput.Item.Op.Degree -> MathExpr.Item.Op.Unary(
             name = value,
-            priority = 1010,
+            priority = 110,
             // 1° = π/180
             fn = fun(v1: Double): Double? = Math.toRadians(v1),
         )

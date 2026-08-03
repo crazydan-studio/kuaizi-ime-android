@@ -45,7 +45,8 @@ class InMemoryDictProvider : ImeDictProvider {
     /** 根据拼音精确查询候选字。频率随索引递减（100, 90, 80…）。 */
     override suspend fun query(pinyin: String): List<InputWord> {
         return dict[pinyin]?.mapIndexed { i, text ->
-            InputWord.Hanzi(text = text, spell = null, frequency = 100 - i * 10)
+//            InputWord.Hanzi(text = text, spell = null, frequency = 100 - i * 10)
+            TODO()
         } ?: emptyList()
     }
 
@@ -55,7 +56,8 @@ class InMemoryDictProvider : ImeDictProvider {
             key.startsWith(prefix)
         }.flatMap { (_, values) ->
             values.mapIndexed { i, text ->
-                InputWord.Hanzi(text = text, spell = null, frequency = 100 - i * 10)
+//                InputWord.Hanzi(text = text, spell = null, frequency = 100 - i * 10)
+                TODO()
             }
         }
     }

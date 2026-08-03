@@ -32,7 +32,7 @@ sealed class MathInput {
         /** 输入项字符值 */
         abstract val value: String
 
-        /** 常数 */
+        /** 常量 */
         sealed class Const : Item() {
             /** 正/负符号：添加逻辑见 [MathInput.Item.Const.addSign] */
             abstract val sign: Sign?

@@ -32,21 +32,23 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInput
  *   从而避免频繁更新 [inputs] 列表。此外，由于 [Gap] 位置只能做 Gap-Item 对的插入，
  *   因此，当 [cursor] 指向 [Gap] 时，[pending] 将始终为 `null`；
  *
- * @property inputs Gap-Item 交替排列的输入序列。始终不为空
+ * @property inputs Gap-Item 交替排列的输入序列。始终不为空，必须至少包含一个 Gap
  * @property cursor 当前游标位置（指向 inputs 列表中的 [Gap] 或 [Item] 的索引）
  * @property pending 待输入。若当前并未更新持续性输入项，则其始终为 `null`
  */
-abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input, Item : Input, Gap : Input>(
-    open val inputs: List<Input>,
-    open val cursor: Int = 0,
-    open val pending: Item? = null,
-) {
-    init {
-        require(cursor >= 0 && cursor <= inputs.lastIndex)
+abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input, Item : Input, Gap : Input> {
+    abstract val inputs: List<Input>
+    abstract val cursor: Int
+    abstract val pending: Item?
+
+    constructor(inputs: List<Input>, cursor: Int) {
+        require(inputs.isNotEmpty()) { "The 'inputs' can not be empty" }
+        require(isGap(inputs[0])) { "The first element in 'inputs' must be a gap" }
+        require(cursor >= 0 && cursor <= inputs.lastIndex) { "The 'cursor' is out of range of 'inputs'" }
     }
 
     /** 已选中输入项：[cursor] 指向的 [Gap] 或 [Item] */
-    protected val selected: Input
+    val selected: Input
         get() = inputs[cursor]
 
     // ------------------------------------------
@@ -86,6 +88,14 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
                     else index + (it.inputs.size - inputs.size)
                 )
             }
+
+    /** 选中最后一个 [Input] 输入：最后一个输入必然为 [Gap] */
+    fun selectLast(): This =
+        select(inputs.lastIndex)
+
+    /** 选中最后一个 [Item] 输入项 */
+    fun selectLastItem(): This =
+        select(inputs.lastIndex - 1)
 
     /** 选中指定位置的输入项，并重置 [pending] 为 `null` */
     protected fun selectAt(index: Int): This =
@@ -266,6 +276,10 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         }
 
     // ------------------------------------------
+
+    /** 获取输入列表的可提交文本：使用 [InputTextOption] 的缺省配置 */
+    open fun getText(): CharSequence =
+        getText(InputTextOption())
 
     /** 获取输入列表的可提交文本：将根据 [needGapSpace] 决定是否在 Gap 位插入空格 */
     open fun getText(option: InputTextOption): CharSequence =

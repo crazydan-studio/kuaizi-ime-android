@@ -41,7 +41,6 @@ data class InputList(
 ) : BaseInputList<InputList, CommonInput, CommonInput.Item, CommonInput.Gap>(
     inputs = inputs,
     cursor = cursor,
-    pending = pending,
 ) {
 
     override fun getGap(): CommonInput.Gap =
@@ -353,7 +352,7 @@ data class InputList(
     // -------------------------------------------------
 
     /** 以 [textOption] 作为选项获取可提交文本 */
-    fun getText(): CharSequence =
+    override fun getText(): CharSequence =
         getText(textOption)
 
     override fun getText(item: CommonInput.Item, option: InputTextOption): CharSequence =
