@@ -66,7 +66,7 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
 
     /** 判断指定的 [item] 是否为空 */
     protected open fun isEmptyItem(item: Item?): Boolean =
-        item != null
+        item == null
 
     // ------------------------------------------
 

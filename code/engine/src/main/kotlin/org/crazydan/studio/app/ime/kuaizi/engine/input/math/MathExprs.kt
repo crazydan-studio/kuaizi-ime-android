@@ -357,7 +357,7 @@ private fun infixToPostfix(items: List<MathExpr.Item>): List<MathExpr.Item> {
                 val o1 = item
                 while (!operators.isEmpty()) {
                     val o2 = operators.peek()
-                    if (o2 is MathExpr.Item.Op && !o2.isPriorTo(o1)) {
+                    if (o2 !is MathExpr.Item.Op || !o2.isPriorTo(o1)) {
                         break
                     }
 

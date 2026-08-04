@@ -86,7 +86,7 @@ class TestMathInputList {
             inputList = inputList.addItem(it)
         }
         assertEquals(2 * 1 - 1, inputList.cursor)
-        assertEquals("123", inputList.getText())
+        assertEquals("123", inputList.getText().toString())
         assertEquals("123", inputList.pending!!.value)
         assertEquals("1", (inputList.selected as MathInput.Item).value)
 
@@ -101,7 +101,7 @@ class TestMathInputList {
             inputList = inputList.addItem(it)
         }
         assertEquals(2 * 1 - 1, inputList.cursor)
-        assertEquals("123.4", inputList.getText())
+        assertEquals("123.4", inputList.getText().toString())
         assertEquals("123.4", inputList.pending.value)
 
         // ---------------------------------------
@@ -114,7 +114,7 @@ class TestMathInputList {
         }
         assertEquals(3 * 2, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.4 + ${MathSymbol.Const.PI.value}", inputList.getText())
+        assertEquals("123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         // ---------------------------------------
         // 向数字添加正负号
@@ -126,22 +126,22 @@ class TestMathInputList {
         inputList = inputList.addItem(MathInput.Item.Op.Plus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("+123.4", inputList.getText())
+        assertEquals("+123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         inputList = inputList.select(target0).addItem(MathInput.Item.Op.Plus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.4", inputList.getText())
+        assertEquals("123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         inputList = inputList.select(target0).addItem(MathInput.Item.Op.Minus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("-123.4", inputList.getText())
+        assertEquals("-123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         inputList = inputList.select(target0).addItem(MathInput.Item.Op.Plus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("+123.4", inputList.getText())
+        assertEquals("+123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         inputList = inputList.select(target0).addItem(MathInput.Item.Op.Minus)
         assertEquals(target0 + 1, inputList.cursor)
@@ -149,20 +149,21 @@ class TestMathInputList {
         inputList = inputList.select(target0).addItem(MathInput.Item.Op.Minus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.4", inputList.getText())
+        assertEquals("123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         // ---------------------------------------
-        // 向数字追加数
+        // 替换选中数字
         inputList = inputList.select(target0).addItem(MathInput.Item.Const.Number(chars = listOf('5')))
         assertEquals(target0, inputList.cursor)
-        assertEquals("123.45", inputList.pending!!.value)
+        assertEquals("5", inputList.pending!!.value)
+        assertEquals("123.4", (inputList.selected as MathInput.Item).value)
 
         // ---------------------------------------
         // 向数字添加 % 号
         inputList = inputList.addItem(MathInput.Item.Op.Percent)
         assertEquals(target0 + 2 * 1 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.45% + ${MathSymbol.Const.PI.value}", inputList.getText())
+        assertEquals("5% + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         // ---------------------------------------
         // 向 pi 添加正负号
@@ -174,39 +175,39 @@ class TestMathInputList {
         inputList = inputList.addItem(MathInput.Item.Op.Plus)
         assertEquals(target1 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.45% + +${MathSymbol.Const.PI.value}", inputList.getText())
+        assertEquals("5% + +${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         inputList = inputList.select(target1).addItem(MathInput.Item.Op.Minus)
         assertEquals(target1 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.45% + -${MathSymbol.Const.PI.value}", inputList.getText())
+        assertEquals("5% + -${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         inputList = inputList.select(target1).addItem(MathInput.Item.Op.Minus)
         assertEquals(target1 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.45% + ${MathSymbol.Const.PI.value}", inputList.getText())
+        assertEquals("5% + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         // ---------------------------------------
         // 向 pi 添加小数点将无影响
         inputList = inputList.select(target1).addItem(MathInput.Item.Dot)
         assertEquals(target1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.45% + ${MathSymbol.Const.PI.value}", inputList.getText())
+        assertEquals("5% + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         // ---------------------------------------
         // 对 pi 加 % 号
-        inputList = inputList.addItem(MathInput.Item.Op.Percent)
+        inputList = inputList.selectLast().addItem(MathInput.Item.Op.Percent)
         assertEquals(target1 + 2 * 1 + 1, inputList.cursor)
         assertNull(inputList.pending)
-        assertEquals("123.45% + ${MathSymbol.Const.PI.value}%", inputList.getText())
+        assertEquals("5% + ${MathSymbol.Const.PI.value}%", inputList.getText().toString())
 
         // ---------------------------------------
         // 将 pi 替换为数字
         inputList = inputList.select(target1).addItem(MathInput.Item.Const.Number(chars = listOf('9')))
         assertEquals(target1, inputList.cursor)
-        assertTrue(inputList.selected is MathInput.Item.Const.PI)
         assertEquals("9", inputList.pending!!.value)
-        assertEquals("123.45% + 9%", inputList.getText())
+        assertTrue(inputList.selected is MathInput.Item.Const.PI)
+        assertEquals("5% + 9%", inputList.getText().toString())
 
         // ---------------------------------------
         // 小数点仅对数字有效
@@ -215,46 +216,46 @@ class TestMathInputList {
         assertEquals(target2, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Item.Op.Plus)
-        assertEquals("123.45% + 9%", inputList.getText())
+        assertEquals("5% + 9%", inputList.getText().toString())
 
         inputList = inputList.select(0).addItem(MathInput.Item.Dot)
         assertEquals(0, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Gap)
-        assertEquals("123.45% + 9%", inputList.getText())
+        assertEquals("5% + 9%", inputList.getText().toString())
 
         // ---------------------------------------
         // 数字被函数包裹
         val target3 = 2 * 1 - 1
         inputList = inputList.select(target3).addItem(MathInput.Item.Func.Sin())
-        assertEquals(target3 + 1, inputList.cursor)
+        assertEquals(target3 + 2 * 1 + 1, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Gap)
-        assertEquals("sin( 123.45 )% + 9%", inputList.getText())
+        assertEquals("sin( 5 )% + 9%", inputList.getText().toString())
 
         // ---------------------------------------
         // 添加 ^
-        val target4 = 2 * 6 - 1
+        val target4 = 2 * 6
         inputList = inputList.select(target4).addItem(MathInput.Item.Op.Power)
-        assertEquals(target4 + 2, inputList.cursor)
+        assertEquals(target4 + 2 * 1, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Gap)
-        assertEquals("sin( 123.45 )% + 9^%", inputList.getText())
+        assertEquals("sin( 5 )% + 9^ %", inputList.getText().toString())
 
         inputList = inputList.addItem(MathInput.Item.Const.Number(chars = listOf('2')))
-        assertEquals(target4 + 2 * 1 - 1, inputList.cursor)
-        assertEquals("2", (inputList.selected as MathInput.Item).value)
+        assertEquals(target4 + 2 * 1 + 1, inputList.cursor)
         assertEquals("2", inputList.pending!!.value)
-        assertEquals("sin( 123.45 )% + 9^2%", inputList.getText())
+        assertEquals("2", (inputList.selected as MathInput.Item).value)
+        assertEquals("sin( 5 )% + 9^2%", inputList.getText().toString())
 
         // ---------------------------------------
         // 添加 °
-        val target5 = 2 * 2 - 1
+        val target5 = 2 * 2
         inputList = inputList.select(target5).addItem(MathInput.Item.Op.Degree)
-        assertEquals(target5 + 2, inputList.cursor)
+        assertEquals(target5 + 2 * 1, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Gap)
-        assertEquals("sin( 123.45° )% + 9^2%", inputList.getText())
+        assertEquals("sin( 5° )% + 9^2%", inputList.getText().toString())
     }
 
     @Test
@@ -278,7 +279,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(1.0 + 2.0), inputList.getText(option))
+        assertEquals(df.format(1.0 + 2.0), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 带小数点
@@ -295,7 +296,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(1.2 + 3.0), inputList.getText())
+        assertEquals(df.format(1.2 + 3.0), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 带百分号
@@ -312,11 +313,11 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(10 / 100.0 * 3.0), inputList.getText())
+        assertEquals(df.format(10 / 100.0 * 3.0), inputList.getText(option).toString())
 
-        // 带负号
-        inputList = inputList.selectLastItem().addItem(MathInput.Item.Op.Minus)
-        assertEquals(df.format(10 / 100.0 * -3.0), inputList.getText())
+        // 带负号。Note：只能对选中数字添加正负号，对于正在输入的数字只能添加减号
+        inputList = inputList.selectLast().selectLastItem().addItem(MathInput.Item.Op.Minus)
+        assertEquals(df.format(10 / 100.0 * (-3.0)), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 指数
@@ -331,7 +332,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(10.0.pow(2.0)), inputList.getText())
+        assertEquals(df.format(10.0.pow(2.0)), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 常数
@@ -345,7 +346,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(Math.PI / 2.0), inputList.getText())
+        assertEquals(df.format(Math.PI / 2.0), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 角度度数：转换为弧度后再计算
@@ -361,7 +362,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(Math.toRadians(90.0) * 2.0), inputList.getText())
+        assertEquals(df.format(Math.toRadians(90.0) * 2.0), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 函数：角度
@@ -378,7 +379,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(sin(Math.toRadians(20.0) * 3)), inputList.getText())
+        assertEquals(df.format(sin(Math.toRadians(20.0) * 3)), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 函数：弧度
@@ -394,7 +395,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(cos((50.0 + 5.0) * 3.0)), inputList.getText())
+        assertEquals(df.format(cos(50.0 + 5.0)), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 括号：指数
@@ -419,7 +420,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format((1.0 + 3.0).pow(2.0.pow(3.0))), inputList.getText())
+        assertEquals(df.format((1.0 + 3.0).pow(2.0.pow(3.0))), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 括号：百分比
@@ -444,7 +445,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format((1.0 - 3.0) / 100 * 23), inputList.getText())
+        assertEquals(df.format((1.0 - 3.0) / 100 * 23), inputList.getText(option).toString())
 
         // ---------------------------------------
         // 括号：角度度数
@@ -469,7 +470,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals(df.format(Math.toRadians((10.0 * 3.0)) * 2), inputList.getText())
+        assertEquals(df.format(Math.toRadians(10.0 * 3.0) * 2), inputList.getText(option).toString())
     }
 
     @Test
@@ -522,7 +523,10 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals("1% + 2‰ + 3‱ + 4%‰‱ + π + π% + e + e% + 5^2 + 5^e + 5^π + 5^sin( 90° )", inputList.getText())
+        assertEquals(
+            "1% + 2‰ + 3‱ + 4%‰‱ + π + π% + e + e% + 5^2 + 5^e + 5^π + 5^sin( 90° )",
+            inputList.getText().toString()
+        )
 
         // -----------------------------------
         // ^ 与 左括号 之间无空格间隔
@@ -538,7 +542,7 @@ class TestMathInputList {
         ).forEach {
             inputList = inputList.addItem(it)
         }
-        assertEquals("2^( 2 + 1 )", inputList.getText())
+        assertEquals("2^( 2 + 1 )", inputList.getText().toString())
 
         // -----------------------------------
         // 闭括号 和 ^/%/‰/‱/° 之间无空格间隔
@@ -554,23 +558,23 @@ class TestMathInputList {
         }
 
         inputList = inputList.selectLast().addItem(MathInput.Item.Op.Percent)
-        assertEquals("( 2 + 1 )%", inputList.getText())
+        assertEquals("( 2 + 1 )%", inputList.getText().toString())
 
         inputList = inputList.selectLastItem().addItem(MathInput.Item.Op.Permillage)
-        assertEquals("( 2 + 1 )‰", inputList.getText())
+        assertEquals("( 2 + 1 )‰", inputList.getText().toString())
 
         inputList = inputList.selectLastItem().addItem(MathInput.Item.Op.Permyriad)
-        assertEquals("( 2 + 1 )‱", inputList.getText())
+        assertEquals("( 2 + 1 )‱", inputList.getText().toString())
 
         inputList = inputList.selectLastItem().addItem(MathInput.Item.Op.Degree)
-        assertEquals("( 2 + 1 )°", inputList.getText())
+        assertEquals("( 2 + 1 )°", inputList.getText().toString())
 
         inputList =
             inputList
                 .selectLastItem()
                 .addItem(MathInput.Item.Op.Power)
                 .addItem(MathInput.Item.Const.Number(chars = listOf('2')))
-        assertEquals("( 2 + 1 )^2", inputList.getText())
+        assertEquals("( 2 + 1 )^2", inputList.getText().toString())
 
         // -----------------------------------
         // 函数的闭括号 和 ^/%/‰/‱/° 之间无空格间隔
@@ -586,22 +590,22 @@ class TestMathInputList {
         }
 
         inputList = inputList.selectLast().addItem(MathInput.Item.Op.Percent)
-        assertEquals("tan( π ÷ 2 )%", inputList.getText())
+        assertEquals("tan( π ÷ 2 )%", inputList.getText().toString())
 
         inputList = inputList.selectLastItem().addItem(MathInput.Item.Op.Permillage)
-        assertEquals("tan( π ÷ 2 )‰", inputList.getText())
+        assertEquals("tan( π ÷ 2 )‰", inputList.getText().toString())
 
         inputList = inputList.selectLastItem().addItem(MathInput.Item.Op.Permyriad)
-        assertEquals("tan( π ÷ 2 )‱", inputList.getText())
+        assertEquals("tan( π ÷ 2 )‱", inputList.getText().toString())
 
         inputList = inputList.selectLastItem().addItem(MathInput.Item.Op.Degree)
-        assertEquals("tan( π ÷ 2 )°", inputList.getText())
+        assertEquals("tan( π ÷ 2 )°", inputList.getText().toString())
 
         inputList =
             inputList
                 .selectLastItem()
                 .addItem(MathInput.Item.Op.Power)
                 .addItem(MathInput.Item.Const.Number(chars = listOf('2')))
-        assertEquals("tan( π ÷ 2 )^2", inputList.getText())
+        assertEquals("tan( π ÷ 2 )^2", inputList.getText().toString())
     }
 }

@@ -115,7 +115,7 @@ data class MathInputList(
      * - 若 [pending] 为 [MathInput.Item.Const.Number]，则向 [pending] 追加数字；
      * - 否则，若 [selected] 为 [MathInput.Gap]，则插入 [item] 的 Gap-Item 对，并将 [cursor] 指向 [item]，
      *   同时将 [pending] 也设置为 [item]，以支持对数字的持续性输入；
-     * - 否则，将 [pending] 设置为 [item]，以支持对数字的持续性输入并最终用其替代 [selected]；
+     * - 否则，将 [pending] 设置为 [item]，也就是，准备**全新的数字输入**并最终用其替代 [selected]；
      *
      * [cursor] 始终指向 [MathInput.Item]，且 [pending] 为正在处理且等待更新到 [inputs]
      * 的 [MathInput.Item.Const.Number]。
@@ -284,10 +284,14 @@ data class MathInputList(
         }
 
         val expr = MathExpr.create(
-            inputs.filter { it is MathInput.Item && it !is MathInput.Item.Equal }
-                .mapIndexed { i, item ->
-                    getValidItemAt(i)
+            inputs.mapIndexed { i, item ->
+                when (item) {
+                    is MathInput.Gap,
+                    is MathInput.Item.Equal -> null
+
+                    else -> getValidItemAt(i)
                 }
+            }.filterNotNull()
         )
         val result = expr.eval()
         // 若无计算结果，则直接返回表达式本身
