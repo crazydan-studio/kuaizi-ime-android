@@ -141,7 +141,7 @@ fun CommonInput.Item.Char.Latin.dropLastChar(): CommonInput.Item.Char.Latin =
 /** 向尾部追加字符，或替换尾部字符 */
 fun CommonInput.Item.Char.Latin.appendChar(
     char: String,
-    replacements: List<String>?,
+    replacements: List<String>? = null,
 ): CommonInput.Item.Char.Latin =
     copy(
         chars = (

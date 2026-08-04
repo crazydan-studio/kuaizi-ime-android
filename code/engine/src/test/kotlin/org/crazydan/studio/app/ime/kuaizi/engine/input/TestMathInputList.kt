@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input
 
-import kotlinx.coroutines.test.runTest
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.MathSymbol
 import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInput
 import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInputList
@@ -41,7 +40,7 @@ import kotlin.test.fail
 class TestMathInputList {
 
     @Test
-    fun `should throw exception when using invalid initial data`() = runTest {
+    fun `should throw exception when using invalid initial data`() {
         try {
             MathInputList(inputs = listOf())
             fail("Can not reach here when 'inputs' is empty")
@@ -65,7 +64,7 @@ class TestMathInputList {
     }
 
     @Test
-    fun `should always contains at least one input in list`() = runTest {
+    fun `should always contains at least one input in list`() {
         val inputList = MathInputList()
 
         assertTrue(inputList.isEmpty())
@@ -75,7 +74,7 @@ class TestMathInputList {
     }
 
     @Test
-    fun `should create expression as expected`() = runTest {
+    fun `should create expression as expected`() {
         var inputList = MathInputList()
 
         listOf(
@@ -259,7 +258,7 @@ class TestMathInputList {
     }
 
     @Test
-    fun `should delete backward as expected`() = runTest {
+    fun `should delete backward as expected`() {
         var inputList = MathInputList()
 
         listOf(
@@ -341,7 +340,7 @@ class TestMathInputList {
     }
 
     @Test
-    fun `should eval expression as expected`() = runTest {
+    fun `should eval expression as expected`() {
         val option = InputTextOption()
         val df = DecimalFormat("#." + "#".repeat(option.mathResultPrecision))
 
@@ -551,7 +550,7 @@ class TestMathInputList {
     }
 
     @Test
-    fun `should add gap space as expected`() = runTest {
+    fun `should add gap space as expected`() {
         var inputList = MathInputList()
 
         listOf(
@@ -687,7 +686,7 @@ class TestMathInputList {
     }
 
     @Test
-    fun `should add equal as expected`() = runTest {
+    fun `should add equal as expected`() {
         var inputList = MathInputList()
 
         // -----------------------------------

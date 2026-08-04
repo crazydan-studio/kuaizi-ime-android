@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.input
 
-import kotlinx.coroutines.test.runTest
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.MathSymbol
 import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInput
 import org.crazydan.studio.app.ime.kuaizi.engine.input.math.addSignByOp
@@ -38,7 +37,7 @@ import kotlin.test.fail
 class TestMathInputs {
 
     @Test
-    fun `should update chars of Number correctly`() = runTest {
+    fun `should update chars of Number correctly`() {
         try {
             MathInput.Item.Const.Number(chars = listOf())
             fail("Can not reach here when 'chars' is empty")
@@ -88,7 +87,7 @@ class TestMathInputs {
     }
 
     @Test
-    fun `should add sign to Const correctly`() = runTest {
+    fun `should add sign to Const correctly`() {
         listOf(
             MathInput.Item.Const.Number(chars = listOf('1')),
             MathInput.Item.Const.PI(),
@@ -142,7 +141,7 @@ class TestMathInputs {
     }
 
     @Test
-    fun `should own different close item for different open item`() = runTest {
+    fun `should own different close item for different open item`() {
         val b1 = MathInput.Item.Bracket()
         val b2 = MathInput.Item.Bracket()
         assertTrue(b1 !== b2)
