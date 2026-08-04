@@ -65,7 +65,7 @@ sealed class CommonInput {
                     get() = chars.joinToString("")
 
                 init {
-                    require(chars.isNotEmpty())
+                    require(chars.isNotEmpty()) { "The 'chars' can not be empty" }
                 }
             }
         }

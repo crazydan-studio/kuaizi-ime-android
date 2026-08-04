@@ -51,7 +51,7 @@ sealed class MathInput {
                     get() = value.toDouble()
 
                 init {
-                    require(chars.isNotEmpty())
+                    require(chars.isNotEmpty()) { "The 'chars' can not be empty" }
                 }
             }
 
