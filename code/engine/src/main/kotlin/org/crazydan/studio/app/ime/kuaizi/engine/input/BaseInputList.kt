@@ -73,16 +73,16 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
     /**
      * 选中指定位置的输入项：
      * - 若指定位置已选中或者 [index] 不在有效范围，则不做处理；
-     * - 否则，先 [confirmPending]，再做 [selectAt]，
+     * - 否则，先 [confirmPending]，再做 [doSelectAt]，
      *   并对 [cursor] 加上偏移量（[inputs] 列表长度可能变短）。
      *   注意，[pending] 将被重置为 `null`；
      */
-    fun select(index: Int): This =
+    fun selectAt(index: Int): This =
         if (cursor == index || index < 0 || index > inputs.lastIndex)
             this as This
         else
             confirmPending().let {
-                it.selectAt(
+                it.doSelectAt(
                     if (index < cursor) index
                     // 加上偏移量
                     else index + (it.inputs.size - inputs.size)
@@ -91,14 +91,14 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
 
     /** 选中最后一个 [Input] 输入：最后一个输入必然为 [Gap] */
     fun selectLast(): This =
-        select(inputs.lastIndex)
+        selectAt(inputs.lastIndex)
 
     /** 选中最后一个 [Item] 输入项 */
     fun selectLastItem(): This =
-        select(inputs.lastIndex - 1)
+        selectAt(inputs.lastIndex - 1)
 
     /** 选中指定位置的输入项，并重置 [pending] 为 `null` */
-    protected fun selectAt(index: Int): This =
+    protected fun doSelectAt(index: Int): This =
         doCopy(cursor = index, pending = null)
 
     // ------------------------------------------
@@ -143,12 +143,12 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         if (pending != null) // 先确认再包裹
             confirmPending().let {
                 // 未发生 inputs 列表元素移动
-                if (it.inputs.size == inputs.size) it.selectAt(cursor - 1)
+                if (it.inputs.size == inputs.size) it.doSelectAt(cursor - 1)
                 // cursor 已指向 Gap 位
                 else it
             }.doAddPairItem(open, close)
         else if (isGap(selected))
-            insertItemAt(cursor, open, close).selectAt(cursor + 2)
+            insertItemAt(cursor, open, close).doSelectAt(cursor + 2)
         else
             indexOfPairItemAt(cursor).let { selectedCloseIndex ->
                 // 包裹非配对输入项
@@ -156,7 +156,7 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
                 // 先插入闭符号，再插入开符号，以避免其 selected 的位置发生变动
                     insertItemAt(cursor + 1, close)
                         .insertItemAt(cursor - 1, open)
-                        .selectAt(cursor + 1 + 2)
+                        .doSelectAt(cursor + 1 + 2)
                 // 替换配对输入项
                 else
                     applyInputsUpdate(cursor + 1) {
@@ -201,7 +201,7 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
      * 对 [selected] 做回删处理：
      * - 若 [selected] 为 Gap（[isGap]==`true`），则：
      *   - 若 [cursor] 为 `0`，则不做处理；
-     *   - 否则，若 [cursor] 前序输入项为可持续性输入项（[isContinuousInputItem]==`true`），则执行 [selectAt] 以将其选中，从而支持对其做持续输入；
+     *   - 否则，若 [cursor] 前序输入项为可持续性输入项（[isContinuousInputItem]==`true`），则执行 [doSelectAt] 以将其选中，从而支持对其做持续输入；
      *   - 否则，执行 [tryRemovePairItemAt] 先尝试删除前序输入项的配对输入项，再执行 [doRemoveNonGap] 以删除前序输入项；
      * - 否则，执行 [tryRemovePairItemAt] 先尝试删除 [selected] 的配对输入项，再执行 [doRemoveNonGap] 以删除 [selected]；
      */
@@ -216,7 +216,7 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
                 val prev = inputs[prevIndex]
 
                 if (isContinuousInputItem(prev))
-                    selectAt(prevIndex)
+                    doSelectAt(prevIndex)
                 else
                     tryRemovePairItemAt(prevIndex).doRemoveNonGap(prev)
             }
@@ -364,8 +364,11 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         else if (isPairCloseItem(source)) {
             for (i in sourceIndex - 1 downTo 0) {
                 val input = inputs[i]
-                val inputClose = getPairCloseItem(input as Item)
+                if (isGap(input)) {
+                    continue
+                }
 
+                val inputClose = getPairCloseItem(input as Item)
                 // Note：配对实例需做引用相等判断
                 if (inputClose === source) {
                     return i

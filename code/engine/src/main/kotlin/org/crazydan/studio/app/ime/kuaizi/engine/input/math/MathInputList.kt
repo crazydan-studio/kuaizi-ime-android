@@ -75,7 +75,7 @@ data class MathInputList(
             is MathInput.Gap -> this
             is MathInput.Item -> when (pending) {
                 null ->
-                    selectAt(cursor + 1)
+                    doSelectAt(cursor + 1)
 
                 else ->
                     doReplaceSelected(pending)
@@ -194,7 +194,7 @@ data class MathInputList(
     private fun doAddEqualItem(item: MathInput.Item.Equal): MathInputList =
         if (inputs.contains(item)) this
         else if (cursor == 0)
-            insertItemAt(cursor, item).selectAt(cursor + 2)
+            insertItemAt(cursor, item).doSelectAt(cursor + 2)
         else
             applyInputsUpdate {
                 addAll(listOf(item, MathInput.Gap))
@@ -233,7 +233,7 @@ data class MathInputList(
         else
             when (selected) {
                 is MathInput.Gap ->
-                    insertItemAt(cursor, item).selectAt(cursor + 2)
+                    insertItemAt(cursor, item).doSelectAt(cursor + 2)
 
                 else -> indexOfPairItemAt(cursor).let { selectedCloseIndex ->
                     if (selectedCloseIndex < 0)

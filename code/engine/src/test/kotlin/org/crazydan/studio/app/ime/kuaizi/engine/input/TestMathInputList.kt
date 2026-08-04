@@ -119,7 +119,7 @@ class TestMathInputList {
         // ---------------------------------------
         // 向数字添加正负号
         val target0 = 2 * 1 - 1
-        inputList = inputList.select(target0)
+        inputList = inputList.selectAt(target0)
         assertEquals(target0, inputList.cursor)
         assertNull(inputList.pending)
 
@@ -128,32 +128,32 @@ class TestMathInputList {
         assertNull(inputList.pending)
         assertEquals("+123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
-        inputList = inputList.select(target0).addItem(MathInput.Item.Op.Plus)
+        inputList = inputList.selectAt(target0).addItem(MathInput.Item.Op.Plus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
         assertEquals("123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
-        inputList = inputList.select(target0).addItem(MathInput.Item.Op.Minus)
+        inputList = inputList.selectAt(target0).addItem(MathInput.Item.Op.Minus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
         assertEquals("-123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
-        inputList = inputList.select(target0).addItem(MathInput.Item.Op.Plus)
+        inputList = inputList.selectAt(target0).addItem(MathInput.Item.Op.Plus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
         assertEquals("+123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
-        inputList = inputList.select(target0).addItem(MathInput.Item.Op.Minus)
+        inputList = inputList.selectAt(target0).addItem(MathInput.Item.Op.Minus)
         assertEquals(target0 + 1, inputList.cursor)
 
-        inputList = inputList.select(target0).addItem(MathInput.Item.Op.Minus)
+        inputList = inputList.selectAt(target0).addItem(MathInput.Item.Op.Minus)
         assertEquals(target0 + 1, inputList.cursor)
         assertNull(inputList.pending)
         assertEquals("123.4 + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         // ---------------------------------------
         // 替换选中数字
-        inputList = inputList.select(target0).addItem(MathInput.Item.Const.Number(chars = listOf('5')))
+        inputList = inputList.selectAt(target0).addItem(MathInput.Item.Const.Number(chars = listOf('5')))
         assertEquals(target0, inputList.cursor)
         assertEquals("5", inputList.pending!!.value)
         assertEquals("123.4", (inputList.selected as MathInput.Item).value)
@@ -168,7 +168,7 @@ class TestMathInputList {
         // ---------------------------------------
         // 向 pi 添加正负号
         val target1 = 2 * 4 - 1
-        inputList = inputList.select(target1)
+        inputList = inputList.selectAt(target1)
         assertEquals(target1, inputList.cursor)
         assertNull(inputList.pending)
 
@@ -177,19 +177,19 @@ class TestMathInputList {
         assertNull(inputList.pending)
         assertEquals("5% + +${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
-        inputList = inputList.select(target1).addItem(MathInput.Item.Op.Minus)
+        inputList = inputList.selectAt(target1).addItem(MathInput.Item.Op.Minus)
         assertEquals(target1 + 1, inputList.cursor)
         assertNull(inputList.pending)
         assertEquals("5% + -${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
-        inputList = inputList.select(target1).addItem(MathInput.Item.Op.Minus)
+        inputList = inputList.selectAt(target1).addItem(MathInput.Item.Op.Minus)
         assertEquals(target1 + 1, inputList.cursor)
         assertNull(inputList.pending)
         assertEquals("5% + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
 
         // ---------------------------------------
         // 向 pi 添加小数点将无影响
-        inputList = inputList.select(target1).addItem(MathInput.Item.Dot)
+        inputList = inputList.selectAt(target1).addItem(MathInput.Item.Dot)
         assertEquals(target1, inputList.cursor)
         assertNull(inputList.pending)
         assertEquals("5% + ${MathSymbol.Const.PI.value}", inputList.getText().toString())
@@ -203,7 +203,7 @@ class TestMathInputList {
 
         // ---------------------------------------
         // 将 pi 替换为数字
-        inputList = inputList.select(target1).addItem(MathInput.Item.Const.Number(chars = listOf('9')))
+        inputList = inputList.selectAt(target1).addItem(MathInput.Item.Const.Number(chars = listOf('9')))
         assertEquals(target1, inputList.cursor)
         assertEquals("9", inputList.pending!!.value)
         assertTrue(inputList.selected is MathInput.Item.Const.PI)
@@ -212,13 +212,13 @@ class TestMathInputList {
         // ---------------------------------------
         // 小数点仅对数字有效
         val target2 = 3 * 2 - 1
-        inputList = inputList.select(target2).addItem(MathInput.Item.Dot)
+        inputList = inputList.selectAt(target2).addItem(MathInput.Item.Dot)
         assertEquals(target2, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Item.Op.Plus)
         assertEquals("5% + 9%", inputList.getText().toString())
 
-        inputList = inputList.select(0).addItem(MathInput.Item.Dot)
+        inputList = inputList.selectAt(0).addItem(MathInput.Item.Dot)
         assertEquals(0, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Gap)
@@ -227,7 +227,7 @@ class TestMathInputList {
         // ---------------------------------------
         // 数字被函数包裹
         val target3 = 2 * 1 - 1
-        inputList = inputList.select(target3).addItem(MathInput.Item.Func.Sin())
+        inputList = inputList.selectAt(target3).addItem(MathInput.Item.Func.Sin())
         assertEquals(target3 + 2 * 1 + 1, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Gap)
@@ -236,7 +236,7 @@ class TestMathInputList {
         // ---------------------------------------
         // 添加 ^
         val target4 = 2 * 6
-        inputList = inputList.select(target4).addItem(MathInput.Item.Op.Power)
+        inputList = inputList.selectAt(target4).addItem(MathInput.Item.Op.Power)
         assertEquals(target4 + 2 * 1, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Gap)
@@ -251,7 +251,7 @@ class TestMathInputList {
         // ---------------------------------------
         // 添加 °
         val target5 = 2 * 2
-        inputList = inputList.select(target5).addItem(MathInput.Item.Op.Degree)
+        inputList = inputList.selectAt(target5).addItem(MathInput.Item.Op.Degree)
         assertEquals(target5 + 2 * 1, inputList.cursor)
         assertNull(inputList.pending)
         assertTrue(inputList.selected is MathInput.Gap)
@@ -260,7 +260,84 @@ class TestMathInputList {
 
     @Test
     fun `should delete backward as expected`() = runTest {
-        //
+        var inputList = MathInputList()
+
+        listOf(
+            MathInput.Item.Const.PI(),
+            MathInput.Item.Op.Plus,
+            MathInput.Item.Const.Number(chars = listOf('1')),
+            MathInput.Item.Const.Number(chars = listOf('2')),
+            MathInput.Item.Const.Number(chars = listOf('3')),
+            MathInput.Item.Op.Multiply,
+            MathInput.Item.Const.Number(chars = listOf('4')),
+            MathInput.Item.Const.Number(chars = listOf('5')),
+            MathInput.Item.Const.Number(chars = listOf('6')),
+            MathInput.Item.Op.Percent,
+        ).forEach {
+            inputList = inputList.addItem(it)
+        }
+
+        // --------------------------------------------
+        // 删除 百分号
+        inputList = inputList.deleteBackward()
+        assertEquals("${MathSymbol.Const.PI.value} + 123 × 456", inputList.getText().toString())
+
+        // --------------------------------------------
+        // 仅选中数字
+        inputList = inputList.deleteBackward()
+        assertEquals(2 * 5 - 1, inputList.cursor)
+        assertNull(inputList.pending)
+        assertEquals("456", (inputList.selected as MathInput.Item).value)
+        assertEquals("${MathSymbol.Const.PI.value} + 123 × 456", inputList.getText().toString())
+
+        // --------------------------------------------
+        // 逐字符删除选中数字
+        inputList = inputList.deleteBackward()
+        assertEquals(2 * 5 - 1, inputList.cursor)
+        assertEquals("45", inputList.pending!!.value)
+        assertEquals("456", (inputList.selected as MathInput.Item).value)
+        assertEquals("${MathSymbol.Const.PI.value} + 123 × 45", inputList.getText().toString())
+
+        inputList = inputList.deleteBackward().deleteBackward()
+        assertEquals(2 * 4, inputList.cursor)
+        assertNull(inputList.pending)
+        assertEquals(MathInput.Gap, inputList.selected)
+        assertEquals("${MathSymbol.Const.PI.value} + 123 ×", inputList.getText().toString())
+
+        // ----------------------------------------------
+        // 添加并删除括号
+        listOf(
+            MathInput.Item.Bracket(),
+            MathInput.Item.Const.Number(chars = listOf('7')),
+            MathInput.Item.Op.Plus,
+            MathInput.Item.Const.Number(chars = listOf('8')),
+        ).forEach {
+            inputList = inputList.addItem(it)
+        }
+        inputList = inputList.selectLast().addItem(MathInput.Item.Op.Percent)
+        assertEquals("${MathSymbol.Const.PI.value} + 123 × ( 7 + 8 )%", inputList.getText().toString())
+
+        inputList = inputList.selectAt(2 * 9 - 1).deleteBackward()
+        assertEquals("${MathSymbol.Const.PI.value} + 123 × 7 + 8%", inputList.getText().toString())
+
+        // ----------------------------------------------
+        // 添加并删除函数
+        inputList = inputList.selectAt(2 * 5 - 1).addItem(MathInput.Item.Func.Sin())
+        assertEquals("${MathSymbol.Const.PI.value} + 123 × sin( 7 ) + 8%", inputList.getText().toString())
+
+        inputList = inputList.selectAt(2 * 5 - 1).deleteBackward()
+        assertEquals("${MathSymbol.Const.PI.value} + 123 × 7 + 8%", inputList.getText().toString())
+
+        // ----------------------------------------------
+        // 修正数字
+        inputList =
+            inputList
+                .selectAt(2 * 3 - 1)
+                .deleteBackward()
+                .addItem(MathInput.Item.Const.Number(chars = listOf('0')))
+        assertEquals("120", inputList.pending!!.value)
+        assertEquals("123", (inputList.selected as MathInput.Item).value)
+        assertEquals("${MathSymbol.Const.PI.value} + 120 × 7 + 8%", inputList.getText().toString())
     }
 
     @Test
@@ -607,5 +684,53 @@ class TestMathInputList {
                 .addItem(MathInput.Item.Op.Power)
                 .addItem(MathInput.Item.Const.Number(chars = listOf('2')))
         assertEquals("tan( π ÷ 2 )^2", inputList.getText().toString())
+    }
+
+    @Test
+    fun `should add equal as expected`() = runTest {
+        var inputList = MathInputList()
+
+        // -----------------------------------
+        // 多次添加尾部等号
+        listOf(
+            MathInput.Item.Const.Number(chars = listOf('1')),
+            MathInput.Item.Op.Plus,
+            MathInput.Item.Equal,
+        ).forEach {
+            inputList = inputList.addItem(it)
+        }
+        assertEquals("1 + =", inputList.getText().toString())
+
+        //
+        inputList = inputList.selectAt(2 * 2)
+
+        listOf(
+            MathInput.Item.Const.Number(chars = listOf('2')),
+            MathInput.Item.Equal,
+        ).forEach {
+            inputList = inputList.addItem(it)
+        }
+        assertEquals(2 * 3 - 1, inputList.cursor)
+        assertEquals("2", inputList.pending!!.value)
+        assertEquals("1 + 2 = 3", inputList.getText().toString())
+
+        // -----------------------------------
+        // 多次添加头部等号
+        inputList = MathInputList()
+
+        listOf(
+            MathInput.Item.Const.Number(chars = listOf('1')),
+            MathInput.Item.Op.Plus,
+            MathInput.Item.Const.Number(chars = listOf('2')),
+        ).forEach {
+            inputList = inputList.addItem(it)
+        }
+
+        inputList = inputList.selectAt(0).addItem(MathInput.Item.Equal)
+        assertEquals("3", inputList.getText().toString())
+
+        inputList = inputList.selectAt(0).addItem(MathInput.Item.Equal)
+        assertEquals("3", inputList.getText().toString())
+        assertEquals(1, inputList.inputs.filter { it == MathInput.Item.Equal }.size)
     }
 }

@@ -119,7 +119,7 @@ data class InputList(
                     doConfirmPinyinPending()
 
                 null ->
-                    selectAt(cursor + 1)
+                    doSelectAt(cursor + 1)
 
                 else ->
                     doReplaceSelected(pending)
@@ -161,7 +161,7 @@ data class InputList(
                     doRemoveNonGapAt(cursor)
 
                 else ->
-                    selectAt(cursor + 1)
+                    doSelectAt(cursor + 1)
             }
         }
 
@@ -285,7 +285,7 @@ data class InputList(
                             set(prevIndex, item)
                         }
                     else
-                        insertItemAt(cursor, item).selectAt(cursor + 2)
+                        insertItemAt(cursor, item).doSelectAt(cursor + 2)
                 }
 
                 else -> indexOfPairItemAt(cursor).let { selectedCloseIndex ->
