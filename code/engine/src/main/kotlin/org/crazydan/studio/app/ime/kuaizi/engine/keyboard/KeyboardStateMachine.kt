@@ -179,7 +179,7 @@ class KeyboardStateMachine(
                                     char = char,
                                     replacements =
                                         if (transition.replacement > 0)
-                                            transition.key.replacements
+                                            transition.key.getFullReplacements()
                                         else null,
                                 )
                             }

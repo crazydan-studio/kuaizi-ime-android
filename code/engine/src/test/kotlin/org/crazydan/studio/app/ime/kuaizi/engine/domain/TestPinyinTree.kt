@@ -19,7 +19,6 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.domain
 
-import kotlinx.coroutines.test.runTest
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.createVowelTree
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,7 +33,7 @@ import kotlin.test.assertTrue
 class TestPinyinTree {
 
     @Test
-    fun `should create only one branch with same starting char`() = runTest {
+    fun `should create only one branch with same starting char`() {
         val pinyinList = listOf("a", "an", "ai", "ao")
         val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
 
@@ -52,7 +51,7 @@ class TestPinyinTree {
     }
 
     @Test
-    fun `should create multiple branches with different starting chars`() = runTest {
+    fun `should create multiple branches with different starting chars`() {
         val pinyinList = listOf("hei", "he", "yan", "ya", "wu", "wo")
         val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
 
@@ -89,7 +88,7 @@ class TestPinyinTree {
     }
 
     @Test
-    fun `should hasn't middle leaf with one pinyin`() = runTest {
+    fun `should hasn't middle leaf with one pinyin`() {
         val pinyinList = listOf("han")
         val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
 
@@ -108,7 +107,7 @@ class TestPinyinTree {
     }
 
     @Test
-    fun `should only three branches at most in long char pinyin`() = runTest {
+    fun `should only three branches at most in long char pinyin`() {
         val pinyinList = listOf("huang", "huan")
         val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
 
@@ -128,7 +127,7 @@ class TestPinyinTree {
     }
 
     @Test
-    fun `should create branches as 'ch', 'zh', 'sh'`() = runTest {
+    fun `should create branches as 'ch', 'zh', 'sh'`() {
         val pinyinList = listOf("ci", "chi", "zhe", "za", "sha", "se")
         val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
 
@@ -170,7 +169,7 @@ class TestPinyinTree {
     }
 
     @Test
-    fun `should verify whether string is a pinyin or not`() = runTest {
+    fun `should verify whether string is a pinyin or not`() {
         val pinyinList = listOf("a", "bi", "ci", "cu", "shu", "suan", "shuang", "e", "o", "ou")
         val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()
 
@@ -191,7 +190,7 @@ class TestPinyinTree {
     }
 
     @Test
-    fun `should create correct vowel tree`() = runTest {
+    fun `should create correct vowel tree`() {
         val pinyinList =
             listOf("ao", "ai", "a", "o", "ou", "e", "hua", "hu", "huai", "huang", "chi", "chuan", "chong", "chang")
         val pinyinTree = PinyinTree.Builder().addAll(pinyinList).build()

@@ -19,9 +19,10 @@
 
 package org.crazydan.studio.app.ime.kuaizi.engine.keyboard
 
-import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  *
@@ -31,7 +32,7 @@ import kotlin.test.assertEquals
 class TestInputKey {
 
     @Test
-    fun `should get char self always by calling #getReplacement when replacements is null or empty`() = runTest {
+    fun `should get char self always by calling #getReplacement when replacements is null or empty`() {
         val char1 = InputKey.Char.Alphabet(value = "v", replacements = null)
         for (i in -2..4) {
             assertEquals(char1.value, char1.getReplacement(i))
@@ -44,7 +45,7 @@ class TestInputKey {
     }
 
     @Test
-    fun `should get cycling replacement`() = runTest {
+    fun `should get cycling replacement`() {
         val char1 = InputKey.Char.Alphabet(value = "v", replacements = listOf("v1"))
         for (i in -2..0) {
             assertEquals(char1.value, char1.getReplacement(i))
@@ -65,5 +66,18 @@ class TestInputKey {
         for (i in 1..expects2.size) {
             assertEquals(expects2[(i - 1) % expects2.size], char2.getReplacement(i))
         }
+    }
+
+    @Test
+    fun `should get self with #getFullReplacements`() {
+        val char1 = InputKey.Char.Alphabet(value = "v", replacements = listOf("v1", "v2"))
+        assertTrue(char1.replacements?.contains(char1.value) == false)
+        assertTrue(char1.getFullReplacements()?.contains(char1.value) == true)
+
+        val char2 = InputKey.Char.Alphabet(value = "v", replacements = emptyList())
+        assertNull(char2.getFullReplacements())
+
+        val char3 = InputKey.Char.Alphabet(value = "v", replacements = null)
+        assertNull(char3.getFullReplacements())
     }
 }

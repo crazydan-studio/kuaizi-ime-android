@@ -52,10 +52,13 @@ sealed class InputKey {
         abstract val label: String?
 
         /**
-         *  字符按键的可替换字符列表，用于在同一按键上切换不同的字符，比如，英文字母的大小写切换等。
+         * 字符按键的可替换字符列表，用于在同一按键上切换不同的字符，比如，英文字母的大小写切换等。
          *
          * 在添加时，首先判断前序字符是否在该替换列表内，
          * 若存在，则替换前序字符，否则，不做替换，直接追加。
+         *
+         * 注意，该列表不包含所在按键本身的 [value]，完整的替换列表需通过
+         * [InputKey.Char.getFullReplacements] 获取。
          */
         abstract val replacements: List<String>?
 
@@ -107,19 +110,6 @@ sealed class InputKey {
             override val label: String? = null,
             override val replacements: List<String>? = null,
         ) : Char()
-
-        /**
-         * 获取指定位置的可替换字符，循环获取，且按键 [value] 本身作为首字符参与替换列表的循环
-         * @param index 若 `<= 0`，则直接返回按键字符 [value]
-         * @return 若无可替换字符列表（[replacements] 为 `null` 或空），则返回按键字符 [value]
-         */
-        fun getReplacement(index: Int): String {
-            if (index <= 0 || replacements == null || replacements!!.isEmpty())
-                return value
-
-            val i = index % (replacements!!.size + 1)
-            return if (i == 0) value else replacements!![i - 1]
-        }
     }
 
     // -----------------------------------------------------
@@ -189,3 +179,23 @@ sealed class InputKey {
     /** 候选词选择按键 */
     data object Candidate : InputKey()
 }
+
+// ---------------------------------------------------------
+
+/**
+ * 获取指定位置的可替换字符，循环获取，且按键 [InputKey.Char.value] 本身作为首字符参与替换列表的循环
+ * @param index 若 `<= 0`，则直接返回按键字符 [InputKey.Char.value]
+ * @return 若无可替换字符列表（[InputKey.Char.replacements] 为 `null` 或空），则返回按键字符 [InputKey.Char.value]
+ */
+fun InputKey.Char.getReplacement(index: Int): String {
+    if (index <= 0 || replacements.isNullOrEmpty())
+        return value
+
+    val i = index % (replacements!!.size + 1)
+    return if (i == 0) value else replacements!![i - 1]
+}
+
+/** 获取包括按键 [InputKey.Char.value] 在内的完整的可替换字符列表 */
+fun InputKey.Char.getFullReplacements(): List<String>? =
+    if (replacements.isNullOrEmpty()) null
+    else (listOf(value) + replacements) as List<String>
