@@ -123,6 +123,9 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         pending: Item? = this.pending,
     ): This
 
+    protected fun withPending(item: Item): This =
+        doCopy(pending = item)
+
     /** 在 [index] 位置插入 [items] 的 Gap-Item 对 */
     protected fun insertItemAt(index: Int, vararg items: Item): This =
         applyInputsUpdate {
@@ -130,11 +133,24 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         }
 
     /**
+     * 添加可持续输入项：
+     * - [cursor] 处必须为 [Gap]，否则，不做处理；
+     * - 调用 [insertItemAt] 在 [cursor] 处插入 Gap-Item 对，并将 [cursor] 指向 [item]，
+     *   再将 [pending] 设置为 [item] 以支持对该输入项做持续性更新；
+     */
+    protected fun doAddContinuousItem(item: Item): This =
+        if (isGap(inputs[cursor]))
+            insertItemAt(cursor, item).doCopy(
+                cursor = cursor + 1, pending = item,
+            )
+        else this as This
+
+    /**
      * 添加配对输入项：
      * - 若 [pending] 不为 `null`，则先 [confirmPending] 再以 [open] 和 [close] 包裹该已确认的输入项，并将 [cursor] 指向其后的 Gap；
      * - 否则，若 [selected] 为 Gap（[isGap]==`true`），则插入 [open] 和 [close] 的 Gap-Item 对，并将 [cursor] 指向二者之间的 Gap；
      * - 否则：
-     *   - - 若 [selected] 不是配对输入项，则使用 [open] 和 [close] 包裹该 [selected]，并将 [cursor] 指向其后的 Gap；
+     *   - - 若 [cursor] 处不是配对输入项，则使用 [open] 和 [close] 包裹该 [selected]，并将 [cursor] 指向其后的 Gap；
      *   - - 否则，使用 [open] 和 [close] 替换其开闭输入项，并将 [cursor] 指向 [selected] 之后的 Gap；
      *
      * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
@@ -150,28 +166,42 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         else if (isGap(selected))
             insertItemAt(cursor, open, close).doSelectAt(cursor + 2)
         else
-            indexOfPairItemAt(cursor).let { selectedCloseIndex ->
+            doUpdateAtCursorByPairItemOrNot(
                 // 包裹非配对输入项
-                if (selectedCloseIndex < 0)
-                // 先插入闭符号，再插入开符号，以避免其 selected 的位置发生变动
+                {
+                    // 先插入闭符号，再插入开符号，以避免其 selected 的位置发生变动
                     insertItemAt(cursor + 1, close)
                         .insertItemAt(cursor - 1, open)
                         .doSelectAt(cursor + 1 + 2)
+                },
                 // 替换配对输入项
-                else
+                { targetIndex ->
                     applyInputsUpdate(cursor + 1) {
                         // 选中的是左侧符号
-                        if (cursor < selectedCloseIndex) {
+                        if (cursor < targetIndex) {
                             set(cursor, open)
-                            set(selectedCloseIndex, close)
+                            set(targetIndex, close)
                         }
                         // 选中的是右侧符号
                         else {
                             set(cursor, close)
-                            set(selectedCloseIndex, open)
+                            set(targetIndex, open)
                         }
                     }
-            }
+                },
+            )
+
+    /** 在 [cursor] 处针对选中输入项是否为配对符号做不同的更新 */
+    protected fun doUpdateAtCursorByPairItemOrNot(
+        notPairBlock: This.() -> This,
+        pairBlock: This.(targetIndex: Int) -> This,
+    ): This =
+        indexOfPairItemAt(cursor).let { targetIndex ->
+            if (targetIndex < 0)
+                (this as This).notPairBlock()
+            else
+                (this as This).pairBlock(targetIndex)
+        }
 
     // ------------------------------------------
 
@@ -195,13 +225,13 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
     protected abstract fun doDeleteBackward(oneByOne: Boolean): This
 
     /** 判断指定的输入是否为持续性输入项（即，可接受多个字符输入） */
-    protected abstract fun isContinuousInputItem(input: Input): Boolean
+    protected abstract fun isContinuousItem(input: Input): Boolean
 
     /**
      * 对 [selected] 做回删处理：
      * - 若 [selected] 为 Gap（[isGap]==`true`），则：
      *   - 若 [cursor] 为 `0`，则不做处理；
-     *   - 否则，若 [cursor] 前序输入项为可持续性输入项（[isContinuousInputItem]==`true`），则执行 [doSelectAt] 以将其选中，从而支持对其做持续输入；
+     *   - 否则，若 [cursor] 前序输入项为可持续性输入项（[isContinuousItem]==`true`），则执行 [doSelectAt] 以将其选中，从而支持对其做持续输入；
      *   - 否则，执行 [tryRemovePairItemAt] 先尝试删除前序输入项的配对输入项，再执行 [doRemoveNonGap] 以删除前序输入项；
      * - 否则，执行 [tryRemovePairItemAt] 先尝试删除 [selected] 的配对输入项，再执行 [doRemoveNonGap] 以删除 [selected]；
      */
@@ -215,7 +245,7 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
                 val prevIndex = cursor - 1
                 val prev = inputs[prevIndex]
 
-                if (isContinuousInputItem(prev))
+                if (isContinuousItem(prev))
                     doSelectAt(prevIndex)
                 else
                     tryRemovePairItemAt(prevIndex).doRemoveNonGap(prev)

@@ -47,7 +47,7 @@ data class MathInputList(
     override fun isPairCloseItem(item: MathInput.Item): Boolean =
         item is MathInput.Item.CloseSymbol
 
-    override fun isContinuousInputItem(input: MathInput): Boolean =
+    override fun isContinuousItem(input: MathInput): Boolean =
         input is MathInput.Item.Const.Number && input.chars.size > 1
 
     override fun doCopy(
@@ -113,8 +113,8 @@ data class MathInputList(
     /**
      * 添加数字：
      * - 若 [pending] 为 [MathInput.Item.Const.Number]，则向 [pending] 追加数字；
-     * - 否则，若 [selected] 为 [MathInput.Gap]，则插入 [item] 的 Gap-Item 对，并将 [cursor] 指向 [item]，
-     *   同时将 [pending] 也设置为 [item]，以支持对数字的持续性输入；
+     * - 否则，若 [selected] 为 [MathInput.Gap]，则执行 [doAddContinuousItem]；
+     * - 否则，若 [cursor] 处为配对输入项，则先 [confirmPending] 再重做 [doAddNumberItem] 以插入新的数字输入；
      * - 否则，将 [pending] 设置为 [item]，也就是，准备**全新的数字输入**并最终用其替代 [selected]；
      *
      * [cursor] 始终指向 [MathInput.Item]，且 [pending] 为正在处理且等待更新到 [inputs]
@@ -123,16 +123,17 @@ data class MathInputList(
     private fun doAddNumberItem(item: MathInput.Item.Const.Number): MathInputList =
         when (pending) {
             is MathInput.Item.Const.Number ->
-                copy(pending = pending.appendChar(item.chars[0]))
+                withPending(pending.appendChar(item.chars[0]))
 
             else -> when (selected) {
                 is MathInput.Gap ->
-                    insertItemAt(cursor, item).copy(
-                        cursor = cursor + 1, pending = item,
-                    )
+                    doAddContinuousItem(item)
 
                 else ->
-                    copy(pending = item)
+                    doUpdateAtCursorByPairItemOrNot(
+                        { withPending(item) },
+                        { confirmPending().doAddNumberItem(item) },
+                    )
             }
         }
 
@@ -149,12 +150,12 @@ data class MathInputList(
         item.value[0].let { dot ->
             when (pending) {
                 is MathInput.Item.Const.Number ->
-                    copy(pending = pending.appendChar(dot))
+                    withPending(pending.appendChar(dot))
 
                 else -> selected.let { s ->
                     when (s) {
                         is MathInput.Item.Const.Number ->
-                            copy(pending = s.appendChar(dot))
+                            withPending(s.appendChar(dot))
 
                         else -> this
                     }
@@ -222,7 +223,7 @@ data class MathInputList(
      *   从而保留当前正在更新的持续性输入项并在其后插入 [item]；
      * - 否则，若 [selected] 为 [MathInput.Gap]，则插入 [item] 的 Gap-Item 对，并将 [cursor] 指向其后的 Gap；
      * - 否则：
-     *   - - 若 [selected] 不是配对输入项（括号、单参函数等），则执行 [doReplaceSelected] 使用 [item] 替换 [selected] 并后移 [cursor]；
+     *   - - 若 [cursor] 处不是配对输入项（括号、单参函数等），则执行 [doReplaceSelected] 使用 [item] 替换 [selected] 并后移 [cursor]；
      *   - - 否则，先 [confirmPending] 再插入 Gap-Item 对，即，保留 [cursor] 指向的配对输入项，并在该位置之后插入 [item] 的 Gap-Item 对，再将 [cursor] 指向其后的 Gap；
      *
      * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
@@ -235,12 +236,11 @@ data class MathInputList(
                 is MathInput.Gap ->
                     insertItemAt(cursor, item).doSelectAt(cursor + 2)
 
-                else -> indexOfPairItemAt(cursor).let { selectedCloseIndex ->
-                    if (selectedCloseIndex < 0)
-                        doReplaceSelected(item)
-                    else
-                        confirmPending().doAddNonPairItem(item)
-                }
+                else ->
+                    doUpdateAtCursorByPairItemOrNot(
+                        { doReplaceSelected(item) },
+                        { confirmPending().doAddNonPairItem(item) },
+                    )
             }
 
     // ------------------------------------------
@@ -259,8 +259,8 @@ data class MathInputList(
         if (oneByOne) {
             val current = pending ?: selected
 
-            if (current is MathInput.Item.Const.Number && isContinuousInputItem(current)) {
-                return copy(pending = current.dropLastChar())
+            if (current is MathInput.Item.Const.Number && isContinuousItem(current)) {
+                return withPending(current.dropLastChar())
             }
         }
 

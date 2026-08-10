@@ -52,7 +52,7 @@ data class InputList(
     override fun isPairCloseItem(item: CommonInput.Item): Boolean =
         item is CommonInput.Item.Char.Symbol && item.close == null
 
-    override fun isContinuousInputItem(input: CommonInput): Boolean =
+    override fun isContinuousItem(input: CommonInput): Boolean =
         input is CommonInput.Item.Char.Latin && input.chars.size > 1
 
     override fun isEmptyItem(item: CommonInput.Item?): Boolean =
@@ -174,7 +174,7 @@ data class InputList(
      * - 否则，若 [item] 为 [CommonInput.Item.Char.Latin]，则执行 [doAddLatinCharItem]；
      * - 否则，执行 [doAddOtherItem]；
      */
-    fun addItem(item: CommonInput.Item, replacements: List<String>?): InputList =
+    fun addItem(item: CommonInput.Item, replacements: List<String>? = null): InputList =
         when (item) {
             is CommonInput.Item.MathExpr ->
                 this
@@ -191,9 +191,9 @@ data class InputList(
 
     /**
      * 添加拼音输入项：
-     * - 若 [selected] 为 [CommonInput.Gap]，则插入 [item] 的 Gap-Item 对，并将 [cursor] 指向 [item]，
-     *   同时将 [pending] 也设置为 [item]，以支持对拼音的持续性输入；
-     * - 否则，将 [pending] 设置为 [item]，以支持对拼音的持续性输入并最终用其替代 [selected]；
+     * - 若 [selected] 为 [CommonInput.Gap]，则执行 [doAddContinuousItem]；
+     * - 否则，若 [cursor] 处不是配对符号，则将 [pending] 设置为 [item]，以支持对拼音的持续性输入并最终用其替代 [selected]；
+     * - 否则，先 [confirmPending] 再重做 [doAddPinyinItem] 以插入新的拼音输入；
      *
      * [cursor] 始终指向 [CommonInput.Item]，且 [pending] 为正在处理且等待更新到 [inputs]
      * 的 [CommonInput.Item.Pinyin]。
@@ -202,20 +202,21 @@ data class InputList(
         // 对拼音输入项是做整体替换，而不是追加
         when (selected) {
             is CommonInput.Gap ->
-                insertItemAt(cursor, item).copy(
-                    cursor = cursor + 1, pending = item,
-                )
+                doAddContinuousItem(item)
 
             else ->
-                copy(pending = item)
+                doUpdateAtCursorByPairItemOrNot(
+                    { withPending(item) },
+                    { confirmPending().doAddPinyinItem(item) },
+                )
         }
 
     /**
      * 添加拉丁文：
      * - 若 [pending] 为 [CommonInput.Item.Char.Latin]，则向 [pending] 追加拉丁文（根据 [replacements] 判断是否替代前序字符）；
-     * - 否则，若 [selected] 为 [CommonInput.Gap]，则插入 [item] 的 Gap-Item 对，并将 [cursor] 指向 [item]，
-     *   同时将 [pending] 也设置为 [item]，以支持对拉丁文的持续性输入；
-     * - 否则，将 [pending] 设置为 [item]，以支持对拉丁文的持续性输入并最终用其替代 [selected]；
+     * - 否则，若 [selected] 为 [CommonInput.Gap]，则执行 [doAddContinuousItem]；
+     * - 否则，若 [cursor] 处不是配对符号，则将 [pending] 设置为 [item]，以支持对拉丁文的持续性输入并最终用其替代 [selected]；
+     * - 否则，先 [confirmPending] 再重做 [doAddLatinCharItem] 以插入新的拉丁文输入；
      *
      * [cursor] 始终指向 [CommonInput.Item]，且 [pending] 为正在处理且等待更新到 [inputs]
      * 的 [CommonInput.Item.Char.Latin]。
@@ -223,8 +224,8 @@ data class InputList(
     private fun doAddLatinCharItem(item: CommonInput.Item.Char.Latin, replacements: List<String>?): InputList =
         when (pending) {
             is CommonInput.Item.Char.Latin ->
-                copy(
-                    pending = pending.appendChar(
+                withPending(
+                    pending.appendChar(
                         char = item.chars[0],
                         replacements = replacements,
                     )
@@ -232,12 +233,13 @@ data class InputList(
 
             else -> when (selected) {
                 is CommonInput.Gap ->
-                    insertItemAt(cursor, item).copy(
-                        cursor = cursor + 1, pending = item,
-                    )
+                    doAddContinuousItem(item)
 
                 else ->
-                    copy(pending = item)
+                    doUpdateAtCursorByPairItemOrNot(
+                        { withPending(item) },
+                        { confirmPending().doAddLatinCharItem(item, replacements) },
+                    )
             }
         }
 
@@ -266,7 +268,7 @@ data class InputList(
      *   - 若前序输入为 [CommonInput.Item.Char]，且该输入项的值包含在 [replacements] 中，则将该输入项替换为 [item]，从而支持替换输入；
      *   - 否则，在 [cursor] 处插入 [item] 的 Gap-Item 对，并将 [cursor] 指向其后的 Gap；
      * - 否则：
-     *   - - 若 [selected] 不是配对输入项，则执行 [doReplaceSelected] 使用 [item] 替换 [selected] 并后移 [cursor]；
+     *   - - 若 [cursor] 处不是配对符号，则执行 [doReplaceSelected] 使用 [item] 替换 [selected] 并后移 [cursor]；
      *   - - 否则，先 [confirmPending] 再插入 Gap-Item 对，即，保留 [cursor] 指向的配对输入项，并在该位置之后插入 [item] 的 Gap-Item 对，再将 [cursor] 指向其后的 Gap；
      *
      * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
@@ -288,12 +290,11 @@ data class InputList(
                         insertItemAt(cursor, item).doSelectAt(cursor + 2)
                 }
 
-                else -> indexOfPairItemAt(cursor).let { selectedCloseIndex ->
-                    if (selectedCloseIndex < 0)
-                        doReplaceSelected(item)
-                    else
-                        confirmPending().doAddNonPairItem(item, replacements)
-                }
+                else ->
+                    doUpdateAtCursorByPairItemOrNot(
+                        { doReplaceSelected(item) },
+                        { confirmPending().doAddNonPairItem(item, replacements) },
+                    )
             }
 
     // ---------------------------------------------------------
@@ -314,8 +315,8 @@ data class InputList(
         if (oneByOne) {
             val current = if (emptyPending) selected else pending
 
-            if (current is CommonInput.Item.Char.Latin && isContinuousInputItem(current)) {
-                return copy(pending = current.dropLastChar())
+            if (current is CommonInput.Item.Char.Latin && isContinuousItem(current)) {
+                return withPending(current.dropLastChar())
             }
         }
 
@@ -342,7 +343,7 @@ data class InputList(
                 }
             }
         }.let {
-            copy(pending = it.applyInputListUpdate(block))
+            withPending(it.applyInputListUpdate(block))
         }
 
     /** 对 [textOption] 进行更新 */
