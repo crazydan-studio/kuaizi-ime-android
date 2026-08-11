@@ -90,7 +90,7 @@ class SqliteDictProvider(
     override suspend fun query(pinyin: String): List<InputWord> = withContext(Dispatchers.Default) {
         val words = repository.lookupPinyinWords(pinyin).map { entity ->
             InputWord.Hanzi(
-                text = entity.text,
+                value = entity.text,
                 spell = Spell(id = entity.spell, value = entity.spell),
                 frequency = entity.freq,
                 variant = entity.variant?.let { Variant(text = it, type = VariantType.Variant) },
@@ -99,7 +99,7 @@ class SqliteDictProvider(
         }
         val phrases = repository.lookupPinyinPhrases(listOf(pinyin)).map { entity ->
             InputWord.PinyinPhrase(
-                text = entity.text,
+                value = entity.text,
                 spells = entity.spells.split(","),
                 frequency = entity.freq,
             )
@@ -111,7 +111,7 @@ class SqliteDictProvider(
     override suspend fun queryPrefix(prefix: String): List<InputWord> = withContext(Dispatchers.Default) {
         repository.lookupByPrefix(prefix).map { entity ->
             InputWord.Hanzi(
-                text = entity.text,
+                value = entity.text,
                 spell = Spell(id = entity.spell, value = entity.spell),
                 frequency = entity.freq,
             )
@@ -122,7 +122,7 @@ class SqliteDictProvider(
     override suspend fun queryLatinCompletions(prefix: String): List<InputWord> = withContext(Dispatchers.Default) {
         repository.lookupByPrefix(prefix).map { entity ->
             InputWord.Latin(
-                text = entity.text,
+                value = entity.text,
                 frequency = entity.freq,
             )
         }
@@ -139,7 +139,7 @@ class SqliteDictProvider(
             val words = repository.lookupPinyinWords(spell)
             words.map { entity ->
                 InputWord.Hanzi(
-                    text = entity.text,
+                    value = entity.text,
                     spell = Spell(id = entity.spell, value = entity.spell),
                     frequency = entity.freq,
                 )

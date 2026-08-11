@@ -96,14 +96,14 @@ data class CandidateList(
  */
 sealed class InputWord {
     /** 候选词文本 */
-    abstract val text: String
+    abstract val value: String
 
     /** 候选词使用频率 */
     abstract val frequency: Int
 
     /**
      * 汉字
-     * @param text 汉字文本
+     * @param value 汉字文本
      * @param frequency 使用频率
      * @param spell 拼音拼写信息
      * @param variant 变体文本。若当前为简体，则该变体为繁体，若当前为繁体，则该变体为简体
@@ -111,9 +111,9 @@ sealed class InputWord {
      * @param tone 声调信息
      */
     data class Hanzi(
-        override val text: String,
-        override val frequency: Int,
-        val type: Type,
+        override val value: String,
+        override val frequency: Int = 0,
+        val type: Type = Type.Simplified,
         val spell: Spell,
         val variant: String? = null,
         val radical: Radical? = null,
@@ -132,25 +132,25 @@ sealed class InputWord {
 
     /**
      * 拼音词组候选
-     * @param text 词组文本
+     * @param value 词组文本
      * @param frequency 使用频率
      * @param spells 各字的拼音拼写列表
      */
     data class PinyinPhrase(
-        override val text: String,
+        override val value: String,
         override val frequency: Int,
         val spells: List<String>,
     ) : InputWord()
 
     /**
      * Emoji 候选
-     * @param text Emoji 文本
+     * @param value Emoji 文本
      * @param frequency 使用频率
      * @param name Emoji 名称
      * @param group Emoji 分组
      */
     data class Emoji(
-        override val text: String,
+        override val value: String,
         override val frequency: Int = 0,
         val name: String,
         val group: String,
@@ -158,24 +158,24 @@ sealed class InputWord {
 
     /**
      * 拉丁词候选
-     * @param text 拉丁词文本
+     * @param value 拉丁词文本
      * @param frequency 使用频率
      */
     data class Latin(
-        override val text: String,
+        override val value: String,
         override val frequency: Int,
     ) : InputWord()
 
     /**
      * 提交选项，针对已确认输入的后续操作
-     * @param text 选项文本
+     * @param value 选项文本
      * @param frequency 使用频率
      * @param action 点击后触发的 ImeIntent
      * @param spell 关联的拼写信息
      * @param variant 关联的变体信息
      */
     data class CommitOption(
-        override val text: String,
+        override val value: String,
         override val frequency: Int = 0,
         val action: ImeIntent? = null,
         val spell: Spell? = null,

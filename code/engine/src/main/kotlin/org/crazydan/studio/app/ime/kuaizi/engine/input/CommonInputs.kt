@@ -112,7 +112,7 @@ fun CommonInput.Item.getText(option: InputTextOption): CharSequence =
             val char = when (option.hanziType) {
                 InputWord.Hanzi.Type.Traditional -> word.variant
                 else -> null
-            } ?: word.text
+            } ?: word.value
 
             when (option.spellUseMode) {
                 InputWord.SpellUseMode.Replace -> spell

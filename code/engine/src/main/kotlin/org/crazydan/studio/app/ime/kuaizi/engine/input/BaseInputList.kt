@@ -147,10 +147,10 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
 
     /**
      * 添加配对输入项：
-     * - 若 [pending] 不为 `null`，则先 [confirmPending] 再以 [open] 和 [close] 包裹该已确认的输入项，并将 [cursor] 指向其后的 Gap；
+     * - 若 [pending] 不为 `null`，则先 [confirmPending] 再重做 [doAddPairItem]；
      * - 否则，若 [selected] 为 Gap（[isGap]==`true`），则插入 [open] 和 [close] 的 Gap-Item 对，并将 [cursor] 指向二者之间的 Gap；
      * - 否则：
-     *   - - 若 [cursor] 处不是配对输入项，则使用 [open] 和 [close] 包裹该 [selected]，并将 [cursor] 指向其后的 Gap；
+     *   - - 若 [cursor] 处不是配对输入项，则使用 [open] 和 [close] 包裹该 [selected]，并将 [cursor] 指向 [selected] 之后的 Gap；
      *   - - 否则，使用 [open] 和 [close] 替换其开闭输入项，并将 [cursor] 指向 [selected] 之后的 Gap；
      *
      * [cursor] 始终指向 Gap 位，且 [pending] 为 `null`。
@@ -159,7 +159,7 @@ abstract class BaseInputList<This : BaseInputList<This, Input, Item, Gap>, Input
         if (pending != null) // 先确认再包裹
             confirmPending().let {
                 // 未发生 inputs 列表元素移动
-                if (it.inputs.size == inputs.size) it.doSelectAt(cursor - 1)
+                if (it.inputs.size == inputs.size) it.doSelectAt(it.cursor - 1)
                 // cursor 已指向 Gap 位
                 else it
             }.doAddPairItem(open, close)

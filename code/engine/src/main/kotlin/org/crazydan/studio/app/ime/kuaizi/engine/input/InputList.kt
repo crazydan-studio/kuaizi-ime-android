@@ -191,31 +191,43 @@ data class InputList(
 
     /**
      * 添加拼音输入项：
-     * - 若 [selected] 为 [CommonInput.Gap]，则执行 [doAddContinuousItem]；
-     * - 否则，若 [cursor] 处不是配对符号，则将 [pending] 设置为 [item]，以支持对拼音的持续性输入并最终用其替代 [selected]；
+     * - 若 [pending] 为 [CommonInput.Item.Pinyin]，则将 [pending] 替换为 [item]，从而对拼音输入做整体替换，而非追加；
+     * - 否则，若 [selected] 为 [CommonInput.Gap]，则执行 [doAddContinuousItem]；
+     * - 否则，若 [cursor] 处不是配对符号：
+     *   - 若 [pending] 为 `null`，则将 [pending] 设置为 [item]，以支持对拼音的持续性输入并最终用其替代 [selected]；
+     *   - 否则，先 [confirmPending] 再重做 [doAddPinyinItem] 以插入新的拼音输入；
      * - 否则，先 [confirmPending] 再重做 [doAddPinyinItem] 以插入新的拼音输入；
      *
      * [cursor] 始终指向 [CommonInput.Item]，且 [pending] 为正在处理且等待更新到 [inputs]
      * 的 [CommonInput.Item.Pinyin]。
      */
     private fun doAddPinyinItem(item: CommonInput.Item.Pinyin): InputList =
-        // 对拼音输入项是做整体替换，而不是追加
-        when (selected) {
-            is CommonInput.Gap ->
-                doAddContinuousItem(item)
+        when (pending) {
+            is CommonInput.Item.Pinyin ->
+                withPending(item)
 
-            else ->
-                doUpdateAtCursorByPairItemOrNot(
-                    { withPending(item) },
-                    { confirmPending().doAddPinyinItem(item) },
-                )
+            else -> when (selected) {
+                is CommonInput.Gap ->
+                    doAddContinuousItem(item)
+
+                else ->
+                    doUpdateAtCursorByPairItemOrNot(
+                        {
+                            if (pending == null) withPending(item)
+                            else confirmPending().doAddPinyinItem(item)
+                        },
+                        { confirmPending().doAddPinyinItem(item) },
+                    )
+            }
         }
 
     /**
      * 添加拉丁文：
      * - 若 [pending] 为 [CommonInput.Item.Char.Latin]，则向 [pending] 追加拉丁文（根据 [replacements] 判断是否替代前序字符）；
      * - 否则，若 [selected] 为 [CommonInput.Gap]，则执行 [doAddContinuousItem]；
-     * - 否则，若 [cursor] 处不是配对符号，则将 [pending] 设置为 [item]，以支持对拉丁文的持续性输入并最终用其替代 [selected]；
+     * - 否则，若 [cursor] 处不是配对符号：
+     *   - 若 [pending] 为 `null`，则将 [pending] 设置为 [item]，以支持对拉丁文的持续性输入并最终用其替代 [selected]；
+     *   - 否则，先 [confirmPending] 再重做 [doAddLatinCharItem] 以插入新的拉丁文输入；
      * - 否则，先 [confirmPending] 再重做 [doAddLatinCharItem] 以插入新的拉丁文输入；
      *
      * [cursor] 始终指向 [CommonInput.Item]，且 [pending] 为正在处理且等待更新到 [inputs]
@@ -237,7 +249,10 @@ data class InputList(
 
                 else ->
                     doUpdateAtCursorByPairItemOrNot(
-                        { withPending(item) },
+                        {
+                            if (pending == null) withPending(item)
+                            else confirmPending().doAddLatinCharItem(item, replacements)
+                        },
                         { confirmPending().doAddLatinCharItem(item, replacements) },
                     )
             }
@@ -310,10 +325,9 @@ data class InputList(
      */
     override fun doDeleteBackward(oneByOne: Boolean): InputList {
         val selected = this.selected
-        val emptyPending = isEmptyItem(pending)
 
         if (oneByOne) {
-            val current = if (emptyPending) selected else pending
+            val current = if (isEmptyItem(pending)) selected else pending
 
             if (current is CommonInput.Item.Char.Latin && isContinuousItem(current)) {
                 return withPending(current.dropLastChar())
@@ -329,21 +343,33 @@ data class InputList(
      * 在当前的 [CommonInput.Item.MathExpr] 待输入上进行更新：
      * - 若 [pending] 或 [selected] 为 [CommonInput.Item.MathExpr] 类型，
      *   则直接对其 [MathInputList] 进行更新操作；
-     * - 否则，新建 [CommonInput.Item.MathExpr]，再对其 [MathInputList] 上进行更新操作；
+     * - 否则，新建 [CommonInput.Item.MathExpr]，再在其 [MathInputList] 上进行更新操作；
      *
      * 最终的更新结果将挂载到 [pending] 上，以便于对该算术表达式输入项进行后续操作。
+     *
+     * 在添加其他输入项时，必须主动 [confirmPending]（对应为切换键盘）。
      */
     fun withMathExprUpdate(block: MathInputList.() -> MathInputList): InputList =
         when (pending) {
-            is CommonInput.Item.MathExpr -> pending
+            is CommonInput.Item.MathExpr ->
+                withPending(pending.applyInputListUpdate(block))
+
             else -> selected.let {
                 when (it) {
-                    is CommonInput.Item.MathExpr -> it
-                    else -> CommonInput.Item.MathExpr()
+                    is CommonInput.Item.MathExpr ->
+                        withPending(it)
+
+                    is CommonInput.Gap ->
+                        doAddContinuousItem(CommonInput.Item.MathExpr())
+
+                    else ->
+                        if (pending == null)
+                            withPending(CommonInput.Item.MathExpr())
+                        else confirmPending()
+                }.run {
+                    withMathExprUpdate(block)
                 }
             }
-        }.let {
-            withPending(it.applyInputListUpdate(block))
         }
 
     /** 对 [textOption] 进行更新 */
@@ -363,32 +389,41 @@ data class InputList(
         left: CommonInput.Item, right: CommonInput.Item,
         option: InputTextOption,
     ): Boolean =
+    // Note：无法通用的空格规则，需在输入时显式添加空格
+
         // 已经有显式的空格，则不需要空格间隔
         if (left is CommonInput.Item.Char.Space || right is CommonInput.Item.Char.Space) false
-        // 算术表达式输入项与其他输入项之间需要空格间隔
-        else if (left is CommonInput.Item.MathExpr || right is CommonInput.Item.MathExpr) true
-        // 拉丁文输入项与符号输入项之间不需要空格间隔
+        // 全角符号输入项与其他输入项之间均不加空格间隔
+        else if (
+            (left is CommonInput.Item.Char.Symbol && left.fullWidth)
+            || (right is CommonInput.Item.Char.Symbol && right.fullWidth)
+        ) false
+        // 符号输入项之间不加空格间隔
+        else if (left is CommonInput.Item.Char.Symbol && right is CommonInput.Item.Char.Symbol) false
+        // 拉丁文输入项与右侧符号输入项之间不需要空格间隔
         else if (left is CommonInput.Item.Char.Latin)
             right !is CommonInput.Item.Char.Symbol
-        // 仅全角符号输入项与拉丁文输入项之间不需要空格间隔
+        // 起始配对符号输入项与右侧拉丁文输入项之间不需要空格间隔
         else if (right is CommonInput.Item.Char.Latin)
-            !(left is CommonInput.Item.Char.Symbol && left.fullWidth)
+            !(left is CommonInput.Item.Char.Symbol && left.close != null)
         else {
-            val onlyUseSpell =
+            val sameAsLatin =
                 fun(item: CommonInput.Item): Boolean =
-                    item is CommonInput.Item.Pinyin
-                            && (
-                            item.word == null
-                                    || option.spellUseMode == InputWord.SpellUseMode.Replace
+                    item is CommonInput.Item.MathExpr
+                            || (
+                            item is CommonInput.Item.Pinyin
+                                    && (
+                                    item.word == null
+                                            || option.spellUseMode == InputWord.SpellUseMode.Replace
+                                    )
                             )
-
-            // 汉字与其他输入之间均不需要空格间隔，而其纯读音则按照拉丁文处理
-            if (onlyUseSpell(left))
+            // 汉字与其他输入之间均不需要空格间隔，而汉字读音和算术输入则按照拉丁文处理
+            if (sameAsLatin(left))
                 needGapSpaceBetween(
                     CommonInput.Item.Char.Latin(chars = listOf("L")),
                     right, option
                 )
-            else if (onlyUseSpell(right))
+            else if (sameAsLatin(right))
                 needGapSpaceBetween(
                     left,
                     CommonInput.Item.Char.Latin(chars = listOf("R")),

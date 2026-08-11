@@ -75,7 +75,7 @@ fun CandidateListPanel(
         // 遍历候选词列表，每项渲染为可点击的文本
         items(candidates) { candidate ->
             Text(
-                text = candidate.text,
+                text = candidate.value,
                 modifier = Modifier
                     .padding(horizontal = 8.dp, vertical = 12.dp)
                     .clickable { onCandidateTap(candidate) },
