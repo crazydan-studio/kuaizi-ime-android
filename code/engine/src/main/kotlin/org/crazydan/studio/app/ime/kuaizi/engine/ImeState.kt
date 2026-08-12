@@ -55,18 +55,14 @@ data class ImeState(
     val config: ImeConfig = ImeConfig(),
     val keyboard: Keyboard = Keyboard(),
     //
+    // TODO 对特定的键盘（Editor、CommitOption 等）需冻结输入列表，以避免打断该键盘的操作
     val inputList: InputList = InputList(),
     val candidateList: CandidateList = CandidateList(),
     //
     val clipboard: Clipboard = Clipboard(),
     val favoriteList: FavoriteList = FavoriteList(),
     val toolListState: ToolListState = ToolListState(),
-) {
-
-    /** 是否应该直接输入到目标编辑器 */
-    fun shouldDirectInput(): Boolean =
-        inputList.isFrozen() || inputList.isEmpty()
-}
+)
 
 /**
  * 工具栏状态：管理键盘上方工具栏中各按钮的可用性和配置。

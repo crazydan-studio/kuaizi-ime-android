@@ -145,8 +145,8 @@ class KeyboardStateMachine(
                         KeyboardStateTransition.Result(
                             newState = newState,
                             sideEffects = listOf(
-                                ImeIntent.InputList.UpdatePending(
-                                    pending = createPinyinInputPending(pinyinTree, newState)
+                                ImeIntent.InputList.AddItem(
+                                    item = createPinyinInputPending(pinyinTree, newState)
                                 ),
                             ),
                         )
@@ -175,8 +175,8 @@ class KeyboardStateMachine(
                                     else -> CommonInput.Item.Char.Space
                                 }
 
-                                ImeIntent.InputList.AddChar(
-                                    char = char,
+                                ImeIntent.InputList.AddItem(
+                                    item = char,
                                     replacements =
                                         if (transition.replacement > 0)
                                             transition.key.getFullReplacements()
@@ -229,8 +229,8 @@ class KeyboardStateMachine(
                         KeyboardStateTransition.Result(
                             newState = newState,
                             sideEffects = listOf(
-                                ImeIntent.InputList.UpdatePending(
-                                    pending = createPinyinInputPending(pinyinTree, newState)
+                                ImeIntent.InputList.AddItem(
+                                    item = createPinyinInputPending(pinyinTree, newState)
                                 )
                             ),
                         )

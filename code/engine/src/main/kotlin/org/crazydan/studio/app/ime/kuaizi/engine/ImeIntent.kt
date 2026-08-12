@@ -23,8 +23,9 @@ import org.crazydan.studio.app.ime.kuaizi.engine.backup.ImportStrategy
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.EditorEditAction
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.Motion
 import org.crazydan.studio.app.ime.kuaizi.engine.input.CandidateList
-import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
 import org.crazydan.studio.app.ime.kuaizi.engine.input.CommonInput
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputFavorite
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputTextOption
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputWord
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.InputKey
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.KeyboardType
@@ -163,15 +164,15 @@ sealed class ImeIntent {
         data object Revoke : InputList()
 
         /**
-         * 添加输入：字母、数字、符号、表情等
+         * 添加输入项：拼音、字母、数字、符号、表情等
          * @property replacements 替换字符列表（必须为包含按键字符在内的完整列表）。
          * 在添加时，首先判断前序字符是否在该替换列表内，
-         * 若存在，则将前序替换为 [char]，否则，不做替换，直接追加。
+         * 若存在，则将前序替换为 [item]，否则，不做替换，直接追加。
          * 在发送该意图前，需由发送方判断是否需要尝试替换前序输入，
-         * 若不满足替换条件，则需要将 [replacements] 置为 `null` 或空
+         * 若不满足替换条件，则需要将 [replacements] 置为 `null`
          */
-        data class AddChar(
-            val char: CommonInput.Item.Char,
+        data class AddItem(
+            val item: CommonInput.Item,
             val replacements: List<String>? = null,
         ) : InputList()
 
@@ -181,17 +182,18 @@ sealed class ImeIntent {
         /** 删除当前已选中的输入项 */
         data object RemoveSelected : InputList()
 
+        // TODO 支持选中算术输入列表中的输入项
         /** 选中指定位置的输入项 */
         data class SelectAt(val index: Int) : InputList()
-
-        /** 更新待输入 */
-        data class UpdatePending(val pending: CommonInput.Item) : InputList()
 
         /** 确认待输入 */
         data object ConfirmPending : InputList()
 
         /** 丢弃待输入 */
         data object DropPending : InputList()
+
+        /** 更新 [InputTextOption] */
+        data class UpdateTextOption(val textOption: InputTextOption) : InputList()
     }
 
     // -----------------------------------------------------------------------

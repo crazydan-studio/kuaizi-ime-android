@@ -42,6 +42,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.domain.InputMethodSubtype
 import org.crazydan.studio.app.ime.kuaizi.engine.domain.PinyinTree
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputList
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListEditor
+import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.input.InputListOperator
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CandidateKeyboardIntentHandler
 import org.crazydan.studio.app.ime.kuaizi.engine.keyboard.CommitOptionKeyboardIntentHandler
@@ -77,7 +78,7 @@ import org.crazydan.studio.app.ime.kuaizi.engine.log.LogLevel
  */
 class ImeEngine internal constructor(
     config: ImeConfig,
-    private val dictProvider: ImeDictProvider,
+    private val dict: ImeDictProvider,
     private val keyboardStateMachine: KeyboardStateMachine,
     private val inputListOp: InputListOperator,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
@@ -127,7 +128,7 @@ class ImeEngine internal constructor(
 
             return ImeEngine(
                 config = config,
-                dictProvider = dictProvider,
+                dict = dictProvider,
                 keyboardStateMachine = KeyboardStateMachine(
                     pinyinTree = pinyinTree,
                 ),
@@ -337,6 +338,7 @@ class ImeEngine internal constructor(
      * @return 对应的意图处理器
      */
     private fun resolveKeyboardIntentHandler(keyboardType: KeyboardType): KeyboardIntentHandler {
+        // TODO 改为静态对象的接口调用，避免频繁创建对象
         val keyboardInputMode = _state.value.config.ui.keyboardInputMode
 
         return when (keyboardType) {
@@ -420,53 +422,18 @@ class ImeEngine internal constructor(
 
     /** 处理与输入列表相关的意图 */
     private suspend fun handleIntentWithInputList(intent: ImeIntent.InputList) {
-        when (intent) {
-            is ImeIntent.InputList.Commit -> {
-                // TODO 向编辑器提交文本：EditorAction.CommitText、EditorAction.InsertPairedSymbols
-                // TODO 更新数据库
-                // TODO 主键盘切换到 Idle 状态，临时性键盘切换回主键盘
-            }
-
-            is ImeIntent.InputList.Revoke -> {
-                // TODO 从编辑器撤销提交：EditorAction.RevokeCommit
-                // TODO 恢复 InputList
-                // TODO 还原数据库记录
-                // TODO 选中 InputList 中的已选中项
-            }
-
-            is ImeIntent.InputList.AddChar -> {
-                // TODO 根据 InputList 当前状态决定字符添加和替换，以及是否为直输（冻结或为空时）
-                // TODO 对拉丁文输入做数据库补全查询
-            }
-
-            is ImeIntent.InputList.DeleteBackward -> {
-                // TODO 回删 InputList 中字符或编辑器内字符（InputList 为直输时）
-                // TODO 编辑器回删通过 EditorEditAction.Backspace
-            }
-
-            is ImeIntent.InputList.RemoveSelected -> {
-            }
-
-            is ImeIntent.InputList.UpdatePending -> {
-                // TODO 若为拼音输入且拼音有效，则查询候选字
-                // TODO InputList 更新待输入
-            }
-
-            is ImeIntent.InputList.ConfirmPending -> {
-                // TODO InputList 确认待输入
-                // TODO 若为拼音输入，则更新拼音输入短语
-            }
-
-            is ImeIntent.InputList.DropPending -> {
-                // TODO InputList 丢弃待输入
-            }
-
-            is ImeIntent.InputList.SelectAt -> TODO()
-        }
+        InputListIntentHandler.handle(
+            intent = intent,
+            inputList = _state.value.inputList,
+            dict = dict,
+        )
     }
 
     /** 处理与键盘相关的意图 */
     private fun handleIntentWithKeyboard(intent: ImeIntent.Keyboard) {
+        // TODO 输入直输、提交、撤销、编辑器回删意图？
+        // TODO 向编辑器提交文本：EditorAction.CommitText、EditorAction.InsertPairedSymbols
+        // TODO 从编辑器撤销提交：EditorAction.RevokeCommit
         when (intent) {
             is ImeIntent.Keyboard.SwitchTo ->
                 switchKeyboard(intent.type)

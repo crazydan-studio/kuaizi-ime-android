@@ -30,14 +30,12 @@ import org.crazydan.studio.app.ime.kuaizi.engine.input.math.MathInputList
  * - 只能通过 [withTextOptionUpdate] 对 [textOption] 进行更新；
  *
  * @property textOption 可提交文本的转换配置
- * @property frozen 是否已被冻结：被冻结后，将不能对输入列表做修改
  */
 data class InputList(
     override val inputs: List<CommonInput> = listOf(CommonInput.Gap),
     override val cursor: Int = 0,
     override val pending: CommonInput.Item? = null,
     val textOption: InputTextOption = InputTextOption(),
-    private val frozen: Boolean = false,
 ) : BaseInputList<InputList, CommonInput, CommonInput.Item, CommonInput.Gap>(
     inputs = inputs,
     cursor = cursor,
@@ -70,15 +68,6 @@ data class InputList(
         copy(inputs = inputs, cursor = cursor, pending = pending)
 
     // ------------------------------------------------------
-
-    /** 是否冻结输入列表？  */
-    fun freeze(frozen: Boolean): InputList =
-        if (this.frozen == frozen) this
-        else copy(frozen = frozen)
-
-    /** 输入列表是否已被冻结 */
-    fun isFrozen(): Boolean =
-        frozen
 
     /** 清空输入列表 */
     fun clean(): InputList =
